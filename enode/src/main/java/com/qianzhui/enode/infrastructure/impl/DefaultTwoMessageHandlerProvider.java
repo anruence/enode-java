@@ -2,8 +2,8 @@ package com.qianzhui.enode.infrastructure.impl;
 
 import com.qianzhui.enode.common.container.IObjectContainer;
 import com.qianzhui.enode.eventing.IDomainEvent;
-import com.qianzhui.enode.infrastructure.IMessageHandler;
 import com.qianzhui.enode.infrastructure.IMessageHandlerProxy2;
+import com.qianzhui.enode.infrastructure.ITwoMessageHandler;
 import com.qianzhui.enode.infrastructure.ITwoMessageHandlerProvider;
 
 import javax.inject.Inject;
@@ -21,7 +21,7 @@ public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<Ma
 
     @Override
     protected Class getGenericHandlerType() {
-        return IMessageHandler.class;
+        return ITwoMessageHandler.class;
     }
 
     @Override

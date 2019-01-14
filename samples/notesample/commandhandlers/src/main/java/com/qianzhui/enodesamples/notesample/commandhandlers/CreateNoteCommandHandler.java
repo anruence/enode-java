@@ -22,8 +22,9 @@ public class CreateNoteCommandHandler implements ICommandHandler<CreateNoteComma
      */
     @Override
     public CompletableFuture handleAsync(ICommandContext context, CreateNoteCommand command) {
-        context.add(new Note(command.getAggregateRootId(), command.getTitle()));
-        return null;
+        Note note = new Note(command.getAggregateRootId(), command.getTitle());
+        context.add(note);
+        return CompletableFuture.completedFuture(note);
     }
 
 }

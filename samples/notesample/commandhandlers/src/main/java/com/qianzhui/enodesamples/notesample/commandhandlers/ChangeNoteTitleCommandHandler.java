@@ -13,7 +13,7 @@ public class ChangeNoteTitleCommandHandler implements ICommandHandler<ChangeNote
     private Logger logger = ENodeLogger.getLog();
 
     @Override
-    public CompletableFuture handleAsync(ICommandContext context, ChangeNoteTitleCommand command) {
+    public CompletableFuture<Note> handleAsync(ICommandContext context, ChangeNoteTitleCommand command) {
         logger.info(command.getTitle());
         CompletableFuture<Note> noteCompletableFuture = context.getAsync(command.getAggregateRootId(), true, Note.class);
         return noteCompletableFuture.thenApply(note -> {

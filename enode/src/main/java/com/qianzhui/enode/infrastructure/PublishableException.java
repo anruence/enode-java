@@ -14,7 +14,6 @@ public abstract class PublishableException extends RuntimeException implements I
 
     public PublishableException() {
         id = ObjectId.generateNewStringId();
-//        id = UUID.randomUUID().toString();
         timestamp = new Date();
         sequence = 1;
     }

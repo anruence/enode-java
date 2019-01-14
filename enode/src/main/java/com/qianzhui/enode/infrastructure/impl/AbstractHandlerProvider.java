@@ -27,10 +27,11 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
     private Map<TKey, MessageHandlerData<THandlerProxyInterface>> _messageHandlerDict = new HashMap<>();
     private MethodHandles.Lookup lookup = MethodHandles.lookup();
 
-    //ICommandHandler、ICommandAsyncHandler、IMessageHandler、IMessageHandler<,>、IMessageHandler<,,>
+    /**
+     * ICommandHandler、ICommandAsyncHandler、IMessageHandler、ITwoMessageHandler<,>、IThreeMessageHandler<,,>
+     */
     protected abstract Class getGenericHandlerType();
 
-    //    protected abstract TKey getKey(Class handlerInterfaceType);
     protected abstract TKey getKey(Method method);
 
     protected abstract Class<? extends THandlerProxyInterface> getHandlerProxyImplementationType();
@@ -122,7 +123,6 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
             return false;
         }
         return true;
-//        return type != null && !type.isInterface() && !Modifier.isAbstract(type.getModifiers()) && getGenericHandlerType().isAssignableFrom(type);
     }
 
     private void registerHandler(Class handlerType) {
@@ -131,7 +131,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
 
         Set<Method> handleMethods = ReflectionUtils.getMethods(handlerType, this::isHandleMethodMatch);
 
-        handleMethods.stream().forEach(method -> {
+        handleMethods.forEach(method -> {
             try {
                 //反射Method转换为MethodHandle,提高效率
 

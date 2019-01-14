@@ -45,9 +45,6 @@ public class CommandResultProcessor implements NettyRequestProcessor {
     public SocketAddress _bindingAddress;
 
     public CommandResultProcessor(int listenPort, IJsonSerializer jsonSerializer) {
-//        NettyServerConfig nettyServerConfig = new NettyServerConfig();
-//        nettyServerConfig.setListenPort(listenPort);
-//        _remotingServer = new SocketRemotingServer("CommandResultProcessor.RemotingServer", nettyServerConfig);
         NettyServerConfig nettyServerConfig = new NettyServerConfig();
         nettyServerConfig.setListenPort(listenPort);
         nettyServerConfig.setServerChannelMaxIdleTimeSeconds(3600);

@@ -5,23 +5,25 @@ import com.qianzhui.enode.common.io.AsyncTaskResult;
 import com.qianzhui.enode.infrastructure.IMessage;
 import com.qianzhui.enode.infrastructure.IMessageHandler;
 import com.qianzhui.enode.infrastructure.IMessageHandlerProxy3;
+import com.qianzhui.enode.infrastructure.IThreeMessageHandler;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
     private IObjectContainer _objectContainer;
     private Class _handlerType;
-    private IMessageHandler _handler;
+    private IThreeMessageHandler _handler;
     private MethodHandle _methodHandle;
     private Method _method;
     private Class<?>[] _methodParameterTypes;
 
-    public MessageHandlerProxy3(IObjectContainer objectContainer, Class handlerType, IMessageHandler handler, MethodHandle methodHandle, Method method) {
+    public MessageHandlerProxy3(IObjectContainer objectContainer, Class handlerType, IThreeMessageHandler handler, MethodHandle methodHandle, Method method) {
         _objectContainer = objectContainer;
         _handlerType = handlerType;
         _handler = handler;
@@ -42,8 +44,7 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
         params.add(message3);
 
         //排序参数
-        params.sort((m1, m2) ->
-                getMessageParameterIndex(parameterTypes, m1) - getMessageParameterIndex(parameterTypes, m2)
+        params.sort(Comparator.comparingInt(m -> getMessageParameterIndex(parameterTypes, m))
         );
 
         try {

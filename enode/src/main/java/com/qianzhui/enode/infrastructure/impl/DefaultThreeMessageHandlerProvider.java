@@ -2,8 +2,8 @@ package com.qianzhui.enode.infrastructure.impl;
 
 import com.qianzhui.enode.common.container.IObjectContainer;
 import com.qianzhui.enode.eventing.IDomainEvent;
-import com.qianzhui.enode.infrastructure.IMessageHandler;
 import com.qianzhui.enode.infrastructure.IMessageHandlerProxy3;
+import com.qianzhui.enode.infrastructure.IThreeMessageHandler;
 import com.qianzhui.enode.infrastructure.IThreeMessageHandlerProvider;
 
 import javax.inject.Inject;
@@ -21,7 +21,7 @@ public class DefaultThreeMessageHandlerProvider extends AbstractHandlerProvider<
 
     @Override
     protected Class getGenericHandlerType() {
-        return IMessageHandler.class;
+        return IThreeMessageHandler.class;
     }
 
     @Override

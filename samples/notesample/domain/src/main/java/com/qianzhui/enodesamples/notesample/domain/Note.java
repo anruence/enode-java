@@ -9,7 +9,7 @@ import java.lang.invoke.MethodType;
 public class Note extends AggregateRoot<String> {
     private String _title;
 
-    public Note(){
+    public Note() {
 
     }
 
@@ -20,6 +20,7 @@ public class Note extends AggregateRoot<String> {
 
     public void changeTitle(String title) {
         applyEvent(new NoteTitleChanged(title));
+        applyEvent(new NoteTitleChanged2(title + "2"));
     }
 
     protected void handle(NoteCreated evnt) {
@@ -27,6 +28,10 @@ public class Note extends AggregateRoot<String> {
     }
 
     protected void handle(NoteTitleChanged evnt) {
+        _title = evnt.getTitle();
+    }
+
+    protected void handle(NoteTitleChanged2 evnt) {
         _title = evnt.getTitle();
     }
 

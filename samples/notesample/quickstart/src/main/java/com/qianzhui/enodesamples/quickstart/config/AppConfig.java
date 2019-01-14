@@ -1,20 +1,22 @@
-package com.qianzhui.enodesamples.quickstart;
+package com.qianzhui.enodesamples.quickstart.config;
 
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.qianzhui.enode.ENode;
-import com.qianzhui.enode.commanding.CommandReturnType;
 import com.qianzhui.enode.commanding.ICommandService;
 import com.qianzhui.enode.rocketmq.client.impl.NativePropertyKey;
 import com.qianzhui.enode.rocketmq.client.ons.PropertyKeyConst;
-import com.qianzhui.enodesamples.notesample.commands.ChangeNoteTitleCommand;
-import com.qianzhui.enodesamples.notesample.commands.CreateNoteCommand;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 import java.util.Properties;
-import java.util.UUID;
 
-public class Main {
-    public static void main(String[] args) throws Exception {
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public ENode eNode() {
+
         boolean isONS = true;
         /**============= Enode所需消息队列配置，RocketMQ实现 ======*/
         Properties producerSetting = new Properties();
@@ -52,12 +54,15 @@ public class Main {
         properties.setProperty("maxTotal", "1");
         /**=============================================================*/
 
-        DataSource dataSource = DruidDataSourceFactory.createDataSource(properties);
-
+        DataSource dataSource = null;
+        try {
+            dataSource = DruidDataSourceFactory.createDataSource(properties);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         ENode enode = ENode.create("com.qianzhui.enodesamples")
                 .registerDefaultComponents()
                 .useMysqlComponents(dataSource); // 注销此行，启用内存实现（CommandStore,EventStore,SequenceMessagePublishedVersionStore,MessageHandleRecordStore）
-
         if (isONS) {
             enode.useONS(producerSetting, consumerSetting, 6000,
                     ENode.COMMAND_SERVICE
@@ -74,14 +79,11 @@ public class Main {
                     | ENode.COMMAND_CONSUMER);
         }
         enode.start();
-        ICommandService commandService = enode.getContainer().resolve(ICommandService.class);
-        String noteId = UUID.randomUUID().toString();
-        CreateNoteCommand command1 = new CreateNoteCommand(noteId, "Sample Title1");
-        ChangeNoteTitleCommand command2 = new ChangeNoteTitleCommand(noteId, "Sample Title3");
-        commandService.executeAsync(command1, CommandReturnType.EventHandled).get();
-        commandService.executeAsync(command2, CommandReturnType.EventHandled).get();
-        System.out.println("Press Enter to exit...");
-        System.in.read();
-        enode.shutdown();
+        return enode;
+    }
+
+    @Bean
+    public ICommandService commandService() {
+        return eNode().getContainer().resolve(ICommandService.class);
     }
 }

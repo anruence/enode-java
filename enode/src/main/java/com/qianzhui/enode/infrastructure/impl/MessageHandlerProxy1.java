@@ -48,4 +48,5 @@ public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
     public Method getMethod() {
         return _method;
     }
+
 }

@@ -5,6 +5,7 @@ import com.qianzhui.enode.common.io.AsyncTaskResult;
 import com.qianzhui.enode.infrastructure.IMessage;
 import com.qianzhui.enode.infrastructure.IMessageHandler;
 import com.qianzhui.enode.infrastructure.IMessageHandlerProxy2;
+import com.qianzhui.enode.infrastructure.ITwoMessageHandler;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
@@ -13,12 +14,12 @@ import java.util.concurrent.CompletableFuture;
 public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
     private IObjectContainer _objectContainer;
     private Class _handlerType;
-    private IMessageHandler _handler;
+    private ITwoMessageHandler _handler;
     private MethodHandle _methodHandle;
     private Method _method;
     private Class<?>[] _methodParameterTypes;
 
-    public MessageHandlerProxy2(IObjectContainer objectContainer, Class handlerType, IMessageHandler handler, MethodHandle methodHandle, Method method) {
+    public MessageHandlerProxy2(IObjectContainer objectContainer, Class handlerType, ITwoMessageHandler handler, MethodHandle methodHandle, Method method) {
         _objectContainer = objectContainer;
         _handlerType = handlerType;
         _handler = handler;

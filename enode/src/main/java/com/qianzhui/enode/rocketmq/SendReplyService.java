@@ -55,7 +55,7 @@ public class SendReplyService {
                 request.setBody(body);
                 remotingClient.invokeOneway(replyAddress, request, 1000 * 5);
             } catch (Exception ex) {
-                _logger.error("Send command reply has exeption, replyAddress: " + context.getReplyAddress(), ex);
+                _logger.error("Send command reply has exception, replyAddress: " + context.getReplyAddress(), ex);
             }
         });
     }
