@@ -75,7 +75,7 @@ public class DefaultEventService implements IEventService {
                         return;
                     }
                     if (_eventStore.isSupportBatchAppendEvent()) {
-                        batchPersistEventAsync(committingContexts);
+                        batchPersistEventAsync(committingContexts, 0);
                     } else {
                         persistEventOneByOne(committingContexts);
                     }
@@ -91,9 +91,10 @@ public class DefaultEventService implements IEventService {
         if (eventStream.items() == null || eventStream.items().size() == 0) {
             eventStream.setItems(processingCommand.getItems());
         }
-        DomainEventStreamMessage eventStreamMessage = new DomainEventStreamMessage(processingCommand.getMessage().id(), eventStream.aggregateRootId(),
-                eventStream.version(), eventStream.aggregateRootTypeName(), eventStream.events(), eventStream.items());
-        publishDomainEventAsyncRecursively(processingCommand, eventStreamMessage);
+        DomainEventStreamMessage eventStreamMessage = new DomainEventStreamMessage(
+                processingCommand.getMessage().id(), eventStream.aggregateRootId(), eventStream.version(),
+                eventStream.aggregateRootTypeName(), eventStream.events(), eventStream.items());
+        publishDomainEventAsync(processingCommand, eventStreamMessage, 0);
     }
 
     @Override
@@ -106,9 +107,10 @@ public class DefaultEventService implements IEventService {
         _scheduleService.stopTask(_taskName);
     }
 
-    private void batchPersistEventAsync(List<EventCommittingContext> committingContexts) {
+    private void batchPersistEventAsync(List<EventCommittingContext> committingContexts, int retryTimes) {
         _ioHelper.tryAsyncActionRecursively("BatchPersistEventAsync",
                 () -> _eventStore.batchAppendAsync(committingContexts.stream().map(x -> x.getEventStream()).collect(Collectors.toList())),
+                currentRetryTimes -> batchPersistEventAsync(committingContexts, currentRetryTimes),
                 result ->
                 {
                     EventMailBox eventMailBox = committingContexts.get(0).getEventMailBox();
@@ -124,7 +126,7 @@ public class DefaultEventService implements IEventService {
                     } else if (appendResult == EventAppendResult.DuplicateEvent) {
                         EventCommittingContext context = committingContexts.get(0);
                         if (context.getEventStream().version() == 1) {
-                            handleFirstEventDuplicationAsync(context);
+                            handleFirstEventDuplicationAsync(context, 0);
                         } else {
                             _logger.warn("Batch persist event has concurrent version conflict, first eventStream: {}, batchSize: {}", context.getEventStream(), committingContexts.size());
                             resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence());
@@ -136,31 +138,33 @@ public class DefaultEventService implements IEventService {
                 () -> String.format("[contextListCount:%d]", committingContexts.size()),
                 errorMessage ->
                         _logger.error(String.format("Batch persist event has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage)),
-                true);
+                retryTimes, true);
     }
 
     private void persistEventOneByOne(List<EventCommittingContext> contextList) {
         concatContexts(contextList);
-        persistEvent(contextList.get(0));
+        persistEvent(contextList.get(0), 0);
     }
 
-    private void persistEvent(EventCommittingContext context) {
+    private void persistEvent(EventCommittingContext context, int retryTimes) {
         _ioHelper.tryAsyncActionRecursively("PersistEvent",
                 () -> _eventStore.appendAsync(context.getEventStream()),
+                currentRetryTimes -> persistEvent(context, currentRetryTimes),
+
                 result -> {
                     if (result.getData() == EventAppendResult.Success) {
                         _logger.debug("Persist events success, {}", context.getEventStream());
                         publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream());
 
                         if (context.getNext() != null) {
-                            persistEvent(context.getNext());
+                            persistEvent(context.getNext(), 0);
                         } else {
                             context.getEventMailBox().tryRun(true);
                         }
                     } else if (result.getData() == EventAppendResult.DuplicateEvent) {
                         //如果是当前事件的版本号为1，则认为是在创建重复的聚合根
                         if (context.getEventStream().version() == 1) {
-                            handleFirstEventDuplicationAsync(context);
+                            handleFirstEventDuplicationAsync(context, 0);
                         }
                         //如果事件的版本大于1，则认为是更新聚合根时遇到并发冲突了，则需要进行重试；
                         else {
@@ -170,12 +174,12 @@ public class DefaultEventService implements IEventService {
                     } else if (result.getData() == EventAppendResult.DuplicateCommand) {
                         _logger.warn("Persist event has duplicate command, eventStream: {}", context.getEventStream());
                         resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1);
-                        tryToRepublishEventAsync(context);
+                        tryToRepublishEventAsync(context, 0);
                     }
                 },
                 () -> String.format("[eventStream:%s]", context.getEventStream()),
                 errorMessage -> _logger.error(String.format("Persist event has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
-                true);
+                retryTimes, true);
     }
 
     private void resetCommandMailBoxConsumingSequence(EventCommittingContext context, long consumingSequence) {
@@ -199,11 +203,12 @@ public class DefaultEventService implements IEventService {
         }
     }
 
-    private void tryToRepublishEventAsync(EventCommittingContext context) {
+    private void tryToRepublishEventAsync(EventCommittingContext context, int retryTimes) {
         ICommand command = context.getProcessingCommand().getMessage();
 
         _ioHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
                 () -> _eventStore.findAsync(context.getEventStream().aggregateRootId(), command.id()),
+                currentRetryTimes -> tryToRepublishEventAsync(context, currentRetryTimes),
                 result ->
                 {
                     DomainEventStream existingEventStream = result.getData();
@@ -231,14 +236,15 @@ public class DefaultEventService implements IEventService {
                 {
                     _logger.error(String.format("Find event by commandId has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage));
                 },
-                true);
+                retryTimes, true);
     }
 
-    private void handleFirstEventDuplicationAsync(EventCommittingContext context) {
+    private void handleFirstEventDuplicationAsync(EventCommittingContext context, int retryTimes) {
         DomainEventStream eventStream = context.getEventStream();
 
         _ioHelper.tryAsyncActionRecursively("FindFirstEventByVersion",
                 () -> _eventStore.findAsync(eventStream.aggregateRootId(), 1),
+                currentRetryTimes -> handleFirstEventDuplicationAsync(context, currentRetryTimes),
                 result ->
                 {
                     DomainEventStream firstEventStream = result.getData();
@@ -274,7 +280,7 @@ public class DefaultEventService implements IEventService {
                 },
                 () -> String.format("[eventStream:%s]", eventStream),
                 errorMessage -> _logger.error(String.format("Find the first version of event has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
-                true);
+                retryTimes, true);
     }
 
     private void refreshAggregateMemoryCache(EventCommittingContext context) {
@@ -294,9 +300,10 @@ public class DefaultEventService implements IEventService {
         }
     }
 
-    private void publishDomainEventAsyncRecursively(ProcessingCommand processingCommand, DomainEventStreamMessage eventStream) {
+    private void publishDomainEventAsync(ProcessingCommand processingCommand, DomainEventStreamMessage eventStream, int retryTimes) {
         _ioHelper.tryAsyncActionRecursively("PublishDomainEventAsync",
                 () -> _domainEventPublisher.publishAsync(eventStream),
+                currentRetryTimes -> publishDomainEventAsync(processingCommand, eventStream, currentRetryTimes),
                 result ->
                 {
                     _logger.debug("Publish domain events success, {}", eventStream);
@@ -307,7 +314,7 @@ public class DefaultEventService implements IEventService {
                 },
                 () -> String.format("[eventStream:%s]", eventStream),
                 errorMessage -> _logger.error(String.format("Publish event has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
-                true);
+                retryTimes, true);
     }
 
     private void concatContexts(List<EventCommittingContext> contextList) {

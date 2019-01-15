@@ -14,7 +14,7 @@ import java.util.Properties;
 @Configuration
 public class AppConfig {
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "shutdown")
     public ENode eNode() {
 
         boolean isONS = true;
@@ -43,10 +43,6 @@ public class AppConfig {
         /**============= Enode数据库配置（内存实现不需要配置） ===========*/
         Properties properties = new Properties();
         properties.setProperty("driverClassName", "com.mysql.jdbc.Driver");
-        /*properties.setProperty("url", "jdbc:mysql://localhost:3306/enode_new");
-        properties.setProperty("username", "root");
-        properties.setProperty("password", "coffee");*/
-
         properties.setProperty("url", "jdbc:mysql://localhost:3306/enode");
         properties.setProperty("username", "root");
         properties.setProperty("password", "anruence");
@@ -78,7 +74,6 @@ public class AppConfig {
                     | ENode.DOMAIN_EVENT_CONSUMER
                     | ENode.COMMAND_CONSUMER);
         }
-        enode.start();
         return enode;
     }
 

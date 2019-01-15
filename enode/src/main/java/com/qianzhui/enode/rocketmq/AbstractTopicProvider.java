@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractTopicProvider<T> implements ITopicProvider<T> {
+
     private Map<Class, TopicTagData> _topicDict = new HashMap<>();
 
     @Override
@@ -27,8 +28,8 @@ public abstract class AbstractTopicProvider<T> implements ITopicProvider<T> {
             return;
         }
 
-        for (int i = 0, len = types.length; i < len; i++) {
-            _topicDict.put(types[i], topic);
+        for (Class type : types) {
+            _topicDict.put(type, topic);
         }
     }
 }

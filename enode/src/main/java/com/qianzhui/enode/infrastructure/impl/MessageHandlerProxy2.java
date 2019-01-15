@@ -30,8 +30,7 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
 
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message1, IMessage message2) {
-        IMessageHandler handler = (IMessageHandler) getInnerObject();
-
+        ITwoMessageHandler handler = (ITwoMessageHandler) getInnerObject();
         try {
             if (_methodParameterTypes[0].isAssignableFrom(message1.getClass())) {
                 return (CompletableFuture<AsyncTaskResult>) _methodHandle.invoke(handler, message1, message2);

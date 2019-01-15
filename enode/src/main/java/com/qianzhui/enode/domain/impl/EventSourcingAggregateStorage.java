@@ -1,6 +1,5 @@
 package com.qianzhui.enode.domain.impl;
 
-import com.qianzhui.enode.ENode;
 import com.qianzhui.enode.common.io.AsyncTaskResult;
 import com.qianzhui.enode.common.io.IOHelper;
 import com.qianzhui.enode.common.logging.ENodeLogger;
@@ -70,9 +69,8 @@ public class EventSourcingAggregateStorage implements IAggregateStorage {
             CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> eventStreamsFuture = _eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, minVersion, Integer.MAX_VALUE);
             // block to retrieve data
             List<DomainEventStream> eventStreams = CompletableFutureUtil.getValue(eventStreamsFuture).getData();
-            T reaggregateRoot = rebuildAggregateRoot(aggregateRootType, eventStreams);
-            checkRepublishUnpublishedEventAsync(reaggregateRoot);
-            return reaggregateRoot;
+            T reAggregateRoot = rebuildAggregateRoot(aggregateRootType, eventStreams);
+            return reAggregateRoot;
         });
     }
 
@@ -93,7 +91,6 @@ public class EventSourcingAggregateStorage implements IAggregateStorage {
             CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> eventStreamsFuture = _eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, aggregateRoot.version() + 1, Integer.MAX_VALUE);
             List<DomainEventStream> eventStreamsAfterSnapshot = CompletableFutureUtil.getValue(eventStreamsFuture).getData();
             aggregateRoot.replayEvents(eventStreamsAfterSnapshot);
-            checkRepublishUnpublishedEventAsync(aggregateRoot);
             return aggregateRoot;
         });
     }
@@ -102,57 +99,8 @@ public class EventSourcingAggregateStorage implements IAggregateStorage {
         if (eventStreams == null || eventStreams.isEmpty()) {
             return null;
         }
-
         T aggregateRoot = _aggregateRootFactory.createAggregateRoot(aggregateRootType);
         aggregateRoot.replayEvents(eventStreams);
-
         return aggregateRoot;
-    }
-
-    private void checkRepublishUnpublishedEventAsync(IAggregateRoot aggregateRoot) {
-        if (aggregateRoot == null) {
-            return;
-        }
-
-        _ioHelper.tryAsyncActionRecursively("CheckRepublishUnpublishedEventAsync",
-                () -> _publishedVersionStore.getPublishedVersionAsync(ENode.getInstance().getSetting().getDomainEventStreamMessageHandlerName(),
-                        _typeNameProvider.getTypeName(aggregateRoot.getClass()), aggregateRoot.uniqueId()),
-                result -> {
-                    Integer publishedVersion = result.getData();
-                    if (publishedVersion < aggregateRoot.version()) {
-                        republishUnpublishedEvents(aggregateRoot, publishedVersion);
-                    }
-                },
-                () -> String.format("AggregateRootType:%s,AggId:%s", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId()),
-                errorMessage -> _logger.error("Check republish unpublished event async has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
-                true);
-    }
-
-    private void republishUnpublishedEvents(IAggregateRoot aggregateRoot, int publishedVersion) {
-        _ioHelper.tryAsyncActionRecursively("RepublishUnpublishedEvents",
-                () -> _eventStore.queryAggregateEventsAsync(aggregateRoot.uniqueId(), _typeNameProvider.getTypeName(aggregateRoot.getClass()),
-                        publishedVersion + 1, aggregateRoot.version()),
-                result ->
-                        result.getData().stream().map(
-                                eventStream -> new DomainEventStreamMessage(eventStream.commandId(), eventStream.aggregateRootId(),
-                                        eventStream.version(), eventStream.aggregateRootTypeName(), eventStream.events(), eventStream.items())
-                        ).forEach(eventStreamMessage -> republishUnpublishedEvent(eventStreamMessage))
-                ,
-                () -> String.format("AggregateRootType:%s,AggId:%s", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId()),
-                errorMessage -> _logger.error("Republish unpublished event async has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
-                true
-        );
-    }
-
-    private void republishUnpublishedEvent(DomainEventStreamMessage eventStreamMessage) {
-        _ioHelper.tryAsyncActionRecursively("RepublishUnpublishedEvent",
-                () -> _domainEventPublisher.publishAsync(eventStreamMessage),
-                result -> {
-
-                },
-                () -> String.format("[eventStream:%s]", eventStreamMessage),
-                errorMessage -> _logger.error("Republish unpublished event async has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
-                true
-        );
     }
 }

@@ -66,8 +66,6 @@ public class RocketMQConsumer {
 
         if (rocketMQMessageHandler == null) {
             _logger.error("No consume handler found with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
-//            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
-            //return CompletableFuture.completedFuture(ConsumeConcurrentlyStatus.RECONSUME_LATER);
             context.reconsumeLater();
         } else {
             rocketMQMessageHandler.handle(msg, context);

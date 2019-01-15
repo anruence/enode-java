@@ -34,7 +34,7 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
 
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message1, IMessage message2, IMessage message3) {
-        IMessageHandler handler = (IMessageHandler) getInnerObject();
+        IThreeMessageHandler handler = (IThreeMessageHandler) getInnerObject();
 
         List<Class<?>> parameterTypes = Arrays.asList(_methodParameterTypes);
 
