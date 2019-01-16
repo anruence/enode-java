@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RemotingCommand {
+
     private static final Logger log = LoggerFactory.getLogger(RemotingCommand.class);
 
     private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
@@ -117,8 +118,8 @@ public class RemotingCommand {
     }
 
     private static RemotingCommand headerDecode(byte[] headerData) {
-            RemotingCommand resultRMQ = RemotingCommandSerialable.decodeHeader(headerData);
-            return resultRMQ;
+        RemotingCommand resultRMQ = RemotingCommandSerialable.decodeHeader(headerData);
+        return resultRMQ;
     }
 
     public CommandCustomHeader decodeCommandCustomHeader(
