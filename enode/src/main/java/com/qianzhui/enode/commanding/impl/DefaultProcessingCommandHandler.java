@@ -44,6 +44,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DefaultProcessingCommandHandler implements IProcessingCommandHandler {
+
     private static final Logger _logger = ENodeLogger.getLog();
 
     private IJsonSerializer _jsonSerializer;
@@ -126,11 +127,13 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
         //调用command handler执行当前command
         CompletableFuture<Object> future = commandHandler.handleAsync(processingCommand.getCommandExecuteContext(), command);
-        _logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                commandHandler.getInnerObject().getClass().getName(),
-                command.getClass().getName(),
-                command.id(),
-                command.getAggregateRootId());
+        if (_logger.isDebugEnabled()) {
+            _logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                    commandHandler.getInnerObject().getClass().getName(),
+                    command.getClass().getName(),
+                    command.id(),
+                    command.getAggregateRootId());
+        }
         return future.thenApply(r -> {
             //如果command执行成功，则提交执行后的结果
             try {
@@ -306,11 +309,13 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 {
                     try {
                         CompletableFuture<AsyncTaskResult<IApplicationMessage>> asyncResult = commandHandler.handleAsync(command);
-                        _logger.debug("Handle command async success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                commandHandler.getInnerObject().getClass().getName(),
-                                command.getClass().getName(),
-                                command.id(),
-                                command.getAggregateRootId());
+                        if (_logger.isDebugEnabled()) {
+                            _logger.debug("Handle command async success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                                    commandHandler.getInnerObject().getClass().getName(),
+                                    command.getClass().getName(),
+                                    command.id(),
+                                    command.getAggregateRootId());
+                        }
                         return asyncResult;
                     } catch (IORuntimeException ex) {
                         _logger.error(String.format("Handle command async has io exception. handlerType:%s, commandType:%s, commandId:%s, aggregateRootId:%s",

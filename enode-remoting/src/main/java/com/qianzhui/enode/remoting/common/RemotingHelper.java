@@ -36,7 +36,7 @@ public class RemotingHelper {
     private static final Logger log = LoggerFactory.getLogger(RemotingHelper.class);
 
     public static String exceptionSimpleDesc(final Throwable e) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (e != null) {
             sb.append(e.toString());
 
@@ -53,13 +53,11 @@ public class RemotingHelper {
 
     public static SocketAddress string2SocketAddress(final String addr) {
         String[] s = addr.split(":");
-        InetSocketAddress isa = new InetSocketAddress(s[0], Integer.parseInt(s[1]));
-        return isa;
+        return new InetSocketAddress(s[0], Integer.parseInt(s[1]));
     }
 
-    public static RemotingCommand invokeSync(final String addr, final RemotingCommand request,
-                                             final long timeoutMillis) throws InterruptedException, RemotingConnectException,
-            RemotingSendRequestException, RemotingTimeoutException {
+    public static RemotingCommand invokeSync(final String addr, final RemotingCommand request, final long timeoutMillis)
+            throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException {
         long beginTime = System.currentTimeMillis();
         SocketAddress socketAddress = RemotingUtil.string2SocketAddress(addr);
         SocketChannel socketChannel = RemotingUtil.connect(socketAddress);
@@ -67,45 +65,36 @@ public class RemotingHelper {
             boolean sendRequestOK = false;
 
             try {
-
                 socketChannel.configureBlocking(true);
-
                 //bugfix  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4614802
                 socketChannel.socket().setSoTimeout((int) timeoutMillis);
-
                 ByteBuffer byteBufferRequest = request.encode();
                 while (byteBufferRequest.hasRemaining()) {
                     int length = socketChannel.write(byteBufferRequest);
                     if (length > 0) {
                         if (byteBufferRequest.hasRemaining()) {
                             if ((System.currentTimeMillis() - beginTime) > timeoutMillis) {
-
                                 throw new RemotingSendRequestException(addr);
                             }
                         }
                     } else {
                         throw new RemotingSendRequestException(addr);
                     }
-
                     Thread.sleep(1);
                 }
-
                 sendRequestOK = true;
-
                 ByteBuffer byteBufferSize = ByteBuffer.allocate(4);
                 while (byteBufferSize.hasRemaining()) {
                     int length = socketChannel.read(byteBufferSize);
                     if (length > 0) {
                         if (byteBufferSize.hasRemaining()) {
                             if ((System.currentTimeMillis() - beginTime) > timeoutMillis) {
-
                                 throw new RemotingTimeoutException(addr, timeoutMillis);
                             }
                         }
                     } else {
                         throw new RemotingTimeoutException(addr, timeoutMillis);
                     }
-
                     Thread.sleep(1);
                 }
 

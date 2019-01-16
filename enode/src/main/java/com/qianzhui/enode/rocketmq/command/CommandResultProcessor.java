@@ -135,13 +135,17 @@ public class CommandResultProcessor implements NettyRequestProcessor {
                 _commandTaskDict.remove(commandResult.getCommandId());
 
                 if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
-                    _logger.debug("Command result return, {}", commandResult);
+                    if (_logger.isDebugEnabled()) {
+                        _logger.debug("Command result return, {}", commandResult);
+                    }
                 }
             } else if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.EventHandled)) {
                 if (commandResult.getStatus().equals(CommandStatus.Failed) || commandResult.getStatus().equals(CommandStatus.NothingChanged)) {
                     _commandTaskDict.remove(commandResult.getCommandId());
                     if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
-                        _logger.debug("Command result return, {}", commandResult);
+                        if (_logger.isDebugEnabled()) {
+                            _logger.debug("Command result return, {}", commandResult);
+                        }
                     }
                 }
             }
@@ -154,7 +158,9 @@ public class CommandResultProcessor implements NettyRequestProcessor {
             CommandResult commandResult = new CommandResult(CommandStatus.Success, message.getCommandId(), message.getAggregateRootId(), message.getCommandResult(), message.getCommandResult() != null ? String.class.getName() : null);
 
             if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
-                _logger.debug("Command result return, {}", commandResult);
+                if (_logger.isDebugEnabled()) {
+                    _logger.debug("Command result return, {}", commandResult);
+                }
             }
         }
     }

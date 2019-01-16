@@ -1,5 +1,6 @@
 package com.qianzhui.enode.infrastructure.impl;
 
+import com.google.common.collect.Lists;
 import com.qianzhui.enode.common.function.Action2;
 import com.qianzhui.enode.common.function.Action4;
 import com.qianzhui.enode.common.io.AsyncTaskResult;
@@ -19,7 +20,6 @@ import com.qianzhui.enode.infrastructure.MessageHandlerData;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -53,9 +53,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
 
     @Override
     public CompletableFuture<AsyncTaskResult> dispatchMessageAsync(IMessage message) {
-        return dispatchMessages(new ArrayList() {{
-            add(message);
-        }});
+        return dispatchMessages(Lists.newArrayList(message));
     }
 
     @Override
@@ -99,7 +97,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
             return;
         }
 
-        messageHandlerDataList.stream().forEach(messageHandlerData -> {
+        messageHandlerDataList.forEach(messageHandlerData -> {
             SingleMessageDispatching singleMessageDispatching = new SingleMessageDispatching(message, queueMessageDispatching, messageHandlerData.AllHandlers, _typeNameProvider);
             if (messageHandlerData.ListHandlers != null && !messageHandlerData.ListHandlers.isEmpty()) {
                 messageHandlerData.ListHandlers.forEach(handler -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, handler, null, 0));
@@ -115,11 +113,11 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
 
     private <T extends IObjectProxy> void dispatchMultiMessage(List<? extends IMessage> messages, List<MessageHandlerData<T>> messageHandlerDataList,
                                                                RootDisptaching rootDispatching, Action4<MultiMessageDisptaching, T, QueuedHandler<T>, Integer> dispatchAction) {
-        messageHandlerDataList.stream().forEach(messageHandlerData -> {
+        messageHandlerDataList.forEach(messageHandlerData -> {
             MultiMessageDisptaching multiMessageDispatching = new MultiMessageDisptaching(messages, messageHandlerData.AllHandlers, rootDispatching, _typeNameProvider);
 
             if (messageHandlerData.ListHandlers != null && !messageHandlerData.ListHandlers.isEmpty()) {
-                messageHandlerData.ListHandlers.stream().forEach(handler -> {
+                messageHandlerData.ListHandlers.forEach(handler -> {
                     try {
                         dispatchAction.apply(multiMessageDispatching, handler, null, 0);
                     } catch (Exception e) {
@@ -179,7 +177,9 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                     if (queueHandler != null) {
                         queueHandler.onHandlerFinished(handlerProxy);
                     }
-                    _logger.debug("Message handled success, handlerType:{}, messageType:{}, messageId:{}", handlerTypeName, message.getClass().getName(), message.id());
+                    if (_logger.isDebugEnabled()) {
+                        _logger.debug("Message handled success, handlerType:{}, messageType:{}, messageId:{}", handlerTypeName, message.getClass().getName(), message.id());
+                    }
                 },
                 () -> String.format("[messageId:%s, messageType:%s, handlerType:%s]", message.id(), message.getClass().getName(), handlerProxy.getInnerObject().getClass().getName()),
                 errorMessage ->
@@ -204,9 +204,11 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                     if (queueHandler != null) {
                         queueHandler.onHandlerFinished(handlerProxy);
                     }
-                    _logger.debug("TwoMessage handled success, [messages:{}], handlerType:{}]", String.join("|", Arrays.asList(messages).stream().map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
+                    if (_logger.isDebugEnabled()) {
+                        _logger.debug("TwoMessage handled success, [messages:{}], handlerType:{}]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
+                    }
                 },
-                () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.asList(messages).stream().map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
+                () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
                 errorMessage ->
                         _logger.error(String.format("Handle two message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage))
                 ,
@@ -232,9 +234,11 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                         queueHandler.onHandlerFinished(handlerProxy);
                     }
 
-                    _logger.debug("ThreeMessage handled success, [messages:{}, handlerType:{}]", String.join("|", Arrays.asList(messages).stream().map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
+                    if (_logger.isDebugEnabled()) {
+                        _logger.debug("ThreeMessage handled success, [messages:{}, handlerType:{}]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
+                    }
                 },
-                () -> String.format("[messages:%s, handlerType:{1}]", String.join("|", Arrays.asList(messages).stream().map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
+                () -> String.format("[messages:%s, handlerType:{1}]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
                 errorMessage -> _logger.error(String.format("Handle three message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true);
     }

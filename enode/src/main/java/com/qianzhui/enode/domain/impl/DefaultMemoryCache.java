@@ -123,7 +123,9 @@ public class DefaultMemoryCache implements IMemoryCache {
             oldValue.setAggregateRoot(aggregateRoot);
             oldValue.setLastUpdateTimeMillis(System.currentTimeMillis());
 
-            _logger.debug("In memory aggregate updated, type: {}, id: {}, version: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.version());
+            if (_logger.isDebugEnabled()) {
+                _logger.debug("In memory aggregate updated, type: {}, id: {}, version: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.version());
+            }
 
             return oldValue;
         });

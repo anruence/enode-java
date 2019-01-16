@@ -116,10 +116,10 @@ public class DefaultEventService implements IEventService {
                     EventMailBox eventMailBox = committingContexts.get(0).getEventMailBox();
                     EventAppendResult appendResult = result.getData();
                     if (appendResult == EventAppendResult.Success) {
-                        _logger.debug("Batch persist event success, aggregateRootId: {}, eventStreamCount: {}", eventMailBox.getAggregateRootId(), committingContexts.size());
+                        if (_logger.isDebugEnabled()) {_logger.debug("Batch persist event success, aggregateRootId: {}, eventStreamCount: {}", eventMailBox.getAggregateRootId(), committingContexts.size());}
 
                         CompletableFuture.runAsync(() ->
-                                committingContexts.stream().forEach(context -> publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream()))
+                                committingContexts.forEach(context -> publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream()))
                         );
 
                         eventMailBox.tryRun(true);
@@ -153,7 +153,7 @@ public class DefaultEventService implements IEventService {
 
                 result -> {
                     if (result.getData() == EventAppendResult.Success) {
-                        _logger.debug("Persist events success, {}", context.getEventStream());
+                        if (_logger.isDebugEnabled()) {_logger.debug("Persist events success, {}", context.getEventStream());}
                         publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream());
 
                         if (context.getNext() != null) {
@@ -306,7 +306,7 @@ public class DefaultEventService implements IEventService {
                 currentRetryTimes -> publishDomainEventAsync(processingCommand, eventStream, currentRetryTimes),
                 result ->
                 {
-                    _logger.debug("Publish domain events success, {}", eventStream);
+                    if (_logger.isDebugEnabled()) {_logger.debug("Publish domain events success, {}", eventStream);}
 
                     String commandHandleResult = processingCommand.getCommandExecuteContext().getResult();
                     CommandResult commandResult = new CommandResult(CommandStatus.Success, processingCommand.getMessage().id(), eventStream.aggregateRootId(), commandHandleResult, String.class.getName());

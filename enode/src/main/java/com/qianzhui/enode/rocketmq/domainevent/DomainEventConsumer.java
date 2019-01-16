@@ -10,7 +10,13 @@ import com.qianzhui.enode.eventing.IDomainEvent;
 import com.qianzhui.enode.eventing.IEventSerializer;
 import com.qianzhui.enode.infrastructure.IMessageProcessor;
 import com.qianzhui.enode.infrastructure.ProcessingDomainEventStreamMessage;
-import com.qianzhui.enode.rocketmq.*;
+import com.qianzhui.enode.rocketmq.CommandReplyType;
+import com.qianzhui.enode.rocketmq.ITopicProvider;
+import com.qianzhui.enode.rocketmq.RocketMQConsumer;
+import com.qianzhui.enode.rocketmq.RocketMQMessageHandler;
+import com.qianzhui.enode.rocketmq.RocketMQProcessContext;
+import com.qianzhui.enode.rocketmq.SendReplyService;
+import com.qianzhui.enode.rocketmq.TopicTagData;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -27,10 +33,11 @@ public class DomainEventConsumer {
     private final ITopicProvider<IDomainEvent> _eventTopicProvider;
 
     @Inject
-    public DomainEventConsumer(RocketMQConsumer rocketMQConsumer, IJsonSerializer jsonSerializer,
-                               IEventSerializer eventSerializer, IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> processor,
-                               ITopicProvider<IDomainEvent> eventITopicProvider,
-                               SendReplyService sendReplyService) {
+    public DomainEventConsumer(
+            RocketMQConsumer rocketMQConsumer, IJsonSerializer jsonSerializer, IEventSerializer eventSerializer,
+            IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> processor,
+            ITopicProvider<IDomainEvent> eventITopicProvider,
+            SendReplyService sendReplyService) {
         _consumer = rocketMQConsumer;
         _sendReplyService = sendReplyService;
         _jsonSerializer = jsonSerializer;

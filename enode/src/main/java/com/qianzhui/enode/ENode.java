@@ -211,9 +211,6 @@ public class ENode extends AbstractContainer<ENode> {
     }
 
     public ENode registerCommonComponents() {
-        //TODO binary serializer
-        //override<IBinarySerializer, DefaultBinarySerializer>();
-
         register(IJsonSerializer.class, GsonJsonSerializer.class);
         register(IScheduleService.class, ScheduleService.class);
         register(IOHelper.class);
@@ -287,20 +284,6 @@ public class ENode extends AbstractContainer<ENode> {
 
         registerStaticInjection(AggregateRoot.class);
 
-        /*ObjectContainer.register(new GenericTypeLiteral<IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage>>() {
-        }, new GenericTypeLiteral<DefaultMessageProcessor<ProcessingApplicationMessage, IApplicationMessage>>() {
-        }, null, LifeStyle.Singleton);*/
-
-        /*ObjectContainer.register(new GenericTypeLiteral<IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage>>() {
-        }, new GenericTypeLiteral<DefaultMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage>>() {
-        }, null, LifeStyle.Singleton);*/
-
-        /*ObjectContainer.register(new GenericTypeLiteral<IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException>>() {
-        }, new GenericTypeLiteral<DefaultMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException>>() {
-        }, null, LifeStyle.Singleton);*/
-
-
-//        _assemblyInitializerServiceTypes.add(ITypeNameProvider.class);
         _assemblyInitializerServiceTypes.add(IAggregateRootInternalHandlerProvider.class);
         _assemblyInitializerServiceTypes.add(IAggregateRepositoryProvider.class);
         _assemblyInitializerServiceTypes.add(IMessageHandlerProvider.class);
@@ -488,7 +471,6 @@ public class ENode extends AbstractContainer<ENode> {
 
             //CommandService
             if (hasComponent(registerRocketMQComponentsFlag, COMMAND_SERVICE)) {
-//                ObjectContainer.register(CommandResultProcessor.class);
                 register(CommandResultProcessor.class, null, () -> {
                     IJsonSerializer jsonSerializer = resolve(IJsonSerializer.class);
                     return new CommandResultProcessor(listenPort, jsonSerializer);
@@ -573,8 +555,6 @@ public class ENode extends AbstractContainer<ENode> {
             }
 
             RocketMQConsumer rocketMQConsumer = resolve(RocketMQConsumer.class);
-            //topicTagDatas.stream().forEach(topicTagData -> rocketMQConsumer.subscribe(topicTagData.getTopic(), topicTagData.getTag()));
-
             topicTagDatas.stream().collect(Collectors.groupingBy(TopicTagData::getTopic)).forEach((topic, tags) -> {
                 String tagsJoin = tags.stream().map(TopicTagData::getTag).collect(Collectors.joining("||"));
                 rocketMQConsumer.subscribe(topic, tagsJoin);
@@ -627,18 +607,8 @@ public class ENode extends AbstractContainer<ENode> {
                         .setScanners(new SubTypesScanner(false), new TypeAnnotationsScanner()));
 
         assemblyTypes = reflections.getSubTypesOf(Object.class);
-//        assemblyTypes.stream().map(x->x.getName()).forEach(System.out::println);
-//        assemblyTypes = reflections.getTypesAnnotatedWith(Component.class);
 
         return this;
-    }
-
-    //TODO validate types
-    private void validateTypes(Set<Class<?>> componentTypes) {
-        /*componentTypes.stream().filter(x-> ICommand.class.isAssignableFrom(x)
-                || IDomainEvent.class.isAssignableFrom(x)
-                || IApplicationMessage.class.isAssignableFrom(x)
-        );*/
     }
 
     private static boolean isAssemblyInitializer(Class type) {

@@ -65,7 +65,7 @@ public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y exten
                 entry.getValue().isInactive(_timeoutSeconds) && !entry.getValue().isRunning()
         ).collect(Collectors.toList());
 
-        inactiveList.stream().forEach(entry -> {
+        inactiveList.forEach(entry -> {
             if (_mailboxDict.remove(entry.getKey()) != null) {
                 _logger.info("Removed inactive {} mailbox, aggregateRootId: {}", getMessageName(), entry.getKey());
             }

@@ -17,8 +17,8 @@ public class ProcessingCommandMailbox {
     private static final Logger _logger = ENodeLogger.getLog();
 
     private final Object _lockObj = new Object();
+    // TODO async lock
     private final Object _lockObj2 = new Object();
-    private final String _aggregateRootId;
     private final ConcurrentMap<Long, ProcessingCommand> _messageDict;
     private final Map<Long, CommandResult> _requestToCompleteCommandDict;
     private final IProcessingCommandHandler _messageHandler;
@@ -30,23 +30,23 @@ public class ProcessingCommandMailbox {
     private long _consumedSequence;
     private AtomicBoolean _isRunning;
     private volatile boolean _isProcessingCommand;
-    //已终止命令处理
     private volatile boolean _isPaused;
-    //命令终止中标志
-    private volatile boolean _inPausing;
+
+    private final String aggregateRootId;
+
     private Date _lastActiveTime;
 
     public String getAggregateRootId() {
-        return _aggregateRootId;
+        return aggregateRootId;
     }
 
-    public ProcessingCommandMailbox(String aggregateRootId, IProcessingCommandHandler messageHandler) {
+    public ProcessingCommandMailbox(String aggregaterootid, IProcessingCommandHandler messageHandler) {
         _messageDict = new ConcurrentHashMap<>();
         _requestToCompleteCommandDict = new HashMap<>();
         _pauseWaitHandle = new ManualResetEvent(false);
         _processingWaitHandle = new ManualResetEvent(false);
         _batchSize = ENode.getInstance().getSetting().getCommandMailBoxPersistenceMaxBatchSize();
-        _aggregateRootId = aggregateRootId;
+        aggregateRootId = aggregaterootid;
         _messageHandler = messageHandler;
         _consumedSequence = -1;
         _isRunning = new AtomicBoolean(false);
@@ -58,6 +58,7 @@ public class ProcessingCommandMailbox {
         synchronized (_lockObj) {
             message.setSequence(_nextSequence);
             message.setMailbox(this);
+            // If the specified key is not already associated with a value (or is mapped to null) associates it with the given value and returns null, else returns the current value.
             ProcessingCommand processingCommand = _messageDict.putIfAbsent(message.getSequence(), message);
             if (processingCommand == null) {
                 _nextSequence++;
@@ -69,10 +70,9 @@ public class ProcessingCommandMailbox {
 
     public void pause() {
         _lastActiveTime = new Date();
-        _inPausing = true;
         _pauseWaitHandle.reset();
         while (_isProcessingCommand) {
-            _logger.info("Request to pause the command mailbox, but the mailbox is currently processing command, so we should wait for a while, aggregateRootId: {}", _aggregateRootId);
+            _logger.info("Request to pause the command mailbox, but the mailbox is currently processing command, so we should wait for a while, aggregateRootId: {}", aggregateRootId);
             _processingWaitHandle.waitOne(1000);
         }
         _isPaused = true;
@@ -118,7 +118,7 @@ public class ProcessingCommandMailbox {
     public void run() {
         _lastActiveTime = new Date();
         while (_isPaused) {
-            _logger.info("Command mailbox is pausing and we should wait for a while, aggregateRootId: {}", _aggregateRootId);
+            _logger.info("Command mailbox is pausing and we should wait for a while, aggregateRootId: {}", aggregateRootId);
             _pauseWaitHandle.waitOne(1000);
         }
 
@@ -130,12 +130,7 @@ public class ProcessingCommandMailbox {
             int count = 0;
 
             while (_consumingSequence < _nextSequence && count < _batchSize) {
-                if (_inPausing) {
-                    _logger.info("Command mailbox is pausing and we should exit batch loop, aggregateRootId: {}", _aggregateRootId);
-                    break;
-                }
                 processingCommand = getProcessingCommand(_consumingSequence);
-
                 if (processingCommand != null) {
                     _messageHandler.handle(processingCommand);
                 }
@@ -143,7 +138,7 @@ public class ProcessingCommandMailbox {
                 count++;
             }
         } catch (Throwable ex) {
-            _logger.error(String.format("Command mailbox run has unknown exception, aggregateRootId: %s, commandId: %s", _aggregateRootId, processingCommand != null ? processingCommand.getMessage().id() : ""), ex);
+            _logger.error(String.format("Command mailbox run has unknown exception, aggregateRootId: %s, commandId: %s", aggregateRootId, processingCommand != null ? processingCommand.getMessage().id() : ""), ex);
             try {
                 Thread.sleep(1);
             } catch (InterruptedException e) {
