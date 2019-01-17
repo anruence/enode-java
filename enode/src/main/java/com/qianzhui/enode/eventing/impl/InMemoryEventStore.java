@@ -1,5 +1,6 @@
 package com.qianzhui.enode.eventing.impl;
 
+import com.google.common.collect.Maps;
 import com.qianzhui.enode.common.io.AsyncTaskResult;
 import com.qianzhui.enode.common.io.AsyncTaskStatus;
 import com.qianzhui.enode.eventing.DomainEventStream;
@@ -66,7 +67,7 @@ public class InMemoryEventStore implements IEventStore {
     class BatchAppendFuture {
 
         private AtomicInteger index;
-        private ConcurrentMap<Integer, CompletableFuture<AsyncTaskResult<EventAppendResult>>> taskDict;
+        private ConcurrentMap<Integer, CompletableFuture<AsyncTaskResult<EventAppendResult>>> taskDict = Maps.newConcurrentMap();
         private CompletableFuture<AsyncTaskResult<EventAppendResult>> result;
 
         public BatchAppendFuture() {

@@ -57,8 +57,8 @@ public class AppConfig {
             e.printStackTrace();
         }
         ENode enode = ENode.create("com.qianzhui.enodesamples")
-                .registerDefaultComponents()
-                .useMysqlComponents(dataSource); // 注销此行，启用内存实现（CommandStore,EventStore,SequenceMessagePublishedVersionStore,MessageHandleRecordStore）
+                .registerDefaultComponents();
+//                .useMysqlComponents(dataSource); // 注销此行，启用内存实现（CommandStore,EventStore,SequenceMessagePublishedVersionStore,MessageHandleRecordStore）
         if (isONS) {
             enode.useONS(producerSetting, consumerSetting, 6000,
                     ENode.COMMAND_SERVICE
