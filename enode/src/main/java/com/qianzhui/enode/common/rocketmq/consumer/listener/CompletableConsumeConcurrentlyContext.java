@@ -31,7 +31,7 @@ public class CompletableConsumeConcurrentlyContext {
         statusFuture.complete(ConsumeConcurrentlyStatus.CONSUME_SUCCESS);
     }
 
-    public void reconsumeLater() {
+    public void reConsumeLater() {
         statusFuture.complete(ConsumeConcurrentlyStatus.RECONSUME_LATER);
     }
 

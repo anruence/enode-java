@@ -56,7 +56,7 @@ public class RocketMQConsumer {
             List<RocketMQMessageHandler> handlers = _handlers.stream().filter(handler -> handler.isMatched(topicTagData)).collect(Collectors.toList());
             if (handlers.size() > 1) {
                 _logger.error("Duplicate consume handler with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
-                context.reconsumeLater();
+                context.reConsumeLater();
 //                return CompletableFuture.completedFuture(ConsumeConcurrentlyStatus.RECONSUME_LATER);
             }
 
@@ -66,7 +66,7 @@ public class RocketMQConsumer {
 
         if (rocketMQMessageHandler == null) {
             _logger.error("No consume handler found with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
-            context.reconsumeLater();
+            context.reConsumeLater();
         } else {
             rocketMQMessageHandler.handle(msg, context);
         }
