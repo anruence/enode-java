@@ -8,30 +8,26 @@ import com.enode.rocketmq.client.RocketMQClientException;
 import java.util.Properties;
 
 public class ONSClientInitializer extends MQClientInitializer {
-    protected final SessionCredentials sessionCredentials = new SessionCredentials();
-
     // 内网地址服务器
     protected static final String WSADDR_INTERNAL = System.getProperty(
             "com.aliyun.openservices.ons.addr.internal",
             "http://onsaddr-internal.aliyun.com:8080/rocketmq/nsaddr4client-internal");
-
     // 公网地址服务器
     protected static final String WSADDR_INTERNET = System.getProperty(
             "com.aliyun.openservices.ons.addr.internet",
             "http://onsaddr-internet.aliyun.com/rocketmq/nsaddr4client-internet");
-
     protected static final long WSADDR_INTERNAL_TIMEOUTMILLS = Long.parseLong(System.getProperty(
             "com.aliyun.openservices.ons.addr.internal.timeoutmills", "3000"));
-
     protected static final long WSADDR_INTERNET_TIMEOUTMILLS = Long.parseLong(System.getProperty(
             "com.aliyun.openservices.ons.addr.internet.timeoutmills", "5000"));
+    protected final SessionCredentials sessionCredentials = new SessionCredentials();
 
     public ONSClientInitializer() {
 
     }
 
     @Override
-    protected void init(Properties properties){
+    protected void init(Properties properties) {
         this.sessionCredentials.updateContent(properties);
         // 检测必须的参数
         if (null == this.sessionCredentials.getAccessKey()

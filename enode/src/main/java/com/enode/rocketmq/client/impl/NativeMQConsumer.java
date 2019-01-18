@@ -1,10 +1,10 @@
 package com.enode.rocketmq.client.impl;
 
-import com.enode.rocketmq.consumer.CompletableDefaultMQPushConsumer;
-import com.enode.rocketmq.client.Constants;
 import com.enode.rocketmq.client.AbstractConsumer;
+import com.enode.rocketmq.client.Constants;
 import com.enode.rocketmq.client.Consumer;
 import com.enode.rocketmq.client.MQClientInitializer;
+import com.enode.rocketmq.consumer.CompletableDefaultMQPushConsumer;
 
 import java.util.Properties;
 

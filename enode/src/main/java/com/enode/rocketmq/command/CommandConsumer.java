@@ -9,7 +9,6 @@ import com.enode.commanding.ICommandExecuteContext;
 import com.enode.commanding.ICommandProcessor;
 import com.enode.commanding.ProcessingCommand;
 import com.enode.common.logging.ENodeLogger;
-import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.BitConverter;
 import com.enode.domain.IAggregateRoot;
@@ -18,11 +17,12 @@ import com.enode.domain.IRepository;
 import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.message.CommandMessage;
 import com.enode.message.CommandReplyType;
+import com.enode.message.SendReplyService;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.RocketMQConsumer;
 import com.enode.rocketmq.RocketMQMessageHandler;
-import com.enode.message.SendReplyService;
 import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -46,10 +46,6 @@ public class CommandConsumer {
     private final IAggregateStorage _aggregateRootStorage;
     private final ITopicProvider<ICommand> _commandTopicProvider;
 
-    public RocketMQConsumer getConsumer() {
-        return _consumer;
-    }
-
     @Inject
     public CommandConsumer(
             RocketMQConsumer consumer, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider,
@@ -64,6 +60,10 @@ public class CommandConsumer {
         _repository = repository;
         _aggregateRootStorage = aggregateStorage;
         _commandTopicProvider = commandTopicProvider;
+    }
+
+    public RocketMQConsumer getConsumer() {
+        return _consumer;
     }
 
     public CommandConsumer start() {
@@ -109,12 +109,12 @@ public class CommandConsumer {
 
 
     class CommandExecuteContext implements ICommandExecuteContext {
-        private String _result;
         private final ConcurrentMap<String, IAggregateRoot> _trackingAggregateRootDict;
         private final IRepository _repository;
         private final IAggregateStorage _aggregateRootStorage;
         private final SendReplyService _sendReplyService;
         private final Object _queueMessage;
+        private String _result;
         private CompletableConsumeConcurrentlyContext _messageContext;
         private CompletableFuture<ConsumeConcurrentlyStatus> _consumeResultFuture;
         private CommandMessage _commandMessage;
@@ -215,13 +215,13 @@ public class CommandConsumer {
         }
 
         @Override
-        public void setResult(String result) {
-            _result = result;
+        public String getResult() {
+            return _result;
         }
 
         @Override
-        public String getResult() {
-            return _result;
+        public void setResult(String result) {
+            _result = result;
         }
     }
 }

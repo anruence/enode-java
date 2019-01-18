@@ -10,7 +10,7 @@ public class StreamRecord {
     private Date createdOn;
     private String events;
 
-    public StreamRecord(){
+    public StreamRecord() {
     }
 
     public StreamRecord(String commandId, String aggregateRootId, String aggregateRootTypeName, int version,

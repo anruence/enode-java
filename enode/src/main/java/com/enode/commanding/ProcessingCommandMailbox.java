@@ -25,20 +25,14 @@ public class ProcessingCommandMailbox {
     private final ManualResetEvent _pauseWaitHandle;
     private final ManualResetEvent _processingWaitHandle;
     private final int _batchSize;
+    private final String aggregateRootId;
     private long _nextSequence;
     private long _consumingSequence;
     private long _consumedSequence;
     private AtomicBoolean _isRunning;
     private volatile boolean _isProcessingCommand;
     private volatile boolean _isPaused;
-
-    private final String aggregateRootId;
-
     private Date _lastActiveTime;
-
-    public String getAggregateRootId() {
-        return aggregateRootId;
-    }
 
     public ProcessingCommandMailbox(String aggregaterootid, IProcessingCommandHandler messageHandler) {
         _messageDict = new ConcurrentHashMap<>();
@@ -51,6 +45,10 @@ public class ProcessingCommandMailbox {
         _consumedSequence = -1;
         _isRunning = new AtomicBoolean(false);
         _lastActiveTime = new Date();
+    }
+
+    public String getAggregateRootId() {
+        return aggregateRootId;
     }
 
     public void enqueueMessage(ProcessingCommand message) {

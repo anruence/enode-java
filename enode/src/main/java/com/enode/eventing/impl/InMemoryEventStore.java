@@ -1,11 +1,11 @@
 package com.enode.eventing.impl;
 
-import com.google.common.collect.Maps;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
 import com.enode.eventing.DomainEventStream;
 import com.enode.eventing.EventAppendResult;
 import com.enode.eventing.IEventStore;
+import com.google.common.collect.Maps;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,43 +64,6 @@ public class InMemoryEventStore implements IEventStore {
         return batchAppendFuture.result();
     }
 
-    class BatchAppendFuture {
-
-        private AtomicInteger index;
-        private ConcurrentMap<Integer, CompletableFuture<AsyncTaskResult<EventAppendResult>>> taskDict = Maps.newConcurrentMap();
-        private CompletableFuture<AsyncTaskResult<EventAppendResult>> result;
-
-        public BatchAppendFuture() {
-            index = new AtomicInteger(0);
-            result = new CompletableFuture<>();
-        }
-
-        public void addTask(CompletableFuture<AsyncTaskResult<EventAppendResult>> task) {
-            int i = index.get();
-
-            taskDict.put(index.getAndIncrement(), task);
-            task.thenAccept(t -> {
-                if (t.getData() != EventAppendResult.Success) {
-                    result.complete(t);
-                    taskDict.clear();
-                    return;
-                }
-
-                if (!result.isDone()) {
-                    taskDict.remove(i);
-
-                    if (taskDict.isEmpty()) {
-                        result.complete(new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.Success, EventAppendResult.Success));
-                    }
-                }
-            });
-        }
-
-        public CompletableFuture<AsyncTaskResult<EventAppendResult>> result() {
-            return result;
-        }
-    }
-
     @Override
     public CompletableFuture<AsyncTaskResult<EventAppendResult>> appendAsync(DomainEventStream eventStream) {
         return CompletableFuture.supplyAsync(() -> new AsyncTaskResult<>(AsyncTaskStatus.Success, null, appends(eventStream)));
@@ -157,6 +120,43 @@ public class InMemoryEventStore implements IEventStore {
         }
 
         return aggregateInfo.getCommandDict().get(commandId);
+    }
+
+    class BatchAppendFuture {
+
+        private AtomicInteger index;
+        private ConcurrentMap<Integer, CompletableFuture<AsyncTaskResult<EventAppendResult>>> taskDict = Maps.newConcurrentMap();
+        private CompletableFuture<AsyncTaskResult<EventAppendResult>> result;
+
+        public BatchAppendFuture() {
+            index = new AtomicInteger(0);
+            result = new CompletableFuture<>();
+        }
+
+        public void addTask(CompletableFuture<AsyncTaskResult<EventAppendResult>> task) {
+            int i = index.get();
+
+            taskDict.put(index.getAndIncrement(), task);
+            task.thenAccept(t -> {
+                if (t.getData() != EventAppendResult.Success) {
+                    result.complete(t);
+                    taskDict.clear();
+                    return;
+                }
+
+                if (!result.isDone()) {
+                    taskDict.remove(i);
+
+                    if (taskDict.isEmpty()) {
+                        result.complete(new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.Success, EventAppendResult.Success));
+                    }
+                }
+            });
+        }
+
+        public CompletableFuture<AsyncTaskResult<EventAppendResult>> result() {
+            return result;
+        }
     }
 
     class AggregateInfo {

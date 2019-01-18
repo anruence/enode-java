@@ -1,10 +1,9 @@
 package com.enode.infrastructure;
 
 public class ProcessingApplicationMessage implements IProcessingMessage<ProcessingApplicationMessage, IApplicationMessage> {
+    public IApplicationMessage message;
     private ProcessingMessageMailbox<ProcessingApplicationMessage, IApplicationMessage> _mailbox;
     private IMessageProcessContext _processContext;
-
-    public IApplicationMessage message;
 
     public ProcessingApplicationMessage(IApplicationMessage message, IMessageProcessContext processContext) {
         this.message = message;

@@ -5,11 +5,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class ProcessingCommand {
-    private ProcessingCommandMailbox mailbox;
-    private long sequence;
     private final ICommand message;
     private final ICommandExecuteContext commandExecuteContext;
     private final Map<String, String> items;
+    private ProcessingCommandMailbox mailbox;
+    private long sequence;
 
     public ProcessingCommand(ICommand command, ICommandExecuteContext commandExecuteContext, Map<String, String> items) {
         this.message = command;

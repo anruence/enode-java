@@ -16,7 +16,7 @@ public class MQClientInitializer {
     public MQClientInitializer() {
     }
 
-    protected void init(Properties properties){
+    protected void init(Properties properties) {
         this.properties = properties;
 
         // 用户指定了Name Server
@@ -47,11 +47,11 @@ public class MQClientInitializer {
                 + "#" + this.nameServerAddr.hashCode();
     }
 
-    public String getNameServerAddr(){
+    public String getNameServerAddr() {
         return this.nameServerAddr;
     }
 
-    protected String fetchNameServerAddr(){
+    protected String fetchNameServerAddr() {
         return null;
     }
 }

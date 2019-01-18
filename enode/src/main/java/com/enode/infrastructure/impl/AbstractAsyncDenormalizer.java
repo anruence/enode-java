@@ -1,8 +1,8 @@
 package com.enode.infrastructure.impl;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.IORuntimeException;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.dbutils.QueryRunner;
 
 import javax.sql.DataSource;
@@ -26,7 +26,7 @@ public abstract class AbstractAsyncDenormalizer {
 
     public CompletableFuture<AsyncTaskResult> tryExecuteAsync(Function<QueryRunner, AsyncTaskResult> executer) {
         return CompletableFuture.supplyAsync(() ->
-                executer.apply(_queryRunner),
+                        executer.apply(_queryRunner),
                 executor
         );
     }
@@ -83,7 +83,7 @@ public abstract class AbstractAsyncDenormalizer {
                     connection.rollback();
                     throw new IORuntimeException(ex.getMessage(), ex);
                 } finally {
-                    if(autoCommit) {
+                    if (autoCommit) {
                         connection.setAutoCommit(true);
                     }
                 }

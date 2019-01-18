@@ -1,6 +1,5 @@
 package com.enode.commanding.impl;
 
-import com.google.common.base.Strings;
 import com.enode.commanding.CommandResult;
 import com.enode.commanding.CommandStatus;
 import com.enode.commanding.ICommand;
@@ -31,6 +30,7 @@ import com.enode.infrastructure.IPublishableException;
 import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.MessageHandlerData;
 import com.enode.infrastructure.WrappedRuntimeException;
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -389,6 +389,18 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         return new HandlerFindResult<>(HandlerFindStatus.Found, handlerProxy);
     }
 
+    private CompletableFuture completeCommand(ProcessingCommand processingCommand, CommandStatus commandStatus, String resultType, String result) {
+        CommandResult commandResult = new CommandResult(commandStatus, processingCommand.getMessage().id(), processingCommand.getMessage().getAggregateRootId(), result, resultType);
+        return processingCommand.getMailbox().completeMessage(processingCommand, commandResult);
+    }
+
+    enum HandlerFindStatus {
+        NotFound,
+        Found,
+        TooManyHandlerData,
+        TooManyHandler
+    }
+
     static class HandlerFindResult<T extends IObjectProxy> {
 
         static HandlerFindResult NotFound = new HandlerFindResult<>(HandlerFindStatus.NotFound);
@@ -422,17 +434,5 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         public void setFindHandler(T findHandler) {
             this.findHandler = findHandler;
         }
-    }
-
-    private CompletableFuture completeCommand(ProcessingCommand processingCommand, CommandStatus commandStatus, String resultType, String result) {
-        CommandResult commandResult = new CommandResult(commandStatus, processingCommand.getMessage().id(), processingCommand.getMessage().getAggregateRootId(), result, resultType);
-        return processingCommand.getMailbox().completeMessage(processingCommand, commandResult);
-    }
-
-    enum HandlerFindStatus {
-        NotFound,
-        Found,
-        TooManyHandlerData,
-        TooManyHandler
     }
 }

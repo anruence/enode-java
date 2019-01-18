@@ -1,8 +1,8 @@
 package com.enode.common.scheduling;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.enode.common.function.Action;
 import com.enode.common.logging.ENodeLogger;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 
 import java.util.HashMap;

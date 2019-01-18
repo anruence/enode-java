@@ -7,13 +7,13 @@ import com.enode.commanding.ICommand;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
 import com.enode.common.logging.ENodeLogger;
-import com.enode.common.scheduling.Worker;
-import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.remoting.RemotingServer;
 import com.enode.common.remoting.netty.NettyRemotingServer;
 import com.enode.common.remoting.netty.NettyRequestProcessor;
 import com.enode.common.remoting.netty.NettyServerConfig;
 import com.enode.common.remoting.protocol.RemotingCommand;
+import com.enode.common.scheduling.Worker;
+import com.enode.common.serializing.IJsonSerializer;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 
@@ -29,9 +29,8 @@ public class CommandResultProcessor implements NettyRequestProcessor {
     private static final Logger _logger = ENodeLogger.getLog();
 
     private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
-
+    public SocketAddress _bindingAddress;
     private RemotingServer remotingServer;
-
     private ConcurrentMap<String, CommandTaskCompletionSource> _commandTaskDict;
     private BlockingQueue<CommandResult> _commandExecutedMessageLocalQueue;
     private BlockingQueue<DomainEventHandledMessage> _domainEventHandledMessageLocalQueue;
@@ -39,8 +38,6 @@ public class CommandResultProcessor implements NettyRequestProcessor {
     private Worker _domainEventHandledMessageWorker;
     private IJsonSerializer _jsonSerializer;
     private boolean _started;
-
-    public SocketAddress _bindingAddress;
 
     public CommandResultProcessor(int listenPort, IJsonSerializer jsonSerializer) {
         NettyServerConfig nettyServerConfig = new NettyServerConfig();

@@ -33,7 +33,9 @@ public interface IObjectContainer {
 
     <TService, TImplementer extends TService> void overrideInstance(GenericTypeLiteral<TService> typeLiteral, TImplementer instance);
 
-    /** ===================*/
+    /**
+     * ===================
+     */
     void register(Class implementationType, String serviceName, LifeStyle life);
 
     void register(Class implementationType, String serviceName);

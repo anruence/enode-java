@@ -1,6 +1,10 @@
 package com.enode.infrastructure.impl;
 
-import com.enode.infrastructure.*;
+import com.enode.infrastructure.IMessage;
+import com.enode.infrastructure.IProcessingMessage;
+import com.enode.infrastructure.IProcessingMessageHandler;
+import com.enode.infrastructure.IProcessingMessageScheduler;
+import com.enode.infrastructure.ProcessingMessageMailbox;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;

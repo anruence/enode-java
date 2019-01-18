@@ -10,17 +10,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractConsumer {
 
-    private final CompletableDefaultMQPushConsumer defaultMQPushConsumer;
-
     protected final AtomicBoolean started = new AtomicBoolean(false);
-
-    abstract protected CompletableDefaultMQPushConsumer initConsumer(Properties properties, MQClientInitializer mqClientInitializer);
+    private final CompletableDefaultMQPushConsumer defaultMQPushConsumer;
 
     protected AbstractConsumer(Properties properties, MQClientInitializer mqClientInitializer) {
         mqClientInitializer.init(properties);
 
         this.defaultMQPushConsumer = initConsumer(properties, mqClientInitializer);
     }
+
+    abstract protected CompletableDefaultMQPushConsumer initConsumer(Properties properties, MQClientInitializer mqClientInitializer);
 
     public void start() {
         try {

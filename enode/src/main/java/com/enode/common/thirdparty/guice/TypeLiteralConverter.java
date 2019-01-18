@@ -1,9 +1,9 @@
 package com.enode.common.thirdparty.guice;
 
-import com.google.inject.TypeLiteral;
 import com.enode.commanding.ICommand;
 import com.enode.common.container.GenericTypeLiteral;
 import com.enode.rocketmq.ITopicProvider;
+import com.google.inject.TypeLiteral;
 
 import java.lang.reflect.Type;
 

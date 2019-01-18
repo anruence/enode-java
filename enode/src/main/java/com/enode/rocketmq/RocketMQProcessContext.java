@@ -1,8 +1,8 @@
 package com.enode.rocketmq;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
-import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import com.enode.infrastructure.IMessageProcessContext;
+import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 
 public class RocketMQProcessContext implements IMessageProcessContext {
     protected final MessageExt _queueMessage;

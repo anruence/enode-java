@@ -1,11 +1,10 @@
 package com.enode.rocketmq.client.ons;
 
-import java.nio.charset.Charset;
+import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.codec.binary.Base64;
+import java.nio.charset.Charset;
 
 
 /**

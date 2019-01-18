@@ -1,11 +1,11 @@
 package com.enode.rocketmq.client.ons;
 
 
+import com.alibaba.rocketmq.common.MixAll;
+
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Properties;
-
-import com.alibaba.rocketmq.common.MixAll;
 
 public class SessionCredentials {
     public static final Charset CHARSET = Charset.forName("UTF-8");

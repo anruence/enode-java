@@ -8,8 +8,8 @@ import com.enode.infrastructure.IApplicationMessage;
 import com.enode.infrastructure.IMessagePublisher;
 import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.message.ApplicationDataMessage;
-import com.enode.rocketmq.ITopicProvider;
 import com.enode.message.MessageTypeCode;
+import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendRocketMQService;
 import com.enode.rocketmq.TopicTagData;
 import com.enode.rocketmq.client.Producer;
@@ -25,10 +25,6 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
     private final Producer _producer;
     private final SendRocketMQService _sendMessageService;
 
-    public Producer getProducer() {
-        return _producer;
-    }
-
     @Inject
     public ApplicationMessagePublisher(Producer producer, IJsonSerializer jsonSerializer,
                                        ITopicProvider<IApplicationMessage> messageITopicProvider,
@@ -39,6 +35,10 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
         _messageTopicProvider = messageITopicProvider;
         _typeNameProvider = typeNameProvider;
         _sendMessageService = sendQueueMessageService;
+    }
+
+    public Producer getProducer() {
+        return _producer;
     }
 
     public ApplicationMessagePublisher start() {
@@ -62,7 +62,7 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
 
         String data = _jsonSerializer.serialize(appDataMessage);
 
-        Message mqMessage =  new Message(topicTagData.getTopic(), //topic
+        Message mqMessage = new Message(topicTagData.getTopic(), //topic
                 //_typeNameProvider.getTypeName(message.getClass()), //tags
                 topicTagData.getTag(), //tag
                 message.id(), // keys

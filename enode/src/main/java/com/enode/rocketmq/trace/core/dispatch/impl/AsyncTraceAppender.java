@@ -16,7 +16,11 @@ import com.enode.rocketmq.trace.core.common.OnsTraceTransferBean;
 import com.enode.rocketmq.trace.core.dispatch.AsyncAppender;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class AsyncTraceAppender extends AsyncAppender {
     private final static Logger clientlog = ClientLogger.getLog();
@@ -25,13 +29,13 @@ public class AsyncTraceAppender extends AsyncAppender {
      */
     private final int batchSize;
     /**
-     * 临时存储batch的数据
-     */
-    private List<OnsTraceTransferBean> transDataList;
-    /**
      * 消息轨迹数据的producer
      */
     private final DefaultMQProducer traceProducer;
+    /**
+     * 临时存储batch的数据
+     */
+    private List<OnsTraceTransferBean> transDataList;
     /**
      * 当前region
      */

@@ -13,12 +13,12 @@ public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y exte
     private static final Logger _logger = ENodeLogger.getLog();
 
     private final String _routingKey;
-    private ConcurrentMap<Integer, X> _waitingMessageDict;
     private final ConcurrentLinkedQueue<X> _messageQueue;
     private final IProcessingMessageScheduler<X, Y> _scheduler;
     private final IProcessingMessageHandler<X, Y> _messageHandler;
-    private AtomicBoolean _isRunning = new AtomicBoolean(false);
     private final Object _lockObj = new Object();
+    private ConcurrentMap<Integer, X> _waitingMessageDict;
+    private AtomicBoolean _isRunning = new AtomicBoolean(false);
     private Date _lastActiveTime;
 
     public ProcessingMessageMailbox(String routingKey, IProcessingMessageScheduler<X, Y> scheduler, IProcessingMessageHandler<X, Y> messageHandler) {

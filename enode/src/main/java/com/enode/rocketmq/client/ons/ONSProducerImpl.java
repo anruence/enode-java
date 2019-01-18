@@ -20,6 +20,11 @@ import java.util.Properties;
 public class ONSProducerImpl extends AbstractProducer implements Producer {
 
     private static final Logger log = ENodeLogger.getLog();
+    private AsyncDispatcher traceDispatcher;
+
+    public ONSProducerImpl(final Properties properties) {
+        super(properties, new ONSClientInitializer());
+    }
 
     public static void main(String[] args) {
         //startConsumer();
@@ -85,12 +90,6 @@ public class ONSProducerImpl extends AbstractProducer implements Producer {
         consumer.start();
 
         System.out.println("Consumer Started");
-    }
-
-    private AsyncDispatcher traceDispatcher;
-
-    public ONSProducerImpl(final Properties properties) {
-        super(properties, new ONSClientInitializer());
     }
 
     @Override

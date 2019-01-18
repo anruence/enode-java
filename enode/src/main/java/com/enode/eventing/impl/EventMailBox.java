@@ -23,10 +23,6 @@ public class EventMailBox {
     private int _batchSize;
     private Date _lastActiveTime;
 
-    public String getAggregateRootId() {
-        return _aggregateRootId;
-    }
-
     public EventMailBox(String aggregateRootId, int batchSize, Consumer<List<EventCommittingContext>> handleMessageAction) {
         _aggregateRootId = aggregateRootId;
         _messageQueue = new ConcurrentLinkedQueue<>();
@@ -34,6 +30,10 @@ public class EventMailBox {
         _handleMessageAction = handleMessageAction;
         _isRunning = new AtomicBoolean(false);
         _lastActiveTime = new Date();
+    }
+
+    public String getAggregateRootId() {
+        return _aggregateRootId;
     }
 
     public void enqueueMessage(EventCommittingContext message) {

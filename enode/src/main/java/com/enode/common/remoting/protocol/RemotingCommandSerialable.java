@@ -99,14 +99,14 @@ public class RemotingCommandSerialable {
         int length =
                 // int code(~32767)
                 2
-                // int opaque
-                + 4
-                // int flag
-                + 4
-                // remark length size + remark data length
-                + 4 + remark
-                // extFields length size + extFields data length
-                + 4 + ext;
+                        // int opaque
+                        + 4
+                        // int flag
+                        + 4
+                        // remark length size + remark data length
+                        + 4 + remark
+                        // extFields length size + extFields data length
+                        + 4 + ext;
 
         return length;
     }

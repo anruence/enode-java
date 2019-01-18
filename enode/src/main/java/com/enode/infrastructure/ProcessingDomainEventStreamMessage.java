@@ -4,10 +4,9 @@ import com.enode.common.utilities.Ensure;
 import com.enode.eventing.DomainEventStreamMessage;
 
 public class ProcessingDomainEventStreamMessage implements IProcessingMessage<ProcessingDomainEventStreamMessage, DomainEventStreamMessage>, ISequenceProcessingMessage {
+    public DomainEventStreamMessage message;
     private ProcessingMessageMailbox<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> _mailbox;
     private IMessageProcessContext _processContext;
-
-    public DomainEventStreamMessage message;
 
     public ProcessingDomainEventStreamMessage(DomainEventStreamMessage message, IMessageProcessContext processContext) {
         this.message = message;

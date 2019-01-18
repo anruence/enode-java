@@ -1,5 +1,8 @@
 package com.enode.common.thirdparty.guice;
 
+import com.enode.common.container.GenericTypeLiteral;
+import com.enode.common.container.IObjectContainer;
+import com.enode.common.container.LifeStyle;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binding;
 import com.google.inject.Guice;
@@ -10,9 +13,6 @@ import com.google.inject.Provider;
 import com.google.inject.Stage;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
-import com.enode.common.container.GenericTypeLiteral;
-import com.enode.common.container.IObjectContainer;
-import com.enode.common.container.LifeStyle;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -40,49 +40,6 @@ public class GuiceObjectContainer implements IObjectContainer {
             return true;
         }
         return false;
-    }
-
-    static class GuiceMapModule extends AbstractModule {
-        private final static List<Key> GUICE_INNER_BINDINGS = new ArrayList<Key>() {{
-            add(Key.get(Injector.class));
-            add(Key.get(Logger.class));
-            add(Key.get(Stage.class));
-        }};
-        private Map<Key, GuiceModule> iocMap;
-        private List<Class> staticInjections = new ArrayList<>();
-        private Injector parent;
-
-        public GuiceMapModule(Injector parent, Map<Key, GuiceModule> iocMap, List<Class> staticInjections) {
-            this.parent = parent;
-            this.iocMap = new HashMap<>(iocMap);
-            this.staticInjections = staticInjections;
-        }
-
-        @Override
-        protected void configure() {
-            if (parent != null) {
-                parent.getBindings().entrySet().stream().filter(this::checkBind).forEach(entry -> {
-                    Key<Object> key = (Key<Object>) entry.getKey();
-
-                    bind(key).toProvider(entry.getValue().getProvider());
-                });
-            }
-            staticInjections.forEach(clazz -> binder().requestStaticInjection(clazz));
-            iocMap.values().forEach(binder -> binder.bind(binder()));
-        }
-
-        protected boolean checkBind(Map.Entry<Key<?>, Binding<?>> binderEntry) {
-            Key<?> key = binderEntry.getKey();
-            return !(isGuiceInnerBinder(key) || isOverride(key));
-        }
-
-        protected boolean isGuiceInnerBinder(Key key) {
-            return GUICE_INNER_BINDINGS.stream().anyMatch(x -> key.equals(x));
-        }
-
-        protected boolean isOverride(Key key) {
-            return iocMap.containsKey(key);
-        }
     }
 
     /*private void override(Module newModule) {
@@ -264,5 +221,48 @@ public class GuiceObjectContainer implements IObjectContainer {
     @Override
     public <TService> TService resolveNamed(Class<TService> serviceType, String serviceName) {
         return container.getInstance(Key.get(serviceType, Names.named(serviceName)));
+    }
+
+    static class GuiceMapModule extends AbstractModule {
+        private final static List<Key> GUICE_INNER_BINDINGS = new ArrayList<Key>() {{
+            add(Key.get(Injector.class));
+            add(Key.get(Logger.class));
+            add(Key.get(Stage.class));
+        }};
+        private Map<Key, GuiceModule> iocMap;
+        private List<Class> staticInjections = new ArrayList<>();
+        private Injector parent;
+
+        public GuiceMapModule(Injector parent, Map<Key, GuiceModule> iocMap, List<Class> staticInjections) {
+            this.parent = parent;
+            this.iocMap = new HashMap<>(iocMap);
+            this.staticInjections = staticInjections;
+        }
+
+        @Override
+        protected void configure() {
+            if (parent != null) {
+                parent.getBindings().entrySet().stream().filter(this::checkBind).forEach(entry -> {
+                    Key<Object> key = (Key<Object>) entry.getKey();
+
+                    bind(key).toProvider(entry.getValue().getProvider());
+                });
+            }
+            staticInjections.forEach(clazz -> binder().requestStaticInjection(clazz));
+            iocMap.values().forEach(binder -> binder.bind(binder()));
+        }
+
+        protected boolean checkBind(Map.Entry<Key<?>, Binding<?>> binderEntry) {
+            Key<?> key = binderEntry.getKey();
+            return !(isGuiceInnerBinder(key) || isOverride(key));
+        }
+
+        protected boolean isGuiceInnerBinder(Key key) {
+            return GUICE_INNER_BINDINGS.stream().anyMatch(x -> key.equals(x));
+        }
+
+        protected boolean isOverride(Key key) {
+            return iocMap.containsKey(key);
+        }
     }
 }

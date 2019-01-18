@@ -2,7 +2,9 @@ package com.enode.rocketmq.client.ons;
 
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
 
-import static com.enode.rocketmq.client.ons.SessionCredentials.*;
+import static com.enode.rocketmq.client.ons.SessionCredentials.AccessKey;
+import static com.enode.rocketmq.client.ons.SessionCredentials.ONSChannelKey;
+import static com.enode.rocketmq.client.ons.SessionCredentials.Signature;
 
 /**
  * @auther lansheng.zj

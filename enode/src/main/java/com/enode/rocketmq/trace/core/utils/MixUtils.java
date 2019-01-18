@@ -2,7 +2,11 @@ package com.enode.rocketmq.trace.core.utils;
 
 import com.alibaba.rocketmq.remoting.protocol.RemotingSerializable;
 
-import java.net.*;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -18,14 +22,14 @@ public class MixUtils {
                 ArrayList ipv4Result = new ArrayList();
                 ArrayList ipv6Result = new ArrayList();
 
-                while(e.hasMoreElements()) {
-                    NetworkInterface localHost = (NetworkInterface)e.nextElement();
+                while (e.hasMoreElements()) {
+                    NetworkInterface localHost = (NetworkInterface) e.nextElement();
                     Enumeration ip = localHost.getInetAddresses();
 
-                    while(ip.hasMoreElements()) {
-                        InetAddress address = (InetAddress)ip.nextElement();
-                        if(!address.isLoopbackAddress()) {
-                            if(address instanceof Inet6Address) {
+                    while (ip.hasMoreElements()) {
+                        InetAddress address = (InetAddress) ip.nextElement();
+                        if (!address.isLoopbackAddress()) {
+                            if (address instanceof Inet6Address) {
                                 ipv6Result.add(normalizeHostAddress(address));
                             } else {
                                 ipv4Result.add(normalizeHostAddress(address));
@@ -36,23 +40,23 @@ public class MixUtils {
 
                 String ip1;
                 String localHost2;
-                if(!ipv4Result.isEmpty()) {
+                if (!ipv4Result.isEmpty()) {
                     Iterator localHost3 = ipv4Result.iterator();
 
                     do {
-                        if(!localHost3.hasNext()) {
-                            localHost2 = (String)ipv4Result.get(ipv4Result.size() - 1);
+                        if (!localHost3.hasNext()) {
+                            localHost2 = (String) ipv4Result.get(ipv4Result.size() - 1);
                             return localHost2;
                         }
 
-                        ip1 = (String)localHost3.next();
-                    } while(ip1.startsWith("127.0") || ip1.startsWith("192.168"));
+                        ip1 = (String) localHost3.next();
+                    } while (ip1.startsWith("127.0") || ip1.startsWith("192.168"));
 
                     return ip1;
                 }
 
-                if(!ipv6Result.isEmpty()) {
-                    localHost2 = (String)ipv6Result.get(0);
+                if (!ipv6Result.isEmpty()) {
+                    localHost2 = (String) ipv6Result.get(0);
                     return localHost2;
                 }
 
@@ -72,7 +76,7 @@ public class MixUtils {
     }
 
     public static String normalizeHostAddress(InetAddress localHost) {
-        return localHost instanceof Inet6Address?"[" + localHost.getHostAddress() + "]":localHost.getHostAddress();
+        return localHost instanceof Inet6Address ? "[" + localHost.getHostAddress() + "]" : localHost.getHostAddress();
     }
 
     public static String toJson(Object obj, boolean prettyFormat) {
@@ -84,6 +88,6 @@ public class MixUtils {
     }
 
     public static String replaceNull(String ori) {
-        return ori == null?"":ori;
+        return ori == null ? "" : ori;
     }
 }

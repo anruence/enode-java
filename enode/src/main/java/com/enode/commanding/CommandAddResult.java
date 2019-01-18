@@ -7,11 +7,11 @@ public enum CommandAddResult implements IEnum {
     Success(1),
     DuplicateCommand(2);
 
+    private int _status;
+
     CommandAddResult(int status) {
         _status = status;
     }
-
-    private int _status;
 
     @Override
     public int status() {

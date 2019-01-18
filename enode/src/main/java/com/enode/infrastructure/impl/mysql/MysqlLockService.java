@@ -23,20 +23,6 @@ public class MysqlLockService implements ILockService {
     private final DataSource _ds;
     private final QueryRunner _queryRunner;
 
-    public static void main(String[] args) throws Exception {
-        Properties properties = new Properties();
-        properties.setProperty("driverClassName", "com.mysql.jdbc.Driver");
-        properties.setProperty("url", "jdbc:mysql://wwwjishulink.mysql.rds.aliyuncs.com:3306/jishulink_view_dev");
-        properties.setProperty("username", "dev");
-        properties.setProperty("password", "coffee");
-        properties.setProperty("initialSize", "1");
-        properties.setProperty("maxTotal", "1");
-        //TODO data
-        DataSource dataSource = null;
-        MysqlLockService lockService = new MysqlLockService(dataSource, new OptionSetting(new StringKeyValuePair("TableName", "LockKey")));
-        lockService.addLockKey("test");
-    }
-
     public MysqlLockService(DataSource ds, OptionSetting optionSetting) {
         Ensure.notNull(ds, "ds");
 
@@ -53,6 +39,20 @@ public class MysqlLockService implements ILockService {
 
         _ds = ds;
         _queryRunner = new QueryRunner(ds);
+    }
+
+    public static void main(String[] args) throws Exception {
+        Properties properties = new Properties();
+        properties.setProperty("driverClassName", "com.mysql.jdbc.Driver");
+        properties.setProperty("url", "jdbc:mysql://wwwjishulink.mysql.rds.aliyuncs.com:3306/jishulink_view_dev");
+        properties.setProperty("username", "dev");
+        properties.setProperty("password", "coffee");
+        properties.setProperty("initialSize", "1");
+        properties.setProperty("maxTotal", "1");
+        //TODO data
+        DataSource dataSource = null;
+        MysqlLockService lockService = new MysqlLockService(dataSource, new OptionSetting(new StringKeyValuePair("TableName", "LockKey")));
+        lockService.addLockKey("test");
     }
 
     @Override

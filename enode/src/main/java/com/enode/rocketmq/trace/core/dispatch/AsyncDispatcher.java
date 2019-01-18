@@ -12,6 +12,7 @@ public interface AsyncDispatcher {
      * @param workName 传输模块工作线程名称
      */
     void start(String workName);
+
     /**
      * 往数据传输模块中添加信息，
      *
@@ -26,6 +27,7 @@ public interface AsyncDispatcher {
      * @throws IOException
      */
     void flush() throws IOException;
+
     /**
      * 关闭轨迹Hook
      */

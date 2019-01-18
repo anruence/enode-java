@@ -6,6 +6,15 @@ import java.util.function.Consumer;
 
 public class WrappedExceptionParser<T extends Throwable> {
 
+    private T exception;
+    private List<Class<? extends Throwable>> expectExceptionTypes;
+    private boolean disrupt;
+    private When UNDO = new UndoWhen();
+    private WrappedExceptionParser(T e) {
+        this.exception = e;
+        expectExceptionTypes = new ArrayList<>();
+    }
+
     public static <T extends Throwable> WrappedExceptionParser<T> create(T e) {
         return new WrappedExceptionParser(e instanceof WrappedRuntimeException ? ((WrappedRuntimeException) e).getException() : e);
     }
@@ -14,13 +23,25 @@ public class WrappedExceptionParser<T extends Throwable> {
         return new WrappedExceptionParser(wrappedExp.getException());
     }
 
-    private T exception;
-    private List<Class<? extends Throwable>> expectExceptionTypes;
-    private boolean disrupt;
+    public static void main(String[] args) {
+        Exception exception = new IllegalArgumentException("test");
 
-    private WrappedExceptionParser(T e) {
-        this.exception = e;
-        expectExceptionTypes = new ArrayList<>();
+
+        WrappedRuntimeException exp = new WrappedRuntimeException(exception);
+
+        WrappedExceptionParser.create(exp)
+                .when(NullPointerException.class).then(System.out::println)
+                .when(RuntimeException.class).then(e -> System.out.println("RuntimeException" + e.getMessage()))
+                .when(IllegalArgumentException.class).then(e -> System.out.println("fuck"))
+                .elze(e -> {
+                    System.out.println("else");
+                    System.out.println(e.getMessage());
+                });
+                /*.when(IllegalArgumentException.class).then(e -> {
+                    System.out.println("catch you");
+                    System.out.print(e);
+                });*/
+
     }
 
     public <ExpectType extends Throwable> When<ExpectType, T> when(Class<ExpectType> expectTypes) {
@@ -38,8 +59,6 @@ public class WrappedExceptionParser<T extends Throwable> {
         }
         return this;
     }
-
-    private When UNDO = new UndoWhen();
 
     static class WhenImpl<ExpectType extends Throwable, OrigType extends Throwable> implements When<ExpectType, OrigType> {
 
@@ -67,26 +86,5 @@ public class WrappedExceptionParser<T extends Throwable> {
         public WrappedExceptionParser then(Consumer consumer) {
             return WrappedExceptionParser.this;
         }
-    }
-
-    public static void main(String[] args) {
-        Exception exception = new IllegalArgumentException("test");
-
-
-        WrappedRuntimeException exp = new WrappedRuntimeException(exception);
-
-        WrappedExceptionParser.create(exp)
-                .when(NullPointerException.class).then(System.out::println)
-                .when(RuntimeException.class).then(e -> System.out.println("RuntimeException" + e.getMessage()))
-                .when(IllegalArgumentException.class).then(e->System.out.println("fuck"))
-                .elze(e->{
-                    System.out.println("else");
-                    System.out.println(e.getMessage());
-                });
-                /*.when(IllegalArgumentException.class).then(e -> {
-                    System.out.println("catch you");
-                    System.out.print(e);
-                });*/
-
     }
 }

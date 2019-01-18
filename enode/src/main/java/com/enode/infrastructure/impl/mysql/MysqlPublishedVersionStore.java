@@ -1,6 +1,5 @@
 package com.enode.infrastructure.impl.mysql;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.enode.ENode;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
@@ -9,6 +8,7 @@ import com.enode.common.utilities.Ensure;
 import com.enode.configurations.DefaultDBConfigurationSetting;
 import com.enode.configurations.OptionSetting;
 import com.enode.infrastructure.IPublishedVersionStore;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.slf4j.Logger;

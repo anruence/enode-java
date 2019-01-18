@@ -23,7 +23,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.*;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketAddress;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
@@ -186,7 +190,7 @@ public class RemotingUtil {
     public static void closeChannel(Channel channel) {
         final String addrRemote = RemotingHelper.parseChannelRemoteAddr(channel);
         channel.close().addListener((ChannelFutureListener) future -> log.info("closeChannel: close the connection to remote address[{}] result: {}", addrRemote,
-            future.isSuccess()));
+                future.isSuccess()));
     }
 
 }

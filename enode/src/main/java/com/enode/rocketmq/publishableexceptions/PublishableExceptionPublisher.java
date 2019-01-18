@@ -7,9 +7,9 @@ import com.enode.common.utilities.BitConverter;
 import com.enode.infrastructure.IMessagePublisher;
 import com.enode.infrastructure.IPublishableException;
 import com.enode.infrastructure.ISequenceMessage;
+import com.enode.message.MessageTypeCode;
 import com.enode.message.PublishableExceptionMessage;
 import com.enode.rocketmq.ITopicProvider;
-import com.enode.message.MessageTypeCode;
 import com.enode.rocketmq.SendRocketMQService;
 import com.enode.rocketmq.TopicTagData;
 import com.enode.rocketmq.client.Producer;
@@ -25,10 +25,6 @@ public class PublishableExceptionPublisher implements IMessagePublisher<IPublish
     private final Producer _producer;
     private final SendRocketMQService _sendMessageService;
 
-    public Producer getProducer() {
-        return _producer;
-    }
-
     @Inject
     public PublishableExceptionPublisher(Producer producer, IJsonSerializer jsonSerializer,
                                          ITopicProvider<IPublishableException> exceptionITopicProvider,
@@ -37,6 +33,10 @@ public class PublishableExceptionPublisher implements IMessagePublisher<IPublish
         _jsonSerializer = jsonSerializer;
         _exceptionTopicProvider = exceptionITopicProvider;
         _sendMessageService = sendQueueMessageService;
+    }
+
+    public Producer getProducer() {
+        return _producer;
     }
 
     public PublishableExceptionPublisher start() {

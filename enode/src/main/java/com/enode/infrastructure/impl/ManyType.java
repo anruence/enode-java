@@ -9,7 +9,7 @@ public class ManyType {
     private List<Class> _types = new ArrayList<>();
 
     public ManyType(List<Class> types) {
-        if(new HashSet<>(types).size() != types.size()){
+        if (new HashSet<>(types).size() != types.size()) {
             throw new IllegalArgumentException("Invalid ManyType:" + String.join("|", types.stream().map(x -> x.getName()).collect(Collectors.toList())));
         }
 

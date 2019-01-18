@@ -12,12 +12,6 @@ public class ObjectId {
     private static final int __staticMachine;
     private static final short __staticPid;
     private static final AtomicInteger __staticIncrement;
-
-    private long _timestamp;
-    private int _machine;
-    private short _pid;
-    private int _increment;
-
     private static String[] _lookup32 = new String[256];
 
     static {
@@ -28,6 +22,11 @@ public class ObjectId {
             _lookup32[i] = String.format("%02x", i);
         }
     }
+
+    private long _timestamp;
+    private int _machine;
+    private short _pid;
+    private int _increment;
 
     public ObjectId(byte[] bytes) {
         if (bytes == null) {
@@ -53,26 +52,6 @@ public class ObjectId {
         _machine = machine;
         _pid = pid;
         _increment = increment;
-    }
-
-    public long getTimestamp() {
-        return _timestamp;
-    }
-
-    public Date getCreationTime() {
-        return new Date(_timestamp * 1000);
-    }
-
-    public int getMachine() {
-        return _machine;
-    }
-
-    public short getPid() {
-        return _pid;
-    }
-
-    public int getIncrement() {
-        return _increment;
     }
 
     public static ObjectId generateNewId() {
@@ -116,19 +95,6 @@ public class ObjectId {
         return bytes;
     }
 
-    public void unpack(byte[] bytes) {
-        if (bytes == null) {
-            throw new NullPointerException("bytes");
-        }
-        if (bytes.length != 12) {
-            throw new IllegalArgumentException("Byte array must be 12 bytes long.");
-        }
-        _timestamp = ((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) | ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff);
-        _machine = ((bytes[4] & 0xff) << 16) | ((bytes[5] & 0xff) << 8) | (bytes[6] & 0xff);
-        _pid = (short) (((bytes[7] & 0xff) << 8) | (bytes[8] & 0xff));
-        _increment = ((bytes[9] & 0xff) << 16) | ((bytes[10] & 0xff) << 8) | (bytes[11] & 0xff);
-    }
-
     public static String toHexString(byte[] bytes) {
         if (bytes == null) {
             throw new NullPointerException("bytes");
@@ -139,15 +105,6 @@ public class ObjectId {
             result.append(val);
         }
         return result.toString();
-    }
-
-    public byte[] toByteArray() {
-        return pack(_timestamp, _machine, _pid, _increment);
-    }
-
-    @Override
-    public String toString() {
-        return toHexString(toByteArray());
     }
 
     private static int getMachineHash() {
@@ -174,5 +131,47 @@ public class ObjectId {
         } catch (Exception e) {
             return -1;
         }
+    }
+
+    public long getTimestamp() {
+        return _timestamp;
+    }
+
+    public Date getCreationTime() {
+        return new Date(_timestamp * 1000);
+    }
+
+    public int getMachine() {
+        return _machine;
+    }
+
+    public short getPid() {
+        return _pid;
+    }
+
+    public int getIncrement() {
+        return _increment;
+    }
+
+    public void unpack(byte[] bytes) {
+        if (bytes == null) {
+            throw new NullPointerException("bytes");
+        }
+        if (bytes.length != 12) {
+            throw new IllegalArgumentException("Byte array must be 12 bytes long.");
+        }
+        _timestamp = ((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) | ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff);
+        _machine = ((bytes[4] & 0xff) << 16) | ((bytes[5] & 0xff) << 8) | (bytes[6] & 0xff);
+        _pid = (short) (((bytes[7] & 0xff) << 8) | (bytes[8] & 0xff));
+        _increment = ((bytes[9] & 0xff) << 16) | ((bytes[10] & 0xff) << 8) | (bytes[11] & 0xff);
+    }
+
+    public byte[] toByteArray() {
+        return pack(_timestamp, _machine, _pid, _increment);
+    }
+
+    @Override
+    public String toString() {
+        return toHexString(toByteArray());
     }
 }

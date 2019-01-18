@@ -2,7 +2,6 @@ package com.enode.rocketmq.publishableexceptions;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.common.logging.ENodeLogger;
-import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.BitConverter;
 import com.enode.infrastructure.IMessageProcessor;
@@ -17,6 +16,7 @@ import com.enode.rocketmq.RocketMQConsumer;
 import com.enode.rocketmq.RocketMQMessageHandler;
 import com.enode.rocketmq.RocketMQProcessContext;
 import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;

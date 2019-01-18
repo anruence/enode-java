@@ -1,11 +1,11 @@
 package com.enode.message;
 
 import com.enode.common.logging.ENodeLogger;
-import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.remoting.RemotingClient;
 import com.enode.common.remoting.netty.NettyClientConfig;
 import com.enode.common.remoting.netty.NettyRemotingClient;
 import com.enode.common.remoting.protocol.RemotingCommand;
+import com.enode.common.serializing.IJsonSerializer;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -32,14 +32,14 @@ public class SendReplyService {
     }
 
     public void start() {
-        if(!started) {
+        if (!started) {
             remotingClient.start();
             started = true;
         }
     }
 
     public void stop() {
-        if(!stoped) {
+        if (!stoped) {
             remotingClient.shutdown();
             stoped = true;
         }
@@ -51,7 +51,7 @@ public class SendReplyService {
             try {
                 String message = _jsonSerializer.serialize(context.replyData);
                 byte[] body = message.getBytes(CHARSET_UTF8);
-                RemotingCommand request = RemotingCommand.createRequestCommand(context.getReplyType(),null);
+                RemotingCommand request = RemotingCommand.createRequestCommand(context.getReplyType(), null);
                 request.setBody(body);
                 remotingClient.invokeOneway(replyAddress, request, 1000 * 5);
             } catch (Exception ex) {

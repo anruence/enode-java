@@ -118,8 +118,8 @@ public class ResponseFuture {
     @Override
     public String toString() {
         return "ResponseFuture [responseCommand=" + responseCommand + ", sendRequestOK=" + sendRequestOK
-            + ", cause=" + cause + ", opaque=" + opaque + ", timeoutMillis=" + timeoutMillis
-            + ", invokeCallback=" + invokeCallback + ", beginTimestamp=" + beginTimestamp
-            + ", countDownLatch=" + countDownLatch + "]";
+                + ", cause=" + cause + ", opaque=" + opaque + ", timeoutMillis=" + timeoutMillis
+                + ", invokeCallback=" + invokeCallback + ", beginTimestamp=" + beginTimestamp
+                + ", countDownLatch=" + countDownLatch + "]";
     }
 }

@@ -31,7 +31,7 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
     private void recurseRegisterInternalHandler(Class aggregateRootType) {
         Class superclass = aggregateRootType.getSuperclass();
 
-        if(!isInterfaceOrObjectClass(superclass)) {
+        if (!isInterfaceOrObjectClass(superclass)) {
             registerInternalHandlerWithSuperclass(aggregateRootType, superclass);
         }
 

@@ -2,9 +2,9 @@ package com.enode.rocketmq;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.common.logging.ENodeLogger;
+import com.enode.rocketmq.client.Consumer;
 import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import com.enode.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
-import com.enode.rocketmq.client.Consumer;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;

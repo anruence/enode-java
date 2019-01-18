@@ -1,6 +1,5 @@
 package com.enode.infrastructure.impl;
 
-import com.google.common.collect.Lists;
 import com.enode.common.function.Action2;
 import com.enode.common.function.Action4;
 import com.enode.common.io.AsyncTaskResult;
@@ -17,6 +16,7 @@ import com.enode.infrastructure.IThreeMessageHandlerProvider;
 import com.enode.infrastructure.ITwoMessageHandlerProvider;
 import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.MessageHandlerData;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -247,13 +247,13 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         private CompletableFuture<AsyncTaskResult> _taskCompletionSource;
         private ConcurrentMap<Object, Boolean> _childDispatchingDict;
 
-        public CompletableFuture<AsyncTaskResult> getTaskCompletionSource() {
-            return _taskCompletionSource;
-        }
-
         public RootDisptaching() {
             _taskCompletionSource = new CompletableFuture<>();
             _childDispatchingDict = new ConcurrentHashMap<>();
+        }
+
+        public CompletableFuture<AsyncTaskResult> getTaskCompletionSource() {
+            return _taskCompletionSource;
         }
 
         public void addChildDispatching(Object childDispatching) {
@@ -305,16 +305,16 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         private ConcurrentMap<String, IObjectProxy> _handlerDict;
         private RootDisptaching _rootDispatching;
 
-        public IMessage[] getMessages() {
-            return _messages;
-        }
-
         public MultiMessageDisptaching(List<? extends IMessage> messages, List<? extends IObjectProxy> handlers, RootDisptaching rootDispatching, ITypeNameProvider typeNameProvider) {
             _messages = messages.toArray(new IMessage[0]);
             _handlerDict = new ConcurrentHashMap<>();
             handlers.forEach(x -> _handlerDict.putIfAbsent(typeNameProvider.getTypeName(x.getInnerObject().getClass()), x));
             _rootDispatching = rootDispatching;
             _rootDispatching.addChildDispatching(this);
+        }
+
+        public IMessage[] getMessages() {
+            return _messages;
         }
 
         public void removeHandledHandler(String handlerTypeName) {

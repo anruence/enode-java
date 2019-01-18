@@ -4,7 +4,7 @@ import com.enode.common.serializing.IJsonSerializer;
 
 public class GsonJsonSerializer extends AbstractSerializer implements IJsonSerializer {
     public GsonJsonSerializer() {
-        super(false,false);
+        super(false, false);
     }
 
     @Override

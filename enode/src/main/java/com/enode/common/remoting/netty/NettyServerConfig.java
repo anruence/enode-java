@@ -31,8 +31,8 @@ public class NettyServerConfig implements Cloneable {
 
     /**
      * make make install
-     *
-     *
+     * <p>
+     * <p>
      * ../glibc-2.10.1/configure \ --prefix=/usr \ --with-headers=/usr/include \
      * --host=x86_64-linux-gnu \ --build=x86_64-pc-linux-gnu \ --without-gd
      */

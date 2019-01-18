@@ -10,8 +10,8 @@ import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessagePublisher;
 import com.enode.message.EventStreamMessage;
-import com.enode.rocketmq.ITopicProvider;
 import com.enode.message.MessageTypeCode;
+import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendRocketMQService;
 import com.enode.rocketmq.TopicTagData;
 import com.enode.rocketmq.client.Producer;
@@ -26,10 +26,6 @@ public class DomainEventPublisher implements IMessagePublisher<DomainEventStream
     private final Producer _producer;
     private final SendRocketMQService _sendMessageService;
 
-    public Producer getProducer() {
-        return _producer;
-    }
-
     @Inject
     public DomainEventPublisher(Producer producer, IJsonSerializer jsonSerializer,
                                 ITopicProvider<IDomainEvent> eventTopicProvider,
@@ -41,6 +37,10 @@ public class DomainEventPublisher implements IMessagePublisher<DomainEventStream
         _eventSerializer = eventSerializer;
 
         _sendMessageService = sendQueueMessageService;
+    }
+
+    public Producer getProducer() {
+        return _producer;
     }
 
     public DomainEventPublisher start() {

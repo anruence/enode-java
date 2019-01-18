@@ -30,7 +30,7 @@ public interface ICommandContext {
      */
     <T extends IAggregateRoot> CompletableFuture getAsync(Object id, boolean firstFromCache, Class<T> clazz);
 
-    void setResult(String result);
-
     String getResult();
+
+    void setResult(String result);
 }

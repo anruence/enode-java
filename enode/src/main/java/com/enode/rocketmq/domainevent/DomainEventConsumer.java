@@ -2,7 +2,6 @@ package com.enode.rocketmq.domainevent;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.common.logging.ENodeLogger;
-import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.BitConverter;
 import com.enode.eventing.DomainEventStreamMessage;
@@ -10,15 +9,16 @@ import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ProcessingDomainEventStreamMessage;
+import com.enode.message.CommandReplyType;
 import com.enode.message.DomainEventHandledMessage;
 import com.enode.message.EventStreamMessage;
-import com.enode.message.CommandReplyType;
+import com.enode.message.SendReplyService;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.RocketMQConsumer;
 import com.enode.rocketmq.RocketMQMessageHandler;
 import com.enode.rocketmq.RocketMQProcessContext;
-import com.enode.message.SendReplyService;
 import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;

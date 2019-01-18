@@ -13,14 +13,14 @@ public class Worker {
     private Status _status;
     private Thread thread;
 
-    public String actionName() {
-        return _actionName;
-    }
-
     public Worker(String actionName, Action action) {
         _actionName = actionName;
         _action = action;
         _status = Status.Initial;
+    }
+
+    public String actionName() {
+        return _actionName;
     }
 
     public Worker start() {

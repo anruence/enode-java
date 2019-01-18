@@ -133,39 +133,39 @@ import java.util.stream.Collectors;
 
 public class ENode extends AbstractContainer<ENode> {
 
-    private static final Logger logger = ENodeLogger.getLog();
-
     //ENode Components
     public static final int COMMAND_SERVICE = 1;
     public static final int DOMAIN_EVENT_PUBLISHER = 2;
     public static final int APPLICATION_MESSAGE_PUBLISHER = 4;
     public static final int EXCEPTION_PUBLISHER = 8;
-
     public static final int COMMAND_CONSUMER = 16;
     public static final int DOMAIN_EVENT_CONSUMER = 32;
     public static final int APPLICATION_MESSAGE_CONSUMER = 64;
     public static final int EXCEPTION_CONSUMER = 128;
-
     //Default Composite Components
     public static final int DOMAIN = DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER | COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
     public static final int PUBLISHERS = COMMAND_SERVICE | DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER;
     public static final int CONSUMERS = COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
     public static final int ALL_COMPONENTS = PUBLISHERS | CONSUMERS;
-
+    private static final Logger logger = ENodeLogger.getLog();
     //加载AbstractDenormalizer
     private static final String[] ENODE_PACKAGE_SCAN = new String[]{"com.enode.domain", "com.enode.message", "com.enode.rocketmq", "com.enode.infrastructure.impl"};
-
+    private static final Set<Class> ENODE_COMPONENT_TYPES = new HashSet<Class>() {{
+        add(ICommandHandler.class);
+        add(ICommandAsyncHandler.class);
+        add(IMessageHandler.class);
+        add(IAggregateRepository.class);
+        add(ITopicProvider.class);
+    }};
+    private static final Set<Class> ENODE_GENERIC_COMPONENT_TYPES = new HashSet<Class>() {{
+        add(ITopicProvider.class);
+    }};
+    private static ENode instance;
     private List<Class<?>> _assemblyInitializerServiceTypes;
     private String[] scanPackages;
     private Set<Class<?>> assemblyTypes;
     private ConfigurationSetting setting;
     private int registerRocketMQComponentsFlag;
-
-    private static ENode instance;
-
-    public static ENode getInstance() {
-        return instance;
-    }
 
     private ENode(ConfigurationSetting setting, String... packages) {
         this.setting = setting == null ? new ConfigurationSetting() : setting;
@@ -175,6 +175,10 @@ public class ENode extends AbstractContainer<ENode> {
         scanAssemblyTypes();
     }
 
+    public static ENode getInstance() {
+        return instance;
+    }
+
     public static ENode create(String... packages) {
         return create(null, packages);
     }
@@ -182,6 +186,20 @@ public class ENode extends AbstractContainer<ENode> {
     public static ENode create(ConfigurationSetting setting, String... packages) {
         instance = new ENode(setting, packages);
         return instance;
+    }
+
+    private static LifeStyle parseComponentLife(Class type) {
+        Component annotation = (Component) type.getAnnotation(Component.class);
+
+        if (annotation != null) {
+            return annotation.life();
+        }
+
+        return LifeStyle.Singleton;
+    }
+
+    private static boolean isAssemblyInitializer(Class type) {
+        return !Modifier.isAbstract(type.getModifiers()) && IAssemblyInitializer.class.isAssignableFrom(type);
     }
 
     public ENode useGuice() {
@@ -347,29 +365,6 @@ public class ENode extends AbstractContainer<ENode> {
             }
         });
     }
-
-    private static LifeStyle parseComponentLife(Class type) {
-        Component annotation = (Component) type.getAnnotation(Component.class);
-
-        if (annotation != null) {
-            return annotation.life();
-        }
-
-        return LifeStyle.Singleton;
-    }
-
-    private static final Set<Class> ENODE_COMPONENT_TYPES = new HashSet<Class>() {{
-        add(ICommandHandler.class);
-        add(ICommandAsyncHandler.class);
-        add(IMessageHandler.class);
-        add(IAggregateRepository.class);
-        add(ITopicProvider.class);
-    }};
-
-    private static final Set<Class> ENODE_GENERIC_COMPONENT_TYPES = new HashSet<Class>() {{
-        add(ITopicProvider.class);
-    }};
-
 
     private ENode initializeBusinessAssemblies() {
         _assemblyInitializerServiceTypes.stream()
@@ -607,10 +602,6 @@ public class ENode extends AbstractContainer<ENode> {
         assemblyTypes = reflections.getSubTypesOf(Object.class);
 
         return this;
-    }
-
-    private static boolean isAssemblyInitializer(Class type) {
-        return !Modifier.isAbstract(type.getModifiers()) && IAssemblyInitializer.class.isAssignableFrom(type);
     }
 
     public ENode start() {

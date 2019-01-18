@@ -2,7 +2,6 @@ package com.enode.rocketmq.applicationmessage;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.common.logging.ENodeLogger;
-import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.BitConverter;
 import com.enode.infrastructure.IApplicationMessage;
@@ -10,9 +9,12 @@ import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.ProcessingApplicationMessage;
 import com.enode.message.ApplicationDataMessage;
-import com.enode.rocketmq.*;
 import com.enode.rocketmq.ITopicProvider;
+import com.enode.rocketmq.RocketMQConsumer;
+import com.enode.rocketmq.RocketMQMessageHandler;
+import com.enode.rocketmq.RocketMQProcessContext;
 import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;

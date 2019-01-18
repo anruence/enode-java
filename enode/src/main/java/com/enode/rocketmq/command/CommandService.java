@@ -2,7 +2,13 @@ package com.enode.rocketmq.command;
 
 import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageConst;
-import com.enode.commanding.*;
+import com.enode.commanding.CommandExecuteTimeoutException;
+import com.enode.commanding.CommandResult;
+import com.enode.commanding.CommandReturnType;
+import com.enode.commanding.ICommand;
+import com.enode.commanding.ICommandKeyProvider;
+import com.enode.commanding.ICommandRoutingKeyProvider;
+import com.enode.commanding.ICommandService;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
 import com.enode.common.serializing.IJsonSerializer;
@@ -12,15 +18,23 @@ import com.enode.infrastructure.WrappedRuntimeException;
 import com.enode.message.CommandKeyProvider;
 import com.enode.message.CommandMessage;
 import com.enode.message.CommandResultProcessor;
-import com.enode.rocketmq.ITopicProvider;
 import com.enode.message.MessageTypeCode;
+import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendRocketMQService;
 import com.enode.rocketmq.TopicTagData;
 import com.enode.rocketmq.client.Producer;
 
 import javax.inject.Inject;
-import java.net.*;
-import java.util.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -50,6 +64,24 @@ public class CommandService implements ICommandService {
         _producer = producer;
         _sendMessageService = sendQueueMessageService;
         _commandKeyProvider = new CommandKeyProvider();
+    }
+
+    public static AsyncTaskResult combine(AsyncTaskResult r1, AsyncTaskResult r2) {
+        Set<AsyncTaskResult> totalResult = new HashSet<>();
+        totalResult.add(r1);
+        totalResult.add(r2);
+
+        List<AsyncTaskResult> failedResults = totalResult.stream().filter(task -> task.getStatus() == AsyncTaskStatus.Failed).collect(Collectors.toList());
+        if (failedResults.size() > 0) {
+            return new AsyncTaskResult(AsyncTaskStatus.Failed, String.join("|", failedResults.stream().map(AsyncTaskResult::getErrorMessage).collect(Collectors.toList())));
+        }
+
+        List<AsyncTaskResult> ioExceptionResults = totalResult.stream().filter(task -> task.getStatus() == AsyncTaskStatus.IOException).collect(Collectors.toList());
+        if (ioExceptionResults.size() > 0) {
+            return new AsyncTaskResult(AsyncTaskStatus.IOException, String.join("|", ioExceptionResults.stream().map(AsyncTaskResult::getErrorMessage).collect(Collectors.toList())));
+        }
+
+        return AsyncTaskResult.Success;
     }
 
     public CommandService start() {
@@ -87,24 +119,6 @@ public class CommandService implements ICommandService {
                 );
 
         return reduce.get();
-    }
-
-    public static AsyncTaskResult combine(AsyncTaskResult r1, AsyncTaskResult r2) {
-        Set<AsyncTaskResult> totalResult = new HashSet<>();
-        totalResult.add(r1);
-        totalResult.add(r2);
-
-        List<AsyncTaskResult> failedResults = totalResult.stream().filter(task -> task.getStatus() == AsyncTaskStatus.Failed).collect(Collectors.toList());
-        if (failedResults.size() > 0) {
-            return new AsyncTaskResult(AsyncTaskStatus.Failed, String.join("|", failedResults.stream().map(AsyncTaskResult::getErrorMessage).collect(Collectors.toList())));
-        }
-
-        List<AsyncTaskResult> ioExceptionResults = totalResult.stream().filter(task -> task.getStatus() == AsyncTaskStatus.IOException).collect(Collectors.toList());
-        if (ioExceptionResults.size() > 0) {
-            return new AsyncTaskResult(AsyncTaskStatus.IOException, String.join("|", ioExceptionResults.stream().map(AsyncTaskResult::getErrorMessage).collect(Collectors.toList())));
-        }
-
-        return AsyncTaskResult.Success;
     }
 
     public CommandResult execute(ICommand command, int timeoutMillis) {
@@ -176,7 +190,7 @@ public class CommandService implements ICommandService {
                 key,
                 MessageTypeCode.CommandMessage.ordinal(), body, true);
 
-            message.putUserProperty(RocketMQSystemPropKey.STARTDELIVERTIME, String.valueOf(command.getRoutingKey()));
+        message.putUserProperty(RocketMQSystemPropKey.STARTDELIVERTIME, String.valueOf(command.getRoutingKey()));
 
         return message;
     }
@@ -186,19 +200,6 @@ public class CommandService implements ICommandService {
                 command.id(), //命令唯一id
                 command.getAggregateRootId() == null ? "" : MessageConst.KEY_SEPARATOR + "cmd_agg_" + command.getAggregateRootId() //聚合根id
         );
-    }
-
-    static public class RocketMQSystemPropKey {
-        public static final String TAG = "__TAG";
-        public static final String KEY = "__KEY";
-        public static final String MSGID = "__MSGID";
-        public static final String RECONSUMETIMES = "__RECONSUMETIMES";
-        /**
-         * 设置消息的定时投递时间（绝对时间),最大延迟时间为7天.
-         * <p>例1: 延迟投递, 延迟3s投递, 设置为: System.currentTimeMillis() + 3000;
-         * <p>例2: 定时投递, 2016-02-01 11:30:00投递, 设置为: new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2016-02-01 11:30:00").getTime()
-         */
-        public static final String STARTDELIVERTIME = "__STARTDELIVERTIME";
     }
 
     private String parseAddress(SocketAddress address) {
@@ -240,5 +241,18 @@ public class CommandService implements ICommandService {
 
     private boolean isSiteLocalAddress(InetAddress address) {
         return address.isSiteLocalAddress() && !address.isLoopbackAddress() && !address.getHostAddress().contains(":");
+    }
+
+    static public class RocketMQSystemPropKey {
+        public static final String TAG = "__TAG";
+        public static final String KEY = "__KEY";
+        public static final String MSGID = "__MSGID";
+        public static final String RECONSUMETIMES = "__RECONSUMETIMES";
+        /**
+         * 设置消息的定时投递时间（绝对时间),最大延迟时间为7天.
+         * <p>例1: 延迟投递, 延迟3s投递, 设置为: System.currentTimeMillis() + 3000;
+         * <p>例2: 定时投递, 2016-02-01 11:30:00投递, 设置为: new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2016-02-01 11:30:00").getTime()
+         */
+        public static final String STARTDELIVERTIME = "__STARTDELIVERTIME";
     }
 }

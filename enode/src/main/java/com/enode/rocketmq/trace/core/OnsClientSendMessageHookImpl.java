@@ -59,7 +59,7 @@ public class OnsClientSendMessageHookImpl implements SendMessageHook {
         }
         if (context.getSendResult().getRegionId() == null
                 || context.getSendResult().getRegionId().equals(OnsTraceConstants.default_region)
-                /*|| !context.getSendResult().isTraceOn()*/) {
+            /*|| !context.getSendResult().isTraceOn()*/) {
             // if regionId is default or switch is false,skip it
             return;
         }

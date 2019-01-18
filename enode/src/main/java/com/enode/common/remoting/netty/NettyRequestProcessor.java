@@ -24,7 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public interface NettyRequestProcessor {
     RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request)
-        throws Exception;
+            throws Exception;
 
     boolean rejectRequest();
 }

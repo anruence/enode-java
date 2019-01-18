@@ -7,13 +7,13 @@ import java.util.Properties;
 public class AbstractContainer<C extends AbstractContainer<C>> {
     private IObjectContainer objectContainer;
 
+    public IObjectContainer getContainer() {
+        return objectContainer;
+    }
+
     protected C setContainer(IObjectContainer objectContainer) {
         this.objectContainer = objectContainer;
         return (C) this;
-    }
-
-    public IObjectContainer getContainer() {
-        return objectContainer;
     }
 
     public C commitRegisters() {

@@ -3,7 +3,12 @@ package com.enode.infrastructure.impl;
 import com.enode.ENode;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.scheduling.IScheduleService;
-import com.enode.infrastructure.*;
+import com.enode.infrastructure.IMessage;
+import com.enode.infrastructure.IMessageProcessor;
+import com.enode.infrastructure.IProcessingMessage;
+import com.enode.infrastructure.IProcessingMessageHandler;
+import com.enode.infrastructure.IProcessingMessageScheduler;
+import com.enode.infrastructure.ProcessingMessageMailbox;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -16,13 +21,12 @@ import java.util.stream.Collectors;
 public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y extends IMessage> implements IMessageProcessor<X, Y> {
 
     private static final Logger _logger = ENodeLogger.getLog();
-
-    private ConcurrentMap<String, ProcessingMessageMailbox<X, Y>> _mailboxDict;
-    private IProcessingMessageScheduler<X, Y> _processingMessageScheduler;
-    private IProcessingMessageHandler<X, Y> _processingMessageHandler;
     private final IScheduleService _scheduleService;
     private final int _timeoutSeconds;
     private final String _taskName;
+    private ConcurrentMap<String, ProcessingMessageMailbox<X, Y>> _mailboxDict;
+    private IProcessingMessageScheduler<X, Y> _processingMessageScheduler;
+    private IProcessingMessageHandler<X, Y> _processingMessageHandler;
 
     public DefaultMessageProcessor(IProcessingMessageScheduler<X, Y> processingMessageScheduler,
                                    IProcessingMessageHandler<X, Y> processingMessageHandler,

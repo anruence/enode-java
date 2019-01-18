@@ -17,17 +17,16 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractProducer {
-    private final DefaultMQProducer defaultMQProducer;
-
     protected final AtomicBoolean started = new AtomicBoolean(false);
-
-    abstract protected DefaultMQProducer initProducer(Properties properties, MQClientInitializer mqClientInitializer);
+    private final DefaultMQProducer defaultMQProducer;
 
     protected AbstractProducer(Properties properties, MQClientInitializer mqClientInitializer) {
         mqClientInitializer.init(properties);
 
         this.defaultMQProducer = initProducer(properties, mqClientInitializer);
     }
+
+    abstract protected DefaultMQProducer initProducer(Properties properties, MQClientInitializer mqClientInitializer);
 
     public void start() {
         try {

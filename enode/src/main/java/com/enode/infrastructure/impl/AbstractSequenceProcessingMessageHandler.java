@@ -19,13 +19,13 @@ public abstract class AbstractSequenceProcessingMessageHandler<X extends IProces
     private final IPublishedVersionStore _publishedVersionStore;
     private final IOHelper _ioHelper;
 
-    public abstract String getName();
-
     @Inject
     public AbstractSequenceProcessingMessageHandler(IPublishedVersionStore publishedVersionStore, IOHelper ioHelper) {
         _publishedVersionStore = publishedVersionStore;
         _ioHelper = ioHelper;
     }
+
+    public abstract String getName();
 
     protected abstract CompletableFuture<AsyncTaskResult> dispatchProcessingMessageAsync(X processingMessage);
 

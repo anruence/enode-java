@@ -17,14 +17,17 @@ public class CompletableConsumeConcurrentlyContext {
     private int delayLevelWhenNextConsume = 0;
     private int ackIndex = Integer.MAX_VALUE;
 
+    public CompletableConsumeConcurrentlyContext(MessageQueue messageQueue, CompletableFuture<ConsumeConcurrentlyStatus> statusFuture) {
+        this.messageQueue = messageQueue;
+        this.statusFuture = statusFuture;
+    }
+
     public int getDelayLevelWhenNextConsume() {
         return delayLevelWhenNextConsume;
     }
 
-
-    public CompletableConsumeConcurrentlyContext(MessageQueue messageQueue, CompletableFuture<ConsumeConcurrentlyStatus> statusFuture) {
-        this.messageQueue = messageQueue;
-        this.statusFuture = statusFuture;
+    public void setDelayLevelWhenNextConsume(int delayLevelWhenNextConsume) {
+        this.delayLevelWhenNextConsume = delayLevelWhenNextConsume;
     }
 
     public void onMessageHandled() {
@@ -34,11 +37,6 @@ public class CompletableConsumeConcurrentlyContext {
     public void reConsumeLater() {
         statusFuture.complete(ConsumeConcurrentlyStatus.RECONSUME_LATER);
     }
-
-    public void setDelayLevelWhenNextConsume(int delayLevelWhenNextConsume) {
-        this.delayLevelWhenNextConsume = delayLevelWhenNextConsume;
-    }
-
 
     public MessageQueue getMessageQueue() {
         return messageQueue;

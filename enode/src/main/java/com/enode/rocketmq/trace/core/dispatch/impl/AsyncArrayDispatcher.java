@@ -18,7 +18,11 @@ import com.enode.rocketmq.trace.core.dispatch.AsyncDispatcher;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -248,7 +252,7 @@ public class AsyncArrayDispatcher implements AsyncDispatcher {
          * 发送数据的接口
          *
          * @param keySet 本批次包含的keyset
-         * @param data 本批次的轨迹数据
+         * @param data   本批次的轨迹数据
          */
         private void sendTraceDataByMQ(Set<String> keySet, final String data, String currentRegionId) {
             String topic = OnsTraceConstants.traceTopic + currentRegionId;

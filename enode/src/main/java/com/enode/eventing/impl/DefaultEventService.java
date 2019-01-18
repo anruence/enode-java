@@ -31,8 +31,6 @@ import java.util.stream.Collectors;
 
 public class DefaultEventService implements IEventService {
     private static final Logger _logger = ENodeLogger.getLog();
-
-    private IProcessingCommandHandler _processingCommandHandler;
     private final ConcurrentMap<String, EventMailBox> _mailboxDict;
     private final IScheduleService _scheduleService;
     private final IMemoryCache _memoryCache;
@@ -42,6 +40,7 @@ public class DefaultEventService implements IEventService {
     private final int _batchSize;
     private final int _timeoutSeconds;
     private final String _taskName;
+    private IProcessingCommandHandler _processingCommandHandler;
 
     @Inject
     public DefaultEventService(
@@ -116,7 +115,9 @@ public class DefaultEventService implements IEventService {
                     EventMailBox eventMailBox = committingContexts.get(0).getEventMailBox();
                     EventAppendResult appendResult = result.getData();
                     if (appendResult == EventAppendResult.Success) {
-                        if (_logger.isDebugEnabled()) {_logger.debug("Batch persist event success, aggregateRootId: {}, eventStreamCount: {}", eventMailBox.getAggregateRootId(), committingContexts.size());}
+                        if (_logger.isDebugEnabled()) {
+                            _logger.debug("Batch persist event success, aggregateRootId: {}, eventStreamCount: {}", eventMailBox.getAggregateRootId(), committingContexts.size());
+                        }
 
                         CompletableFuture.runAsync(() ->
                                 committingContexts.forEach(context -> publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream()))
@@ -153,7 +154,9 @@ public class DefaultEventService implements IEventService {
 
                 result -> {
                     if (result.getData() == EventAppendResult.Success) {
-                        if (_logger.isDebugEnabled()) {_logger.debug("Persist events success, {}", context.getEventStream());}
+                        if (_logger.isDebugEnabled()) {
+                            _logger.debug("Persist events success, {}", context.getEventStream());
+                        }
                         publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream());
 
                         if (context.getNext() != null) {
@@ -306,7 +309,9 @@ public class DefaultEventService implements IEventService {
                 currentRetryTimes -> publishDomainEventAsync(processingCommand, eventStream, currentRetryTimes),
                 result ->
                 {
-                    if (_logger.isDebugEnabled()) {_logger.debug("Publish domain events success, {}", eventStream);}
+                    if (_logger.isDebugEnabled()) {
+                        _logger.debug("Publish domain events success, {}", eventStream);
+                    }
 
                     String commandHandleResult = processingCommand.getCommandExecuteContext().getResult();
                     CommandResult commandResult = new CommandResult(CommandStatus.Success, processingCommand.getMessage().id(), eventStream.aggregateRootId(), commandHandleResult, String.class.getName());

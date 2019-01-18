@@ -27,6 +27,16 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
     private Map<TKey, MessageHandlerData<THandlerProxyInterface>> _messageHandlerDict = new HashMap<>();
     private MethodHandles.Lookup lookup = MethodHandles.lookup();
 
+    private static LifeStyle parseComponentLife(Class type) {
+        Component annotation = (Component) type.getAnnotation(Component.class);
+
+        if (annotation != null) {
+            return annotation.life();
+        }
+
+        return LifeStyle.Singleton;
+    }
+
     /**
      * ICommandHandler、ICommandAsyncHandler、IMessageHandler、ITwoMessageHandler<,>、IThreeMessageHandler<,,>
      */
@@ -157,16 +167,6 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                 throw new RuntimeException(e);
             }
         });
-    }
-
-    private static LifeStyle parseComponentLife(Class type) {
-        Component annotation = (Component) type.getAnnotation(Component.class);
-
-        if (annotation != null) {
-            return annotation.life();
-        }
-
-        return LifeStyle.Singleton;
     }
 
 //    x -> {

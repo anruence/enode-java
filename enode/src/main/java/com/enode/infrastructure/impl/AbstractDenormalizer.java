@@ -8,7 +8,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class AbstractDenormalizer implements IMessageHandler{
+public abstract class AbstractDenormalizer implements IMessageHandler {
     protected final QueryRunner _queryRunner;
 
     public AbstractDenormalizer(DataSource denormalizerDatasource) {

@@ -2,7 +2,6 @@ package com.enode.domain;
 
 /**
  * Defines a factory to create empty aggregate root.
- *
  */
 public interface IAggregateRootFactory {
 

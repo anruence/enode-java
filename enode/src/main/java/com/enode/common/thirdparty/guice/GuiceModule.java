@@ -1,9 +1,14 @@
 package com.enode.common.thirdparty.guice;
 
-import com.google.inject.*;
-import com.google.inject.name.Names;
 import com.enode.common.container.GenericTypeLiteral;
 import com.enode.common.container.LifeStyle;
+import com.google.inject.AbstractModule;
+import com.google.inject.Binder;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.Provider;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 
 public interface GuiceModule<T> {
 

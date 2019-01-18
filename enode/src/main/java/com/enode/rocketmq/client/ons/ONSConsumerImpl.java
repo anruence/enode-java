@@ -2,11 +2,11 @@ package com.enode.rocketmq.client.ons;
 
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.enode.common.logging.ENodeLogger;
-import com.enode.rocketmq.consumer.CompletableDefaultMQPushConsumer;
 import com.enode.rocketmq.client.AbstractConsumer;
 import com.enode.rocketmq.client.Consumer;
 import com.enode.rocketmq.client.MQClientInitializer;
 import com.enode.rocketmq.client.RocketMQClientException;
+import com.enode.rocketmq.consumer.CompletableDefaultMQPushConsumer;
 import com.enode.rocketmq.trace.core.common.OnsTraceConstants;
 import com.enode.rocketmq.trace.core.dispatch.AsyncDispatcher;
 import com.enode.rocketmq.trace.core.dispatch.impl.AsyncArrayDispatcher;

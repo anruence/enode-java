@@ -1,6 +1,5 @@
 package com.enode.eventing.impl;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.enode.ENode;
 import com.enode.common.container.IObjectContainer;
 import com.enode.common.io.AsyncTaskResult;
@@ -18,6 +17,7 @@ import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.eventing.IEventStore;
 import com.enode.infrastructure.WrappedRuntimeException;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -82,6 +82,43 @@ public class MysqlEventStore implements IEventStore {
         _queryRunner = new QueryRunner(ds);
         executor = Executors.newFixedThreadPool(4,
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MysqlEventStoreExecutor-%d").build());
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        CompletableFuture<String> future = new CompletableFuture<>();
+        future.complete("test");
+
+        CompletableFuture<String> future1 = future.thenApply(v -> {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(v);
+            return "1" + v;
+        });
+
+        CompletableFuture<String> future2 = future.thenApply(v -> {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(v);
+            return "2" + v;
+        });
+
+        future1.handleAsync((r, e) -> {
+            System.out.println(r);
+            return null;
+        });
+
+        future2.handleAsync((r, e) -> {
+            System.out.println(r);
+            return null;
+        });
+
+        Thread.sleep(20000);
     }
 
     @Override
@@ -188,43 +225,6 @@ public class MysqlEventStore implements IEventStore {
             _logger.error("Batch append event has unknown exception.", ex);
             return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage(), EventAppendResult.Failed);
         }
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        CompletableFuture<String> future = new CompletableFuture<>();
-        future.complete("test");
-
-        CompletableFuture<String> future1 = future.thenApply(v -> {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            System.out.println(v);
-            return "1" + v;
-        });
-
-        CompletableFuture<String> future2 = future.thenApply(v -> {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            System.out.println(v);
-            return "2" + v;
-        });
-
-        future1.handleAsync((r, e) -> {
-            System.out.println(r);
-            return null;
-        });
-
-        future2.handleAsync((r, e) -> {
-            System.out.println(r);
-            return null;
-        });
-
-        Thread.sleep(20000);
     }
 
     public AsyncTaskResult<EventAppendResult> append(DomainEventStream eventStream) {

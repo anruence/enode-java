@@ -1,8 +1,8 @@
 package com.enode.common.thirdparty.guice;
 
+import com.enode.common.container.LifeStyle;
 import com.google.inject.Scope;
 import com.google.inject.Scopes;
-import com.enode.common.container.LifeStyle;
 
 public class ScopeConverter {
     public static Scope toGuiceScope(LifeStyle life) {

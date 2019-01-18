@@ -1,10 +1,10 @@
 package com.enode.domain;
 
-import com.google.common.collect.Lists;
 import com.enode.ENode;
 import com.enode.common.function.Action2;
 import com.enode.eventing.DomainEventStream;
 import com.enode.eventing.IDomainEvent;
+import com.google.common.collect.Lists;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -19,20 +19,12 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot {
 
-    private List<IDomainEvent> _emptyEvents = new ArrayList<>();
-
     @Inject
     private static IAggregateRootInternalHandlerProvider _eventHandlerProvider;
-
-    private Queue<IDomainEvent> _uncommittedEvents;
-
     protected TAggregateRootId _id;
-
+    private List<IDomainEvent> _emptyEvents = new ArrayList<>();
+    private Queue<IDomainEvent> _uncommittedEvents;
     private int _version;
-
-    public TAggregateRootId id() {
-        return _id;
-    }
 
     protected AggregateRoot() {
         _uncommittedEvents = new ConcurrentLinkedDeque<IDomainEvent>() {
@@ -53,6 +45,10 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
             throw new IllegalArgumentException(String.format("Version cannot small than zero, aggregateRootId: %s, version: %d", id, version));
         }
         _version = version;
+    }
+
+    public TAggregateRootId id() {
+        return _id;
     }
 
     protected void applyEvent(IDomainEvent<TAggregateRootId> domainEvent) {

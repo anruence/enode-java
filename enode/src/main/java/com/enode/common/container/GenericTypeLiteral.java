@@ -7,7 +7,7 @@ public class GenericTypeLiteral<T> {
 
     private Type type;
 
-    protected GenericTypeLiteral(Type type){
+    protected GenericTypeLiteral(Type type) {
         this.type = type;
     }
 
@@ -30,7 +30,7 @@ public class GenericTypeLiteral<T> {
         return type;
     }
 
-    public String key(){
+    public String key() {
         return type.getTypeName();
     }
 }

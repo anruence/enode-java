@@ -48,6 +48,42 @@ public class IOHelper {
         asyncTaskExecutionContext.execute();
     }
 
+    public void tryIOAction(Action action, String actionName) {
+        Ensure.notNull(action, "action");
+        Ensure.notNull(actionName, "actionName");
+        try {
+            action.apply();
+        } catch (IORuntimeException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw new IORuntimeException(String.format("%s failed.", actionName), ex);
+        }
+    }
+
+    public <T> T tryIOFunc(Func<T> func, String funcName) {
+        Ensure.notNull(func, "func");
+        Ensure.notNull(funcName, "funcName");
+        try {
+            return func.apply();
+        } catch (IORuntimeException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw new IORuntimeException(String.format("%s failed.", funcName), ex);
+        }
+    }
+
+    public <T> CompletableFuture<T> tryIOFuncAsync(Func<CompletableFuture<T>> func, String funcName) {
+        Ensure.notNull(func, "func");
+        Ensure.notNull(funcName, "funcName");
+        try {
+            return func.apply();
+        } catch (IORuntimeException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw new IORuntimeException(String.format("%s failed.", funcName), ex);
+        }
+    }
+
     static class SyncTaskExecutionContext<TAsyncResult extends AsyncTaskResult> extends AbstractTaskExecutionContext<TAsyncResult> {
         private Func<TAsyncResult> action;
 
@@ -241,42 +277,6 @@ public class IOHelper {
                     executeFailedAction(exception.getMessage());
                 }
             }
-        }
-    }
-
-    public void tryIOAction(Action action, String actionName) {
-        Ensure.notNull(action, "action");
-        Ensure.notNull(actionName, "actionName");
-        try {
-            action.apply();
-        } catch (IORuntimeException e) {
-            throw e;
-        } catch (Exception ex) {
-            throw new IORuntimeException(String.format("%s failed.", actionName), ex);
-        }
-    }
-
-    public <T> T tryIOFunc(Func<T> func, String funcName) {
-        Ensure.notNull(func, "func");
-        Ensure.notNull(funcName, "funcName");
-        try {
-            return func.apply();
-        } catch (IORuntimeException e) {
-            throw e;
-        } catch (Exception ex) {
-            throw new IORuntimeException(String.format("%s failed.", funcName), ex);
-        }
-    }
-
-    public <T> CompletableFuture<T> tryIOFuncAsync(Func<CompletableFuture<T>> func, String funcName) {
-        Ensure.notNull(func, "func");
-        Ensure.notNull(funcName, "funcName");
-        try {
-            return func.apply();
-        } catch (IORuntimeException e) {
-            throw e;
-        } catch (Exception ex) {
-            throw new IORuntimeException(String.format("%s failed.", funcName), ex);
         }
     }
 }
