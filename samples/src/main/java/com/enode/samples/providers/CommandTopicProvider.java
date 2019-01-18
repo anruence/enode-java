@@ -1,4 +1,4 @@
-package com.enode.sample.providers;
+package com.enode.samples.providers;
 
 import com.enode.commanding.ICommand;
 import com.enode.rocketmq.AbstractTopicProvider;

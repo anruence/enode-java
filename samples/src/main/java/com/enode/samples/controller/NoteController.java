@@ -1,12 +1,12 @@
-package com.enode.sample.controller;
+package com.enode.samples.controller;
 
 import com.enode.commanding.CommandResult;
 import com.enode.commanding.CommandReturnType;
 import com.enode.commanding.ICommandService;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.utilities.CompletableFutureUtil;
-import com.enode.sample.commands.ChangeNoteTitleCommand;
-import com.enode.sample.commands.CreateNoteCommand;
+import com.enode.samples.commands.ChangeNoteTitleCommand;
+import com.enode.samples.commands.CreateNoteCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

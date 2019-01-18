@@ -1,4 +1,4 @@
-package com.enode.sample.domain;
+package com.enode.samples.domain;
 
 import com.enode.domain.AggregateRoot;
 

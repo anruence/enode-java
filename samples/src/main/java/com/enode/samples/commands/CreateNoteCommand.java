@@ -1,4 +1,4 @@
-package com.enode.sample.commands;
+package com.enode.samples.commands;
 
 import com.enode.commanding.Command;
 

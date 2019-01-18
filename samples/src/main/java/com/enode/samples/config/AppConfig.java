@@ -1,4 +1,4 @@
-package com.enode.sample.config;
+package com.enode.samples.config;
 
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.enode.ENode;
@@ -56,7 +56,7 @@ public class AppConfig {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        ENode enode = ENode.create("com.enodesamples")
+        ENode enode = ENode.create("com.enode.samples")
                 .registerDefaultComponents();
 //                .useMysqlComponents(dataSource); // 注销此行，启用内存实现（CommandStore,EventStore,SequenceMessagePublishedVersionStore,MessageHandleRecordStore）
         if (isons) {

@@ -1,10 +1,10 @@
-package com.enode.sample.commandhandlers;
+package com.enode.samples.commandhandlers;
 
 import com.enode.commanding.ICommandContext;
 import com.enode.commanding.ICommandHandler;
 import com.enode.common.logging.ENodeLogger;
-import com.enode.sample.commands.CreateNoteCommand;
-import com.enode.sample.domain.Note;
+import com.enode.samples.commands.CreateNoteCommand;
+import com.enode.samples.domain.Note;
 import org.slf4j.Logger;
 
 import java.util.concurrent.CompletableFuture;

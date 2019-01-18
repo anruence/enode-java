@@ -1,11 +1,11 @@
-package com.enode.sample.domain;
+package com.enode.samples.domain;
 
 import com.enode.eventing.DomainEvent;
 
-public class NoteTitleChanged2 extends DomainEvent<String> {
+public class NoteTitleChanged3 extends DomainEvent<String> {
     private String title;
 
-    public NoteTitleChanged2(String title) {
+    public NoteTitleChanged3(String title) {
         this.title = title;
     }
 
