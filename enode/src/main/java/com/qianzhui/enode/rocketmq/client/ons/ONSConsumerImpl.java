@@ -2,7 +2,7 @@ package com.qianzhui.enode.rocketmq.client.ons;
 
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.qianzhui.enode.common.logging.ENodeLogger;
-import com.qianzhui.enode.common.rocketmq.consumer.CompletableDefaultMQPushConsumer;
+import com.qianzhui.enode.rocketmq.consumer.CompletableDefaultMQPushConsumer;
 import com.qianzhui.enode.rocketmq.client.AbstractConsumer;
 import com.qianzhui.enode.rocketmq.client.Consumer;
 import com.qianzhui.enode.rocketmq.client.MQClientInitializer;

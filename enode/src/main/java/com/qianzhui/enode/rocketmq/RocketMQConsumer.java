@@ -2,7 +2,8 @@ package com.qianzhui.enode.rocketmq;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.qianzhui.enode.common.logging.ENodeLogger;
-import com.qianzhui.enode.common.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.qianzhui.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.qianzhui.enode.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
 import com.qianzhui.enode.rocketmq.client.Consumer;
 import org.slf4j.Logger;
 
@@ -23,7 +24,7 @@ public class RocketMQConsumer {
     @Inject
     public RocketMQConsumer(Consumer consumer) {
         _consumer = consumer;
-        _consumer.registerMessageListener(this::handle);
+        _consumer.registerMessageListener(new MessageHandler());
         _handlers = new HashSet<>();
         _handlerDict = new HashMap<>();
     }
@@ -44,31 +45,35 @@ public class RocketMQConsumer {
         _consumer.shutdown();
     }
 
-    protected void handle(final List<MessageExt> msgs, final CompletableConsumeConcurrentlyContext context) {
-        MessageExt msg = msgs.get(0);
-        String topic = msg.getTopic();
-        String tag = msg.getTags();
-        TopicTagData topicTagData = new TopicTagData(topic, tag);
 
-        RocketMQMessageHandler rocketMQMessageHandler = _handlerDict.get(topicTagData);
+    class MessageHandler implements CompletableMessageListenerConcurrently {
 
-        if (rocketMQMessageHandler == null) {
-            List<RocketMQMessageHandler> handlers = _handlers.stream().filter(handler -> handler.isMatched(topicTagData)).collect(Collectors.toList());
-            if (handlers.size() > 1) {
-                _logger.error("Duplicate consume handler with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
-                context.reConsumeLater();
-//                return CompletableFuture.completedFuture(ConsumeConcurrentlyStatus.RECONSUME_LATER);
+        @Override
+        public void consumeMessage(List<MessageExt> msgs, CompletableConsumeConcurrentlyContext context) {
+            MessageExt msg = msgs.get(0);
+            String topic = msg.getTopic();
+            String tag = msg.getTags();
+            TopicTagData topicTagData = new TopicTagData(topic, tag);
+
+            RocketMQMessageHandler rocketMQMessageHandler = _handlerDict.get(topicTagData);
+
+            if (rocketMQMessageHandler == null) {
+                List<RocketMQMessageHandler> handlers = _handlers.stream().filter(handler -> handler.isMatched(topicTagData)).collect(Collectors.toList());
+                if (handlers.size() > 1) {
+                    _logger.error("Duplicate consume handler with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
+                    context.reConsumeLater();
+                }
+
+                rocketMQMessageHandler = handlers.get(0);
+                _handlerDict.put(topicTagData, rocketMQMessageHandler);
             }
 
-            rocketMQMessageHandler = handlers.get(0);
-            _handlerDict.put(topicTagData, rocketMQMessageHandler);
-        }
-
-        if (rocketMQMessageHandler == null) {
-            _logger.error("No consume handler found with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
-            context.reConsumeLater();
-        } else {
-            rocketMQMessageHandler.handle(msg, context);
+            if (rocketMQMessageHandler == null) {
+                _logger.error("No consume handler found with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
+                context.reConsumeLater();
+            } else {
+                rocketMQMessageHandler.handle(msg, context);
+            }
         }
     }
 }

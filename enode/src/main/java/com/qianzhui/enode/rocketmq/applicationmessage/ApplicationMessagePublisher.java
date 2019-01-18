@@ -7,12 +7,12 @@ import com.qianzhui.enode.common.utilities.BitConverter;
 import com.qianzhui.enode.infrastructure.IApplicationMessage;
 import com.qianzhui.enode.infrastructure.IMessagePublisher;
 import com.qianzhui.enode.infrastructure.ITypeNameProvider;
+import com.qianzhui.enode.message.ApplicationDataMessage;
 import com.qianzhui.enode.rocketmq.ITopicProvider;
-import com.qianzhui.enode.rocketmq.RocketMQMessageTypeCode;
-import com.qianzhui.enode.rocketmq.SendQueueMessageService;
+import com.qianzhui.enode.message.MessageTypeCode;
+import com.qianzhui.enode.rocketmq.SendRocketMQService;
 import com.qianzhui.enode.rocketmq.TopicTagData;
 import com.qianzhui.enode.rocketmq.client.Producer;
-import com.qianzhui.enode.rocketmq.command.CommandService;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
@@ -23,7 +23,7 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
     private final ITopicProvider<IApplicationMessage> _messageTopicProvider;
     private final ITypeNameProvider _typeNameProvider;
     private final Producer _producer;
-    private final SendQueueMessageService _sendMessageService;
+    private final SendRocketMQService _sendMessageService;
 
     public Producer getProducer() {
         return _producer;
@@ -33,7 +33,7 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
     public ApplicationMessagePublisher(Producer producer, IJsonSerializer jsonSerializer,
                                        ITopicProvider<IApplicationMessage> messageITopicProvider,
                                        ITypeNameProvider typeNameProvider,
-                                       SendQueueMessageService sendQueueMessageService) {
+                                       SendRocketMQService sendQueueMessageService) {
         _producer = producer;
         _jsonSerializer = jsonSerializer;
         _messageTopicProvider = messageITopicProvider;
@@ -66,7 +66,7 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
                 //_typeNameProvider.getTypeName(message.getClass()), //tags
                 topicTagData.getTag(), //tag
                 message.id(), // keys
-                RocketMQMessageTypeCode.ApplicationMessage.getValue(), // flag
+                MessageTypeCode.ApplicationMessage.getValue(), // flag
                 BitConverter.getBytes(data), // body
                 true);
 

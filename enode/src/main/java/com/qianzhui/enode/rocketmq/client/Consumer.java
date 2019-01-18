@@ -1,7 +1,7 @@
 package com.qianzhui.enode.rocketmq.client;
 
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
-import com.qianzhui.enode.common.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
+import com.qianzhui.enode.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
 
 public interface Consumer {
     void start();

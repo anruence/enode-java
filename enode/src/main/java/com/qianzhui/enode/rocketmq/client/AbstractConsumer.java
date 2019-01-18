@@ -2,8 +2,8 @@ package com.qianzhui.enode.rocketmq.client;
 
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.qianzhui.enode.common.rocketmq.consumer.CompletableDefaultMQPushConsumer;
-import com.qianzhui.enode.common.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
+import com.qianzhui.enode.rocketmq.consumer.CompletableDefaultMQPushConsumer;
+import com.qianzhui.enode.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;

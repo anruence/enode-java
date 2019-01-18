@@ -2,11 +2,21 @@ package com.qianzhui.enode.rocketmq.publishableexceptions;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.qianzhui.enode.common.logging.ENodeLogger;
-import com.qianzhui.enode.common.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.qianzhui.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import com.qianzhui.enode.common.serializing.IJsonSerializer;
 import com.qianzhui.enode.common.utilities.BitConverter;
-import com.qianzhui.enode.infrastructure.*;
-import com.qianzhui.enode.rocketmq.*;
+import com.qianzhui.enode.infrastructure.IMessageProcessor;
+import com.qianzhui.enode.infrastructure.IPublishableException;
+import com.qianzhui.enode.infrastructure.ISequenceMessage;
+import com.qianzhui.enode.infrastructure.ITypeNameProvider;
+import com.qianzhui.enode.infrastructure.ProcessingPublishableExceptionMessage;
+import com.qianzhui.enode.infrastructure.WrappedRuntimeException;
+import com.qianzhui.enode.message.PublishableExceptionMessage;
+import com.qianzhui.enode.rocketmq.ITopicProvider;
+import com.qianzhui.enode.rocketmq.RocketMQConsumer;
+import com.qianzhui.enode.rocketmq.RocketMQMessageHandler;
+import com.qianzhui.enode.rocketmq.RocketMQProcessContext;
+import com.qianzhui.enode.rocketmq.TopicTagData;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -40,6 +50,12 @@ public class PublishableExceptionConsumer {
             }
 
             @Override
+            public void handle(Object msg, Object context) {
+                MessageExt messageExt = (MessageExt) msg;
+                CompletableConsumeConcurrentlyContext concurrentlyContext = (CompletableConsumeConcurrentlyContext) context;
+                handle(messageExt, concurrentlyContext);
+            }
+
             public void handle(MessageExt message, CompletableConsumeConcurrentlyContext context) {
                 PublishableExceptionConsumer.this.handle(message, context);
             }

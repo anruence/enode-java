@@ -2,7 +2,7 @@ package com.qianzhui.enode.rocketmq.domainevent;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.qianzhui.enode.common.logging.ENodeLogger;
-import com.qianzhui.enode.common.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.qianzhui.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import com.qianzhui.enode.common.serializing.IJsonSerializer;
 import com.qianzhui.enode.common.utilities.BitConverter;
 import com.qianzhui.enode.eventing.DomainEventStreamMessage;
@@ -10,12 +10,14 @@ import com.qianzhui.enode.eventing.IDomainEvent;
 import com.qianzhui.enode.eventing.IEventSerializer;
 import com.qianzhui.enode.infrastructure.IMessageProcessor;
 import com.qianzhui.enode.infrastructure.ProcessingDomainEventStreamMessage;
-import com.qianzhui.enode.rocketmq.CommandReplyType;
+import com.qianzhui.enode.message.DomainEventHandledMessage;
+import com.qianzhui.enode.message.EventStreamMessage;
+import com.qianzhui.enode.message.CommandReplyType;
 import com.qianzhui.enode.rocketmq.ITopicProvider;
 import com.qianzhui.enode.rocketmq.RocketMQConsumer;
 import com.qianzhui.enode.rocketmq.RocketMQMessageHandler;
 import com.qianzhui.enode.rocketmq.RocketMQProcessContext;
-import com.qianzhui.enode.rocketmq.SendReplyService;
+import com.qianzhui.enode.message.SendReplyService;
 import com.qianzhui.enode.rocketmq.TopicTagData;
 import org.slf4j.Logger;
 
@@ -55,6 +57,12 @@ public class DomainEventConsumer {
             }
 
             @Override
+            public void handle(Object msg, Object context) {
+                MessageExt messageExt = (MessageExt) msg;
+                CompletableConsumeConcurrentlyContext concurrentlyContext = (CompletableConsumeConcurrentlyContext) context;
+                handle(messageExt, concurrentlyContext);
+            }
+
             public void handle(MessageExt message, CompletableConsumeConcurrentlyContext context) {
                 DomainEventConsumer.this.handle(message, context);
             }

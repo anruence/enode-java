@@ -9,9 +9,12 @@ import com.qianzhui.enode.common.serializing.IJsonSerializer;
 import com.qianzhui.enode.common.utilities.BitConverter;
 import com.qianzhui.enode.common.utilities.Ensure;
 import com.qianzhui.enode.infrastructure.WrappedRuntimeException;
+import com.qianzhui.enode.message.CommandKeyProvider;
+import com.qianzhui.enode.message.CommandMessage;
+import com.qianzhui.enode.message.CommandResultProcessor;
 import com.qianzhui.enode.rocketmq.ITopicProvider;
-import com.qianzhui.enode.rocketmq.RocketMQMessageTypeCode;
-import com.qianzhui.enode.rocketmq.SendQueueMessageService;
+import com.qianzhui.enode.message.MessageTypeCode;
+import com.qianzhui.enode.rocketmq.SendRocketMQService;
 import com.qianzhui.enode.rocketmq.TopicTagData;
 import com.qianzhui.enode.rocketmq.client.Producer;
 
@@ -27,7 +30,7 @@ public class CommandService implements ICommandService {
     private IJsonSerializer _jsonSerializer;
     private ITopicProvider<ICommand> _commandTopicProvider;
     private ICommandRoutingKeyProvider _commandRouteKeyProvider;
-    private SendQueueMessageService _sendMessageService;
+    private SendRocketMQService _sendMessageService;
     private CommandResultProcessor _commandResultProcessor;
     private Producer _producer;
     private ICommandKeyProvider _commandKeyProvider;
@@ -38,7 +41,7 @@ public class CommandService implements ICommandService {
                           CommandResultProcessor commandResultProcessor,
                           ICommandRoutingKeyProvider commandRoutingKeyProvider,
                           Producer producer,
-                          SendQueueMessageService sendQueueMessageService) {
+                          SendRocketMQService sendQueueMessageService) {
         super();
         _jsonSerializer = jsonSerializer;
         _commandTopicProvider = commandTopicProvider;
@@ -171,7 +174,7 @@ public class CommandService implements ICommandService {
         Message message = new Message(topicTagData.getTopic(),
                 topicTagData.getTag(),
                 key,
-                RocketMQMessageTypeCode.CommandMessage.ordinal(), body, true);
+                MessageTypeCode.CommandMessage.ordinal(), body, true);
 
             message.putUserProperty(RocketMQSystemPropKey.STARTDELIVERTIME, String.valueOf(command.getRoutingKey()));
 

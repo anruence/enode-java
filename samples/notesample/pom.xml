@@ -5,7 +5,7 @@
     <parent>
         <artifactId>samples</artifactId>
         <groupId>com.qianzhui.enode.samples</groupId>
-        <version>2.0.0</version>
+        <version>1.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,6 +18,7 @@
         <module>domain</module>
         <module>quickstart</module>
     </modules>
+
 
 
 </project>

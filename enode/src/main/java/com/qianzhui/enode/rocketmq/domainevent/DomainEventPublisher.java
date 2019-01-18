@@ -9,9 +9,10 @@ import com.qianzhui.enode.eventing.DomainEventStreamMessage;
 import com.qianzhui.enode.eventing.IDomainEvent;
 import com.qianzhui.enode.eventing.IEventSerializer;
 import com.qianzhui.enode.infrastructure.IMessagePublisher;
+import com.qianzhui.enode.message.EventStreamMessage;
 import com.qianzhui.enode.rocketmq.ITopicProvider;
-import com.qianzhui.enode.rocketmq.RocketMQMessageTypeCode;
-import com.qianzhui.enode.rocketmq.SendQueueMessageService;
+import com.qianzhui.enode.message.MessageTypeCode;
+import com.qianzhui.enode.rocketmq.SendRocketMQService;
 import com.qianzhui.enode.rocketmq.TopicTagData;
 import com.qianzhui.enode.rocketmq.client.Producer;
 
@@ -23,7 +24,7 @@ public class DomainEventPublisher implements IMessagePublisher<DomainEventStream
     private final ITopicProvider<IDomainEvent> _eventTopicProvider;
     private final IEventSerializer _eventSerializer;
     private final Producer _producer;
-    private final SendQueueMessageService _sendMessageService;
+    private final SendRocketMQService _sendMessageService;
 
     public Producer getProducer() {
         return _producer;
@@ -33,7 +34,7 @@ public class DomainEventPublisher implements IMessagePublisher<DomainEventStream
     public DomainEventPublisher(Producer producer, IJsonSerializer jsonSerializer,
                                 ITopicProvider<IDomainEvent> eventTopicProvider,
                                 IEventSerializer eventSerializer,
-                                SendQueueMessageService sendQueueMessageService) {
+                                SendRocketMQService sendQueueMessageService) {
         _producer = producer;
         _jsonSerializer = jsonSerializer;
         _eventTopicProvider = eventTopicProvider;
@@ -68,7 +69,7 @@ public class DomainEventPublisher implements IMessagePublisher<DomainEventStream
         return new Message(topicTagData.getTopic(),
                 topicTagData.getTag(),
                 key,
-                RocketMQMessageTypeCode.DomainEventStreamMessage.getValue(), body, true);
+                MessageTypeCode.DomainEventStreamMessage.getValue(), body, true);
     }
 
     private String buildRocketMQMessageKey(DomainEventStreamMessage eventStreamMessage) {

@@ -1,8 +1,7 @@
 package com.qianzhui.enode.rocketmq.client.impl;
 
-import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
-import com.qianzhui.enode.common.rocketmq.consumer.CompletableDefaultMQPushConsumer;
-import com.qianzhui.enode.rocketmq.Constants;
+import com.qianzhui.enode.rocketmq.consumer.CompletableDefaultMQPushConsumer;
+import com.qianzhui.enode.rocketmq.client.Constants;
 import com.qianzhui.enode.rocketmq.client.AbstractConsumer;
 import com.qianzhui.enode.rocketmq.client.Consumer;
 import com.qianzhui.enode.rocketmq.client.MQClientInitializer;

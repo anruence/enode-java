@@ -7,9 +7,10 @@ import com.qianzhui.enode.common.utilities.BitConverter;
 import com.qianzhui.enode.infrastructure.IMessagePublisher;
 import com.qianzhui.enode.infrastructure.IPublishableException;
 import com.qianzhui.enode.infrastructure.ISequenceMessage;
+import com.qianzhui.enode.message.PublishableExceptionMessage;
 import com.qianzhui.enode.rocketmq.ITopicProvider;
-import com.qianzhui.enode.rocketmq.RocketMQMessageTypeCode;
-import com.qianzhui.enode.rocketmq.SendQueueMessageService;
+import com.qianzhui.enode.message.MessageTypeCode;
+import com.qianzhui.enode.rocketmq.SendRocketMQService;
 import com.qianzhui.enode.rocketmq.TopicTagData;
 import com.qianzhui.enode.rocketmq.client.Producer;
 
@@ -22,7 +23,7 @@ public class PublishableExceptionPublisher implements IMessagePublisher<IPublish
     private final IJsonSerializer _jsonSerializer;
     private final ITopicProvider<IPublishableException> _exceptionTopicProvider;
     private final Producer _producer;
-    private final SendQueueMessageService _sendMessageService;
+    private final SendRocketMQService _sendMessageService;
 
     public Producer getProducer() {
         return _producer;
@@ -31,7 +32,7 @@ public class PublishableExceptionPublisher implements IMessagePublisher<IPublish
     @Inject
     public PublishableExceptionPublisher(Producer producer, IJsonSerializer jsonSerializer,
                                          ITopicProvider<IPublishableException> exceptionITopicProvider,
-                                         SendQueueMessageService sendQueueMessageService) {
+                                         SendRocketMQService sendQueueMessageService) {
         _producer = producer;
         _jsonSerializer = jsonSerializer;
         _exceptionTopicProvider = exceptionITopicProvider;
@@ -75,7 +76,7 @@ public class PublishableExceptionPublisher implements IMessagePublisher<IPublish
 //                _typeNameProvider.getTypeName(exception.getClass()), //tags
                 topicTagData.getTag(), //tag
                 exception.id(), // keys
-                RocketMQMessageTypeCode.ExceptionMessage.getValue(), // flag
+                MessageTypeCode.ExceptionMessage.getValue(), // flag
                 BitConverter.getBytes(data), // body
                 true);
     }

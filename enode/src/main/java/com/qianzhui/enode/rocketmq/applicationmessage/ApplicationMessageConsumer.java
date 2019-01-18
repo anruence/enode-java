@@ -2,14 +2,17 @@ package com.qianzhui.enode.rocketmq.applicationmessage;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.qianzhui.enode.common.logging.ENodeLogger;
-import com.qianzhui.enode.common.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.qianzhui.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import com.qianzhui.enode.common.serializing.IJsonSerializer;
 import com.qianzhui.enode.common.utilities.BitConverter;
 import com.qianzhui.enode.infrastructure.IApplicationMessage;
 import com.qianzhui.enode.infrastructure.IMessageProcessor;
 import com.qianzhui.enode.infrastructure.ITypeNameProvider;
 import com.qianzhui.enode.infrastructure.ProcessingApplicationMessage;
+import com.qianzhui.enode.message.ApplicationDataMessage;
 import com.qianzhui.enode.rocketmq.*;
+import com.qianzhui.enode.rocketmq.ITopicProvider;
+import com.qianzhui.enode.rocketmq.TopicTagData;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -43,6 +46,12 @@ public class ApplicationMessageConsumer {
             }
 
             @Override
+            public void handle(Object msg, Object context) {
+                MessageExt messageExt = (MessageExt) msg;
+                CompletableConsumeConcurrentlyContext concurrentlyContext = (CompletableConsumeConcurrentlyContext) context;
+                handle(messageExt, concurrentlyContext);
+            }
+
             public void handle(MessageExt message, CompletableConsumeConcurrentlyContext context) {
                 ApplicationMessageConsumer.this.handle(message, context);
             }

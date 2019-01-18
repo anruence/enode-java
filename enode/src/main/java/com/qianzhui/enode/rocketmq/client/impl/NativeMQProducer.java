@@ -1,7 +1,7 @@
 package com.qianzhui.enode.rocketmq.client.impl;
 
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.qianzhui.enode.rocketmq.Constants;
+import com.qianzhui.enode.rocketmq.client.Constants;
 import com.qianzhui.enode.rocketmq.client.AbstractProducer;
 import com.qianzhui.enode.rocketmq.client.MQClientInitializer;
 import com.qianzhui.enode.rocketmq.client.Producer;

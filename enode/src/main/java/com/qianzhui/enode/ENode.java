@@ -94,8 +94,8 @@ import com.qianzhui.enode.infrastructure.impl.mysql.MysqlPublishedVersionStore;
 import com.qianzhui.enode.jmx.ENodeJMXAgent;
 import com.qianzhui.enode.rocketmq.ITopicProvider;
 import com.qianzhui.enode.rocketmq.RocketMQConsumer;
-import com.qianzhui.enode.rocketmq.SendQueueMessageService;
-import com.qianzhui.enode.rocketmq.SendReplyService;
+import com.qianzhui.enode.rocketmq.SendRocketMQService;
+import com.qianzhui.enode.message.SendReplyService;
 import com.qianzhui.enode.rocketmq.TopicTagData;
 import com.qianzhui.enode.rocketmq.applicationmessage.ApplicationMessageConsumer;
 import com.qianzhui.enode.rocketmq.applicationmessage.ApplicationMessagePublisher;
@@ -105,7 +105,7 @@ import com.qianzhui.enode.rocketmq.client.RocketMQFactory;
 import com.qianzhui.enode.rocketmq.client.impl.NativeMQFactory;
 import com.qianzhui.enode.rocketmq.client.ons.ONSFactory;
 import com.qianzhui.enode.rocketmq.command.CommandConsumer;
-import com.qianzhui.enode.rocketmq.command.CommandResultProcessor;
+import com.qianzhui.enode.message.CommandResultProcessor;
 import com.qianzhui.enode.rocketmq.command.CommandService;
 import com.qianzhui.enode.rocketmq.domainevent.DomainEventConsumer;
 import com.qianzhui.enode.rocketmq.domainevent.DomainEventPublisher;
@@ -467,7 +467,7 @@ public class ENode extends AbstractContainer<ENode> {
             Producer producer = mqFactory.createProducer(producerSetting);
             registerInstance(Producer.class, producer);
 
-            register(SendQueueMessageService.class);
+            register(SendRocketMQService.class);
 
             //CommandService
             if (hasComponent(registerRocketMQComponentsFlag, COMMAND_SERVICE)) {
