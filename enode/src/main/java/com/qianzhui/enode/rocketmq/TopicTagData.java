@@ -1,6 +1,7 @@
 package com.qianzhui.enode.rocketmq;
 
 public class TopicTagData {
+
     private String topic;
     private String tag;
 

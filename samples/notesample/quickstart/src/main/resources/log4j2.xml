@@ -4,11 +4,14 @@
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %t [%p] %c{1} (%F:%L) %msg%n"/>
         </Console>
-
     </Appenders>
+
     <Loggers>
-        <Root level="INFO">
+        <Logger level="debug" name="ENodeLog">
             <AppenderRef ref="console"/>
+        </Logger>
+        <Root level="INFO">
+            <!--<AppenderRef ref="console"/>-->
         </Root>
     </Loggers>
 </Configuration>

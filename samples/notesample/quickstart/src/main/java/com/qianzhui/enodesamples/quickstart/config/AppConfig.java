@@ -17,7 +17,7 @@ public class AppConfig {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public ENode eNode() {
 
-        boolean isONS = true;
+        boolean isons = true;
         /**============= Enode所需消息队列配置，RocketMQ实现 ======*/
         Properties producerSetting = new Properties();
         producerSetting.setProperty(NativePropertyKey.NAMESRV_ADDR, "test.jishulink.com:9876");
@@ -59,7 +59,7 @@ public class AppConfig {
         ENode enode = ENode.create("com.qianzhui.enodesamples")
                 .registerDefaultComponents();
 //                .useMysqlComponents(dataSource); // 注销此行，启用内存实现（CommandStore,EventStore,SequenceMessagePublishedVersionStore,MessageHandleRecordStore）
-        if (isONS) {
+        if (isons) {
             enode.useONS(producerSetting, consumerSetting, 6000,
                     ENode.COMMAND_SERVICE
                             | ENode.DOMAIN_EVENT_PUBLISHER
