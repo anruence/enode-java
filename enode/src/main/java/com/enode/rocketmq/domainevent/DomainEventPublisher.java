@@ -9,8 +9,7 @@ import com.enode.eventing.DomainEventStreamMessage;
 import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessagePublisher;
-import com.enode.message.EventStreamMessage;
-import com.enode.message.MessageTypeCode;
+import com.enode.rocketmq.QueueMessageTypeCode;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendRocketMQService;
 import com.enode.rocketmq.TopicTagData;
@@ -69,7 +68,7 @@ public class DomainEventPublisher implements IMessagePublisher<DomainEventStream
         return new Message(topicTagData.getTopic(),
                 topicTagData.getTag(),
                 key,
-                MessageTypeCode.DomainEventStreamMessage.getValue(), body, true);
+                QueueMessageTypeCode.DomainEventStreamMessage.getValue(), body, true);
     }
 
     private String buildRocketMQMessageKey(DomainEventStreamMessage eventStreamMessage) {
@@ -82,9 +81,7 @@ public class DomainEventPublisher implements IMessagePublisher<DomainEventStream
 
     private EventStreamMessage createEventMessage(DomainEventStreamMessage eventStream) {
         EventStreamMessage message = new EventStreamMessage();
-
         message.setId(eventStream.id());
-
         message.setCommandId(eventStream.getCommandId());
         message.setAggregateRootTypeName(eventStream.aggregateRootTypeName());
         message.setAggregateRootId(eventStream.aggregateRootId());
@@ -92,7 +89,6 @@ public class DomainEventPublisher implements IMessagePublisher<DomainEventStream
         message.setVersion(eventStream.version());
         message.setEvents(_eventSerializer.serialize(eventStream.getEvents()));
         message.setItems(eventStream.getItems());
-
         return message;
     }
 }

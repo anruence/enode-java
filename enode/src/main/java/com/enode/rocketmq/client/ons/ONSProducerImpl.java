@@ -8,10 +8,10 @@ import com.enode.common.logging.ENodeLogger;
 import com.enode.rocketmq.client.AbstractProducer;
 import com.enode.rocketmq.client.MQClientInitializer;
 import com.enode.rocketmq.client.Producer;
-import com.enode.rocketmq.trace.core.OnsClientSendMessageHookImpl;
-import com.enode.rocketmq.trace.core.common.OnsTraceConstants;
-import com.enode.rocketmq.trace.core.dispatch.AsyncDispatcher;
-import com.enode.rocketmq.trace.core.dispatch.impl.AsyncArrayDispatcher;
+import com.enode.rocketmq.client.trace.core.OnsClientSendMessageHookImpl;
+import com.enode.rocketmq.client.trace.core.common.OnsTraceConstants;
+import com.enode.rocketmq.client.trace.core.dispatch.AsyncDispatcher;
+import com.enode.rocketmq.client.trace.core.dispatch.impl.AsyncArrayDispatcher;
 import org.slf4j.Logger;
 
 import java.util.List;

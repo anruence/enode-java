@@ -1,6 +1,8 @@
 package com.enode.samples.eventhandlers;
 
+import com.enode.commanding.ICommandService;
 import com.enode.common.io.AsyncTaskResult;
+import com.enode.infrastructure.IMessageHandler;
 import com.enode.infrastructure.ITwoMessageHandler;
 import com.enode.samples.domain.NoteTitleChanged;
 import com.enode.samples.domain.NoteTitleChanged2;

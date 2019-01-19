@@ -8,12 +8,11 @@ import com.enode.infrastructure.IApplicationMessage;
 import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.ProcessingApplicationMessage;
-import com.enode.message.ApplicationDataMessage;
 import com.enode.rocketmq.ITopicProvider;
-import com.enode.rocketmq.RocketMQConsumer;
-import com.enode.rocketmq.RocketMQMessageHandler;
 import com.enode.rocketmq.RocketMQProcessContext;
 import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.client.IMQMessageHandler;
+import com.enode.rocketmq.client.RocketMQConsumer;
 import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
@@ -41,19 +40,13 @@ public class ApplicationMessageConsumer {
     }
 
     public ApplicationMessageConsumer start() {
-        _consumer.registerMessageHandler(new RocketMQMessageHandler() {
+        _consumer.registerMessageHandler(new IMQMessageHandler() {
             @Override
             public boolean isMatched(TopicTagData topicTagData) {
                 return _messageTopicProvider.getAllSubscribeTopics().contains(topicTagData);
             }
 
             @Override
-            public void handle(Object msg, Object context) {
-                MessageExt messageExt = (MessageExt) msg;
-                CompletableConsumeConcurrentlyContext concurrentlyContext = (CompletableConsumeConcurrentlyContext) context;
-                handle(messageExt, concurrentlyContext);
-            }
-
             public void handle(MessageExt message, CompletableConsumeConcurrentlyContext context) {
                 ApplicationMessageConsumer.this.handle(message, context);
             }

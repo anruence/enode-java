@@ -9,13 +9,11 @@ import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ProcessingDomainEventStreamMessage;
-import com.enode.message.CommandReplyType;
-import com.enode.message.DomainEventHandledMessage;
-import com.enode.message.EventStreamMessage;
-import com.enode.message.SendReplyService;
+import com.enode.commanding.CommandReturnType;
+import com.enode.rocketmq.SendReplyService;
 import com.enode.rocketmq.ITopicProvider;
-import com.enode.rocketmq.RocketMQConsumer;
-import com.enode.rocketmq.RocketMQMessageHandler;
+import com.enode.rocketmq.client.RocketMQConsumer;
+import com.enode.rocketmq.client.IMQMessageHandler;
 import com.enode.rocketmq.RocketMQProcessContext;
 import com.enode.rocketmq.TopicTagData;
 import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
@@ -50,19 +48,13 @@ public class DomainEventConsumer {
     }
 
     public DomainEventConsumer start() {
-        _consumer.registerMessageHandler(new RocketMQMessageHandler() {
+        _consumer.registerMessageHandler(new IMQMessageHandler() {
             @Override
             public boolean isMatched(TopicTagData topicTagData) {
                 return _eventTopicProvider.getAllSubscribeTopics().contains(topicTagData);
             }
 
             @Override
-            public void handle(Object msg, Object context) {
-                MessageExt messageExt = (MessageExt) msg;
-                CompletableConsumeConcurrentlyContext concurrentlyContext = (CompletableConsumeConcurrentlyContext) context;
-                handle(messageExt, concurrentlyContext);
-            }
-
             public void handle(MessageExt message, CompletableConsumeConcurrentlyContext context) {
                 DomainEventConsumer.this.handle(message, context);
             }
@@ -138,7 +130,7 @@ public class DomainEventConsumer {
             domainEventHandledMessage.setAggregateRootId(_domainEventStreamMessage.aggregateRootId());
             domainEventHandledMessage.setCommandResult(commandResult);
 
-            _eventConsumer._sendReplyService.sendReply(CommandReplyType.DomainEventHandled.getValue(), domainEventHandledMessage, replyAddress);
+            _eventConsumer._sendReplyService.sendReply(CommandReturnType.EventHandled.getValue(), domainEventHandledMessage, replyAddress);
         }
     }
 }

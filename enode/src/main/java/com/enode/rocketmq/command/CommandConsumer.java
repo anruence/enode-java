@@ -15,12 +15,11 @@ import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateStorage;
 import com.enode.domain.IRepository;
 import com.enode.infrastructure.ITypeNameProvider;
-import com.enode.message.CommandMessage;
-import com.enode.message.CommandReplyType;
-import com.enode.message.SendReplyService;
+import com.enode.commanding.CommandReturnType;
+import com.enode.rocketmq.SendReplyService;
 import com.enode.rocketmq.ITopicProvider;
-import com.enode.rocketmq.RocketMQConsumer;
-import com.enode.rocketmq.RocketMQMessageHandler;
+import com.enode.rocketmq.client.RocketMQConsumer;
+import com.enode.rocketmq.client.IMQMessageHandler;
 import com.enode.rocketmq.TopicTagData;
 import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
@@ -67,7 +66,7 @@ public class CommandConsumer {
     }
 
     public CommandConsumer start() {
-        _consumer.registerMessageHandler(new Mess());
+        _consumer.registerMessageHandler(new CommandMQMessageHandler());
 
         _sendReplyService.start();
         return this;
@@ -78,7 +77,7 @@ public class CommandConsumer {
         return this;
     }
 
-    class Mess implements RocketMQMessageHandler {
+    class CommandMQMessageHandler implements IMQMessageHandler {
 
         @Override
         public boolean isMatched(TopicTagData topicTagData) {
@@ -86,12 +85,6 @@ public class CommandConsumer {
         }
 
         @Override
-        public void handle(Object msg, Object context) {
-            MessageExt messageExt = (MessageExt) msg;
-            CompletableConsumeConcurrentlyContext concurrentlyContext = (CompletableConsumeConcurrentlyContext) context;
-            handle(messageExt, concurrentlyContext);
-        }
-
         public void handle(MessageExt message, CompletableConsumeConcurrentlyContext context) {
             Map<String, String> commandItems = new HashMap<>();
             CommandMessage commandMessage = _jsonSerializer.deserialize(BitConverter.toString(message.getBody()), CommandMessage.class);
@@ -141,7 +134,7 @@ public class CommandConsumer {
             if (_commandMessage.getReplyAddress() == null) {
                 return CompletableFuture.completedFuture(null);
             }
-            return _sendReplyService.sendReply(CommandReplyType.CommandExecuted.getValue(), commandResult, _commandMessage.getReplyAddress());
+            return _sendReplyService.sendReply(CommandReturnType.CommandExecuted.getValue(), commandResult, _commandMessage.getReplyAddress());
         }
 
         @Override

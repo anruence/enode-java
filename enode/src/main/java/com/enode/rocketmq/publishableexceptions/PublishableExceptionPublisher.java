@@ -7,8 +7,7 @@ import com.enode.common.utilities.BitConverter;
 import com.enode.infrastructure.IMessagePublisher;
 import com.enode.infrastructure.IPublishableException;
 import com.enode.infrastructure.ISequenceMessage;
-import com.enode.message.MessageTypeCode;
-import com.enode.message.PublishableExceptionMessage;
+import com.enode.rocketmq.QueueMessageTypeCode;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendRocketMQService;
 import com.enode.rocketmq.TopicTagData;
@@ -76,7 +75,7 @@ public class PublishableExceptionPublisher implements IMessagePublisher<IPublish
 //                _typeNameProvider.getTypeName(exception.getClass()), //tags
                 topicTagData.getTag(), //tag
                 exception.id(), // keys
-                MessageTypeCode.ExceptionMessage.getValue(), // flag
+                QueueMessageTypeCode.ExceptionMessage.getValue(), // flag
                 BitConverter.getBytes(data), // body
                 true);
     }

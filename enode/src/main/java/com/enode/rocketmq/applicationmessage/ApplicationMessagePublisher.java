@@ -7,8 +7,7 @@ import com.enode.common.utilities.BitConverter;
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.infrastructure.IMessagePublisher;
 import com.enode.infrastructure.ITypeNameProvider;
-import com.enode.message.ApplicationDataMessage;
-import com.enode.message.MessageTypeCode;
+import com.enode.rocketmq.QueueMessageTypeCode;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendRocketMQService;
 import com.enode.rocketmq.TopicTagData;
@@ -66,7 +65,7 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
                 //_typeNameProvider.getTypeName(message.getClass()), //tags
                 topicTagData.getTag(), //tag
                 message.id(), // keys
-                MessageTypeCode.ApplicationMessage.getValue(), // flag
+                QueueMessageTypeCode.ApplicationMessage.getValue(), // flag
                 BitConverter.getBytes(data), // body
                 true);
 

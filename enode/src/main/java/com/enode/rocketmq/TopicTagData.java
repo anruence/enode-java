@@ -47,11 +47,4 @@ public class TopicTagData {
         return tag.equals(that.tag);
 
     }
-
-    @Override
-    public int hashCode() {
-        int result = topic.hashCode();
-        result = 31 * result + tag.hashCode();
-        return result;
-    }
 }

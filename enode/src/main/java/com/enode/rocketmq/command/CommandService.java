@@ -6,7 +6,6 @@ import com.enode.commanding.CommandExecuteTimeoutException;
 import com.enode.commanding.CommandResult;
 import com.enode.commanding.CommandReturnType;
 import com.enode.commanding.ICommand;
-import com.enode.commanding.ICommandKeyProvider;
 import com.enode.commanding.ICommandRoutingKeyProvider;
 import com.enode.commanding.ICommandService;
 import com.enode.common.io.AsyncTaskResult;
@@ -15,10 +14,7 @@ import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.BitConverter;
 import com.enode.common.utilities.Ensure;
 import com.enode.infrastructure.WrappedRuntimeException;
-import com.enode.message.CommandKeyProvider;
-import com.enode.message.CommandMessage;
-import com.enode.message.CommandResultProcessor;
-import com.enode.message.MessageTypeCode;
+import com.enode.rocketmq.QueueMessageTypeCode;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendRocketMQService;
 import com.enode.rocketmq.TopicTagData;
@@ -47,7 +43,6 @@ public class CommandService implements ICommandService {
     private SendRocketMQService _sendMessageService;
     private CommandResultProcessor _commandResultProcessor;
     private Producer _producer;
-    private ICommandKeyProvider _commandKeyProvider;
 
     @Inject
     public CommandService(IJsonSerializer jsonSerializer,
@@ -63,7 +58,6 @@ public class CommandService implements ICommandService {
         _commandResultProcessor = commandResultProcessor;
         _producer = producer;
         _sendMessageService = sendQueueMessageService;
-        _commandKeyProvider = new CommandKeyProvider();
     }
 
     public static AsyncTaskResult combine(AsyncTaskResult r1, AsyncTaskResult r2) {
@@ -156,7 +150,7 @@ public class CommandService implements ICommandService {
             CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource = new CompletableFuture<>();
             _commandResultProcessor.registerProcessingCommand(command, commandReturnType, taskCompletionSource);
 
-            CompletableFuture<AsyncTaskResult> sendMessageAsync = _sendMessageService.sendMessageAsync(_producer, buildCommandMessage(command, true), _commandKeyProvider.getKey(command), command.id(), null);
+            CompletableFuture<AsyncTaskResult> sendMessageAsync = _sendMessageService.sendMessageAsync(_producer, buildCommandMessage(command, true), _commandRouteKeyProvider.getRoutingKey(command), command.id(), null);
             sendMessageAsync.thenAccept(sendResult -> {
                 if (sendResult.getStatus().equals(AsyncTaskStatus.Success)) {
                     //_commandResultProcessor中会继续等命令或事件处理完成的状态
@@ -188,7 +182,7 @@ public class CommandService implements ICommandService {
         Message message = new Message(topicTagData.getTopic(),
                 topicTagData.getTag(),
                 key,
-                MessageTypeCode.CommandMessage.ordinal(), body, true);
+                QueueMessageTypeCode.CommandMessage.getValue(), body, true);
 
         message.putUserProperty(RocketMQSystemPropKey.STARTDELIVERTIME, String.valueOf(command.getRoutingKey()));
 
