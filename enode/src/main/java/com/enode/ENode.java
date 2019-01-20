@@ -55,7 +55,7 @@ import com.enode.eventing.impl.DefaultEventService;
 import com.enode.eventing.impl.DomainEventStreamMessageHandler;
 import com.enode.eventing.impl.InMemoryEventStore;
 import com.enode.eventing.impl.MysqlEventStore;
-import com.enode.infrastructure.Component;
+import com.enode.infrastructure.LifeStyleType;
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.infrastructure.IAssemblyInitializer;
 import com.enode.infrastructure.ILockService;
@@ -189,10 +189,10 @@ public class ENode extends AbstractContainer<ENode> {
     }
 
     private static LifeStyle parseComponentLife(Class type) {
-        Component annotation = (Component) type.getAnnotation(Component.class);
+        LifeStyleType annotation = (LifeStyleType) type.getAnnotation(LifeStyleType.class);
 
         if (annotation != null) {
-            return annotation.life();
+            return annotation.value();
         }
 
         return LifeStyle.Singleton;

@@ -1,4 +1,4 @@
-package com.enode.rocketmq.consumer.listener;
+package com.enode.rocketmq.client.consumer.listener;
 
 import com.alibaba.rocketmq.client.consumer.listener.MessageListener;
 import com.alibaba.rocketmq.common.message.MessageExt;

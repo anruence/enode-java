@@ -1,6 +1,5 @@
 package com.enode.rocketmq.publishableexceptions;
 
-import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.BitConverter;
@@ -10,12 +9,12 @@ import com.enode.infrastructure.ISequenceMessage;
 import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.ProcessingPublishableExceptionMessage;
 import com.enode.infrastructure.WrappedRuntimeException;
+import com.enode.infrastructure.impl.DefaultMessageProcessContext;
 import com.enode.rocketmq.ITopicProvider;
-import com.enode.rocketmq.RocketMQProcessContext;
 import com.enode.rocketmq.TopicTagData;
 import com.enode.rocketmq.client.IMQMessageHandler;
 import com.enode.rocketmq.client.RocketMQConsumer;
-import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -42,17 +41,7 @@ public class PublishableExceptionConsumer {
     }
 
     public PublishableExceptionConsumer start() {
-        _consumer.registerMessageHandler(new IMQMessageHandler() {
-            @Override
-            public boolean isMatched(TopicTagData topicTagData) {
-                return _exceptionTopicProvider.getAllSubscribeTopics().contains(topicTagData);
-            }
-
-            @Override
-            public void handle(MessageExt message, CompletableConsumeConcurrentlyContext context) {
-                PublishableExceptionConsumer.this.handle(message, context);
-            }
-        });
+        _consumer.registerMessageHandler(new PublishableExceptionMessageHandle());
         return this;
     }
 
@@ -60,34 +49,38 @@ public class PublishableExceptionConsumer {
         return this;
     }
 
-    void handle(final MessageExt msg, final CompletableConsumeConcurrentlyContext context) {
-        PublishableExceptionMessage exceptionMessage = _jsonSerializer.deserialize(BitConverter.toString(msg.getBody()), PublishableExceptionMessage.class);
-        Class exceptionType = _typeNameProvider.getType(exceptionMessage.getExceptionType());
-
-        IPublishableException exception;
-
-        try {
-            exception = (IPublishableException) exceptionType.getConstructor().newInstance();
-        } catch (Exception e) {
-            throw new WrappedRuntimeException(e);
-        }
-        exception.setId(exceptionMessage.getUniqueId());
-        exception.setTimestamp(exceptionMessage.getTimestamp());
-        exception.restoreFrom(exceptionMessage.getSerializableInfo());
-
-        if (exception instanceof ISequenceMessage) {
-            ISequenceMessage sequenceMessage = (ISequenceMessage) exception;
-            sequenceMessage.setAggregateRootTypeName(exceptionMessage.getAggregateRootTypeName());
-            sequenceMessage.setAggregateRootStringId(exceptionMessage.getAggregateRootId());
+    class PublishableExceptionMessageHandle implements IMQMessageHandler {
+        @Override
+        public boolean isMatched(TopicTagData topicTagData) {
+            return _exceptionTopicProvider.getAllSubscribeTopics().contains(topicTagData);
         }
 
-        RocketMQProcessContext processContext = new RocketMQProcessContext(msg, context);
-        ProcessingPublishableExceptionMessage processingMessage = new ProcessingPublishableExceptionMessage(exception, processContext);
-        _logger.info("ENode exception message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}", exceptionMessage.getUniqueId(), exceptionMessage.getAggregateRootId(), exceptionMessage.getAggregateRootTypeName());
-        _publishableExceptionProcessor.process(processingMessage);
-    }
+        @Override
+        public void handle(Object msg, CompletableConsumeConcurrentlyContext context) {
+            PublishableExceptionMessage exceptionMessage = _jsonSerializer.deserialize(msg.toString(), PublishableExceptionMessage.class);
+            Class exceptionType = _typeNameProvider.getType(exceptionMessage.getExceptionType());
 
-    public RocketMQConsumer getConsumer() {
-        return _consumer;
+            IPublishableException exception;
+
+            try {
+                exception = (IPublishableException) exceptionType.getConstructor().newInstance();
+            } catch (Exception e) {
+                throw new WrappedRuntimeException(e);
+            }
+            exception.setId(exceptionMessage.getUniqueId());
+            exception.setTimestamp(exceptionMessage.getTimestamp());
+            exception.restoreFrom(exceptionMessage.getSerializableInfo());
+
+            if (exception instanceof ISequenceMessage) {
+                ISequenceMessage sequenceMessage = (ISequenceMessage) exception;
+                sequenceMessage.setAggregateRootTypeName(exceptionMessage.getAggregateRootTypeName());
+                sequenceMessage.setAggregateRootStringId(exceptionMessage.getAggregateRootId());
+            }
+
+            DefaultMessageProcessContext processContext = new DefaultMessageProcessContext(msg, context);
+            ProcessingPublishableExceptionMessage processingMessage = new ProcessingPublishableExceptionMessage(exception, processContext);
+            _logger.info("ENode exception message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}", exceptionMessage.getUniqueId(), exceptionMessage.getAggregateRootId(), exceptionMessage.getAggregateRootTypeName());
+            _publishableExceptionProcessor.process(processingMessage);
+        }
     }
 }

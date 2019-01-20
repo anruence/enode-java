@@ -1,4 +1,4 @@
-package com.enode.rocketmq.consumer;
+package com.enode.rocketmq.client.consumer;
 
 import com.alibaba.rocketmq.client.QueryResult;
 import com.alibaba.rocketmq.client.consumer.AllocateMessageQueueStrategy;
@@ -18,7 +18,7 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.remoting.RPCHook;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
-import com.enode.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
+import com.enode.rocketmq.client.consumer.listener.CompletableMessageListenerConcurrently;
 
 import java.util.HashMap;
 import java.util.Map;

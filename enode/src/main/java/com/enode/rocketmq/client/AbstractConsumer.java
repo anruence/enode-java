@@ -2,8 +2,7 @@ package com.enode.rocketmq.client;
 
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.enode.rocketmq.consumer.CompletableDefaultMQPushConsumer;
-import com.enode.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
+import com.enode.rocketmq.client.consumer.CompletableDefaultMQPushConsumer;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,14 +37,6 @@ public abstract class AbstractConsumer {
     }
 
     public void registerMessageListener(MessageListenerConcurrently messageListener) {
-        if (null == messageListener) {
-            throw new RocketMQClientException("listener is null");
-        }
-
-        this.defaultMQPushConsumer.registerMessageListener(messageListener);
-    }
-
-    public void registerMessageListener(CompletableMessageListenerConcurrently messageListener) {
         if (null == messageListener) {
             throw new RocketMQClientException("listener is null");
         }

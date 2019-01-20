@@ -1,9 +1,6 @@
 package com.enode.rocketmq.client.ons;
 
-import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
-import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.rocketmq.client.AbstractProducer;
 import com.enode.rocketmq.client.MQClientInitializer;
@@ -14,7 +11,6 @@ import com.enode.rocketmq.client.trace.core.dispatch.AsyncDispatcher;
 import com.enode.rocketmq.client.trace.core.dispatch.impl.AsyncArrayDispatcher;
 import org.slf4j.Logger;
 
-import java.util.List;
 import java.util.Properties;
 
 public class ONSProducerImpl extends AbstractProducer implements Producer {
@@ -24,72 +20,6 @@ public class ONSProducerImpl extends AbstractProducer implements Producer {
 
     public ONSProducerImpl(final Properties properties) {
         super(properties, new ONSClientInitializer());
-    }
-
-    public static void main(String[] args) {
-        //startConsumer();
-
-        Properties properties = new Properties();
-
-        properties.put(PropertyKeyConst.ProducerId, "PID_EnodeCommon");
-
-        properties.put(PropertyKeyConst.AccessKey, "G6aUujQD6m1Uyy68");
-
-        properties.put(PropertyKeyConst.SecretKey,
-                "TR6MUs6R8dK6GTOKudmaaY80K2dmxI");
-        ONSProducerImpl producer = new ONSProducerImpl(properties);
-
-        producer.start();
-        System.out.println("producer started.");
-        producer.shutdown();
-        System.out.println("producer shutdown.");
-
-        /*Message msg = new Message(
-
-                // Message Topic
-                "EnodeCommonTopicDev",
-                // Message Tag,
-                // 可理解为Gmail中的标签，对消息进行再归类，方便Consumer指定过滤条件在ONS服务器过滤
-                "Tags",
-                // Message Body
-                // 任何二进制形式的数据，ONS不做任何干预，需要Producer与Consumer协商好一致的序列化和反序列化方式
-                "TestWithConsumer".getBytes());
-
-
-        SendResult sendResult = producer.send(msg, (final List<MessageQueue> mqs, final Message m, final Object arg) -> mqs.get(0), "test");
-
-        System.out.println(sendResult);*/
-
-        // 在应用退出前，销毁Producer对象
-        // 注意：如果不销毁也没有问题
-//        producer.shutdown();
-    }
-
-    private static void startConsumer() {
-        Properties properties = new Properties();
-
-        properties.put(PropertyKeyConst.ConsumerId, "CID_NoteSample");
-
-        properties.put(PropertyKeyConst.AccessKey, "G6aUujQD6m1Uyy68");
-
-        properties.put(PropertyKeyConst.SecretKey,
-                "TR6MUs6R8dK6GTOKudmaaY80K2dmxI");
-
-        ONSConsumerImpl consumer = new ONSConsumerImpl(properties);
-
-        consumer.registerMessageListener((final List<MessageExt> msgs,
-                                          final ConsumeConcurrentlyContext context) -> {
-            MessageExt message = msgs.get(0);
-            System.out.println("Test11-cluster:" + message);
-
-            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-        });
-
-        consumer.subscribe("jslink-test", "*");
-
-        consumer.start();
-
-        System.out.println("Consumer Started");
     }
 
     @Override

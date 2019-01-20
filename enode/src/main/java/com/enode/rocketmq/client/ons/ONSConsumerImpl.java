@@ -6,7 +6,7 @@ import com.enode.rocketmq.client.AbstractConsumer;
 import com.enode.rocketmq.client.Consumer;
 import com.enode.rocketmq.client.MQClientInitializer;
 import com.enode.rocketmq.client.RocketMQClientException;
-import com.enode.rocketmq.consumer.CompletableDefaultMQPushConsumer;
+import com.enode.rocketmq.client.consumer.CompletableDefaultMQPushConsumer;
 import com.enode.rocketmq.client.trace.core.common.OnsTraceConstants;
 import com.enode.rocketmq.client.trace.core.dispatch.AsyncDispatcher;
 import com.enode.rocketmq.client.trace.core.dispatch.impl.AsyncArrayDispatcher;

@@ -1,10 +1,11 @@
 package com.enode.rocketmq.client;
 
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.rocketmq.TopicTagData;
-import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
-import com.enode.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -46,10 +47,10 @@ public class RocketMQConsumer {
     }
 
 
-    class MessageHandler implements CompletableMessageListenerConcurrently {
+    class MessageHandler implements MessageListenerConcurrently {
 
         @Override
-        public void consumeMessage(List<MessageExt> msgs, CompletableConsumeConcurrentlyContext context) {
+        public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
             MessageExt msg = msgs.get(0);
             String topic = msg.getTopic();
             String tag = msg.getTags();
@@ -57,23 +58,24 @@ public class RocketMQConsumer {
 
             IMQMessageHandler IMQMessageHandler = _handlerDict.get(topicTagData);
 
+            ConsumeConcurrentlyStatus status = ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             if (IMQMessageHandler == null) {
                 List<IMQMessageHandler> handlers = _handlers.stream().filter(handler -> handler.isMatched(topicTagData)).collect(Collectors.toList());
                 if (handlers.size() > 1) {
                     _logger.error("Duplicate consume handler with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
-                    context.reConsumeLater();
+                    status = ConsumeConcurrentlyStatus.RECONSUME_LATER;
                 }
-
                 IMQMessageHandler = handlers.get(0);
                 _handlerDict.put(topicTagData, IMQMessageHandler);
             }
 
             if (IMQMessageHandler == null) {
                 _logger.error("No consume handler found with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
-                context.reConsumeLater();
+                status = ConsumeConcurrentlyStatus.RECONSUME_LATER;
             } else {
-                IMQMessageHandler.handle(msg, context);
+                IMQMessageHandler.handle(msg, null);
             }
+            return status;
         }
     }
 }

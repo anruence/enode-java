@@ -2,7 +2,7 @@ package com.enode.infrastructure.impl;
 
 import com.enode.common.container.IObjectContainer;
 import com.enode.common.container.LifeStyle;
-import com.enode.infrastructure.Component;
+import com.enode.infrastructure.LifeStyleType;
 import com.enode.infrastructure.IAssemblyInitializer;
 import com.enode.infrastructure.IObjectProxy;
 import com.enode.infrastructure.MessageHandlerData;
@@ -28,10 +28,10 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
     private MethodHandles.Lookup lookup = MethodHandles.lookup();
 
     private static LifeStyle parseComponentLife(Class type) {
-        Component annotation = (Component) type.getAnnotation(Component.class);
+        LifeStyleType annotation = (LifeStyleType) type.getAnnotation(LifeStyleType.class);
 
         if (annotation != null) {
-            return annotation.life();
+            return annotation.value();
         }
 
         return LifeStyle.Singleton;

@@ -56,8 +56,7 @@ public abstract class AbstractProducer {
         }
     }
 
-    public void send(final Message message, final MessageQueueSelector selector, final Object arg,
-                     final SendCallback sendCallback) {
+    public void send(final Message message, final MessageQueueSelector selector, final Object arg, final SendCallback sendCallback) {
         this.checkONSServiceState();
 
         try {

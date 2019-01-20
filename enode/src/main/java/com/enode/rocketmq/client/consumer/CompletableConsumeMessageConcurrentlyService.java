@@ -1,4 +1,4 @@
-package com.enode.rocketmq.consumer;
+package com.enode.rocketmq.client.consumer;
 
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -16,8 +16,8 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.common.protocol.body.CMResult;
 import com.alibaba.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import com.alibaba.rocketmq.remoting.common.RemotingHelper;
-import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
-import com.enode.rocketmq.consumer.listener.CompletableMessageListenerConcurrently;
+import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.enode.rocketmq.client.consumer.listener.CompletableMessageListenerConcurrently;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -83,7 +83,7 @@ public class CompletableConsumeMessageConcurrentlyService implements ConsumeMess
         return this.defaultMQPushConsumerImpl.getConsumerStatsManager();
     }
 
-    public boolean sendMessageBack(final MessageExt msg, final CompletableConsumeConcurrentlyContext context) {
+    public boolean sendMessageBack(final MessageExt msg, final CompletableConsumeConcurrentlyContext<MessageQueue> context) {
         int delayLevel = context.getDelayLevelWhenNextConsume();
 
         try {

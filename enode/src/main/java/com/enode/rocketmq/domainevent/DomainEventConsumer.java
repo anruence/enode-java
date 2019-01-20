@@ -1,6 +1,7 @@
 package com.enode.rocketmq.domainevent;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
+import com.enode.commanding.CommandReturnType;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.BitConverter;
@@ -9,14 +10,13 @@ import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ProcessingDomainEventStreamMessage;
-import com.enode.commanding.CommandReturnType;
-import com.enode.rocketmq.SendReplyService;
+import com.enode.infrastructure.impl.DefaultMessageProcessContext;
 import com.enode.rocketmq.ITopicProvider;
-import com.enode.rocketmq.client.RocketMQConsumer;
-import com.enode.rocketmq.client.IMQMessageHandler;
-import com.enode.rocketmq.RocketMQProcessContext;
+import com.enode.rocketmq.SendReplyService;
 import com.enode.rocketmq.TopicTagData;
-import com.enode.rocketmq.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.enode.rocketmq.client.IMQMessageHandler;
+import com.enode.rocketmq.client.RocketMQConsumer;
+import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -47,19 +47,16 @@ public class DomainEventConsumer {
         _eventTopicProvider = eventITopicProvider;
     }
 
+    public SendReplyService getSendReplyService() {
+        return _sendReplyService;
+    }
+
+    public boolean isSendEventHandledMessage() {
+        return _sendEventHandledMessage;
+    }
+
     public DomainEventConsumer start() {
-        _consumer.registerMessageHandler(new IMQMessageHandler() {
-            @Override
-            public boolean isMatched(TopicTagData topicTagData) {
-                return _eventTopicProvider.getAllSubscribeTopics().contains(topicTagData);
-            }
-
-            @Override
-            public void handle(MessageExt message, CompletableConsumeConcurrentlyContext context) {
-                DomainEventConsumer.this.handle(message, context);
-            }
-        });
-
+        _consumer.registerMessageHandler(new DomainEventMessageHandler());
         if (_sendEventHandledMessage) {
             _sendReplyService.start();
         }
@@ -73,33 +70,39 @@ public class DomainEventConsumer {
         return this;
     }
 
-    void handle(final MessageExt msg,
-                final CompletableConsumeConcurrentlyContext context) {
-        EventStreamMessage message = _jsonSerializer.deserialize(BitConverter.toString(msg.getBody()), EventStreamMessage.class);
+    class DomainEventMessageHandler implements IMQMessageHandler {
+        @Override
+        public boolean isMatched(TopicTagData topicTagData) {
+            return _eventTopicProvider.getAllSubscribeTopics().contains(topicTagData);
+        }
 
-        DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
-        DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(this, domainEventStreamMessage, msg, context);
-        ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
-        _logger.info("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.id(), domainEventStreamMessage.aggregateRootStringId(), domainEventStreamMessage.aggregateRootTypeName(), domainEventStreamMessage.version());
-        _processor.process(processingMessage);
+        @Override
+        public void handle(Object msg, CompletableConsumeConcurrentlyContext context) {
+            EventStreamMessage message = _jsonSerializer.deserialize(BitConverter.toString(msg.getBody()), EventStreamMessage.class);
+            DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
+            DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(DomainEventConsumer.this, domainEventStreamMessage, msg, context);
+            ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
+            _logger.info("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.id(), domainEventStreamMessage.aggregateRootStringId(), domainEventStreamMessage.aggregateRootTypeName(), domainEventStreamMessage.version());
+            _processor.process(processingMessage);
+        }
+
+        private DomainEventStreamMessage convertToDomainEventStream(EventStreamMessage message) {
+            DomainEventStreamMessage domainEventStreamMessage = new DomainEventStreamMessage(
+                    message.getCommandId(),
+                    message.getAggregateRootId(),
+                    message.getVersion(),
+                    message.getAggregateRootTypeName(),
+                    _eventSerializer.deserialize(message.getEvents(), IDomainEvent.class),
+                    message.getItems()
+            );
+            domainEventStreamMessage.setId(message.getId());
+            domainEventStreamMessage.setTimestamp(message.getTimestamp());
+
+            return domainEventStreamMessage;
+        }
     }
 
-    private DomainEventStreamMessage convertToDomainEventStream(EventStreamMessage message) {
-        DomainEventStreamMessage domainEventStreamMessage = new DomainEventStreamMessage(
-                message.getCommandId(),
-                message.getAggregateRootId(),
-                message.getVersion(),
-                message.getAggregateRootTypeName(),
-                _eventSerializer.deserialize(message.getEvents(), IDomainEvent.class),
-                message.getItems()
-        );
-        domainEventStreamMessage.setId(message.getId());
-        domainEventStreamMessage.setTimestamp(message.getTimestamp());
-
-        return domainEventStreamMessage;
-    }
-
-    class DomainEventStreamProcessContext extends RocketMQProcessContext {
+    class DomainEventStreamProcessContext extends DefaultMessageProcessContext {
         private final DomainEventConsumer _eventConsumer;
         private final DomainEventStreamMessage _domainEventStreamMessage;
 
@@ -113,8 +116,7 @@ public class DomainEventConsumer {
         @Override
         public void notifyMessageProcessed() {
             super.notifyMessageProcessed();
-
-            if (!_eventConsumer._sendEventHandledMessage) {
+            if (!_eventConsumer.isSendEventHandledMessage()) {
                 return;
             }
 
@@ -124,13 +126,12 @@ public class DomainEventConsumer {
             }
 
             String commandResult = _domainEventStreamMessage.getItems().get("CommandResult");
-
             DomainEventHandledMessage domainEventHandledMessage = new DomainEventHandledMessage();
             domainEventHandledMessage.setCommandId(_domainEventStreamMessage.getCommandId());
             domainEventHandledMessage.setAggregateRootId(_domainEventStreamMessage.aggregateRootId());
             domainEventHandledMessage.setCommandResult(commandResult);
-
-            _eventConsumer._sendReplyService.sendReply(CommandReturnType.EventHandled.getValue(), domainEventHandledMessage, replyAddress);
+            _eventConsumer.getSendReplyService().sendReply(CommandReturnType.EventHandled.getValue(), domainEventHandledMessage, replyAddress);
         }
     }
+
 }
