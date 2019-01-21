@@ -2,21 +2,21 @@ package com.enode.samples.providers;
 
 import com.enode.infrastructure.IPublishableException;
 import com.enode.rocketmq.AbstractTopicProvider;
-import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.TopicData;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class ExceptionTopicProvider extends AbstractTopicProvider<IPublishableException> {
     @Override
-    public TopicTagData getPublishTopic(IPublishableException event) {
-        return new TopicTagData("EnodeCommonTopicDev", "Exception");
+    public TopicData getPublishTopic(IPublishableException event) {
+        return new TopicData("EnodeCommonTopicDev", "Exception");
     }
 
     @Override
-    public Collection<TopicTagData> getAllSubscribeTopics() {
-        return new ArrayList<TopicTagData>() {{
-            add(new TopicTagData("EnodeCommonTopicDev", "Exception"));
+    public Collection<TopicData> getAllSubscribeTopics() {
+        return new ArrayList<TopicData>() {{
+            add(new TopicData("EnodeCommonTopicDev", "Exception"));
         }};
     }
 }

@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class MysqlEventStore implements IEventStore {
+
     private static final Logger _logger = ENodeLogger.getLog();
 
     private static final String EventTableNameFormat = "{0}_{1}";
@@ -82,43 +83,6 @@ public class MysqlEventStore implements IEventStore {
         _queryRunner = new QueryRunner(ds);
         executor = Executors.newFixedThreadPool(4,
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MysqlEventStoreExecutor-%d").build());
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        CompletableFuture<String> future = new CompletableFuture<>();
-        future.complete("test");
-
-        CompletableFuture<String> future1 = future.thenApply(v -> {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            System.out.println(v);
-            return "1" + v;
-        });
-
-        CompletableFuture<String> future2 = future.thenApply(v -> {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            System.out.println(v);
-            return "2" + v;
-        });
-
-        future1.handleAsync((r, e) -> {
-            System.out.println(r);
-            return null;
-        });
-
-        future2.handleAsync((r, e) -> {
-            System.out.println(r);
-            return null;
-        });
-
-        Thread.sleep(20000);
     }
 
     @Override

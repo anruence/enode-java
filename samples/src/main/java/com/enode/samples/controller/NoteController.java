@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.concurrent.ExecutionException;
-
 @RestController
 @RequestMapping("/note")
 public class NoteController {
@@ -29,7 +27,7 @@ public class NoteController {
     }
 
     @RequestMapping("change")
-    public Object change(@RequestParam("id") String noteId, @RequestParam("t") String title) throws ExecutionException, InterruptedException {
+    public Object change(@RequestParam("id") String noteId, @RequestParam("t") String title) {
         ChangeNoteTitleCommand command2 = new ChangeNoteTitleCommand(noteId, title);
         AsyncTaskResult<CommandResult> promise = CompletableFutureUtil.getValue(commandService.executeAsync(command2, CommandReturnType.EventHandled));
         return promise;

@@ -42,19 +42,10 @@ public class GuiceObjectContainer implements IObjectContainer {
         return false;
     }
 
-    /*private void override(Module newModule) {
-        if (this.module == null) {
-            this.module = newModule;
-        } else {
-            this.module = Modules.override(this.module).with(newModule);
-        }
-        this.container = Guice.createInjector(this.module);
-    }*/
     private void override(Module newModule) {
         if (this.container == null) {
             this.container = Guice.createInjector(newModule);
         } else {
-            //this.container = this.container.createChildInjector(newModule);
             this.container = Guice.createInjector(newModule);
         }
     }

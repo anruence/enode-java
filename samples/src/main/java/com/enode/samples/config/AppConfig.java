@@ -61,7 +61,7 @@ public class AppConfig {
 //                .useMysqlComponents(dataSource); // 注销此行，启用内存实现（CommandStore,EventStore,SequenceMessagePublishedVersionStore,MessageHandleRecordStore）
         if (isons) {
             enode.useONS(producerSetting, consumerSetting, 6000,
-                    ENode.COMMAND_SERVICE
+                    ENode.ALL_COMPONENTS
                             | ENode.DOMAIN_EVENT_PUBLISHER
                             | ENode.DOMAIN_EVENT_CONSUMER
                             | ENode.COMMAND_CONSUMER

@@ -1,21 +1,19 @@
 package com.enode.rocketmq.domainevent;
 
-import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.commanding.CommandReturnType;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.serializing.IJsonSerializer;
-import com.enode.common.utilities.BitConverter;
 import com.enode.eventing.DomainEventStreamMessage;
 import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ProcessingDomainEventStreamMessage;
 import com.enode.infrastructure.impl.DefaultMessageProcessContext;
+import com.enode.rocketmq.IMQConsumer;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendReplyService;
-import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.TopicData;
 import com.enode.rocketmq.client.IMQMessageHandler;
-import com.enode.rocketmq.client.RocketMQConsumer;
 import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
@@ -24,7 +22,7 @@ import javax.inject.Inject;
 public class DomainEventConsumer {
     private static final Logger _logger = ENodeLogger.getLog();
 
-    private final RocketMQConsumer _consumer;
+    private final IMQConsumer _consumer;
     private final SendReplyService _sendReplyService;
     private final IJsonSerializer _jsonSerializer;
     private final IEventSerializer _eventSerializer;
@@ -34,7 +32,7 @@ public class DomainEventConsumer {
 
     @Inject
     public DomainEventConsumer(
-            RocketMQConsumer rocketMQConsumer, IJsonSerializer jsonSerializer, IEventSerializer eventSerializer,
+            IMQConsumer rocketMQConsumer, IJsonSerializer jsonSerializer, IEventSerializer eventSerializer,
             IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> processor,
             ITopicProvider<IDomainEvent> eventITopicProvider,
             SendReplyService sendReplyService) {
@@ -72,13 +70,13 @@ public class DomainEventConsumer {
 
     class DomainEventMessageHandler implements IMQMessageHandler {
         @Override
-        public boolean isMatched(TopicTagData topicTagData) {
+        public boolean isMatched(TopicData topicTagData) {
             return _eventTopicProvider.getAllSubscribeTopics().contains(topicTagData);
         }
 
         @Override
-        public void handle(Object msg, CompletableConsumeConcurrentlyContext context) {
-            EventStreamMessage message = _jsonSerializer.deserialize(BitConverter.toString(msg.getBody()), EventStreamMessage.class);
+        public void handle(String msg, CompletableConsumeConcurrentlyContext context) {
+            EventStreamMessage message = _jsonSerializer.deserialize(msg.toString(), EventStreamMessage.class);
             DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
             DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(DomainEventConsumer.this, domainEventStreamMessage, msg, context);
             ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
@@ -107,7 +105,7 @@ public class DomainEventConsumer {
         private final DomainEventStreamMessage _domainEventStreamMessage;
 
         public DomainEventStreamProcessContext(DomainEventConsumer eventConsumer, DomainEventStreamMessage domainEventStreamMessage,
-                                               MessageExt queueMessage, CompletableConsumeConcurrentlyContext messageContext) {
+                                               Object queueMessage, CompletableConsumeConcurrentlyContext messageContext) {
             super(queueMessage, messageContext);
             _eventConsumer = eventConsumer;
             _domainEventStreamMessage = domainEventStreamMessage;

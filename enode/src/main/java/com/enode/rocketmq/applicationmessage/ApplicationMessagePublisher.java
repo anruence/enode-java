@@ -1,43 +1,20 @@
 package com.enode.rocketmq.applicationmessage;
 
-import com.alibaba.rocketmq.common.message.Message;
 import com.enode.common.io.AsyncTaskResult;
-import com.enode.common.serializing.IJsonSerializer;
-import com.enode.common.utilities.BitConverter;
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.infrastructure.IMessagePublisher;
-import com.enode.infrastructure.ITypeNameProvider;
-import com.enode.rocketmq.QueueMessageTypeCode;
-import com.enode.rocketmq.ITopicProvider;
-import com.enode.rocketmq.SendRocketMQService;
-import com.enode.rocketmq.TopicTagData;
-import com.enode.rocketmq.client.Producer;
+import com.enode.rocketmq.IMQProducer;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
 public class ApplicationMessagePublisher implements IMessagePublisher<IApplicationMessage> {
 
-    private final IJsonSerializer _jsonSerializer;
-    private final ITopicProvider<IApplicationMessage> _messageTopicProvider;
-    private final ITypeNameProvider _typeNameProvider;
-    private final Producer _producer;
-    private final SendRocketMQService _sendMessageService;
+    private final IMQProducer _sendMessageService;
 
     @Inject
-    public ApplicationMessagePublisher(Producer producer, IJsonSerializer jsonSerializer,
-                                       ITopicProvider<IApplicationMessage> messageITopicProvider,
-                                       ITypeNameProvider typeNameProvider,
-                                       SendRocketMQService sendQueueMessageService) {
-        _producer = producer;
-        _jsonSerializer = jsonSerializer;
-        _messageTopicProvider = messageITopicProvider;
-        _typeNameProvider = typeNameProvider;
+    public ApplicationMessagePublisher(IMQProducer sendQueueMessageService) {
         _sendMessageService = sendQueueMessageService;
-    }
-
-    public Producer getProducer() {
-        return _producer;
     }
 
     public ApplicationMessagePublisher start() {
@@ -50,26 +27,6 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
 
     @Override
     public CompletableFuture<AsyncTaskResult> publishAsync(IApplicationMessage message) {
-        Message queueMessage = createEQueueMessage(message);
-        return _sendMessageService.sendMessageAsync(_producer, queueMessage, message.getRoutingKey() == null ? message.id() : message.getRoutingKey(), message.id(), null);
-    }
-
-    private Message createEQueueMessage(IApplicationMessage message) {
-        TopicTagData topicTagData = _messageTopicProvider.getPublishTopic(message);
-        String appMessageData = _jsonSerializer.serialize(message);
-        ApplicationDataMessage appDataMessage = new ApplicationDataMessage(appMessageData, message.getClass().getName());
-
-        String data = _jsonSerializer.serialize(appDataMessage);
-
-        Message mqMessage = new Message(topicTagData.getTopic(), //topic
-                //_typeNameProvider.getTypeName(message.getClass()), //tags
-                topicTagData.getTag(), //tag
-                message.id(), // keys
-                QueueMessageTypeCode.ApplicationMessage.getValue(), // flag
-                BitConverter.getBytes(data), // body
-                true);
-
-
-        return mqMessage;
+        return _sendMessageService.sendAsync(message, message.getRoutingKey() == null ? message.id() : message.getRoutingKey());
     }
 }

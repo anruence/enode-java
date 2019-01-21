@@ -55,7 +55,6 @@ import com.enode.eventing.impl.DefaultEventService;
 import com.enode.eventing.impl.DomainEventStreamMessageHandler;
 import com.enode.eventing.impl.InMemoryEventStore;
 import com.enode.eventing.impl.MysqlEventStore;
-import com.enode.infrastructure.LifeStyleType;
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.infrastructure.IAssemblyInitializer;
 import com.enode.infrastructure.ILockService;
@@ -72,6 +71,7 @@ import com.enode.infrastructure.IThreeMessageHandlerProvider;
 import com.enode.infrastructure.ITimeProvider;
 import com.enode.infrastructure.ITwoMessageHandlerProvider;
 import com.enode.infrastructure.ITypeNameProvider;
+import com.enode.infrastructure.LifeStyleType;
 import com.enode.infrastructure.ProcessingApplicationMessage;
 import com.enode.infrastructure.ProcessingDomainEventStreamMessage;
 import com.enode.infrastructure.ProcessingPublishableExceptionMessage;
@@ -92,12 +92,13 @@ import com.enode.infrastructure.impl.inmemory.InMemoryPublishedVersionStore;
 import com.enode.infrastructure.impl.mysql.MysqlLockService;
 import com.enode.infrastructure.impl.mysql.MysqlPublishedVersionStore;
 import com.enode.jmx.ENodeJMXAgent;
-import com.enode.rocketmq.command.CommandResultProcessor;
-import com.enode.rocketmq.SendReplyService;
+import com.enode.rocketmq.IMQConsumer;
+import com.enode.rocketmq.IMQProducer;
 import com.enode.rocketmq.ITopicProvider;
-import com.enode.rocketmq.client.RocketMQConsumer;
+import com.enode.rocketmq.RocketMQConsumer;
+import com.enode.rocketmq.SendReplyService;
 import com.enode.rocketmq.SendRocketMQService;
-import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.TopicData;
 import com.enode.rocketmq.applicationmessage.ApplicationMessageConsumer;
 import com.enode.rocketmq.applicationmessage.ApplicationMessagePublisher;
 import com.enode.rocketmq.client.Consumer;
@@ -106,6 +107,7 @@ import com.enode.rocketmq.client.RocketMQFactory;
 import com.enode.rocketmq.client.impl.NativeMQFactory;
 import com.enode.rocketmq.client.ons.ONSFactory;
 import com.enode.rocketmq.command.CommandConsumer;
+import com.enode.rocketmq.command.CommandResultProcessor;
 import com.enode.rocketmq.command.CommandService;
 import com.enode.rocketmq.domainevent.DomainEventConsumer;
 import com.enode.rocketmq.domainevent.DomainEventPublisher;
@@ -143,13 +145,12 @@ public class ENode extends AbstractContainer<ENode> {
     public static final int APPLICATION_MESSAGE_CONSUMER = 64;
     public static final int EXCEPTION_CONSUMER = 128;
     //Default Composite Components
-    public static final int DOMAIN = DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER | COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
     public static final int PUBLISHERS = COMMAND_SERVICE | DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER;
     public static final int CONSUMERS = COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
     public static final int ALL_COMPONENTS = PUBLISHERS | CONSUMERS;
     private static final Logger logger = ENodeLogger.getLog();
     //加载AbstractDenormalizer
-    private static final String[] ENODE_PACKAGE_SCAN = new String[]{"com.enode.domain", "com.enode.message", "com.enode.rocketmq", "com.enode.infrastructure.impl"};
+    private static final String[] ENODE_PACKAGE_SCAN = new String[]{"com.enode.domain", "com.enode.message", "com.enode.infrastructure.impl"};
     private static final Set<Class> ENODE_COMPONENT_TYPES = new HashSet<Class>() {{
         add(ICommandHandler.class);
         add(ICommandAsyncHandler.class);
@@ -320,7 +321,7 @@ public class ENode extends AbstractContainer<ENode> {
         return this;
     }
 
-    public ENode useMysqlComponents(DataSource ds) {
+    public ENode useMysqlComponents(DataSource ds,OptionSetting optionSetting) {
         return useMysqlLockService(ds, null)
                 .useMysqlEventStore(ds, null)
                 .useMysqlPublishedVersionStore(ds, null);
@@ -397,25 +398,24 @@ public class ENode extends AbstractContainer<ENode> {
                 .registerBusinessComponents();
     }
 
-    public ENode useONS(Properties producerSetting,
-                        Properties consumerSetting,
-                        int listenPort,
-                        int registerRocketMQComponentsFlag) {
-        return useRocketMQ(producerSetting, consumerSetting, registerRocketMQComponentsFlag, listenPort, true);
+    public ENode useONS(Properties producerSetting, Properties consumerSetting, int listenPort, int componentFlag) {
+        return useRocketMQ(producerSetting, consumerSetting, componentFlag, listenPort, true);
     }
 
-    public ENode useNativeRocketMQ(Properties producerSetting,
-                                   Properties consumerSetting,
-                                   int listenPort,
-                                   int registerRocketMQComponentsFlag) {
+    public ENode useNativeRocketMQ(
+            Properties producerSetting,
+            Properties consumerSetting,
+            int listenPort,
+            int registerRocketMQComponentsFlag) {
         return useRocketMQ(producerSetting, consumerSetting, registerRocketMQComponentsFlag, listenPort, false);
     }
 
-    private ENode useRocketMQ(Properties producerSetting,
-                              Properties consumerSetting,
-                              int registerRocketMQComponentsFlag,
-                              int listenPort,
-                              boolean isONS) {
+    private ENode useRocketMQ(
+            Properties producerSetting,
+            Properties consumerSetting,
+            int registerRocketMQComponentsFlag,
+            int listenPort,
+            boolean isONS) {
 
         this.registerRocketMQComponentsFlag = registerRocketMQComponentsFlag;
 
@@ -426,7 +426,7 @@ public class ENode extends AbstractContainer<ENode> {
             Consumer consumer = mqFactory.createPushConsumer(consumerSetting);
 
             registerInstance(Consumer.class, consumer);
-            register(RocketMQConsumer.class);
+            register(IMQConsumer.class, RocketMQConsumer.class);
 
             // CommandConsumer、DomainEventConsumer需要引用SendReplyService
             if (hasAnyComponents(registerRocketMQComponentsFlag, COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER)) {
@@ -459,9 +459,7 @@ public class ENode extends AbstractContainer<ENode> {
             //Create MQProducer
             Producer producer = mqFactory.createProducer(producerSetting);
             registerInstance(Producer.class, producer);
-
-            register(SendRocketMQService.class);
-
+            register(IMQProducer.class, SendRocketMQService.class);
             //CommandService
             if (hasComponent(registerRocketMQComponentsFlag, COMMAND_SERVICE)) {
                 register(CommandResultProcessor.class, null, () -> {
@@ -497,8 +495,9 @@ public class ENode extends AbstractContainer<ENode> {
         //Start MQConsumer and any register consumers(CommandConsumer、DomainEventConsumer、ApplicationMessageConsumer、PublishableExceptionConsumer)
         if (hasAnyComponents(registerRocketMQComponentsFlag, CONSUMERS)) {
             //All topic
-            Set<TopicTagData> topicTagDatas = new HashSet<>();
+            Set<TopicData> topicTagDatas = new HashSet<>();
 
+            IMQConsumer imqConsumer = resolve(IMQConsumer.class);
             //CommandConsumer
             if (hasComponent(registerRocketMQComponentsFlag, COMMAND_CONSUMER)) {
                 CommandConsumer commandConsumer = resolve(CommandConsumer.class);
@@ -547,13 +546,12 @@ public class ENode extends AbstractContainer<ENode> {
                 }
             }
 
-            RocketMQConsumer rocketMQConsumer = resolve(RocketMQConsumer.class);
-            topicTagDatas.stream().collect(Collectors.groupingBy(TopicTagData::getTopic)).forEach((topic, tags) -> {
-                String tagsJoin = tags.stream().map(TopicTagData::getTag).collect(Collectors.joining("||"));
-                rocketMQConsumer.subscribe(topic, tagsJoin);
+            topicTagDatas.stream().collect(Collectors.groupingBy(TopicData::getTopic)).forEach((topic, tags) -> {
+                String tagsJoin = tags.stream().map(TopicData::getTag).collect(Collectors.joining("||"));
+                imqConsumer.subscribe(topic, tagsJoin);
             });
 
-            rocketMQConsumer.start();
+            imqConsumer.start();
         }
 
         //Start MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
@@ -598,9 +596,7 @@ public class ENode extends AbstractContainer<ENode> {
                         .forPackages(scans)
                         .filterInputsBy(fb)
                         .setScanners(new SubTypesScanner(false), new TypeAnnotationsScanner()));
-
         assemblyTypes = reflections.getSubTypesOf(Object.class);
-
         return this;
     }
 
@@ -618,7 +614,6 @@ public class ENode extends AbstractContainer<ENode> {
         resolve(IMemoryCache.class).start();
         resolve(ICommandProcessor.class).start();
         resolve(IEventService.class).start();
-
         resolve(new GenericTypeLiteral<IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage>>() {
         }).start();
         resolve(new GenericTypeLiteral<IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage>>() {

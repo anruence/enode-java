@@ -1,11 +1,13 @@
-package com.enode.rocketmq.client;
+package com.enode.rocketmq;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.common.logging.ENodeLogger;
-import com.enode.rocketmq.TopicTagData;
+import com.enode.common.utilities.BitConverter;
+import com.enode.rocketmq.client.Consumer;
+import com.enode.rocketmq.client.IMQMessageHandler;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -16,11 +18,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RocketMQConsumer {
+public class RocketMQConsumer implements IMQConsumer {
     private static final Logger _logger = ENodeLogger.getLog();
     private Consumer _consumer;
     private Set<IMQMessageHandler> _handlers;
-    private Map<TopicTagData, IMQMessageHandler> _handlerDict;
+    private Map<TopicData, IMQMessageHandler> _handlerDict;
 
     @Inject
     public RocketMQConsumer(Consumer consumer) {
@@ -30,18 +32,22 @@ public class RocketMQConsumer {
         _handlerDict = new HashMap<>();
     }
 
+    @Override
     public void registerMessageHandler(IMQMessageHandler handler) {
         _handlers.add(handler);
     }
 
+    @Override
     public void subscribe(String topic, String subExpression) {
         _consumer.subscribe(topic, subExpression);
     }
 
+    @Override
     public void start() {
         _consumer.start();
     }
 
+    @Override
     public void shutdown() {
         _consumer.shutdown();
     }
@@ -54,7 +60,7 @@ public class RocketMQConsumer {
             MessageExt msg = msgs.get(0);
             String topic = msg.getTopic();
             String tag = msg.getTags();
-            TopicTagData topicTagData = new TopicTagData(topic, tag);
+            TopicData topicTagData = new TopicData(topic, tag);
 
             IMQMessageHandler IMQMessageHandler = _handlerDict.get(topicTagData);
 
@@ -73,7 +79,7 @@ public class RocketMQConsumer {
                 _logger.error("No consume handler found with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
                 status = ConsumeConcurrentlyStatus.RECONSUME_LATER;
             } else {
-                IMQMessageHandler.handle(msg, null);
+                IMQMessageHandler.handle(BitConverter.toString(msg.getBody()), null);
             }
             return status;
         }

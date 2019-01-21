@@ -2,7 +2,6 @@ package com.enode.rocketmq.publishableexceptions;
 
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.serializing.IJsonSerializer;
-import com.enode.common.utilities.BitConverter;
 import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.IPublishableException;
 import com.enode.infrastructure.ISequenceMessage;
@@ -10,10 +9,10 @@ import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.ProcessingPublishableExceptionMessage;
 import com.enode.infrastructure.WrappedRuntimeException;
 import com.enode.infrastructure.impl.DefaultMessageProcessContext;
+import com.enode.rocketmq.IMQConsumer;
 import com.enode.rocketmq.ITopicProvider;
-import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.TopicData;
 import com.enode.rocketmq.client.IMQMessageHandler;
-import com.enode.rocketmq.client.RocketMQConsumer;
 import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
@@ -23,14 +22,14 @@ import javax.inject.Inject;
 public class PublishableExceptionConsumer {
     private static final Logger _logger = ENodeLogger.getLog();
 
-    private final RocketMQConsumer _consumer;
+    private final IMQConsumer _consumer;
     private final IJsonSerializer _jsonSerializer;
     private final ITopicProvider<IPublishableException> _exceptionTopicProvider;
     private final ITypeNameProvider _typeNameProvider;
     private final IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> _publishableExceptionProcessor;
 
     @Inject
-    public PublishableExceptionConsumer(RocketMQConsumer consumer, IJsonSerializer jsonSerializer,
+    public PublishableExceptionConsumer(IMQConsumer consumer, IJsonSerializer jsonSerializer,
                                         ITopicProvider<IPublishableException> exceptionITopicProvider, ITypeNameProvider typeNameProvider,
                                         IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> publishableExceptionProcessor) {
         _consumer = consumer;
@@ -51,12 +50,12 @@ public class PublishableExceptionConsumer {
 
     class PublishableExceptionMessageHandle implements IMQMessageHandler {
         @Override
-        public boolean isMatched(TopicTagData topicTagData) {
+        public boolean isMatched(TopicData topicTagData) {
             return _exceptionTopicProvider.getAllSubscribeTopics().contains(topicTagData);
         }
 
         @Override
-        public void handle(Object msg, CompletableConsumeConcurrentlyContext context) {
+        public void handle(String msg, CompletableConsumeConcurrentlyContext context) {
             PublishableExceptionMessage exceptionMessage = _jsonSerializer.deserialize(msg.toString(), PublishableExceptionMessage.class);
             Class exceptionType = _typeNameProvider.getType(exceptionMessage.getExceptionType());
 

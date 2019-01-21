@@ -2,16 +2,15 @@ package com.enode.rocketmq.applicationmessage;
 
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.serializing.IJsonSerializer;
-import com.enode.common.utilities.BitConverter;
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.ProcessingApplicationMessage;
 import com.enode.infrastructure.impl.DefaultMessageProcessContext;
+import com.enode.rocketmq.IMQConsumer;
 import com.enode.rocketmq.ITopicProvider;
-import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.TopicData;
 import com.enode.rocketmq.client.IMQMessageHandler;
-import com.enode.rocketmq.client.RocketMQConsumer;
 import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
@@ -21,7 +20,7 @@ public class ApplicationMessageConsumer {
 
     private static final Logger _logger = ENodeLogger.getLog();
 
-    private final RocketMQConsumer _consumer;
+    private final IMQConsumer _consumer;
     private final IJsonSerializer _jsonSerializer;
     private final ITopicProvider<IApplicationMessage> _messageTopicProvider;
     private final ITypeNameProvider _typeNameProvider;
@@ -29,7 +28,7 @@ public class ApplicationMessageConsumer {
 
     @Inject
     public ApplicationMessageConsumer(
-            RocketMQConsumer consumer, IJsonSerializer jsonSerializer,
+            IMQConsumer consumer, IJsonSerializer jsonSerializer,
             ITopicProvider<IApplicationMessage> messageITopicProvider, ITypeNameProvider typeNameProvider,
             IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage> processor) {
         _consumer = consumer;
@@ -50,13 +49,13 @@ public class ApplicationMessageConsumer {
 
     class ApplicationMessageHandle implements IMQMessageHandler {
         @Override
-        public boolean isMatched(TopicTagData topicTagData) {
+        public boolean isMatched(TopicData topicTagData) {
             return _messageTopicProvider.getAllSubscribeTopics().contains(topicTagData);
         }
 
         @Override
-        public void handle(Object msg, CompletableConsumeConcurrentlyContext context) {
-            ApplicationDataMessage appDataMessage = _jsonSerializer.deserialize(BitConverter.toString(msg.getBody()), ApplicationDataMessage.class);
+        public void handle(String msg, CompletableConsumeConcurrentlyContext context) {
+            ApplicationDataMessage appDataMessage = _jsonSerializer.deserialize(msg, ApplicationDataMessage.class);
             Class applicationMessageType;
 
             try {

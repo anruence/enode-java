@@ -1,22 +1,20 @@
 package com.enode.rocketmq.command;
 
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
-import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.commanding.ICommand;
 import com.enode.commanding.ICommandProcessor;
 import com.enode.commanding.ProcessingCommand;
 import com.enode.commanding.impl.CommandExecuteContext;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.serializing.IJsonSerializer;
-import com.enode.common.utilities.BitConverter;
 import com.enode.domain.IAggregateStorage;
 import com.enode.domain.IRepository;
 import com.enode.infrastructure.ITypeNameProvider;
+import com.enode.rocketmq.IMQConsumer;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendReplyService;
-import com.enode.rocketmq.TopicTagData;
+import com.enode.rocketmq.TopicData;
 import com.enode.rocketmq.client.IMQMessageHandler;
-import com.enode.rocketmq.client.RocketMQConsumer;
 import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
@@ -28,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 public class CommandConsumer {
     private static final Logger _logger = ENodeLogger.getLog();
 
-    private final RocketMQConsumer _consumer;
+    private final IMQConsumer _consumer;
     private final SendReplyService _sendReplyService;
     private final IJsonSerializer _jsonSerializer;
     private final ITypeNameProvider _typeNameProvider;
@@ -39,7 +37,7 @@ public class CommandConsumer {
 
     @Inject
     public CommandConsumer(
-            RocketMQConsumer consumer, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider,
+            IMQConsumer consumer, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider,
             ICommandProcessor commandProcessor, IRepository repository,
             IAggregateStorage aggregateStorage, ITopicProvider<ICommand> commandTopicProvider,
             SendReplyService sendReplyService) {
@@ -53,13 +51,8 @@ public class CommandConsumer {
         _commandTopicProvider = commandTopicProvider;
     }
 
-    public RocketMQConsumer getConsumer() {
-        return _consumer;
-    }
-
     public CommandConsumer start() {
         _consumer.registerMessageHandler(new CommandMQMessageHandler());
-
         _sendReplyService.start();
         return this;
     }
@@ -72,18 +65,18 @@ public class CommandConsumer {
     class CommandMQMessageHandler implements IMQMessageHandler {
 
         @Override
-        public boolean isMatched(TopicTagData topicTagData) {
+        public boolean isMatched(TopicData topicTagData) {
             return _commandTopicProvider.getAllSubscribeTopics().contains(topicTagData);
         }
 
         @Override
-        public void handle(Object message, CompletableConsumeConcurrentlyContext context) {
+        public void handle(String msg, CompletableConsumeConcurrentlyContext context) {
             Map<String, String> commandItems = new HashMap<>();
-            CommandMessage commandMessage = _jsonSerializer.deserialize(BitConverter.toString(message.getBody()), CommandMessage.class);
+            CommandMessage commandMessage = _jsonSerializer.deserialize(msg, CommandMessage.class);
             Class commandType = _typeNameProvider.getType(commandMessage.getCommandType());
             ICommand command = (ICommand) _jsonSerializer.deserialize(commandMessage.getCommandData(), commandType);
             CompletableFuture<ConsumeConcurrentlyStatus> consumeResultFuture = new CompletableFuture<>();
-            CommandExecuteContext<MessageExt> commandExecuteContext = new CommandExecuteContext<>(_repository, _aggregateRootStorage, message, context, commandMessage, _sendReplyService, consumeResultFuture);
+            CommandExecuteContext commandExecuteContext = new CommandExecuteContext(_repository, _aggregateRootStorage, msg, context, commandMessage, _sendReplyService, consumeResultFuture);
             commandItems.put("CommandReplyAddress", commandMessage.getReplyAddress());
             _logger.info("ENode command message received, messageId: {}, aggregateRootId: {}", command.id(), command.getAggregateRootId());
             _processor.process(new ProcessingCommand(command, commandExecuteContext, commandItems));
