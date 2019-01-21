@@ -26,4 +26,19 @@ public class TopicData {
         this.tag = tag;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TopicData that = (TopicData) o;
+
+        if (!topic.equals(that.topic)) {
+            return false;
+        }
+        return tag.equals(that.tag);
+    }
 }
