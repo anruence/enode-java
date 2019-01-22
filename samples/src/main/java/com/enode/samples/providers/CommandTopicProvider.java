@@ -15,8 +15,11 @@ public class CommandTopicProvider extends AbstractTopicProvider<ICommand> {
 
     @Override
     public Collection<TopicData> getAllSubscribeTopics() {
+        TopicData data = new TopicData("EnodeCommonTopicDev", "Command");
+        TopicData extra = new TopicData("EnodeCommonTopicDev", "");
         return new ArrayList<TopicData>() {{
-            add(new TopicData("EnodeCommonTopicDev", "Command"));
+            add(data);
+            add(extra);
         }};
     }
 }

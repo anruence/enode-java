@@ -1,7 +1,7 @@
 package com.enode.rocketmq.client;
 
+import com.enode.rocketmq.CompletableConsumeConcurrentlyContext;
 import com.enode.rocketmq.TopicData;
-import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
 
 public interface IMQMessageHandler {
 

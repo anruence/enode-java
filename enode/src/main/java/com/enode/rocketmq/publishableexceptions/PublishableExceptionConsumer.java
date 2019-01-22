@@ -13,7 +13,7 @@ import com.enode.rocketmq.IMQConsumer;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.TopicData;
 import com.enode.rocketmq.client.IMQMessageHandler;
-import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.enode.rocketmq.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;

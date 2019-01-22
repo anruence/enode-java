@@ -17,7 +17,9 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractProducer {
+
     protected final AtomicBoolean started = new AtomicBoolean(false);
+
     private final DefaultMQProducer defaultMQProducer;
 
     protected AbstractProducer(Properties properties, MQClientInitializer mqClientInitializer) {

@@ -8,7 +8,7 @@ import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateStorage;
 import com.enode.domain.IRepository;
 import com.enode.rocketmq.SendReplyService;
-import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.enode.rocketmq.CompletableConsumeConcurrentlyContext;
 import com.enode.rocketmq.command.CommandMessage;
 import com.enode.rocketmq.command.ConsumeStatus;
 

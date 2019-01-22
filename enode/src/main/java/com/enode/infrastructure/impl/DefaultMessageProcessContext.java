@@ -1,7 +1,7 @@
 package com.enode.infrastructure.impl;
 
 import com.enode.infrastructure.IMessageProcessContext;
-import com.enode.rocketmq.client.consumer.listener.CompletableConsumeConcurrentlyContext;
+import com.enode.rocketmq.CompletableConsumeConcurrentlyContext;
 
 public class DefaultMessageProcessContext<T extends Object> implements IMessageProcessContext {
     protected final T _queueMessage;

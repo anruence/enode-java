@@ -92,6 +92,8 @@ import com.enode.infrastructure.impl.inmemory.InMemoryPublishedVersionStore;
 import com.enode.infrastructure.impl.mysql.MysqlLockService;
 import com.enode.infrastructure.impl.mysql.MysqlPublishedVersionStore;
 import com.enode.jmx.ENodeJMXAgent;
+import com.enode.kafka.ConsumeKafkaService;
+import com.enode.kafka.SendKafkaService;
 import com.enode.rocketmq.IMQConsumer;
 import com.enode.rocketmq.IMQProducer;
 import com.enode.rocketmq.ITopicProvider;
@@ -113,6 +115,8 @@ import com.enode.rocketmq.domainevent.DomainEventConsumer;
 import com.enode.rocketmq.domainevent.DomainEventPublisher;
 import com.enode.rocketmq.publishableexceptions.PublishableExceptionConsumer;
 import com.enode.rocketmq.publishableexceptions.PublishableExceptionPublisher;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -148,6 +152,9 @@ public class ENode extends AbstractContainer<ENode> {
     public static final int PUBLISHERS = COMMAND_SERVICE | DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER;
     public static final int CONSUMERS = COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
     public static final int ALL_COMPONENTS = PUBLISHERS | CONSUMERS;
+    public static final int TYPE_ONS = 0;
+    public static final int TYPE_ROCKETMQ = 1;
+    public static final int TYPE_KAFKA = 2;
     private static final Logger logger = ENodeLogger.getLog();
     //加载AbstractDenormalizer
     private static final String[] ENODE_PACKAGE_SCAN = new String[]{"com.enode.domain", "com.enode.message", "com.enode.infrastructure.impl"};
@@ -321,7 +328,7 @@ public class ENode extends AbstractContainer<ENode> {
         return this;
     }
 
-    public ENode useMysqlComponents(DataSource ds,OptionSetting optionSetting) {
+    public ENode useMysqlComponents(DataSource ds, OptionSetting optionSetting) {
         return useMysqlLockService(ds, null)
                 .useMysqlEventStore(ds, null)
                 .useMysqlPublishedVersionStore(ds, null);
@@ -399,15 +406,15 @@ public class ENode extends AbstractContainer<ENode> {
     }
 
     public ENode useONS(Properties producerSetting, Properties consumerSetting, int listenPort, int componentFlag) {
-        return useRocketMQ(producerSetting, consumerSetting, componentFlag, listenPort, true);
+        return useRocketMQ(producerSetting, consumerSetting, componentFlag, listenPort, TYPE_ONS);
     }
 
-    public ENode useNativeRocketMQ(
-            Properties producerSetting,
-            Properties consumerSetting,
-            int listenPort,
-            int registerRocketMQComponentsFlag) {
-        return useRocketMQ(producerSetting, consumerSetting, registerRocketMQComponentsFlag, listenPort, false);
+    public ENode useKafka(Properties producerSetting, Properties consumerSetting, int listenPort, int componentFlag) {
+        return useRocketMQ(producerSetting, consumerSetting, componentFlag, listenPort, TYPE_KAFKA);
+    }
+
+    public ENode useNativeRocketMQ(Properties producerSetting, Properties consumerSetting, int listenPort, int componentFlag) {
+        return useRocketMQ(producerSetting, consumerSetting, componentFlag, listenPort, TYPE_ROCKETMQ);
     }
 
     private ENode useRocketMQ(
@@ -415,18 +422,26 @@ public class ENode extends AbstractContainer<ENode> {
             Properties consumerSetting,
             int registerRocketMQComponentsFlag,
             int listenPort,
-            boolean isONS) {
+            int mqtype) {
 
         this.registerRocketMQComponentsFlag = registerRocketMQComponentsFlag;
-
-        RocketMQFactory mqFactory = isONS ? new ONSFactory() : new NativeMQFactory();
-
+        RocketMQFactory mqFactory = null;
+        if (mqtype == TYPE_ONS) {
+            mqFactory = new ONSFactory();
+        } else if (mqtype == TYPE_ROCKETMQ) {
+            mqFactory = new NativeMQFactory();
+        }
         //Create MQConsumer and any register consumers(CommandConsumer、DomainEventConsumer、ApplicationMessageConsumer、PublishableExceptionConsumer)
         if (hasAnyComponents(registerRocketMQComponentsFlag, CONSUMERS)) {
-            Consumer consumer = mqFactory.createPushConsumer(consumerSetting);
-
-            registerInstance(Consumer.class, consumer);
-            register(IMQConsumer.class, RocketMQConsumer.class);
+            if (mqtype == TYPE_KAFKA) {
+                KafkaConsumer kafkaConsumer = new KafkaConsumer(consumerSetting);
+                register(KafkaConsumer.class, null, () -> kafkaConsumer, LifeStyle.Singleton);
+                register(IMQConsumer.class, ConsumeKafkaService.class);
+            } else {
+                Consumer consumer = mqFactory.createPushConsumer(consumerSetting);
+                registerInstance(Consumer.class, consumer);
+                register(IMQConsumer.class, RocketMQConsumer.class);
+            }
 
             // CommandConsumer、DomainEventConsumer需要引用SendReplyService
             if (hasAnyComponents(registerRocketMQComponentsFlag, COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER)) {
@@ -457,9 +472,16 @@ public class ENode extends AbstractContainer<ENode> {
         //Create MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
         if (hasAnyComponents(registerRocketMQComponentsFlag, PUBLISHERS)) {
             //Create MQProducer
-            Producer producer = mqFactory.createProducer(producerSetting);
-            registerInstance(Producer.class, producer);
-            register(IMQProducer.class, SendRocketMQService.class);
+            if (mqtype == TYPE_KAFKA) {
+                KafkaProducer kafkaProducer = new KafkaProducer(producerSetting);
+                register(KafkaProducer.class, null, () -> kafkaProducer, LifeStyle.Singleton);
+                register(IMQProducer.class, SendKafkaService.class);
+            } else {
+                Producer producer = mqFactory.createProducer(producerSetting);
+                registerInstance(Producer.class, producer);
+                register(IMQProducer.class, SendRocketMQService.class);
+            }
+
             //CommandService
             if (hasComponent(registerRocketMQComponentsFlag, COMMAND_SERVICE)) {
                 register(CommandResultProcessor.class, null, () -> {
@@ -491,7 +513,7 @@ public class ENode extends AbstractContainer<ENode> {
         return this;
     }
 
-    private void startRocketMQComponents() {
+    private void startMQComponents() {
         //Start MQConsumer and any register consumers(CommandConsumer、DomainEventConsumer、ApplicationMessageConsumer、PublishableExceptionConsumer)
         if (hasAnyComponents(registerRocketMQComponentsFlag, CONSUMERS)) {
             //All topic
@@ -557,8 +579,8 @@ public class ENode extends AbstractContainer<ENode> {
         //Start MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
         if (hasAnyComponents(registerRocketMQComponentsFlag, PUBLISHERS)) {
             //Start MQProducer
-            Producer producer = resolve(Producer.class);
-            producer.start();
+//            Producer producer = resolve(Producer.class);
+//            producer.start();
 
             //CommandService
             if (hasComponent(registerRocketMQComponentsFlag, COMMAND_SERVICE)) {
@@ -604,7 +626,8 @@ public class ENode extends AbstractContainer<ENode> {
         commitRegisters();
         startENodeComponents();
         initializeBusinessAssemblies();
-        startRocketMQComponents();
+        //TODO kafka启动
+        startMQComponents();
         ENodeJMXAgent.startAgent();
         logger.info("ENode started.");
         return this;

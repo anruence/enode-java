@@ -16,6 +16,7 @@
  */
 package com.enode.common.remoting.common;
 
+import com.enode.infrastructure.WrappedRuntimeException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
@@ -23,11 +24,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
@@ -191,6 +194,31 @@ public class RemotingUtil {
         final String addrRemote = RemotingHelper.parseChannelRemoteAddr(channel);
         channel.close().addListener((ChannelFutureListener) future -> log.info("closeChannel: close the connection to remote address[{}] result: {}", addrRemote,
                 future.isSuccess()));
+    }
+
+
+    public static String parseAddress(SocketAddress address) {
+        if (address instanceof InetSocketAddress) {
+            InetSocketAddress socketAddress = (InetSocketAddress) address;
+            int port = socketAddress.getPort();
+
+            InetAddress localAddress = socketAddress.getAddress();
+
+            if (!isSiteLocalAddress(localAddress)) {
+                try {
+                    localAddress = Inet4Address.getLocalHost();
+                } catch (UnknownHostException e) {
+                    throw new WrappedRuntimeException("No local address found", e);
+                }
+            }
+            return String.format("%s:%d", localAddress.getHostAddress(), port);
+        } else {
+            throw new RuntimeException("Unknow socket address:" + address);
+        }
+    }
+
+    public static boolean isSiteLocalAddress(InetAddress address) {
+        return address.isSiteLocalAddress() && !address.isLoopbackAddress() && !address.getHostAddress().contains(":");
     }
 
 }

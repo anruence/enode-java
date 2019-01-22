@@ -1,8 +1,8 @@
 package com.enode.rocketmq.client;
 
+import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.enode.rocketmq.client.consumer.CompletableDefaultMQPushConsumer;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractConsumer {
 
     protected final AtomicBoolean started = new AtomicBoolean(false);
-    private final CompletableDefaultMQPushConsumer defaultMQPushConsumer;
+    private final DefaultMQPushConsumer defaultMQPushConsumer;
 
     protected AbstractConsumer(Properties properties, MQClientInitializer mqClientInitializer) {
         mqClientInitializer.init(properties);
@@ -18,7 +18,7 @@ public abstract class AbstractConsumer {
         this.defaultMQPushConsumer = initConsumer(properties, mqClientInitializer);
     }
 
-    abstract protected CompletableDefaultMQPushConsumer initConsumer(Properties properties, MQClientInitializer mqClientInitializer);
+    abstract protected DefaultMQPushConsumer initConsumer(Properties properties, MQClientInitializer mqClientInitializer);
 
     public void start() {
         try {

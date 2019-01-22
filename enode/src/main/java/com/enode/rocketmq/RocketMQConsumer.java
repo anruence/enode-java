@@ -62,25 +62,18 @@ public class RocketMQConsumer implements IMQConsumer {
             String tag = msg.getTags();
             TopicData topicTagData = new TopicData(topic, tag);
 
-            IMQMessageHandler IMQMessageHandler = _handlerDict.get(topicTagData);
-
+            IMQMessageHandler messageHandler = _handlerDict.get(topicTagData);
             ConsumeConcurrentlyStatus status = ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            if (IMQMessageHandler == null) {
+            if (messageHandler == null) {
                 List<IMQMessageHandler> handlers = _handlers.stream().filter(handler -> handler.isMatched(topicTagData)).collect(Collectors.toList());
-                if (handlers.size() > 1) {
+                if (handlers.size() != 1) {
                     _logger.error("Duplicate consume handler with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
-                    status = ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                    return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                 }
-                IMQMessageHandler = handlers.get(0);
-                _handlerDict.put(topicTagData, IMQMessageHandler);
+                messageHandler = handlers.get(0);
+                _handlerDict.put(topicTagData, messageHandler);
             }
-
-            if (IMQMessageHandler == null) {
-                _logger.error("No consume handler found with {topic:{},tags:{}}", msg.getTopic(), msg.getTags());
-                status = ConsumeConcurrentlyStatus.RECONSUME_LATER;
-            } else {
-                IMQMessageHandler.handle(BitConverter.toString(msg.getBody()), null);
-            }
+            messageHandler.handle(BitConverter.toString(msg.getBody()), null);
             return status;
         }
     }
