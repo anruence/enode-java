@@ -9,12 +9,12 @@ import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ProcessingDomainEventStreamMessage;
 import com.enode.infrastructure.impl.DefaultMessageProcessContext;
+import com.enode.rocketmq.CompletableConsumeConcurrentlyContext;
 import com.enode.rocketmq.IMQConsumer;
 import com.enode.rocketmq.ITopicProvider;
 import com.enode.rocketmq.SendReplyService;
 import com.enode.rocketmq.TopicData;
 import com.enode.rocketmq.client.IMQMessageHandler;
-import com.enode.rocketmq.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -76,7 +76,7 @@ public class DomainEventConsumer {
 
         @Override
         public void handle(String msg, CompletableConsumeConcurrentlyContext context) {
-            EventStreamMessage message = _jsonSerializer.deserialize(msg.toString(), EventStreamMessage.class);
+            EventStreamMessage message = _jsonSerializer.deserialize(msg, EventStreamMessage.class);
             DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
             DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(DomainEventConsumer.this, domainEventStreamMessage, msg, context);
             ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);

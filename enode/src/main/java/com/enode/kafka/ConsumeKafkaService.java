@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-
 public class ConsumeKafkaService implements IMQConsumer {
     private static final Logger _logger = ClientLogger.getLog();
     private final IMessageListener messageListener;
@@ -36,7 +35,7 @@ public class ConsumeKafkaService implements IMQConsumer {
     private final ThreadPoolExecutor consumeExecutor;
     private Set<IMQMessageHandler> _handlers;
     private Set<String> _topics;
-    private Map<TopicData, IMQMessageHandler> _handlerDict;
+    private Map<String, IMQMessageHandler> _handlerDict;
 
     @Inject
     public ConsumeKafkaService(KafkaConsumer kafkaConsumer) {
@@ -44,7 +43,7 @@ public class ConsumeKafkaService implements IMQConsumer {
         this.kafkaConsumer = kafkaConsumer;
         this.consumeRequestQueue = new LinkedBlockingQueue<Runnable>();
         this.consumeExecutor = new ThreadPoolExecutor(
-                1, 4,
+                20, 60,
                 1000 * 60,
                 TimeUnit.MILLISECONDS,
                 this.consumeRequestQueue,
@@ -82,9 +81,13 @@ public class ConsumeKafkaService implements IMQConsumer {
         public void run() {
             try {
                 while (!closed.get()) {
-                    ConsumerRecords<K, V> records = kafkaConsumer.poll(Duration.ofMillis(1000));
-                    for (ConsumerRecord record : records) {
-                        messageListener.recvMessage(record, null);
+                    try {
+                        ConsumerRecords<K, V> records = kafkaConsumer.poll(Duration.ofMillis(1000));
+                        for (ConsumerRecord record : records) {
+                            messageListener.receiveMessage(record, null);
+                        }
+                    } catch (Exception e) {
+                        _logger.error("consumer message failed", e);
                     }
                 }
             } catch (WakeupException e) {
@@ -92,8 +95,6 @@ public class ConsumeKafkaService implements IMQConsumer {
                 if (!closed.get()) {
                     throw e;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             } finally {
                 kafkaConsumer.close();
             }
@@ -108,13 +109,14 @@ public class ConsumeKafkaService implements IMQConsumer {
 
     class MessageListener implements IMessageListener {
         @Override
-        public ConsumeStatus recvMessage(ConsumerRecord msg, CompletableConsumeConcurrentlyContext context) {
+        public ConsumeStatus receiveMessage(ConsumerRecord msg, CompletableConsumeConcurrentlyContext context) {
             try {
 
                 String topic = msg.topic();
                 String tag = "";
+                String key = topic + tag;
                 TopicData topicTagData = new TopicData(topic, tag);
-                IMQMessageHandler messageHandler = _handlerDict.get(topicTagData);
+                IMQMessageHandler messageHandler = _handlerDict.get(key);
                 if (messageHandler == null) {
                     List<IMQMessageHandler> handlers = _handlers.stream().filter(handler -> handler.isMatched(topicTagData)).collect(Collectors.toList());
                     if (handlers.size() != 1) {
@@ -122,12 +124,13 @@ public class ConsumeKafkaService implements IMQConsumer {
                         return ConsumeStatus.RECONSUME_LATER;
                     }
                     messageHandler = handlers.get(0);
-                    _handlerDict.put(topicTagData, messageHandler);
+                    _handlerDict.put(key, messageHandler);
                 }
                 messageHandler.handle(msg.value().toString(), null);
                 return ConsumeStatus.CONSUME_SUCCESS;
             } catch (Exception e) {
-                return null;
+                _logger.error("handle message failed", e);
+                return ConsumeStatus.RECONSUME_LATER;
             }
         }
     }

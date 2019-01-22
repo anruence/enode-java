@@ -100,6 +100,15 @@ public class SendKafkaService implements IMQProducer {
         return promise;
     }
 
+    @Override
+    public void start() {
+    }
+
+    @Override
+    public void shutdown() {
+        _producer.close();
+    }
+
     private Integer getPartionByRouteKey(Object routingKey, String topic) {
         int hash = Math.abs(routingKey.hashCode());
         return hash % _producer.partitionsFor(topic).size();

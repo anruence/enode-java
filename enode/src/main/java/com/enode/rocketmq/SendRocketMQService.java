@@ -85,7 +85,6 @@ public class SendRocketMQService implements IMQProducer {
         if (msg instanceof ICommand) {
             ICommand commandMessage = (ICommand) msg;
             message = buildCommandMessage(commandMessage, sendReply);
-
         }
         if (msg instanceof IApplicationMessage) {
             IApplicationMessage applicationMessage = (IApplicationMessage) msg;
@@ -117,6 +116,16 @@ public class SendRocketMQService implements IMQProducer {
         return promise;
     }
 
+    @Override
+    public void start() {
+        _producer.start();
+    }
+
+    @Override
+    public void shutdown() {
+        _producer.shutdown();
+    }
+
     private Message createDomainEventStreamMessage(DomainEventStreamMessage eventStream) {
         Ensure.notNull(eventStream.aggregateRootId(), "aggregateRootId");
         EventStreamMessage eventMessage = createEventMessage(eventStream);
@@ -133,7 +142,6 @@ public class SendRocketMQService implements IMQProducer {
         return new Message(topicTagData.getTopic(), topicTagData.getTag(), key,
                 QueueMessageTypeCode.DomainEventStreamMessage.getValue(), body, true);
     }
-
 
     private EventStreamMessage createEventMessage(DomainEventStreamMessage eventStream) {
         EventStreamMessage message = new EventStreamMessage();
@@ -204,7 +212,6 @@ public class SendRocketMQService implements IMQProducer {
                 QueueMessageTypeCode.CommandMessage.getValue(), body, true);
 
         message.putUserProperty(RocketMQSystemPropKey.STARTDELIVERTIME, String.valueOf(command.getRoutingKey()));
-
         return message;
     }
 

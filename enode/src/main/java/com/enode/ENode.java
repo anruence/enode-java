@@ -579,8 +579,8 @@ public class ENode extends AbstractContainer<ENode> {
         //Start MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
         if (hasAnyComponents(registerRocketMQComponentsFlag, PUBLISHERS)) {
             //Start MQProducer
-//            Producer producer = resolve(Producer.class);
-//            producer.start();
+            IMQProducer producer = resolve(IMQProducer.class);
+            producer.start();
 
             //CommandService
             if (hasComponent(registerRocketMQComponentsFlag, COMMAND_SERVICE)) {
@@ -686,14 +686,14 @@ public class ENode extends AbstractContainer<ENode> {
                 publishableExceptionConsumer.shutdown();
             }
 
-            RocketMQConsumer consumer = resolve(RocketMQConsumer.class);
+            IMQConsumer consumer = resolve(IMQConsumer.class);
             consumer.shutdown();
         }
 
         //Shutdown MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
         if (hasAnyComponents(registerRocketMQComponentsFlag, PUBLISHERS)) {
-            //Start MQProducer
-            Producer producer = resolve(Producer.class);
+            //Stop MQProducer
+            IMQProducer producer = resolve(IMQProducer.class);
             producer.shutdown();
 
             //CommandService

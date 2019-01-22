@@ -6,6 +6,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public interface IMessageListener {
 
-    ConsumeStatus recvMessage(ConsumerRecord message, CompletableConsumeConcurrentlyContext context);
+    ConsumeStatus receiveMessage(ConsumerRecord message, CompletableConsumeConcurrentlyContext context);
 
 }

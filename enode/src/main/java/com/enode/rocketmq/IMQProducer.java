@@ -10,4 +10,8 @@ public interface IMQProducer {
     CompletableFuture<AsyncTaskResult> sendAsync(final IMessage msg, final String routingKey);
 
     CompletableFuture<AsyncTaskResult> sendAsync(final IMessage msg, final String routingKey, boolean sendReply);
+
+    void start();
+
+    void shutdown();
 }
