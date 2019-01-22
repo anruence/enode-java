@@ -1,4 +1,4 @@
-package com.enode.rocketmq.client;
+package com.enode.common;
 
 public class Constants {
     public static final String DEFAULT_ENODE_PRODUCER_GROUP = "ENodeProducerGroup";

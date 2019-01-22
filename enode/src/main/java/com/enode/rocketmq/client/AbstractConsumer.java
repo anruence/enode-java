@@ -14,7 +14,6 @@ public abstract class AbstractConsumer {
 
     protected AbstractConsumer(Properties properties, MQClientInitializer mqClientInitializer) {
         mqClientInitializer.init(properties);
-
         this.defaultMQPushConsumer = initConsumer(properties, mqClientInitializer);
     }
 

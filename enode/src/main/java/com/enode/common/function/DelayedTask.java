@@ -13,7 +13,7 @@ public class DelayedTask {
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DelayedThread-%d").build());
 
     public static <T> CompletableFuture<T> startDelayedTaskFuture(Duration duration, Func<T> action) {
-        CompletableFuture promise = new CompletableFuture();
+        CompletableFuture<T> promise = new CompletableFuture<>();
         schedule.schedule(() -> promise.complete(action.apply()), duration.toMillis(), TimeUnit.MILLISECONDS);
         return promise;
     }
@@ -26,17 +26,5 @@ public class DelayedTask {
                 throw new RuntimeException(e);
             }
         }, duration.toMillis(), TimeUnit.MILLISECONDS);
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        CompletableFuture<String> instance = DelayedTask.startDelayedTaskFuture(Duration.ofSeconds(1), () -> {
-            return "test";
-        });
-
-        instance.thenAccept(x -> {
-            System.out.println(x);
-        });
-
-        Thread.sleep(2000);
     }
 }

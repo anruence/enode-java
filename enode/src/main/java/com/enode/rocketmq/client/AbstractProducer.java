@@ -46,18 +46,6 @@ public abstract class AbstractProducer {
         }
     }
 
-    public SendResult send(Message message, MessageQueueSelector selector, Object arg) {
-        this.checkONSServiceState();
-
-        try {
-            return this.defaultMQProducer.send(message, selector, arg);
-        } catch (Exception e) {
-//            log.error(String.format("Send message Exception, %s", message), e);
-            this.checkProducerException(e, message);
-            return null;
-        }
-    }
-
     public void send(final Message message, final MessageQueueSelector selector, final Object arg, final SendCallback sendCallback) {
         this.checkONSServiceState();
 
@@ -91,7 +79,6 @@ public abstract class AbstractProducer {
 
     private void checkProducerException(Exception e, Message message) {
         if (e instanceof MQClientException) {
-            //
             if (e.getCause() != null) {
                 // 无法连接Broker
                 if (e.getCause() instanceof RemotingConnectException) {

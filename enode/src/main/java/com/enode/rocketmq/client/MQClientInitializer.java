@@ -10,8 +10,8 @@ import java.util.Properties;
 public class MQClientInitializer {
 
     protected Properties properties;
-    protected String nameServerAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY,
-            System.getenv(MixAll.NAMESRV_ADDR_ENV));
+
+    protected String nameServerAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
 
     public MQClientInitializer() {
     }
@@ -43,8 +43,7 @@ public class MQClientInitializer {
     }
 
     public String buildIntanceName() {
-        return Integer.toString(UtilAll.getPid())//
-                + "#" + this.nameServerAddr.hashCode();
+        return UtilAll.getPid() + "#" + this.nameServerAddr.hashCode();
     }
 
     public String getNameServerAddr() {
