@@ -3,17 +3,21 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>enode-java</artifactId>
+        <artifactId>samples</artifactId>
         <groupId>com.enode</groupId>
         <version>1.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>samples</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>note</artifactId>
+    <groupId>com.enode</groupId>
     <version>1.0.0</version>
-
+    <packaging>pom</packaging>
     <modules>
-        <module>note</module>
+        <module>command-consumer</module>
+        <module>event-consumer</module>
+        <module>command-sender</module>
+        <module>domain</module>
+        <module>command</module>
     </modules>
     <dependencies>
         <dependency>
@@ -33,5 +37,7 @@
             <artifactId>kafka-clients</artifactId>
             <version>2.1.0</version>
         </dependency>
+
     </dependencies>
+
 </project>
