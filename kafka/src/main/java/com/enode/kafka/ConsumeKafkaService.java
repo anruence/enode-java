@@ -6,7 +6,6 @@ import com.enode.queue.IMQConsumer;
 import com.enode.queue.IMQMessageHandler;
 import com.enode.queue.TopicData;
 import com.enode.queue.command.ConsumeStatus;
-import com.google.common.collect.Lists;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -38,10 +37,6 @@ public class ConsumeKafkaService implements IMQConsumer {
     private Set<IMQMessageHandler> _handlers;
     private Set<String> _topics;
     private Map<String, IMQMessageHandler> _handlerDict;
-
-
-    private List<KafkaConsumerRunner> kafkaConsumerRunners = Lists.newArrayList();
-
 
     @Inject
     public ConsumeKafkaService(KafkaConsumer kafkaConsumer) {
@@ -97,7 +92,9 @@ public class ConsumeKafkaService implements IMQConsumer {
                     try {
                         ConsumerRecords<K, V> records = kafkaConsumer.poll(Duration.ofMillis(1000));
                         for (ConsumerRecord record : records) {
-                            messageListener.receiveMessage(record, null);
+                            consumeExecutor.submit(() -> {
+                                messageListener.receiveMessage(record, null);
+                            });
                         }
                     } catch (Exception e) {
                         _logger.error("consumer message failed", e);
