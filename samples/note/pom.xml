@@ -33,11 +33,15 @@
             <artifactId>enode</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>2.1.0</version>
+            <groupId>com.enode</groupId>
+            <artifactId>rocketmq</artifactId>
+            <version>1.0.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.enode</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -1,8 +1,8 @@
 package com.enode.samples.note.providers;
 
 import com.enode.infrastructure.IApplicationMessage;
-import com.enode.rocketmq.AbstractTopicProvider;
-import com.enode.rocketmq.TopicData;
+import com.enode.queue.AbstractTopicProvider;
+import com.enode.queue.TopicData;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -7,10 +7,10 @@ import com.enode.commanding.ICommandExecuteContext;
 import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateStorage;
 import com.enode.domain.IRepository;
-import com.enode.rocketmq.SendReplyService;
-import com.enode.rocketmq.CompletableConsumeConcurrentlyContext;
-import com.enode.rocketmq.command.CommandMessage;
-import com.enode.rocketmq.command.ConsumeStatus;
+import com.enode.queue.SendReplyService;
+import com.enode.queue.CompletableConsumeConcurrentlyContext;
+import com.enode.queue.command.CommandMessage;
+import com.enode.queue.command.ConsumeStatus;
 
 import java.util.ArrayList;
 import java.util.List;

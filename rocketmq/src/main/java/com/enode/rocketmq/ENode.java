@@ -1,5 +1,6 @@
-package com.enode;
+package com.enode.rocketmq;
 
+import com.enode.commanding.ICommand;
 import com.enode.commanding.ICommandAsyncHandler;
 import com.enode.commanding.ICommandAsyncHandlerProvider;
 import com.enode.commanding.ICommandHandler;
@@ -26,6 +27,7 @@ import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.thirdparty.gson.GsonJsonSerializer;
 import com.enode.common.thirdparty.guice.GuiceObjectContainer;
 import com.enode.configurations.ConfigurationSetting;
+import com.enode.configurations.OptionSetting;
 import com.enode.domain.AggregateRoot;
 import com.enode.domain.IAggregateRepository;
 import com.enode.domain.IAggregateRepositoryProvider;
@@ -44,6 +46,7 @@ import com.enode.domain.impl.DefaultRepository;
 import com.enode.domain.impl.EventSourcingAggregateStorage;
 import com.enode.domain.impl.SnapshotOnlyAggregateStorage;
 import com.enode.eventing.DomainEventStreamMessage;
+import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.eventing.IEventService;
 import com.enode.eventing.IEventStore;
@@ -51,8 +54,10 @@ import com.enode.eventing.impl.DefaultEventSerializer;
 import com.enode.eventing.impl.DefaultEventService;
 import com.enode.eventing.impl.DomainEventStreamMessageHandler;
 import com.enode.eventing.impl.InMemoryEventStore;
+import com.enode.eventing.impl.MysqlEventStore;
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.infrastructure.IAssemblyInitializer;
+import com.enode.infrastructure.ILockService;
 import com.enode.infrastructure.IMessageDispatcher;
 import com.enode.infrastructure.IMessageHandler;
 import com.enode.infrastructure.IMessageHandlerProvider;
@@ -84,8 +89,28 @@ import com.enode.infrastructure.impl.DefaultTwoMessageHandlerProvider;
 import com.enode.infrastructure.impl.DefaultTypeNameProvider;
 import com.enode.infrastructure.impl.DoNothingPublisher;
 import com.enode.infrastructure.impl.inmemory.InMemoryPublishedVersionStore;
+import com.enode.infrastructure.impl.mysql.MysqlLockService;
+import com.enode.infrastructure.impl.mysql.MysqlPublishedVersionStore;
 import com.enode.jmx.ENodeJMXAgent;
+import com.enode.queue.IMQConsumer;
+import com.enode.queue.IMQProducer;
 import com.enode.queue.ITopicProvider;
+import com.enode.queue.SendReplyService;
+import com.enode.queue.TopicData;
+import com.enode.queue.applicationmessage.ApplicationMessageConsumer;
+import com.enode.queue.applicationmessage.ApplicationMessagePublisher;
+import com.enode.queue.command.CommandConsumer;
+import com.enode.queue.command.CommandResultProcessor;
+import com.enode.queue.command.CommandService;
+import com.enode.queue.domainevent.DomainEventConsumer;
+import com.enode.queue.domainevent.DomainEventPublisher;
+import com.enode.queue.publishableexceptions.PublishableExceptionConsumer;
+import com.enode.queue.publishableexceptions.PublishableExceptionPublisher;
+import com.enode.rocketmq.client.Consumer;
+import com.enode.rocketmq.client.Producer;
+import com.enode.rocketmq.client.RocketMQFactory;
+import com.enode.rocketmq.client.impl.NativeMQFactory;
+import com.enode.rocketmq.client.ons.ONSFactory;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -93,6 +118,7 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 import org.slf4j.Logger;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
@@ -296,6 +322,30 @@ public class ENode extends AbstractContainer<ENode> {
         return this;
     }
 
+    public ENode useMysqlComponents(DataSource ds, OptionSetting optionSetting) {
+        return useMysqlLockService(ds, null)
+                .useMysqlEventStore(ds, null)
+                .useMysqlPublishedVersionStore(ds, null);
+    }
+
+    public ENode useMysqlLockService(DataSource ds, OptionSetting optionSetting) {
+        registerInstance(ILockService.class, new MysqlLockService(ds, optionSetting));
+
+        return this;
+    }
+
+    public ENode useMysqlEventStore(DataSource ds, OptionSetting optionSetting) {
+        //TODO primary key name,index name,bulk copy property
+        register(IEventStore.class, null, () -> new MysqlEventStore(ds, optionSetting, getContainer()), LifeStyle.Singleton);
+        return this;
+    }
+
+    public ENode useMysqlPublishedVersionStore(DataSource ds, OptionSetting optionSetting) {
+        register(IPublishedVersionStore.class, null, () -> new MysqlPublishedVersionStore(ds, optionSetting), LifeStyle.Singleton);
+
+        return this;
+    }
+
     private void registerComponentType(Class type) {
         LifeStyle life = parseComponentLife(type);
         register(type, null, life);
@@ -338,6 +388,7 @@ public class ENode extends AbstractContainer<ENode> {
         if (Modifier.isAbstract(type.getModifiers())) {
             return false;
         }
+
         return ENODE_GENERIC_COMPONENT_TYPES.stream().anyMatch(x -> x.isAssignableFrom(type));
     }
 
@@ -346,6 +397,186 @@ public class ENode extends AbstractContainer<ENode> {
                 .registerCommonComponents()
                 .registerENodeComponents()
                 .registerBusinessComponents();
+    }
+
+    public ENode useONS(Properties producerSetting, Properties consumerSetting, int listenPort, int registerMQFlag) {
+        return useMQ(producerSetting, consumerSetting, registerMQFlag, listenPort, TYPE_ONS);
+    }
+
+    public ENode useKafka(Properties producerSetting, Properties consumerSetting, int listenPort, int registerMQFlag) {
+        return useMQ(producerSetting, consumerSetting, registerMQFlag, listenPort, TYPE_KAFKA);
+    }
+
+    public ENode useNativeRocketMQ(Properties producerSetting, Properties consumerSetting, int listenPort, int registerMQFlag) {
+        return useMQ(producerSetting, consumerSetting, registerMQFlag, listenPort, TYPE_ROCKETMQ);
+    }
+
+    private ENode useMQ(Properties producerSetting, Properties consumerSetting, int registerMQFlag, int listenPort, int mqType) {
+        this.registerMQFlag = registerMQFlag;
+        RocketMQFactory mqFactory = null;
+        if (mqType == TYPE_ONS) {
+            mqFactory = new ONSFactory();
+        } else if (mqType == TYPE_ROCKETMQ) {
+            mqFactory = new NativeMQFactory();
+        }
+        //Create MQConsumer and any register consumers(CommandConsumer、DomainEventConsumer、ApplicationMessageConsumer、PublishableExceptionConsumer)
+        if (hasAnyComponents(registerMQFlag, CONSUMERS)) {
+
+
+            Consumer consumer = mqFactory.createPushConsumer(consumerSetting);
+            registerInstance(Consumer.class, consumer);
+            register(IMQConsumer.class, RocketMQConsumer.class);
+
+            // CommandConsumer、DomainEventConsumer需要引用SendReplyService
+            if (hasAnyComponents(registerMQFlag, COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER)) {
+                register(SendReplyService.class);
+            }
+
+            //CommandConsumer
+            if (hasComponent(registerMQFlag, COMMAND_CONSUMER)) {
+                register(CommandConsumer.class);
+            }
+
+            //DomainEventConsumer
+            if (hasComponent(registerMQFlag, DOMAIN_EVENT_CONSUMER)) {
+                register(DomainEventConsumer.class);
+            }
+
+            //ApplicationMessageConsumer
+            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_CONSUMER)) {
+                register(ApplicationMessageConsumer.class);
+            }
+
+            //PublishableExceptionConsumer
+            if (hasComponent(registerMQFlag, EXCEPTION_CONSUMER)) {
+                register(PublishableExceptionConsumer.class);
+            }
+        }
+
+        //Create MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
+        if (hasAnyComponents(registerMQFlag, PUBLISHERS)) {
+            //Create MQProducer
+
+            Producer producer = mqFactory.createProducer(producerSetting);
+            registerInstance(Producer.class, producer);
+            register(IMQProducer.class, SendRocketMQService.class);
+
+            //CommandService
+            if (hasComponent(registerMQFlag, COMMAND_SERVICE)) {
+                register(CommandResultProcessor.class, null, () -> {
+                    IJsonSerializer jsonSerializer = resolve(IJsonSerializer.class);
+                    return new CommandResultProcessor(listenPort, jsonSerializer);
+                }, LifeStyle.Singleton);
+                register(ICommandService.class, CommandService.class);
+            }
+
+            //DomainEventPublisher
+            if (hasComponent(registerMQFlag, DOMAIN_EVENT_PUBLISHER)) {
+                register(new GenericTypeLiteral<IMessagePublisher<DomainEventStreamMessage>>() {
+                }, DomainEventPublisher.class);
+            }
+
+            //ApplicationMessagePublisher
+            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_PUBLISHER)) {
+                register(new GenericTypeLiteral<IMessagePublisher<IApplicationMessage>>() {
+                }, ApplicationMessagePublisher.class);
+            }
+
+            //PublishableExceptionPublisher
+            if (hasComponent(registerMQFlag, EXCEPTION_PUBLISHER)) {
+                register(new GenericTypeLiteral<IMessagePublisher<IPublishableException>>() {
+                }, PublishableExceptionPublisher.class);
+            }
+        }
+
+        return this;
+    }
+
+    private void startMQComponents() {
+        //Start MQConsumer and any register consumers(CommandConsumer、DomainEventConsumer、ApplicationMessageConsumer、PublishableExceptionConsumer)
+        if (hasAnyComponents(registerMQFlag, CONSUMERS)) {
+            //All topic
+            Set<TopicData> topicTagDatas = new HashSet<>();
+
+            IMQConsumer imqConsumer = resolve(IMQConsumer.class);
+            //CommandConsumer
+            if (hasComponent(registerMQFlag, COMMAND_CONSUMER)) {
+                CommandConsumer commandConsumer = resolve(CommandConsumer.class);
+                commandConsumer.start();
+
+                //Command topics
+                ITopicProvider<ICommand> commandTopicProvider = resolve(new GenericTypeLiteral<ITopicProvider<ICommand>>() {
+                });
+                topicTagDatas.addAll(commandTopicProvider.getAllSubscribeTopics());
+            }
+
+            //DomainEventConsumer
+            if (hasComponent(registerMQFlag, DOMAIN_EVENT_CONSUMER)) {
+                DomainEventConsumer domainEventConsumer = resolve(DomainEventConsumer.class);
+                domainEventConsumer.start();
+
+                //Domain event topics
+                ITopicProvider<IDomainEvent> domainEventTopicProvider = resolve(new GenericTypeLiteral<ITopicProvider<IDomainEvent>>() {
+                });
+                topicTagDatas.addAll(domainEventTopicProvider.getAllSubscribeTopics());
+            }
+
+            //ApplicationMessageConsumer
+            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_CONSUMER)) {
+                ApplicationMessageConsumer applicationMessageConsumer = resolve(ApplicationMessageConsumer.class);
+                applicationMessageConsumer.start();
+
+                //Application message topics
+                ITopicProvider<IApplicationMessage> applicationMessageTopicProvider = resolve(new GenericTypeLiteral<ITopicProvider<IApplicationMessage>>() {
+                });
+                if (applicationMessageTopicProvider != null) {
+                    topicTagDatas.addAll(applicationMessageTopicProvider.getAllSubscribeTopics());
+                }
+            }
+
+            //PublishableExceptionConsumer
+            if (hasComponent(registerMQFlag, EXCEPTION_CONSUMER)) {
+                PublishableExceptionConsumer publishableExceptionConsumer = resolve(PublishableExceptionConsumer.class);
+                publishableExceptionConsumer.start();
+
+                //Exception topics
+                ITopicProvider<IPublishableException> exceptionTopicProvider = resolve(new GenericTypeLiteral<ITopicProvider<IPublishableException>>() {
+                });
+                if (exceptionTopicProvider != null) {
+                    topicTagDatas.addAll(exceptionTopicProvider.getAllSubscribeTopics());
+                }
+            }
+
+            topicTagDatas.stream().collect(Collectors.groupingBy(TopicData::getTopic)).forEach((topic, tags) -> {
+                String tagsJoin = tags.stream().map(TopicData::getTag).collect(Collectors.joining("||"));
+                imqConsumer.subscribe(topic, tagsJoin);
+            });
+
+            imqConsumer.start();
+        }
+
+        //Start MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
+        if (hasAnyComponents(registerMQFlag, PUBLISHERS)) {
+            //Start MQProducer
+            IMQProducer producer = resolve(IMQProducer.class);
+            producer.start();
+
+            //CommandService
+            if (hasComponent(registerMQFlag, COMMAND_SERVICE)) {
+                ICommandService commandService = resolve(ICommandService.class);
+                if (commandService instanceof CommandService) {
+                    ((CommandService) commandService).start();
+                }
+            }
+        }
+    }
+
+    public boolean hasComponent(int componentsFlag, int checkComponent) {
+        return (componentsFlag & checkComponent) == checkComponent;
+    }
+
+    public boolean hasAnyComponents(int componentsFlag, int checkComponents) {
+        return (componentsFlag & checkComponents) > 0;
     }
 
     private ENode scanAssemblyTypes() {
@@ -374,6 +605,8 @@ public class ENode extends AbstractContainer<ENode> {
         commitRegisters();
         startENodeComponents();
         initializeBusinessAssemblies();
+        //TODO kafka启动
+        startMQComponents();
         ENodeJMXAgent.startAgent();
         logger.info("ENode started.");
         return this;
@@ -406,5 +639,47 @@ public class ENode extends AbstractContainer<ENode> {
 
     public void shutdown() {
         stopENodeComponents();
+        //Shutdown MQConsumer and any register consumers(CommandConsumer、DomainEventConsumer、ApplicationMessageConsumer、PublishableExceptionConsumer)
+        if (hasAnyComponents(registerMQFlag, CONSUMERS)) {
+            //CommandConsumer
+            if (hasComponent(registerMQFlag, COMMAND_CONSUMER)) {
+                CommandConsumer commandConsumer = resolve(CommandConsumer.class);
+                commandConsumer.shutdown();
+            }
+
+            //DomainEventConsumer
+            if (hasComponent(registerMQFlag, DOMAIN_EVENT_CONSUMER)) {
+                DomainEventConsumer domainEventConsumer = resolve(DomainEventConsumer.class);
+                domainEventConsumer.shutdown();
+            }
+
+            //ApplicationMessageConsumer
+            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_CONSUMER)) {
+                ApplicationMessageConsumer applicationMessageConsumer = resolve(ApplicationMessageConsumer.class);
+                applicationMessageConsumer.shutdown();
+            }
+
+            //PublishableExceptionConsumer
+            if (hasComponent(registerMQFlag, EXCEPTION_CONSUMER)) {
+                PublishableExceptionConsumer publishableExceptionConsumer = resolve(PublishableExceptionConsumer.class);
+                publishableExceptionConsumer.shutdown();
+            }
+
+            IMQConsumer consumer = resolve(IMQConsumer.class);
+            consumer.shutdown();
+        }
+
+        //Shutdown MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
+        if (hasAnyComponents(registerMQFlag, PUBLISHERS)) {
+            //Stop MQProducer
+            IMQProducer producer = resolve(IMQProducer.class);
+            producer.shutdown();
+
+            //CommandService
+            if (hasComponent(registerMQFlag, COMMAND_SERVICE)) {
+                CommandService commandService = resolve(CommandService.class);
+                commandService.shutdown();
+            }
+        }
     }
 }

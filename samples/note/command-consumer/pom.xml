@@ -21,5 +21,15 @@
             <artifactId>command</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.enode</groupId>
+            <artifactId>rocketmq</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.enode</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
 </project>

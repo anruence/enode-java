@@ -8,6 +8,8 @@
     <version>1.0.0</version>
     <modules>
         <module>enode</module>
+        <module>kafka</module>
+        <module>rocketmq</module>
         <module>samples</module>
     </modules>
     <packaging>pom</packaging>

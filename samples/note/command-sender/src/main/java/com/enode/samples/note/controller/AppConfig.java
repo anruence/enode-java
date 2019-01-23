@@ -74,14 +74,14 @@ public class AppConfig {
         producerProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         if (mqtype == ENode.TYPE_KAFKA) {
-            enode.useKafka(producerProps, props, 6000, ENode.PUBLISHERS);
+//            enode.useKafka(producerProps, props, 6000, ENode.PUBLISHERS);
         } else if (mqtype == ENode.TYPE_ONS) {
-            enode.useONS(onsproducer, onsconsumer, 6000, ENode.ALL_COMPONENTS);
+//            enode.useONS(onsproducer, onsconsumer, 6000, ENode.ALL_COMPONENTS);
         } else if (mqtype == ENode.TYPE_ROCKETMQ) {
-            enode.useNativeRocketMQ(producerSetting, consumerSetting, 6000, ENode.COMMAND_SERVICE
-                    | ENode.DOMAIN_EVENT_PUBLISHER
-                    | ENode.DOMAIN_EVENT_CONSUMER
-                    | ENode.COMMAND_CONSUMER);
+//            enode.useNativeRocketMQ(producerSetting, consumerSetting, 6000, ENode.COMMAND_SERVICE
+//                    | ENode.DOMAIN_EVENT_PUBLISHER
+//                    | ENode.DOMAIN_EVENT_CONSUMER
+//                    | ENode.COMMAND_CONSUMER);
         }
         return enode;
     }
