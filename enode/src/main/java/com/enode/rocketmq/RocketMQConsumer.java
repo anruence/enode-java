@@ -22,7 +22,7 @@ public class RocketMQConsumer implements IMQConsumer {
     private static final Logger _logger = ENodeLogger.getLog();
     private Consumer _consumer;
     private Set<IMQMessageHandler> _handlers;
-    private Map<TopicData, IMQMessageHandler> _handlerDict;
+    private Map<String, IMQMessageHandler> _handlerDict;
 
     @Inject
     public RocketMQConsumer(Consumer consumer) {
@@ -59,10 +59,10 @@ public class RocketMQConsumer implements IMQConsumer {
         public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
             MessageExt msg = msgs.get(0);
             String topic = msg.getTopic();
-            String tag = msg.getTags();
+            String tag = msg.getTags() != null ? msg.getTags() : "";
+            String key = topic + tag;
             TopicData topicTagData = new TopicData(topic, tag);
-
-            IMQMessageHandler messageHandler = _handlerDict.get(topicTagData);
+            IMQMessageHandler messageHandler = _handlerDict.get(key);
             ConsumeConcurrentlyStatus status = ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             if (messageHandler == null) {
                 List<IMQMessageHandler> handlers = _handlers.stream().filter(handler -> handler.isMatched(topicTagData)).collect(Collectors.toList());
@@ -71,7 +71,7 @@ public class RocketMQConsumer implements IMQConsumer {
                     return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                 }
                 messageHandler = handlers.get(0);
-                _handlerDict.put(topicTagData, messageHandler);
+                _handlerDict.put(key, messageHandler);
             }
             messageHandler.handle(BitConverter.toString(msg.getBody()), null);
             return status;

@@ -36,6 +36,10 @@ public class TopicData {
         }
         TopicData that = (TopicData) o;
 
+        if (topic == null || tag == null) {
+            return false;
+        }
+
         if (!topic.equals(that.topic)) {
             return false;
         }

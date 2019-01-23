@@ -74,7 +74,6 @@ public class SendRocketMQService implements IMQProducer {
 
     @Override
     public CompletableFuture<AsyncTaskResult> sendAsync(IMessage msg, String routingKey) {
-
         return sendAsync(msg, routingKey, false);
     }
 

@@ -17,7 +17,7 @@ public class AppConfig {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public ENode eNode() {
 
-        boolean isons = false;
+        int mqtype = 1;
         /**============= Enode所需消息队列配置，RocketMQ实现 ======*/
         Properties producerSetting = new Properties();
         producerSetting.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
@@ -29,15 +29,15 @@ public class AppConfig {
         /**=============================================================*/
 
         /**============= Enode所需消息队列配置，ONS实现 ======*/
-//        producerSetting = new Properties();
-        producerSetting.setProperty(PropertyKeyConst.ProducerId, "PID_EnodeCommon");
-        producerSetting.setProperty(PropertyKeyConst.AccessKey, "G6aUujQD6m1Uyy68");
-        producerSetting.setProperty(PropertyKeyConst.SecretKey, "TR6MUs6R8dK6GTOKudmaaY80K2dmxI");
+        Properties onsproducer = new Properties();
+        onsproducer.setProperty(PropertyKeyConst.ProducerId, "PID_EnodeCommon");
+        onsproducer.setProperty(PropertyKeyConst.AccessKey, "G6aUujQD6m1Uyy68");
+        onsproducer.setProperty(PropertyKeyConst.SecretKey, "TR6MUs6R8dK6GTOKudmaaY80K2dmxI");
 
-//        consumerSetting = new Properties();
-        consumerSetting.setProperty(PropertyKeyConst.ConsumerId, "CID_NoteSample");
-        consumerSetting.setProperty(PropertyKeyConst.AccessKey, "G6aUujQD6m1Uyy68");
-        consumerSetting.setProperty(PropertyKeyConst.SecretKey, "TR6MUs6R8dK6GTOKudmaaY80K2dmxI");
+        Properties onsconsumer = new Properties();
+        onsconsumer.setProperty(PropertyKeyConst.ConsumerId, "CID_NoteSample");
+        onsconsumer.setProperty(PropertyKeyConst.AccessKey, "G6aUujQD6m1Uyy68");
+        onsconsumer.setProperty(PropertyKeyConst.SecretKey, "TR6MUs6R8dK6GTOKudmaaY80K2dmxI");
         /**=============================================================*/
 
         /**============= Enode数据库配置（内存实现不需要配置） ===========*/
@@ -73,19 +73,15 @@ public class AppConfig {
         producerProps.put("enable.idempotence", "true");
         producerProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        if (true) {
+        if (mqtype == ENode.TYPE_KAFKA) {
             enode.useKafka(producerProps, props, 6000, ENode.ALL_COMPONENTS);
-        } else {
-            if (isons) {
-                enode.useONS(producerSetting, consumerSetting, 6000,
-                        ENode.ALL_COMPONENTS
-                );
-            } else {
-                enode.useNativeRocketMQ(producerSetting, consumerSetting, 6000, ENode.COMMAND_SERVICE
-                        | ENode.DOMAIN_EVENT_PUBLISHER
-                        | ENode.DOMAIN_EVENT_CONSUMER
-                        | ENode.COMMAND_CONSUMER);
-            }
+        } else if (mqtype == ENode.TYPE_ONS) {
+            enode.useONS(onsproducer, onsconsumer, 6000, ENode.ALL_COMPONENTS);
+        } else if (mqtype == ENode.TYPE_ROCKETMQ) {
+            enode.useNativeRocketMQ(producerSetting, consumerSetting, 6000, ENode.COMMAND_SERVICE
+                    | ENode.DOMAIN_EVENT_PUBLISHER
+                    | ENode.DOMAIN_EVENT_CONSUMER
+                    | ENode.COMMAND_CONSUMER);
         }
         return enode;
     }
