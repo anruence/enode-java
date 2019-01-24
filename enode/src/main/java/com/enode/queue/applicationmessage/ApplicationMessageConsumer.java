@@ -7,11 +7,11 @@ import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.ProcessingApplicationMessage;
 import com.enode.infrastructure.impl.DefaultMessageProcessContext;
+import com.enode.queue.CompletableConsumeConcurrentlyContext;
 import com.enode.queue.IMQConsumer;
 import com.enode.queue.IMQMessageHandler;
 import com.enode.queue.ITopicProvider;
 import com.enode.queue.TopicData;
-import com.enode.queue.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -64,7 +64,6 @@ public class ApplicationMessageConsumer {
                 _logger.warn("Consume application message exception:", e);
                 return;
             }
-
             IApplicationMessage message = (IApplicationMessage) _jsonSerializer.deserialize(appDataMessage.getApplicationMessageData(), applicationMessageType);
             DefaultMessageProcessContext processContext = new DefaultMessageProcessContext(msg, context);
             ProcessingApplicationMessage processingMessage = new ProcessingApplicationMessage(message, processContext);

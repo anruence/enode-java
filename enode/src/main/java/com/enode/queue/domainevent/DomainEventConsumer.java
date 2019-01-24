@@ -9,12 +9,12 @@ import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessageProcessor;
 import com.enode.infrastructure.ProcessingDomainEventStreamMessage;
 import com.enode.infrastructure.impl.DefaultMessageProcessContext;
+import com.enode.queue.CompletableConsumeConcurrentlyContext;
 import com.enode.queue.IMQConsumer;
 import com.enode.queue.IMQMessageHandler;
 import com.enode.queue.ITopicProvider;
 import com.enode.queue.SendReplyService;
 import com.enode.queue.TopicData;
-import com.enode.queue.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -104,8 +104,9 @@ public class DomainEventConsumer {
         private final DomainEventConsumer _eventConsumer;
         private final DomainEventStreamMessage _domainEventStreamMessage;
 
-        public DomainEventStreamProcessContext(DomainEventConsumer eventConsumer, DomainEventStreamMessage domainEventStreamMessage,
-                                               Object queueMessage, CompletableConsumeConcurrentlyContext messageContext) {
+        public DomainEventStreamProcessContext(
+                DomainEventConsumer eventConsumer, DomainEventStreamMessage domainEventStreamMessage,
+                String queueMessage, CompletableConsumeConcurrentlyContext messageContext) {
             super(queueMessage, messageContext);
             _eventConsumer = eventConsumer;
             _domainEventStreamMessage = domainEventStreamMessage;

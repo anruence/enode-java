@@ -9,11 +9,11 @@ import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.ProcessingPublishableExceptionMessage;
 import com.enode.infrastructure.WrappedRuntimeException;
 import com.enode.infrastructure.impl.DefaultMessageProcessContext;
+import com.enode.queue.CompletableConsumeConcurrentlyContext;
 import com.enode.queue.IMQConsumer;
 import com.enode.queue.IMQMessageHandler;
 import com.enode.queue.ITopicProvider;
 import com.enode.queue.TopicData;
-import com.enode.queue.CompletableConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
@@ -56,11 +56,9 @@ public class PublishableExceptionConsumer {
 
         @Override
         public void handle(String msg, CompletableConsumeConcurrentlyContext context) {
-            PublishableExceptionMessage exceptionMessage = _jsonSerializer.deserialize(msg.toString(), PublishableExceptionMessage.class);
+            PublishableExceptionMessage exceptionMessage = _jsonSerializer.deserialize(msg, PublishableExceptionMessage.class);
             Class exceptionType = _typeNameProvider.getType(exceptionMessage.getExceptionType());
-
             IPublishableException exception;
-
             try {
                 exception = (IPublishableException) exceptionType.getConstructor().newInstance();
             } catch (Exception e) {

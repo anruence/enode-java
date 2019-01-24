@@ -143,7 +143,7 @@ public class ENode extends AbstractContainer<ENode> {
     private ConfigurationSetting setting;
     private int registerMQFlag;
 
-    private ENode(ConfigurationSetting setting, String... packages) {
+    public ENode(ConfigurationSetting setting, String... packages) {
         this.setting = setting == null ? new ConfigurationSetting() : setting;
         this.scanPackages = packages;
         _assemblyInitializerServiceTypes = new ArrayList<>();
@@ -355,7 +355,7 @@ public class ENode extends AbstractContainer<ENode> {
 
         FilterBuilder fb = new FilterBuilder();
         fb.include(FilterBuilder.prefix("com.enode.domain.AggregateRoot"));
-        fb.include(FilterBuilder.prefix("com.enode.rocketmq.AbstractTopicProvider"));
+        fb.include(FilterBuilder.prefix("com.enode.queue.AbstractTopicProvider"));
         fb.include(FilterBuilder.prefix("com.enode.infrastructure.impl.AbstractDenormalizer"));
         fb.include(FilterBuilder.prefix("com.enode.infrastructure.impl.AbstractAsyncDenormalizer"));
 

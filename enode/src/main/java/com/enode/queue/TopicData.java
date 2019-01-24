@@ -45,4 +45,9 @@ public class TopicData {
         }
         return tag.equals(that.tag);
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

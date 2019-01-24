@@ -121,7 +121,6 @@ public class ConsumeKafkaService implements IMQConsumer {
         @Override
         public ConsumeStatus receiveMessage(ConsumerRecord msg, CompletableConsumeConcurrentlyContext context) {
             try {
-
                 String topic = msg.topic();
                 String tag = "";
                 String key = topic + tag;
