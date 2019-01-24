@@ -1,6 +1,5 @@
-package com.enode.samples.note.commandhandlers;
+package com.enode.samples.note.eventhandlers;
 
-import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.enode.ENode;
 import com.enode.commanding.ICommandService;
 import com.enode.kafka.KafkaConfig;
@@ -10,14 +9,13 @@ import com.enode.rocketmq.client.ons.PropertyKeyConst;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
 import java.util.Properties;
 
 @Configuration
-public class AppConfigCommandConsumer {
+public class AppConfigEvent {
 
     //    @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public KafkaConfig kafkaConfig() {
+    public KafkaConfig kafkaConfigEvent() {
 
         /**============= Enode数据库配置（内存实现不需要配置） ===========*/
         Properties properties = new Properties();
@@ -29,15 +27,9 @@ public class AppConfigCommandConsumer {
         properties.setProperty("maxTotal", "1");
         /**=============================================================*/
 
-        DataSource dataSource = null;
-        try {
-            dataSource = DruidDataSourceFactory.createDataSource(properties);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ENode enode = ENode.create("com.enode.samples")
-                .registerDefaultComponents();
-//                .useMysqlComponents(dataSource); // 注销此行，启用内存实现（CommandStore,EventStore,SequenceMessagePublishedVersionStore,MessageHandleRecordStore）
+        ENode enode = ENode.create("com.enode.samples").registerDefaultComponents();
+
+        KafkaConfig config = new KafkaConfig(enode);
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
@@ -52,8 +44,7 @@ public class AppConfigCommandConsumer {
         producerProps.put("enable.idempotence", "true");
         producerProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        KafkaConfig config = new KafkaConfig(enode);
-        config.useKafka(producerProps, props, ENode.COMMAND_CONSUMER | ENode.PUBLISHERS, 6001);
+        config.useKafka(producerProps, props, ENode.DOMAIN_EVENT_CONSUMER, 6002);
         return config;
     }
 
@@ -61,7 +52,6 @@ public class AppConfigCommandConsumer {
     public ICommandService commandService() {
         return rocketMQConfig().getEnode().getContainer().resolve(ICommandService.class);
     }
-
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public RocketMQConfig rocketMQConfig() {
@@ -89,7 +79,8 @@ public class AppConfigCommandConsumer {
 
         ENode enode = ENode.create("com.enode.samples").registerDefaultComponents();
         RocketMQConfig config = new RocketMQConfig(enode);
-        config.useONS(onsproducer, onsconsumer, ENode.COMMAND_CONSUMER | ENode.PUBLISHERS, 6001);
+        config.useONS(onsproducer, onsconsumer, ENode.DOMAIN_EVENT_CONSUMER, 6002);
         return config;
     }
+
 }

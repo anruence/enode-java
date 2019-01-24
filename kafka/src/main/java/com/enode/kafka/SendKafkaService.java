@@ -176,7 +176,8 @@ public class SendKafkaService implements IMQProducer {
 
         String data = _jsonSerializer.serialize(publishableExceptionMessage);
 
-        return new ProducerRecord<>(topicTagData.getTopic(),
+        return new ProducerRecord<>(
+                topicTagData.getTopic(),
                 getPartionByRouteKey(routeKey, topicTagData.getTopic()),
                 exception.id(),
                 data

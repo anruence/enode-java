@@ -42,7 +42,7 @@ public class ConsumeKafkaService implements IMQConsumer {
     public ConsumeKafkaService(KafkaConsumer kafkaConsumer) {
         this.messageListener = new MessageListener();
         this.kafkaConsumer = kafkaConsumer;
-        this.consumeRequestQueue = new LinkedBlockingQueue<Runnable>();
+        this.consumeRequestQueue = new LinkedBlockingQueue<>();
         this.consumeExecutor = new ThreadPoolExecutor(
                 20, 60,
                 1000 * 60,

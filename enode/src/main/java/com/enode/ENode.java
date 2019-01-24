@@ -120,9 +120,6 @@ public class ENode extends AbstractContainer<ENode> {
     public static final int PUBLISHERS = COMMAND_SERVICE | DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER;
     public static final int CONSUMERS = COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
     public static final int ALL_COMPONENTS = PUBLISHERS | CONSUMERS;
-    public static final int TYPE_ONS = 0;
-    public static final int TYPE_ROCKETMQ = 1;
-    public static final int TYPE_KAFKA = 2;
     private static final Logger logger = ENodeLogger.getLog();
     //加载AbstractDenormalizer
     private static final String[] ENODE_PACKAGE_SCAN = new String[]{"com.enode.domain", "com.enode.message", "com.enode.infrastructure.impl"};
@@ -141,7 +138,6 @@ public class ENode extends AbstractContainer<ENode> {
     private String[] scanPackages;
     private Set<Class<?>> assemblyTypes;
     private ConfigurationSetting setting;
-    private int registerMQFlag;
 
     public ENode(ConfigurationSetting setting, String... packages) {
         this.setting = setting == null ? new ConfigurationSetting() : setting;
