@@ -2,9 +2,9 @@ package com.enode.infrastructure.impl;
 
 import com.enode.common.container.IObjectContainer;
 import com.enode.common.container.LifeStyle;
-import com.enode.infrastructure.LifeStyleType;
 import com.enode.infrastructure.IAssemblyInitializer;
 import com.enode.infrastructure.IObjectProxy;
+import com.enode.infrastructure.LifeStyleType;
 import com.enode.infrastructure.MessageHandlerData;
 import com.enode.infrastructure.MethodInvocation;
 import com.enode.infrastructure.Priority;
@@ -16,6 +16,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,9 +70,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
     }
 
     private void initializeHandlerPriority() {
-        _handlerDict.entrySet().forEach(entry -> {
-            TKey key = entry.getKey();
-            List<THandlerProxyInterface> handlers = entry.getValue();
+        _handlerDict.forEach((key, handlers) -> {
 
             MessageHandlerData<THandlerProxyInterface> handlerData = new MessageHandlerData<>();
             List<THandlerProxyInterface> listHandlers = new ArrayList<>();
@@ -89,7 +88,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
 
             handlerData.AllHandlers = handlers;
             handlerData.ListHandlers = listHandlers;
-            handlerData.QueuedHandlers = queueHandlerDict.entrySet().stream().sorted((o1, o2) -> o1.getValue() - o2.getValue()).map(x -> x.getKey()).collect(Collectors.toList());
+            handlerData.QueuedHandlers = queueHandlerDict.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).map(x -> x.getKey()).collect(Collectors.toList());
 
             _messageHandlerDict.put(key, handlerData);
         });
@@ -144,22 +143,10 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
         handleMethods.forEach(method -> {
             try {
                 //反射Method转换为MethodHandle,提高效率
-
                 MethodHandle handleMethod = lookup.findVirtual(handlerType, method.getName(), MethodType.methodType(method.getReturnType(), method.getParameterTypes()));
                 TKey key = getKey(method);
 
-                List<THandlerProxyInterface> handlers = _handlerDict.get(key);
-                if (handlers == null) {
-                    handlers = new ArrayList<>();
-                    _handlerDict.put(key, handlers);
-                }
-
-                //TODO handle duplicate message
-                /*var handler = handlers.SingleOrDefault(x => x.GetInnerObject().GetType() == handlerType);
-                if (handler != null)
-                {
-                    throw new InvalidOperationException("Handler cannot handle duplicate message, handlerType:" + handlerType);
-                }*/
+                List<THandlerProxyInterface> handlers = _handlerDict.computeIfAbsent(key, k -> new ArrayList<>());
 
                 THandlerProxyInterface handlerProxy = getHandlerProxyImplementationType().getConstructor(IObjectContainer.class, Class.class, getGenericHandlerType(), MethodHandle.class, Method.class).newInstance(getObjectContainer(), handlerType, handleObj, handleMethod, method);
                 handlers.add(handlerProxy);
@@ -168,15 +155,4 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
             }
         });
     }
-
-//    x -> {
-//        if (!x.getName().equals("handle"))
-//            return false;
-//
-//        Class<?>[] parameterTypes = x.getParameterTypes();
-//        if (parameterTypes.length != 2)
-//            return false;
-//
-//        return parameterTypes[0] == ICommandContext.class && ICommand.class.isAssignableFrom(parameterTypes[1]);
-//    }
 }

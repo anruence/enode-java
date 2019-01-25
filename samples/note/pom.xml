@@ -46,7 +46,7 @@
         </dependency>
         <dependency>
             <groupId>com.enode</groupId>
-            <artifactId>provider</artifactId>
+            <artifactId>provider-kafka</artifactId>
             <version>1.0.0</version>
         </dependency>
     </dependencies>

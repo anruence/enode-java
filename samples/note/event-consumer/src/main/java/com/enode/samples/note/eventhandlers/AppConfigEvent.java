@@ -2,10 +2,10 @@ package com.enode.samples.note.eventhandlers;
 
 import com.enode.ENode;
 import com.enode.commanding.ICommandService;
-import com.enode.kafka.KafkaConfig;
-import com.enode.rocketmq.RocketMQConfig;
+import com.enode.kafka.config.KafkaConfig;
 import com.enode.rocketmq.client.impl.NativePropertyKey;
 import com.enode.rocketmq.client.ons.PropertyKeyConst;
+import com.enode.rocketmq.message.config.RocketMQConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,7 +14,7 @@ import java.util.Properties;
 @Configuration
 public class AppConfigEvent {
 
-    //    @Bean(initMethod = "start", destroyMethod = "shutdown")
+//    @Bean(initMethod = "start", destroyMethod = "shutdown")
     public KafkaConfig kafkaConfigEvent() {
 
         /**============= Enode数据库配置（内存实现不需要配置） ===========*/
@@ -50,7 +50,7 @@ public class AppConfigEvent {
 
     @Bean
     public ICommandService commandService() {
-        return rocketMQConfig().getEnode().getContainer().resolve(ICommandService.class);
+        return rocketMQConfig().getEnode().resolve(ICommandService.class);
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
@@ -79,7 +79,8 @@ public class AppConfigEvent {
 
         ENode enode = ENode.create("com.enode.samples").registerDefaultComponents();
         RocketMQConfig config = new RocketMQConfig(enode);
-        config.useONS(onsproducer, onsconsumer, ENode.DOMAIN_EVENT_CONSUMER, 6002);
+//        config.useONS(onsproducer, onsconsumer, ENode.DOMAIN_EVENT_CONSUMER, 6002);
+        config.useNativeRocketMQ(producerSetting, consumerSetting, ENode.DOMAIN_EVENT_CONSUMER, 6002);
         return config;
     }
 

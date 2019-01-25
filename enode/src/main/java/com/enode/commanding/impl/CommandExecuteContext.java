@@ -7,10 +7,11 @@ import com.enode.commanding.ICommandExecuteContext;
 import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateStorage;
 import com.enode.domain.IRepository;
+import com.enode.queue.IMessageContext;
+import com.enode.queue.QueueMessage;
 import com.enode.queue.SendReplyService;
-import com.enode.queue.CompletableConsumeConcurrentlyContext;
 import com.enode.queue.command.CommandMessage;
-import com.enode.queue.command.ConsumeStatus;
+import com.google.common.base.Strings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,21 +19,31 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class CommandExecuteContext<T extends Object> implements ICommandExecuteContext {
-    private final ConcurrentMap<String, IAggregateRoot> _trackingAggregateRootDict;
-    private final IRepository _repository;
-    private final IAggregateStorage _aggregateRootStorage;
-    private final SendReplyService _sendReplyService;
-    private final T _queueMessage;
+public class CommandExecuteContext implements ICommandExecuteContext {
     private String _result;
-    private CompletableConsumeConcurrentlyContext _messageContext;
-    private CompletableFuture _consumeResultFuture;
+
+    private final ConcurrentMap<String, IAggregateRoot> _trackingAggregateRootDict;
+
+    private final IRepository _repository;
+
+    private final IAggregateStorage _aggregateRootStorage;
+
+    private final SendReplyService _sendReplyService;
+
+    private final QueueMessage _queueMessage;
+
+    private IMessageContext _messageContext;
+
     private CommandMessage _commandMessage;
 
     public CommandExecuteContext(
-            IRepository repository, IAggregateStorage aggregateRootStorage, T queueMessage,
-            CompletableConsumeConcurrentlyContext messageContext, CommandMessage commandMessage,
-            SendReplyService sendReplyService, CompletableFuture consumeResultFuture) {
+            IRepository repository,
+            IAggregateStorage aggregateRootStorage,
+            QueueMessage queueMessage,
+            IMessageContext messageContext,
+            CommandMessage commandMessage,
+            SendReplyService sendReplyService
+    ) {
         _trackingAggregateRootDict = new ConcurrentHashMap<>();
         _repository = repository;
         _aggregateRootStorage = aggregateRootStorage;
@@ -40,15 +51,13 @@ public class CommandExecuteContext<T extends Object> implements ICommandExecuteC
         _queueMessage = queueMessage;
         _commandMessage = commandMessage;
         _messageContext = messageContext;
-        _consumeResultFuture = consumeResultFuture;
     }
 
     @Override
     public CompletableFuture onCommandExecutedAsync(CommandResult commandResult) {
-        _consumeResultFuture.complete(ConsumeStatus.CONSUME_SUCCESS);
-
-        if (_commandMessage.getReplyAddress() == null) {
-            return CompletableFuture.completedFuture(null);
+        _messageContext.onMessageHandled(_queueMessage);
+        if (Strings.isNullOrEmpty(_commandMessage.getReplyAddress())) {
+            return CompletableFuture.completedFuture(false);
         }
         return _sendReplyService.sendReply(CommandReturnType.CommandExecuted.getValue(), commandResult, _commandMessage.getReplyAddress());
     }

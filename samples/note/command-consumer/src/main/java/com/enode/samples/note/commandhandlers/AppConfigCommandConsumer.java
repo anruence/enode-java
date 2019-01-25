@@ -3,10 +3,10 @@ package com.enode.samples.note.commandhandlers;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import com.enode.ENode;
 import com.enode.commanding.ICommandService;
-import com.enode.kafka.KafkaConfig;
-import com.enode.rocketmq.RocketMQConfig;
+import com.enode.kafka.config.KafkaConfig;
 import com.enode.rocketmq.client.impl.NativePropertyKey;
 import com.enode.rocketmq.client.ons.PropertyKeyConst;
+import com.enode.rocketmq.message.config.RocketMQConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -59,7 +59,7 @@ public class AppConfigCommandConsumer {
 
     @Bean
     public ICommandService commandService() {
-        return rocketMQConfig().getEnode().getContainer().resolve(ICommandService.class);
+        return rocketMQConfig().getEnode().resolve(ICommandService.class);
     }
 
 
@@ -89,7 +89,8 @@ public class AppConfigCommandConsumer {
 
         ENode enode = ENode.create("com.enode.samples").registerDefaultComponents();
         RocketMQConfig config = new RocketMQConfig(enode);
-        config.useONS(onsproducer, onsconsumer, ENode.COMMAND_CONSUMER | ENode.PUBLISHERS, 6001);
+//        config.useONS(onsproducer, onsconsumer, ENode.COMMAND_CONSUMER | ENode.PUBLISHERS, 6001);
+        config.useNativeRocketMQ(producerSetting, consumerSetting, ENode.COMMAND_CONSUMER | ENode.PUBLISHERS, 6001);
         return config;
     }
 }

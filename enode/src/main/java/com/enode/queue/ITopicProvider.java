@@ -3,7 +3,7 @@ package com.enode.queue;
 import java.util.Collection;
 
 public interface ITopicProvider<T> {
-    TopicData getPublishTopic(T source);
+    TopicTagData getPublishTopic(T source);
 
-    Collection<TopicData> getAllSubscribeTopics();
+    Collection<TopicTagData> getAllSubscribeTopics();
 }

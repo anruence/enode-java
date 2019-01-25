@@ -2,21 +2,21 @@ package com.enode.samples.note.providers;
 
 import com.enode.commanding.ICommand;
 import com.enode.queue.AbstractTopicProvider;
-import com.enode.queue.TopicData;
+import com.enode.queue.TopicTagData;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class CommandTopicProvider extends AbstractTopicProvider<ICommand> {
     @Override
-    public TopicData getPublishTopic(ICommand command) {
-        return new TopicData("EnodeCommonTopicDev", "Command");
+    public TopicTagData getPublishTopic(ICommand command) {
+        return new TopicTagData("EnodeCommonTopicDev", "Command");
     }
 
     @Override
-    public Collection<TopicData> getAllSubscribeTopics() {
-        return new ArrayList<TopicData>() {{
-            add(new TopicData("EnodeCommonTopicDev", "Command"));
+    public Collection<TopicTagData> getAllSubscribeTopics() {
+        return new ArrayList<TopicTagData>() {{
+            add(new TopicTagData("EnodeCommonTopicDev", "Command"));
         }};
     }
 }

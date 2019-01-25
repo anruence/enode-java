@@ -2,21 +2,21 @@ package com.enode.samples.note.providers;
 
 import com.enode.eventing.IDomainEvent;
 import com.enode.queue.AbstractTopicProvider;
-import com.enode.queue.TopicData;
+import com.enode.queue.TopicTagData;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class EventTopicProvider extends AbstractTopicProvider<IDomainEvent> {
     @Override
-    public TopicData getPublishTopic(IDomainEvent event) {
-        return new TopicData("EnodeCommonTopicDevDomainEvent", "");
+    public TopicTagData getPublishTopic(IDomainEvent event) {
+        return new TopicTagData("EnodeCommonTopicDevDomainEvent", "");
     }
 
     @Override
-    public Collection<TopicData> getAllSubscribeTopics() {
-        return new ArrayList<TopicData>() {{
-            add(new TopicData("EnodeCommonTopicDevDomainEvent", ""));
+    public Collection<TopicTagData> getAllSubscribeTopics() {
+        return new ArrayList<TopicTagData>() {{
+            add(new TopicTagData("EnodeCommonTopicDevDomainEvent", ""));
         }};
     }
 }

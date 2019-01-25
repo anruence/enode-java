@@ -6,16 +6,16 @@ import java.util.Map;
 
 public abstract class AbstractTopicProvider<T> implements ITopicProvider<T> {
 
-    private Map<Class, TopicData> _topicDict = new HashMap<>();
+    private Map<Class, TopicTagData> _topicDict = new HashMap<>();
 
     @Override
-    public TopicData getPublishTopic(T source) {
+    public TopicTagData getPublishTopic(T source) {
         return _topicDict.get(source.getClass());
     }
 
 
     @Override
-    public Collection<TopicData> getAllSubscribeTopics() {
+    public Collection<TopicTagData> getAllSubscribeTopics() {
         return _topicDict.values();
     }
 
@@ -23,7 +23,7 @@ public abstract class AbstractTopicProvider<T> implements ITopicProvider<T> {
         return _topicDict.keySet();
     }
 
-    protected void registerTopic(TopicData topic, Class[] types) {
+    protected void registerTopic(TopicTagData topic, Class[] types) {
         if (types == null || types.length == 0) {
             return;
         }

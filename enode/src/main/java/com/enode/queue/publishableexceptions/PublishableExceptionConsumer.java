@@ -9,38 +9,22 @@ import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.ProcessingPublishableExceptionMessage;
 import com.enode.infrastructure.WrappedRuntimeException;
 import com.enode.infrastructure.impl.DefaultMessageProcessContext;
-import com.enode.queue.CompletableConsumeConcurrentlyContext;
-import com.enode.queue.IMQConsumer;
-import com.enode.queue.IMQMessageHandler;
-import com.enode.queue.ITopicProvider;
-import com.enode.queue.TopicData;
+import com.enode.queue.IMessageContext;
+import com.enode.queue.IMessageHandler;
+import com.enode.queue.QueueMessage;
 import org.slf4j.Logger;
 
-import javax.inject.Inject;
+public class PublishableExceptionConsumer implements IMessageHandler {
 
-
-public class PublishableExceptionConsumer {
     private static final Logger _logger = ENodeLogger.getLog();
 
-    private final IMQConsumer _consumer;
-    private final IJsonSerializer _jsonSerializer;
-    private final ITopicProvider<IPublishableException> _exceptionTopicProvider;
-    private final ITypeNameProvider _typeNameProvider;
-    private final IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> _publishableExceptionProcessor;
+    protected IJsonSerializer _jsonSerializer;
 
-    @Inject
-    public PublishableExceptionConsumer(IMQConsumer consumer, IJsonSerializer jsonSerializer,
-                                        ITopicProvider<IPublishableException> exceptionITopicProvider, ITypeNameProvider typeNameProvider,
-                                        IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> publishableExceptionProcessor) {
-        _consumer = consumer;
-        _jsonSerializer = jsonSerializer;
-        _exceptionTopicProvider = exceptionITopicProvider;
-        _typeNameProvider = typeNameProvider;
-        _publishableExceptionProcessor = publishableExceptionProcessor;
-    }
+    protected ITypeNameProvider _typeNameProvider;
+
+    protected IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> _publishableExceptionProcessor;
 
     public PublishableExceptionConsumer start() {
-        _consumer.registerMessageHandler(new PublishableExceptionMessageHandle());
         return this;
     }
 
@@ -48,36 +32,29 @@ public class PublishableExceptionConsumer {
         return this;
     }
 
-    class PublishableExceptionMessageHandle implements IMQMessageHandler {
-        @Override
-        public boolean isMatched(TopicData topicTagData) {
-            return _exceptionTopicProvider.getAllSubscribeTopics().contains(topicTagData);
+    @Override
+    public void handle(QueueMessage queueMessage, IMessageContext context) {
+        PublishableExceptionMessage exceptionMessage = _jsonSerializer.deserialize(queueMessage.getBody(), PublishableExceptionMessage.class);
+        Class exceptionType = _typeNameProvider.getType(exceptionMessage.getExceptionType());
+        IPublishableException exception;
+        try {
+            exception = (IPublishableException) exceptionType.getConstructor().newInstance();
+        } catch (Exception e) {
+            throw new WrappedRuntimeException(e);
+        }
+        exception.setId(exceptionMessage.getUniqueId());
+        exception.setTimestamp(exceptionMessage.getTimestamp());
+        exception.restoreFrom(exceptionMessage.getSerializableInfo());
+
+        if (exception instanceof ISequenceMessage) {
+            ISequenceMessage sequenceMessage = (ISequenceMessage) exception;
+            sequenceMessage.setAggregateRootTypeName(exceptionMessage.getAggregateRootTypeName());
+            sequenceMessage.setAggregateRootStringId(exceptionMessage.getAggregateRootId());
         }
 
-        @Override
-        public void handle(String msg, CompletableConsumeConcurrentlyContext context) {
-            PublishableExceptionMessage exceptionMessage = _jsonSerializer.deserialize(msg, PublishableExceptionMessage.class);
-            Class exceptionType = _typeNameProvider.getType(exceptionMessage.getExceptionType());
-            IPublishableException exception;
-            try {
-                exception = (IPublishableException) exceptionType.getConstructor().newInstance();
-            } catch (Exception e) {
-                throw new WrappedRuntimeException(e);
-            }
-            exception.setId(exceptionMessage.getUniqueId());
-            exception.setTimestamp(exceptionMessage.getTimestamp());
-            exception.restoreFrom(exceptionMessage.getSerializableInfo());
-
-            if (exception instanceof ISequenceMessage) {
-                ISequenceMessage sequenceMessage = (ISequenceMessage) exception;
-                sequenceMessage.setAggregateRootTypeName(exceptionMessage.getAggregateRootTypeName());
-                sequenceMessage.setAggregateRootStringId(exceptionMessage.getAggregateRootId());
-            }
-
-            DefaultMessageProcessContext processContext = new DefaultMessageProcessContext(msg, context);
-            ProcessingPublishableExceptionMessage processingMessage = new ProcessingPublishableExceptionMessage(exception, processContext);
-            _logger.info("ENode exception message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}", exceptionMessage.getUniqueId(), exceptionMessage.getAggregateRootId(), exceptionMessage.getAggregateRootTypeName());
-            _publishableExceptionProcessor.process(processingMessage);
-        }
+        DefaultMessageProcessContext processContext = new DefaultMessageProcessContext(queueMessage, context);
+        ProcessingPublishableExceptionMessage processingMessage = new ProcessingPublishableExceptionMessage(exception, processContext);
+        _logger.info("ENode exception message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}", exceptionMessage.getUniqueId(), exceptionMessage.getAggregateRootId(), exceptionMessage.getAggregateRootTypeName());
+        _publishableExceptionProcessor.process(processingMessage);
     }
 }

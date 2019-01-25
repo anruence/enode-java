@@ -1,38 +1,30 @@
 package com.enode.queue.command;
 
-import com.enode.commanding.CommandExecuteTimeoutException;
 import com.enode.commanding.CommandResult;
 import com.enode.commanding.CommandReturnType;
 import com.enode.commanding.ICommand;
 import com.enode.commanding.ICommandRoutingKeyProvider;
 import com.enode.commanding.ICommandService;
 import com.enode.common.io.AsyncTaskResult;
-import com.enode.common.io.AsyncTaskStatus;
+import com.enode.common.remoting.common.RemotingUtil;
+import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.Ensure;
-import com.enode.infrastructure.WrappedRuntimeException;
-import com.enode.queue.IMQProducer;
+import com.enode.queue.ITopicProvider;
+import com.enode.queue.QueueMessage;
+import com.enode.queue.QueueMessageTypeCode;
+import com.enode.queue.TopicTagData;
 
-import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class CommandService implements ICommandService {
 
-    private ICommandRoutingKeyProvider _commandRouteKeyProvider;
-    private IMQProducer _sendMessageService;
-    private CommandResultProcessor _commandResultProcessor;
+    protected IJsonSerializer _jsonSerializer;
 
-    @Inject
-    public CommandService(
-            CommandResultProcessor commandResultProcessor,
-            ICommandRoutingKeyProvider commandRoutingKeyProvider,
-            IMQProducer sendQueueMessageService) {
-        super();
-        _commandRouteKeyProvider = commandRoutingKeyProvider;
-        _commandResultProcessor = commandResultProcessor;
-        _sendMessageService = sendQueueMessageService;
-    }
+    protected ITopicProvider<ICommand> _commandTopicProvider;
+
+    protected ICommandRoutingKeyProvider _commandRouteKeyProvider;
+
+    protected CommandResultProcessor _commandResultProcessor;
 
     public CommandService start() {
         if (_commandResultProcessor != null) {
@@ -50,33 +42,7 @@ public class CommandService implements ICommandService {
 
     @Override
     public CompletableFuture<AsyncTaskResult> sendAsync(ICommand command) {
-        try {
-            return _sendMessageService.sendAsync(command, _commandRouteKeyProvider.getRoutingKey(command), false);
-        } catch (Exception ex) {
-            return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
-        }
-    }
-
-    public CommandResult execute(ICommand command, int timeoutMillis) {
-        try {
-            AsyncTaskResult<CommandResult> result = executeAsync(command).get(timeoutMillis, TimeUnit.MILLISECONDS);
-            return result.getData();
-        } catch (TimeoutException e) {
-            throw new CommandExecuteTimeoutException(String.format("Command execute timeout, commandId: %s, aggregateRootId: %s", command.id(), command.getAggregateRootId()));
-        } catch (Exception e) {
-            throw new WrappedRuntimeException(e);
-        }
-    }
-
-    public CommandResult execute(ICommand command, CommandReturnType commandReturnType, int timeoutMillis) {
-        try {
-            AsyncTaskResult<CommandResult> result = executeAsync(command, commandReturnType).get(timeoutMillis, TimeUnit.MILLISECONDS);
-            return result.getData();
-        } catch (TimeoutException e) {
-            throw new CommandExecuteTimeoutException(String.format("Command execute timeout, commandId: %s, aggregateRootId: %s", command.id(), command.getAggregateRootId()));
-        } catch (Exception e) {
-            throw new WrappedRuntimeException(e);
-        }
+        return CompletableFuture.completedFuture(AsyncTaskResult.Success);
     }
 
     @Override
@@ -86,28 +52,25 @@ public class CommandService implements ICommandService {
 
     @Override
     public CompletableFuture<AsyncTaskResult<CommandResult>> executeAsync(ICommand command, CommandReturnType commandReturnType) {
-        try {
-            Ensure.notNull(_commandResultProcessor, "commandResultProcessor");
-
-            CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource = new CompletableFuture<>();
-            _commandResultProcessor.registerProcessingCommand(command, commandReturnType, taskCompletionSource);
-
-            CompletableFuture<AsyncTaskResult> sendMessageAsync = _sendMessageService.sendAsync(command, _commandRouteKeyProvider.getRoutingKey(command), true);
-            sendMessageAsync.thenAccept(sendResult -> {
-                if (sendResult.getStatus().equals(AsyncTaskStatus.Success)) {
-                    //_commandResultProcessor中会继续等命令或事件处理完成的状态
-                } else {
-                    //TODO 是否删除下面一行代码
-                    taskCompletionSource.complete(new AsyncTaskResult<>(sendResult.getStatus(), sendResult.getErrorMessage()));
-                    _commandResultProcessor.processFailedSendingCommand(command);
-                }
-            });
-
-            return taskCompletionSource;
-        } catch (Exception ex) {
-            return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
-        }
+        return CompletableFuture.completedFuture(AsyncTaskResult.Success);
     }
 
+    protected QueueMessage buildCommandMessage(ICommand command, boolean needReply) {
+        Ensure.notNull(command.getAggregateRootId(), "aggregateRootId");
+        String commandData = _jsonSerializer.serialize(command);
+        TopicTagData topicTagData = _commandTopicProvider.getPublishTopic(command);
+        String replyAddress = needReply && _commandResultProcessor != null ? RemotingUtil.parseAddress(_commandResultProcessor.getBindingAddress()) : null;
+        String messageData = _jsonSerializer.serialize(new CommandMessage(commandData, replyAddress, command.getClass().getName()));
+        //命令唯一id，聚合根id
+        String key = String.format("%s%s", command.id(), command.getAggregateRootId() == null ? "" : "cmd_agg_" + command.getAggregateRootId());
+        QueueMessage queueMessage = new QueueMessage();
+        queueMessage.setBody(messageData);
+        queueMessage.setRouteKey(_commandRouteKeyProvider.getRoutingKey(command));
+        queueMessage.setCode(QueueMessageTypeCode.ApplicationMessage.getValue());
+        queueMessage.setKey(key);
+        queueMessage.setTopic(topicTagData.getTopic());
+        queueMessage.setTags(topicTagData.getTag());
+        return queueMessage;
+    }
 
 }
