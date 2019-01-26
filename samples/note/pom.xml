@@ -17,8 +17,6 @@
         <module>event-consumer</module>
         <module>command-sender</module>
         <module>domain</module>
-        <module>provider</module>
-        <module>provider-kafka</module>
         <module>command</module>
     </modules>
     <dependencies>
@@ -42,11 +40,6 @@
         <dependency>
             <groupId>com.enode</groupId>
             <artifactId>kafka</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.enode</groupId>
-            <artifactId>provider-kafka</artifactId>
             <version>1.0.0</version>
         </dependency>
     </dependencies>

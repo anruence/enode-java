@@ -13,35 +13,27 @@ import com.enode.queue.QueueMessage;
 import com.enode.queue.SendReplyService;
 import com.enode.queue.command.CommandConsumer;
 import com.enode.rocketmq.client.Consumer;
-import com.enode.rocketmq.client.RocketMQFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
-import java.util.Properties;
 
 @Singleton
 public class RocketMQCommandConsumer extends CommandConsumer implements MessageListenerConcurrently {
 
-    private RocketMQFactory _mqFactory;
-
     private Consumer _consumer;
 
     @Inject
-    public RocketMQCommandConsumer(IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateStorage, SendReplyService sendReplyService, RocketMQFactory mqFactory) {
+    public RocketMQCommandConsumer(Consumer consumer, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateStorage, SendReplyService sendReplyService) {
         _sendReplyService = sendReplyService;
         _jsonSerializer = jsonSerializer;
         _typeNameProvider = typeNameProvider;
         _processor = commandProcessor;
         _repository = repository;
         _aggregateRootStorage = aggregateStorage;
-        _mqFactory = mqFactory;
-    }
-
-    public RocketMQCommandConsumer initializeQueue(Properties properties) {
-        _consumer = _mqFactory.createPushConsumer(properties);
+        _consumer = consumer;
         _consumer.registerMessageListener(this::consumeMessage);
-        return this;
+
     }
 
     public RocketMQCommandConsumer subscribe(String topic, String subExpression) {

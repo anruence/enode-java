@@ -32,17 +32,14 @@ public class RocketMQDomainEventPublisher extends DomainEventPublisher {
     }
 
 
-
     @Override
     public RocketMQDomainEventPublisher start() {
         super.start();
-        _producer.start();
         return this;
     }
 
     @Override
     public RocketMQDomainEventPublisher shutdown() {
-        _producer.shutdown();
         super.shutdown();
         return this;
     }

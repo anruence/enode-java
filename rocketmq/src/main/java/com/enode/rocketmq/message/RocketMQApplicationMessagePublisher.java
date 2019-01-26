@@ -31,13 +31,11 @@ public class RocketMQApplicationMessagePublisher extends ApplicationMessagePubli
     @Override
     public RocketMQApplicationMessagePublisher start() {
         super.start();
-        _producer.start();
         return this;
     }
 
     @Override
     public RocketMQApplicationMessagePublisher shutdown() {
-        _producer.shutdown();
         super.shutdown();
         return this;
     }

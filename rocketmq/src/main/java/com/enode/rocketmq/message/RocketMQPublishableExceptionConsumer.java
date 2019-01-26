@@ -12,32 +12,24 @@ import com.enode.infrastructure.ProcessingPublishableExceptionMessage;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.publishableexceptions.PublishableExceptionConsumer;
 import com.enode.rocketmq.client.Consumer;
-import com.enode.rocketmq.client.RocketMQFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
-import java.util.Properties;
 
 @Singleton
 public class RocketMQPublishableExceptionConsumer extends PublishableExceptionConsumer implements MessageListenerConcurrently {
 
-    private RocketMQFactory _mqFactory;
-
     private Consumer _consumer;
 
     @Inject
-    public RocketMQPublishableExceptionConsumer(IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> publishableExceptionProcessor, RocketMQFactory mqFactory) {
+    public RocketMQPublishableExceptionConsumer(Consumer consumer, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> publishableExceptionProcessor) {
         _jsonSerializer = jsonSerializer;
         _typeNameProvider = typeNameProvider;
         _publishableExceptionProcessor = publishableExceptionProcessor;
-        _mqFactory = mqFactory;
-    }
-
-    public RocketMQPublishableExceptionConsumer initializeQueue(Properties properties) {
-        _consumer = _mqFactory.createPushConsumer(properties);
+        _consumer = consumer;
         _consumer.registerMessageListener(this::consumeMessage);
-        return this;
+
     }
 
     public RocketMQPublishableExceptionConsumer subscribe(String topic, String subExpression) {

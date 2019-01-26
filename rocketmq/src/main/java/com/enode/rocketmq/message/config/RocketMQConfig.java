@@ -15,6 +15,7 @@ import com.enode.queue.ITopicProvider;
 import com.enode.queue.SendReplyService;
 import com.enode.queue.TopicTagData;
 import com.enode.queue.command.CommandResultProcessor;
+import com.enode.rocketmq.client.Consumer;
 import com.enode.rocketmq.client.Producer;
 import com.enode.rocketmq.client.RocketMQFactory;
 import com.enode.rocketmq.client.impl.NativeMQFactory;
@@ -55,16 +56,12 @@ public class RocketMQConfig {
     public static final int CONSUMERS = COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
     public static final int ALL_COMPONENTS = PUBLISHERS | CONSUMERS;
 
-    private Properties producerProps;
-
-    private Properties consumerProps;
 
     private int registerMQFlag;
 
     public RocketMQConfig(ENode enode) {
         this.enode = enode;
     }
-
 
     /**
      * use rocketmq as CommandBus, EventBus
@@ -85,16 +82,13 @@ public class RocketMQConfig {
 
     private RocketMQConfig useRocketMQ(Properties producerProps, Properties consumerProps, int registerMQFlag, int listenPort, boolean isons) {
         this.registerMQFlag = registerMQFlag;
-        this.producerProps = producerProps;
-        this.consumerProps = consumerProps;
         enode.register(SendRocketMQService.class);
         RocketMQFactory mqFactory = isons ? new ONSFactory() : new NativeMQFactory();
 
-        enode.register(RocketMQFactory.class, null, () -> mqFactory, LifeStyle.Singleton);
-        Producer producer = mqFactory.createProducer(producerProps);
-        enode.registerInstance(Producer.class, producer);
         //Create MQConsumer and any register consumers(KafkaCommandConsumer、KafkaDomainEventConsumer、KafkaApplicationMessageConsumer、KafkaPublishableExceptionConsumer)
         if (hasAnyComponents(registerMQFlag, CONSUMERS)) {
+            Consumer consumer = mqFactory.createPushConsumer(consumerProps);
+            enode.registerInstance(Consumer.class, consumer);
             // KafkaCommandConsumer、KafkaDomainEventConsumer需要引用SendReplyService
             if (hasAnyComponents(registerMQFlag, COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER)) {
                 enode.register(SendReplyService.class);
@@ -123,7 +117,8 @@ public class RocketMQConfig {
 
         //register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
         if (hasAnyComponents(registerMQFlag, PUBLISHERS)) {
-
+            Producer producer = mqFactory.createProducer(producerProps);
+            enode.registerInstance(Producer.class, producer);
             //CommandService
             if (hasComponent(registerMQFlag, COMMAND_SERVICE)) {
                 enode.register(CommandResultProcessor.class, null, () -> {
@@ -181,7 +176,6 @@ public class RocketMQConfig {
             //KafkaCommandConsumer
             if (hasComponent(registerMQFlag, COMMAND_CONSUMER)) {
                 RocketMQCommandConsumer commandConsumer = enode.resolve(RocketMQCommandConsumer.class);
-                commandConsumer.initializeQueue(consumerProps);
                 //Command topics
                 ITopicProvider<ICommand> commandTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<ICommand>>() {
                 });
@@ -193,7 +187,6 @@ public class RocketMQConfig {
             //KafkaDomainEventConsumer
             if (hasComponent(registerMQFlag, DOMAIN_EVENT_CONSUMER)) {
                 RocketMQDomainEventConsumer domainEventConsumer = enode.resolve(RocketMQDomainEventConsumer.class);
-                domainEventConsumer.initializeQueue(consumerProps);
                 //Domain event topics
                 ITopicProvider<IDomainEvent> domainEventTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<IDomainEvent>>() {
                 });
@@ -205,7 +198,6 @@ public class RocketMQConfig {
             //KafkaApplicationMessageConsumer
             if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_CONSUMER)) {
                 RocketMQApplicationMessageConsumer applicationMessageConsumer = enode.resolve(RocketMQApplicationMessageConsumer.class);
-                applicationMessageConsumer.initializeQueue(consumerProps);
                 //Application message topics
                 ITopicProvider<IApplicationMessage> applicationMessageTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<IApplicationMessage>>() {
                 });
@@ -217,7 +209,6 @@ public class RocketMQConfig {
             //KafkaPublishableExceptionConsumer
             if (hasComponent(registerMQFlag, EXCEPTION_CONSUMER)) {
                 RocketMQPublishableExceptionConsumer publishableExceptionConsumer = enode.resolve(RocketMQPublishableExceptionConsumer.class);
-                publishableExceptionConsumer.initializeQueue(consumerProps);
                 //Exception topics
                 ITopicProvider<IPublishableException> exceptionTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<IPublishableException>>() {
                 });
@@ -251,6 +242,8 @@ public class RocketMQConfig {
                 RocketMQPublishableExceptionPublisher exceptionPublisher = enode.resolve(RocketMQPublishableExceptionPublisher.class);
                 exceptionPublisher.start();
             }
+            Producer producer = enode.resolve(Producer.class);
+            producer.start();
         }
 
 

@@ -1,4 +1,4 @@
-package com.enode.samples.note.providers;
+package com.enode.samples.note.commands.providers;
 
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.queue.AbstractTopicProvider;

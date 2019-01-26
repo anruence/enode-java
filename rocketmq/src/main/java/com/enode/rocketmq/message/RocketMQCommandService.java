@@ -17,7 +17,6 @@ import com.enode.rocketmq.client.Producer;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
 @Singleton
@@ -37,20 +36,14 @@ public class RocketMQCommandService extends CommandService {
         _producer = producer;
     }
 
-    public RocketMQCommandService initializeQueue(Properties properties) {
-        return this;
-    }
-
     @Override
     public RocketMQCommandService start() {
         super.start();
-        _producer.start();
         return this;
     }
 
     @Override
     public RocketMQCommandService shutdown() {
-        _producer.shutdown();
         super.shutdown();
         return this;
     }

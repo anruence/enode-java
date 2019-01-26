@@ -1,4 +1,4 @@
-package com.enode.samples.note.providers;
+package com.enode.samples.note.commands.providers;
 
 import com.enode.infrastructure.IPublishableException;
 import com.enode.queue.AbstractTopicProvider;

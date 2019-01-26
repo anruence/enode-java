@@ -13,35 +13,26 @@ import com.enode.queue.QueueMessage;
 import com.enode.queue.SendReplyService;
 import com.enode.queue.domainevent.DomainEventConsumer;
 import com.enode.rocketmq.client.Consumer;
-import com.enode.rocketmq.client.RocketMQFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
-import java.util.Properties;
 
 @Singleton
 public class RocketMQDomainEventConsumer extends DomainEventConsumer implements MessageListenerConcurrently {
 
-    private RocketMQFactory _mqFactory;
 
     private Consumer _consumer;
 
     @Inject
-    public RocketMQDomainEventConsumer(IJsonSerializer jsonSerializer, IEventSerializer eventSerializer, IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> processor, SendReplyService sendReplyService, RocketMQFactory mqFactory) {
+    public RocketMQDomainEventConsumer(Consumer consumer, IJsonSerializer jsonSerializer, IEventSerializer eventSerializer, IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> processor, SendReplyService sendReplyService) {
         _sendReplyService = sendReplyService;
         _jsonSerializer = jsonSerializer;
         _eventSerializer = eventSerializer;
         _processor = processor;
         _sendEventHandledMessage = true;
-        _mqFactory = mqFactory;
-
-    }
-
-    public RocketMQDomainEventConsumer initializeQueue(Properties properties) {
-        _consumer = _mqFactory.createPushConsumer(properties);
+        _consumer = consumer;
         _consumer.registerMessageListener(this::consumeMessage);
-        return this;
     }
 
     public RocketMQDomainEventConsumer subscribe(String topic, String subExpression) {

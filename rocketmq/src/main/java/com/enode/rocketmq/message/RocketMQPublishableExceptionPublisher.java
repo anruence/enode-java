@@ -31,13 +31,11 @@ public class RocketMQPublishableExceptionPublisher extends PublishableExceptionP
     @Override
     public RocketMQPublishableExceptionPublisher start() {
         super.start();
-        _producer.start();
         return this;
     }
 
     @Override
     public RocketMQPublishableExceptionPublisher shutdown() {
-        _producer.shutdown();
         super.shutdown();
         return this;
     }
