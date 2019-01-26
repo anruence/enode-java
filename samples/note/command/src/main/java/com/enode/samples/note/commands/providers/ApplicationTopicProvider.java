@@ -10,13 +10,13 @@ import java.util.Collection;
 public class ApplicationTopicProvider extends AbstractTopicProvider<IApplicationMessage> {
     @Override
     public TopicTagData getPublishTopic(IApplicationMessage event) {
-        return new TopicTagData("EnodeCommonTopicDevApplication", "");
+        return new TopicTagData("EnodeCommonTopicDevApplication", "*");
     }
 
     @Override
     public Collection<TopicTagData> getAllSubscribeTopics() {
         return new ArrayList<TopicTagData>() {{
-            add(new TopicTagData("EnodeCommonTopicDevApplication", ""));
+            add(new TopicTagData("EnodeCommonTopicDevApplication", "*"));
         }};
     }
 }

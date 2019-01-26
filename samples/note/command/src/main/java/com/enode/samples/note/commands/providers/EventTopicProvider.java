@@ -10,13 +10,13 @@ import java.util.Collection;
 public class EventTopicProvider extends AbstractTopicProvider<IDomainEvent> {
     @Override
     public TopicTagData getPublishTopic(IDomainEvent event) {
-        return new TopicTagData("EnodeCommonTopicDevDomainEvent", "");
+        return new TopicTagData("EnodeCommonTopicDevDomainEvent", "*");
     }
 
     @Override
     public Collection<TopicTagData> getAllSubscribeTopics() {
         return new ArrayList<TopicTagData>() {{
-            add(new TopicTagData("EnodeCommonTopicDevDomainEvent", ""));
+            add(new TopicTagData("EnodeCommonTopicDevDomainEvent", "*"));
         }};
     }
 }

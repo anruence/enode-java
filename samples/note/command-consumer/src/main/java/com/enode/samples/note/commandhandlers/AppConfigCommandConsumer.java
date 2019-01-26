@@ -66,13 +66,13 @@ public class AppConfigCommandConsumer {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public RocketMQConfig rocketMQConfig() {
         /**============= Enode所需消息队列配置，RocketMQ实现 ======*/
-        Properties producerSetting = new Properties();
-        producerSetting.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
-        producerSetting.setProperty(NativePropertyKey.ProducerGroup, "NoteSampleProducerGroup");
+        Properties nativeproducer = new Properties();
+        nativeproducer.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
+        nativeproducer.setProperty(NativePropertyKey.ProducerGroup, "NoteSampleProducerGroup");
 
-        Properties consumerSetting = new Properties();
-        consumerSetting.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
-        consumerSetting.setProperty(NativePropertyKey.ConsumerGroup, "NoteSampleConsumerGroup");
+        Properties nativeconsumer = new Properties();
+        nativeconsumer.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
+        nativeconsumer.setProperty(NativePropertyKey.ConsumerGroup, "NoteSampleConsumerGroupCommand");
         /**=============================================================*/
 
         /**============= Enode所需消息队列配置，ONS实现 ======*/
@@ -90,7 +90,7 @@ public class AppConfigCommandConsumer {
         ENode enode = ENode.create("com.enode.samples").registerDefaultComponents();
         RocketMQConfig config = new RocketMQConfig(enode);
 //        config.useONS(onsproducer, onsconsumer, ENode.COMMAND_CONSUMER | ENode.PUBLISHERS, 6001);
-        config.useNativeRocketMQ(producerSetting, consumerSetting, ENode.COMMAND_CONSUMER | ENode.PUBLISHERS, 6001);
+        config.useNativeRocketMQ(nativeproducer, nativeconsumer, ENode.COMMAND_CONSUMER | ENode.PUBLISHERS, 6001);
         return config;
     }
 }

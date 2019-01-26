@@ -32,25 +32,23 @@ public class RocketMQCommandConsumer extends CommandConsumer implements MessageL
         _repository = repository;
         _aggregateRootStorage = aggregateStorage;
         _consumer = consumer;
-        _consumer.registerMessageListener(this::consumeMessage);
 
     }
 
     public RocketMQCommandConsumer subscribe(String topic, String subExpression) {
         _consumer.subscribe(topic, subExpression);
+        _consumer.registerMessageListener(this::consumeMessage);
         return this;
     }
 
     @Override
     public RocketMQCommandConsumer start() {
         super.start();
-        _consumer.start();
         return this;
     }
 
     @Override
     public RocketMQCommandConsumer shutdown() {
-        _consumer.shutdown();
         super.shutdown();
         return this;
     }

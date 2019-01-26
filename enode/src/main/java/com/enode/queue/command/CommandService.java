@@ -66,7 +66,7 @@ public class CommandService implements ICommandService {
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setBody(messageData);
         queueMessage.setRouteKey(_commandRouteKeyProvider.getRoutingKey(command));
-        queueMessage.setCode(QueueMessageTypeCode.ApplicationMessage.getValue());
+        queueMessage.setCode(QueueMessageTypeCode.CommandMessage.getValue());
         queueMessage.setKey(key);
         queueMessage.setTopic(topicTagData.getTopic());
         queueMessage.setTags(topicTagData.getTag());

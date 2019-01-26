@@ -32,24 +32,22 @@ public class RocketMQDomainEventConsumer extends DomainEventConsumer implements 
         _processor = processor;
         _sendEventHandledMessage = true;
         _consumer = consumer;
-        _consumer.registerMessageListener(this::consumeMessage);
     }
 
     public RocketMQDomainEventConsumer subscribe(String topic, String subExpression) {
         _consumer.subscribe(topic, subExpression);
+        _consumer.registerMessageListener(this::consumeMessage);
         return this;
     }
 
     @Override
     public RocketMQDomainEventConsumer start() {
         super.start();
-        _consumer.start();
         return this;
     }
 
     @Override
     public RocketMQDomainEventConsumer shutdown() {
-        _consumer.shutdown();
         super.shutdown();
         return this;
     }

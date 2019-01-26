@@ -1,4 +1,4 @@
-package com.enode.samples.note.eventhandlers;
+package com.enode.samples.note;
 
 import com.enode.ENode;
 import com.enode.commanding.ICommandService;
@@ -12,24 +12,12 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Properties;
 
 @Configuration
-public class AppConfigEvent {
+public class AppConfig {
 
-//    @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public KafkaConfig kafkaConfigEvent() {
-
-        /**============= Enode数据库配置（内存实现不需要配置） ===========*/
-        Properties properties = new Properties();
-        properties.setProperty("driverClassName", "com.mysql.jdbc.Driver");
-        properties.setProperty("url", "jdbc:mysql://localhost:3306/enode");
-        properties.setProperty("username", "root");
-        properties.setProperty("password", "anruence");
-        properties.setProperty("initialSize", "1");
-        properties.setProperty("maxTotal", "1");
-        /**=============================================================*/
+    //    @Bean(initMethod = "start", destroyMethod = "shutdown")
+    public KafkaConfig kafkaConfig() {
 
         ENode enode = ENode.create("com.enode.samples").registerDefaultComponents();
-
-        KafkaConfig config = new KafkaConfig(enode);
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
@@ -44,7 +32,8 @@ public class AppConfigEvent {
         producerProps.put("enable.idempotence", "true");
         producerProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producerProps.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        config.useKafka(producerProps, props, ENode.DOMAIN_EVENT_CONSUMER, 6002);
+        KafkaConfig config = new KafkaConfig(enode);
+        config.useKafka(producerProps, props, ENode.PUBLISHERS, 6000);
         return config;
     }
 
@@ -56,13 +45,13 @@ public class AppConfigEvent {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public RocketMQConfig rocketMQConfig() {
         /**============= Enode所需消息队列配置，RocketMQ实现 ======*/
-        Properties producerSetting = new Properties();
-        producerSetting.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
-        producerSetting.setProperty(NativePropertyKey.ProducerGroup, "NoteSampleProducerGroupEvent");
+        Properties producer = new Properties();
+        producer.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
+        producer.setProperty(NativePropertyKey.ProducerGroup, "NoteSampleProducerGroup");
 
-        Properties consumerSetting = new Properties();
-        consumerSetting.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
-        consumerSetting.setProperty(NativePropertyKey.ConsumerGroup, "NoteSampleConsumerGroupEvent");
+        Properties consumer = new Properties();
+        consumer.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
+        consumer.setProperty(NativePropertyKey.ConsumerGroup, "NoteSampleConsumerGroupCommand");
         /**=============================================================*/
 
         /**============= Enode所需消息队列配置，ONS实现 ======*/
@@ -79,9 +68,8 @@ public class AppConfigEvent {
 
         ENode enode = ENode.create("com.enode.samples").registerDefaultComponents();
         RocketMQConfig config = new RocketMQConfig(enode);
-//        config.useONS(onsproducer, onsconsumer, ENode.DOMAIN_EVENT_CONSUMER, 6002);
-        config.useNativeRocketMQ(producerSetting, consumerSetting, ENode.DOMAIN_EVENT_CONSUMER, 6002);
+//        config.useONS(onsproducer, onsconsumer, ENode.PUBLISHERS, 6000);
+        config.useNativeRocketMQ(producer, consumer, ENode.PUBLISHERS, 6000);
         return config;
     }
-
 }

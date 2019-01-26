@@ -10,13 +10,13 @@ import java.util.Collection;
 public class CommandTopicProvider extends AbstractTopicProvider<ICommand> {
     @Override
     public TopicTagData getPublishTopic(ICommand command) {
-        return new TopicTagData("EnodeCommonTopicDevCommand", "");
+        return new TopicTagData("EnodeCommonTopicDevCommand", "*");
     }
 
     @Override
     public Collection<TopicTagData> getAllSubscribeTopics() {
         return new ArrayList<TopicTagData>() {{
-            add(new TopicTagData("EnodeCommonTopicDevCommand", ""));
+            add(new TopicTagData("EnodeCommonTopicDevCommand", "*"));
         }};
     }
 }

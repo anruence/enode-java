@@ -5,6 +5,7 @@ import com.enode.commanding.ICommand;
 import com.enode.commanding.ICommandService;
 import com.enode.common.container.GenericTypeLiteral;
 import com.enode.common.container.LifeStyle;
+import com.enode.common.logging.ENodeLogger;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.eventing.DomainEventStreamMessage;
 import com.enode.eventing.IDomainEvent;
@@ -29,11 +30,14 @@ import com.enode.rocketmq.message.RocketMQDomainEventPublisher;
 import com.enode.rocketmq.message.RocketMQPublishableExceptionConsumer;
 import com.enode.rocketmq.message.RocketMQPublishableExceptionPublisher;
 import com.enode.rocketmq.message.SendRocketMQService;
+import org.slf4j.Logger;
 
 import java.util.Collection;
 import java.util.Properties;
 
 public class RocketMQConfig {
+
+    private static Logger logger = ENodeLogger.getLog();
 
     private ENode enode;
 
@@ -216,6 +220,9 @@ public class RocketMQConfig {
                 topicTagDatas.forEach(t -> publishableExceptionConsumer.subscribe(t.getTopic(), t.getTag()));
                 publishableExceptionConsumer.start();
             }
+
+            Consumer consumer = enode.resolve(Consumer.class);
+            consumer.start();
         }
 
         if (hasAnyComponents(registerMQFlag, PUBLISHERS)) {
@@ -275,6 +282,8 @@ public class RocketMQConfig {
                 RocketMQPublishableExceptionConsumer publishableExceptionConsumer = enode.resolve(RocketMQPublishableExceptionConsumer.class);
                 publishableExceptionConsumer.shutdown();
             }
+            Consumer consumer = enode.resolve(Consumer.class);
+            consumer.shutdown();
         }
 
         // Shutdown MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
@@ -302,6 +311,8 @@ public class RocketMQConfig {
                 RocketMQPublishableExceptionPublisher exceptionPublisher = enode.resolve(RocketMQPublishableExceptionPublisher.class);
                 exceptionPublisher.shutdown();
             }
+            Producer producer = enode.resolve(Producer.class);
+            producer.shutdown();
         }
     }
 }

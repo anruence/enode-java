@@ -39,13 +39,11 @@ public class RocketMQApplicationMessageConsumer extends ApplicationMessageConsum
     @Override
     public RocketMQApplicationMessageConsumer start() {
         super.start();
-        _consumer.start();
         return this;
     }
 
     @Override
     public RocketMQApplicationMessageConsumer shutdown() {
-        _consumer.shutdown();
         super.shutdown();
         return this;
     }
