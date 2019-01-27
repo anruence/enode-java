@@ -5,9 +5,9 @@ import com.enode.common.utilities.ObjectId;
 import java.util.Date;
 
 public abstract class Message implements IMessage {
-    private String _id;
-    private Date _timestamp;
-    private int _sequence;
+    public String _id;
+    public Date _timestamp;
+    public int _sequence;
 
     public Message() {
         _id = ObjectId.generateNewStringId();

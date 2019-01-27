@@ -122,6 +122,11 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     }
 
     @Override
+    public <T extends IAggregateRoot> CompletableFuture getAsync(Object id, Class<T> clazz) {
+        return getAsync(id, true, clazz);
+    }
+
+    @Override
     public List<IAggregateRoot> getTrackedAggregateRoots() {
         return new ArrayList<>(_trackingAggregateRootDict.values());
     }

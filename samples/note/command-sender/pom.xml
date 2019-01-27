@@ -16,10 +16,5 @@
             <artifactId>domain</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.enode</groupId>
-            <artifactId>command</artifactId>
-            <version>1.0.0</version>
-        </dependency>
     </dependencies>
 </project>

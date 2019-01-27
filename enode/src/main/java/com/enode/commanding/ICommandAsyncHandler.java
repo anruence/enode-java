@@ -5,12 +5,12 @@ import com.enode.infrastructure.IApplicationMessage;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface ICommandAsyncHandler {
+public interface ICommandAsyncHandler<T extends ICommand> {
     /**
      * Handle the given command async.
      *
      * @param command
      * @return
      */
-    CompletableFuture<AsyncTaskResult<IApplicationMessage>> handleAsync(ICommand command);
+    CompletableFuture<AsyncTaskResult<IApplicationMessage>> handleAsync(T command);
 }
