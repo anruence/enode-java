@@ -16,6 +16,8 @@ public class ApplicationMessageConsumer implements IMessageHandler {
 
     private static final Logger _logger = ENodeLogger.getLog();
 
+    protected String defaultMessageConsumerGroup = "ApplicationMessageConsumerGroup";
+
     protected IJsonSerializer _jsonSerializer;
 
     protected ITypeNameProvider _typeNameProvider;

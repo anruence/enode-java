@@ -56,7 +56,7 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
     private void register(Class aggregateRootType, Class type) {
         Arrays.asList(type.getDeclaredMethods()).stream()
                 .filter(method ->
-                        method.getName().equals(HANDLE_METHOD_NAME)
+                        method.getName().equalsIgnoreCase(HANDLE_METHOD_NAME)
                                 && method.getParameterTypes().length == 1
                                 && IDomainEvent.class.isAssignableFrom(method.getParameterTypes()[0])
                 )

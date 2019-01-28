@@ -22,6 +22,8 @@ public class CommandConsumer implements IMessageHandler {
 
     private static final Logger _logger = ENodeLogger.getLog();
 
+    protected String defaultMessageConsumerGroup = "CommandConsumerGroup";
+
     protected SendReplyService _sendReplyService;
     protected IJsonSerializer _jsonSerializer;
     protected ITypeNameProvider _typeNameProvider;

@@ -18,6 +18,8 @@ public class PublishableExceptionConsumer implements IMessageHandler {
 
     private static final Logger _logger = ENodeLogger.getLog();
 
+    protected String defaultEventConsumerGroup = "ExceptionConsumerGroup";
+
     protected IJsonSerializer _jsonSerializer;
 
     protected ITypeNameProvider _typeNameProvider;

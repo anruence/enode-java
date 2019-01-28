@@ -12,10 +12,12 @@ import com.enode.infrastructure.ProcessingPublishableExceptionMessage;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.publishableexceptions.PublishableExceptionConsumer;
 import com.enode.rocketmq.client.Consumer;
+import com.enode.rocketmq.client.RocketMQFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.Properties;
 
 @Singleton
 public class RocketMQPublishableExceptionConsumer extends PublishableExceptionConsumer implements MessageListenerConcurrently {
@@ -30,6 +32,11 @@ public class RocketMQPublishableExceptionConsumer extends PublishableExceptionCo
         _consumer = consumer;
         _consumer.registerMessageListener(this::consumeMessage);
 
+    }
+
+    public RocketMQPublishableExceptionConsumer initialize(Properties properties) {
+//        _consumer = mqFactory.createPushConsumer(properties);
+        return this;
     }
 
     public RocketMQPublishableExceptionConsumer subscribe(String topic, String subExpression) {

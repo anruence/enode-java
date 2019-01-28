@@ -80,21 +80,21 @@ public class BankAccount extends AggregateRoot<String> {
     }
 
 
-    private void Handle(AccountCreatedEvent evnt) {
+    private void handle(AccountCreatedEvent evnt) {
         _owner = evnt.Owner;
         _transactionPreparations = new HashMap<>();
     }
 
-    private void Handle(TransactionPreparationAddedEvent evnt) {
+    private void handle(TransactionPreparationAddedEvent evnt) {
         _transactionPreparations.put(evnt.TransactionPreparation.TransactionId, evnt.TransactionPreparation);
     }
 
-    private void Handle(TransactionPreparationCommittedEvent evnt) {
+    private void handle(TransactionPreparationCommittedEvent evnt) {
         _transactionPreparations.remove(evnt.TransactionPreparation.TransactionId);
         _balance = evnt.CurrentBalance;
     }
 
-    private void Handle(TransactionPreparationCanceledEvent evnt) {
+    private void handle(TransactionPreparationCanceledEvent evnt) {
         _transactionPreparations.remove(evnt.TransactionPreparation.TransactionId);
     }
 }

@@ -19,6 +19,8 @@ public class DomainEventConsumer implements IMessageHandler {
 
     private static final Logger _logger = ENodeLogger.getLog();
 
+    protected String defaultEventConsumerGroup = "EventConsumerGroup";
+
     protected SendReplyService _sendReplyService;
 
     protected IJsonSerializer _jsonSerializer;
