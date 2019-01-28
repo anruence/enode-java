@@ -17,7 +17,6 @@ import com.enode.queue.SendReplyService;
 import com.enode.queue.TopicTagData;
 import com.enode.queue.command.CommandResultProcessor;
 import com.enode.rocketmq.client.Consumer;
-import com.enode.rocketmq.client.Producer;
 import com.enode.rocketmq.client.RocketMQFactory;
 import com.enode.rocketmq.client.impl.NativeMQFactory;
 import com.enode.rocketmq.client.ons.ONSFactory;
@@ -33,13 +32,19 @@ import com.enode.rocketmq.message.SendRocketMQService;
 import org.slf4j.Logger;
 
 import java.util.Collection;
-import java.util.Properties;
+
+import static com.enode.ENode.*;
 
 public class RocketMQConfig {
 
     private static Logger logger = ENodeLogger.getLog();
 
     private ENode enode;
+    private MultiGroupProps multiGroupProps;
+
+    public RocketMQConfig(ENode enode) {
+        this.enode = enode;
+    }
 
     /**
      * ENode Components
@@ -48,104 +53,76 @@ public class RocketMQConfig {
         return enode;
     }
 
-    public static final int COMMAND_SERVICE = 1;
-    public static final int DOMAIN_EVENT_PUBLISHER = 2;
-    public static final int APPLICATION_MESSAGE_PUBLISHER = 4;
-    public static final int EXCEPTION_PUBLISHER = 8;
-    public static final int COMMAND_CONSUMER = 16;
-    public static final int DOMAIN_EVENT_CONSUMER = 32;
-    public static final int APPLICATION_MESSAGE_CONSUMER = 64;
-    public static final int EXCEPTION_CONSUMER = 128;
-    public static final int PUBLISHERS = COMMAND_SERVICE | DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER;
-    public static final int CONSUMERS = COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
-    public static final int ALL_COMPONENTS = PUBLISHERS | CONSUMERS;
-
-
-    private int registerMQFlag;
-
-    public RocketMQConfig(ENode enode) {
-        this.enode = enode;
-    }
-
     /**
      * use rocketmq as CommandBus, EventBus
      *
-     * @param producerProps
-     * @param consumerProps
-     * @param registerMQFlag
-     * @param listenPort
      * @return
      */
-    public RocketMQConfig useOns(Properties producerProps, Properties consumerProps, int registerMQFlag, int listenPort) {
-        return useRocketMQ(producerProps, consumerProps, registerMQFlag, listenPort, true);
+    public RocketMQConfig useOns(MultiGroupProps multiGroupProps) {
+        return useRocketMQ(multiGroupProps, true);
     }
 
-    public RocketMQConfig useNativeRocketMQ(Properties producerProps, Properties consumerProps, int registerMQFlag, int listenPort) {
-        return useRocketMQ(producerProps, consumerProps, registerMQFlag, listenPort, false);
+    public RocketMQConfig useNativeRocketMQ(MultiGroupProps multiGroupProps) {
+        return useRocketMQ(multiGroupProps, false);
     }
 
-    private RocketMQConfig useRocketMQ(Properties producerProps, Properties consumerProps, int registerMQFlag, int listenPort, boolean isons) {
-        this.registerMQFlag = registerMQFlag;
+    private RocketMQConfig useRocketMQ(MultiGroupProps multiGroupProps, boolean isons) {
+        this.multiGroupProps = multiGroupProps;
+        int registerFlag = multiGroupProps.getRegisterFlag();
         enode.register(SendRocketMQService.class);
         RocketMQFactory mqFactory = isons ? new ONSFactory() : new NativeMQFactory();
+        if (hasAnyComponents(registerFlag, CONSUMERS)) {
+            //CommandConsumer、DomainEventConsumer需要引用SendReplyService
+            if (hasAnyComponents(registerFlag, COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER)) {
 
-        //Create MQConsumer and any register consumers(KafkaCommandConsumer、KafkaDomainEventConsumer、KafkaApplicationMessageConsumer、KafkaPublishableExceptionConsumer)
-        if (hasAnyComponents(registerMQFlag, CONSUMERS)) {
-            Consumer consumer = mqFactory.createPushConsumer(consumerProps);
-            enode.registerInstance(Consumer.class, consumer);
-            // KafkaCommandConsumer、KafkaDomainEventConsumer需要引用SendReplyService
-            if (hasAnyComponents(registerMQFlag, COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER)) {
                 enode.register(SendReplyService.class);
             }
-
-            //KafkaCommandConsumer
-            if (hasComponent(registerMQFlag, COMMAND_CONSUMER)) {
+            //RocketMQCommandConsumer
+            if (hasComponent(registerFlag, COMMAND_CONSUMER)) {
                 enode.register(RocketMQCommandConsumer.class);
             }
 
-            //KafkaDomainEventConsumer
-            if (hasComponent(registerMQFlag, DOMAIN_EVENT_CONSUMER)) {
+            //RocketMQDomainEventConsumer
+            if (hasComponent(registerFlag, DOMAIN_EVENT_CONSUMER)) {
                 enode.register(RocketMQDomainEventConsumer.class);
             }
 
-            //KafkaApplicationMessageConsumer
-            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_CONSUMER)) {
+            //RocketMQApplicationMessageConsumer
+            if (hasComponent(registerFlag, APPLICATION_MESSAGE_CONSUMER)) {
                 enode.register(RocketMQApplicationMessageConsumer.class);
             }
 
-            //KafkaPublishableExceptionConsumer
-            if (hasComponent(registerMQFlag, EXCEPTION_CONSUMER)) {
+            //RocketMQPublishableExceptionConsumer
+            if (hasComponent(registerFlag, EXCEPTION_CONSUMER)) {
                 enode.register(RocketMQPublishableExceptionConsumer.class);
             }
         }
 
         //register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
-        if (hasAnyComponents(registerMQFlag, PUBLISHERS)) {
-            Producer producer = mqFactory.createProducer(producerProps);
-            enode.registerInstance(Producer.class, producer);
+        if (hasAnyComponents(registerFlag, PUBLISHERS)) {
             //CommandService
-            if (hasComponent(registerMQFlag, COMMAND_SERVICE)) {
+            if (hasComponent(registerFlag, COMMAND_SERVICE)) {
                 enode.register(CommandResultProcessor.class, null, () -> {
                     IJsonSerializer jsonSerializer = enode.resolve(IJsonSerializer.class);
-                    return new CommandResultProcessor(listenPort, jsonSerializer);
+                    return new CommandResultProcessor(multiGroupProps.getListenPort(), jsonSerializer);
                 }, LifeStyle.Singleton);
                 enode.register(ICommandService.class, RocketMQCommandService.class);
             }
 
             //DomainEventPublisher
-            if (hasComponent(registerMQFlag, DOMAIN_EVENT_PUBLISHER)) {
+            if (hasComponent(registerFlag, DOMAIN_EVENT_PUBLISHER)) {
                 enode.register(new GenericTypeLiteral<IMessagePublisher<DomainEventStreamMessage>>() {
                 }, RocketMQDomainEventPublisher.class);
             }
 
             //ApplicationMessagePublisher
-            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_PUBLISHER)) {
+            if (hasComponent(registerFlag, APPLICATION_MESSAGE_PUBLISHER)) {
                 enode.register(new GenericTypeLiteral<IMessagePublisher<IApplicationMessage>>() {
                 }, RocketMQApplicationMessagePublisher.class);
             }
 
             //PublishableExceptionPublisher
-            if (hasComponent(registerMQFlag, EXCEPTION_PUBLISHER)) {
+            if (hasComponent(registerFlag, EXCEPTION_PUBLISHER)) {
                 enode.register(new GenericTypeLiteral<IMessagePublisher<IPublishableException>>() {
                 }, RocketMQPublishableExceptionPublisher.class);
             }
@@ -175,10 +152,11 @@ public class RocketMQConfig {
     }
 
     private void startMQComponents() {
-        //Start MQConsumer and any register consumers(KafkaCommandConsumer、KafkaDomainEventConsumer、KafkaApplicationMessageConsumer、KafkaPublishableExceptionConsumer)
-        if (hasAnyComponents(registerMQFlag, CONSUMERS)) {
-            //KafkaCommandConsumer
-            if (hasComponent(registerMQFlag, COMMAND_CONSUMER)) {
+        //Start MQConsumer and any register consumers(RocketMQCommandConsumer、RocketMQDomainEventConsumer、RocketMQApplicationMessageConsumer、RocketMQPublishableExceptionConsumer)
+        int registerFlag = multiGroupProps.getRegisterFlag();
+        if (hasAnyComponents(registerFlag, CONSUMERS)) {
+            //RocketMQCommandConsumer
+            if (hasComponent(registerFlag, COMMAND_CONSUMER)) {
                 RocketMQCommandConsumer commandConsumer = enode.resolve(RocketMQCommandConsumer.class);
                 //Command topics
                 ITopicProvider<ICommand> commandTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<ICommand>>() {
@@ -188,8 +166,8 @@ public class RocketMQConfig {
                 commandConsumer.start();
             }
 
-            //KafkaDomainEventConsumer
-            if (hasComponent(registerMQFlag, DOMAIN_EVENT_CONSUMER)) {
+            //RocketMQDomainEventConsumer
+            if (hasComponent(registerFlag, DOMAIN_EVENT_CONSUMER)) {
                 RocketMQDomainEventConsumer domainEventConsumer = enode.resolve(RocketMQDomainEventConsumer.class);
                 //Domain event topics
                 ITopicProvider<IDomainEvent> domainEventTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<IDomainEvent>>() {
@@ -199,8 +177,8 @@ public class RocketMQConfig {
                 domainEventConsumer.start();
             }
 
-            //KafkaApplicationMessageConsumer
-            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_CONSUMER)) {
+            //RocketMQApplicationMessageConsumer
+            if (hasComponent(registerFlag, APPLICATION_MESSAGE_CONSUMER)) {
                 RocketMQApplicationMessageConsumer applicationMessageConsumer = enode.resolve(RocketMQApplicationMessageConsumer.class);
                 //Application message topics
                 ITopicProvider<IApplicationMessage> applicationMessageTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<IApplicationMessage>>() {
@@ -210,8 +188,8 @@ public class RocketMQConfig {
                 applicationMessageConsumer.start();
             }
 
-            //KafkaPublishableExceptionConsumer
-            if (hasComponent(registerMQFlag, EXCEPTION_CONSUMER)) {
+            //RocketMQPublishableExceptionConsumer
+            if (hasComponent(registerFlag, EXCEPTION_CONSUMER)) {
                 RocketMQPublishableExceptionConsumer publishableExceptionConsumer = enode.resolve(RocketMQPublishableExceptionConsumer.class);
                 //Exception topics
                 ITopicProvider<IPublishableException> exceptionTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<IPublishableException>>() {
@@ -220,65 +198,62 @@ public class RocketMQConfig {
                 topicTagDatas.forEach(t -> publishableExceptionConsumer.subscribe(t.getTopic(), t.getTag()));
                 publishableExceptionConsumer.start();
             }
-
-            Consumer consumer = enode.resolve(Consumer.class);
-            consumer.start();
         }
 
-        if (hasAnyComponents(registerMQFlag, PUBLISHERS)) {
-            //KafkaCommandService
-            if (hasComponent(registerMQFlag, COMMAND_SERVICE)) {
+        if (hasAnyComponents(registerFlag, PUBLISHERS)) {
+            //RocketMQCommandService
+            if (hasComponent(registerFlag, COMMAND_SERVICE)) {
                 RocketMQCommandService commandService = enode.resolve(RocketMQCommandService.class);
                 commandService.start();
             }
 
-            //KafkaDomainEventPublisher
-            if (hasComponent(registerMQFlag, DOMAIN_EVENT_PUBLISHER)) {
+            //RocketMQDomainEventPublisher
+            if (hasComponent(registerFlag, DOMAIN_EVENT_PUBLISHER)) {
                 RocketMQDomainEventPublisher domainEventPublisher = enode.resolve(RocketMQDomainEventPublisher.class);
                 domainEventPublisher.start();
             }
 
-            //KafkaApplicationMessagePublisher
-            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_PUBLISHER)) {
+            //RocketMQApplicationMessagePublisher
+            if (hasComponent(registerFlag, APPLICATION_MESSAGE_PUBLISHER)) {
                 RocketMQApplicationMessagePublisher applicationMessagePublisher = enode.resolve(RocketMQApplicationMessagePublisher.class);
                 applicationMessagePublisher.start();
             }
 
-            //KafkaPublishableExceptionPublisher
-            if (hasComponent(registerMQFlag, EXCEPTION_PUBLISHER)) {
+            //RocketMQPublishableExceptionPublisher
+            if (hasComponent(registerFlag, EXCEPTION_PUBLISHER)) {
                 RocketMQPublishableExceptionPublisher exceptionPublisher = enode.resolve(RocketMQPublishableExceptionPublisher.class);
                 exceptionPublisher.start();
             }
-            Producer producer = enode.resolve(Producer.class);
-            producer.start();
         }
 
 
     }
 
     private void stopMQComponents() {
-        //Shutdown MQConsumer and any register consumers(KafkaCommandConsumer、KafkaDomainEventConsumer、KafkaApplicationMessageConsumer、KafkaPublishableExceptionConsumer)
-        if (hasAnyComponents(registerMQFlag, CONSUMERS)) {
-            //KafkaCommandConsumer
-            if (hasComponent(registerMQFlag, COMMAND_CONSUMER)) {
+        //Shutdown MQConsumer and any register consumers(RocketMQCommandConsumer、RocketMQDomainEventConsumer、RocketMQApplicationMessageConsumer、RocketMQPublishableExceptionConsumer)
+        int registerFlag = multiGroupProps.getRegisterFlag();
+
+        if (hasAnyComponents(registerFlag, CONSUMERS)) {
+            //RocketMQCommandConsumer
+            if (hasComponent(registerFlag, COMMAND_CONSUMER)) {
                 RocketMQCommandConsumer commandConsumer = enode.resolve(RocketMQCommandConsumer.class);
                 commandConsumer.shutdown();
             }
 
-            //KafkaDomainEventConsumer
-            if (hasComponent(registerMQFlag, DOMAIN_EVENT_CONSUMER)) {
+            //RocketMQDomainEventConsumer
+            if (hasComponent(registerFlag, DOMAIN_EVENT_CONSUMER)) {
                 RocketMQDomainEventConsumer domainEventConsumer = enode.resolve(RocketMQDomainEventConsumer.class);
                 domainEventConsumer.shutdown();
             }
 
-            //KafkaApplicationMessageConsumer
-            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_CONSUMER)) {
+            //RocketMQApplicationMessageConsumer
+            if (hasComponent(registerFlag, APPLICATION_MESSAGE_CONSUMER)) {
                 RocketMQApplicationMessageConsumer applicationMessageConsumer = enode.resolve(RocketMQApplicationMessageConsumer.class);
                 applicationMessageConsumer.shutdown();
             }
 
-            //KafkaPublishableExceptionConsumer
-            if (hasComponent(registerMQFlag, EXCEPTION_CONSUMER)) {
+            //RocketMQPublishableExceptionConsumer
+            if (hasComponent(registerFlag, EXCEPTION_CONSUMER)) {
                 RocketMQPublishableExceptionConsumer publishableExceptionConsumer = enode.resolve(RocketMQPublishableExceptionConsumer.class);
                 publishableExceptionConsumer.shutdown();
             }
@@ -287,32 +262,30 @@ public class RocketMQConfig {
         }
 
         // Shutdown MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
-        if (hasAnyComponents(registerMQFlag, PUBLISHERS)) {
-            //KafkaCommandService
-            if (hasComponent(registerMQFlag, COMMAND_SERVICE)) {
+        if (hasAnyComponents(registerFlag, PUBLISHERS)) {
+            //RocketMQCommandService
+            if (hasComponent(registerFlag, COMMAND_SERVICE)) {
                 RocketMQCommandService commandService = enode.resolve(RocketMQCommandService.class);
                 commandService.shutdown();
             }
 
-            //KafkaDomainEventPublisher
-            if (hasComponent(registerMQFlag, DOMAIN_EVENT_PUBLISHER)) {
+            //RocketMQDomainEventPublisher
+            if (hasComponent(registerFlag, DOMAIN_EVENT_PUBLISHER)) {
                 RocketMQDomainEventPublisher domainEventPublisher = enode.resolve(RocketMQDomainEventPublisher.class);
                 domainEventPublisher.shutdown();
             }
 
-            //KafkaApplicationMessagePublisher
-            if (hasComponent(registerMQFlag, APPLICATION_MESSAGE_PUBLISHER)) {
+            //RocketMQApplicationMessagePublisher
+            if (hasComponent(registerFlag, APPLICATION_MESSAGE_PUBLISHER)) {
                 RocketMQApplicationMessagePublisher applicationMessagePublisher = enode.resolve(RocketMQApplicationMessagePublisher.class);
                 applicationMessagePublisher.shutdown();
             }
 
-            //KafkaPublishableExceptionPublisher
-            if (hasComponent(registerMQFlag, EXCEPTION_PUBLISHER)) {
+            //RocketMQPublishableExceptionPublisher
+            if (hasComponent(registerFlag, EXCEPTION_PUBLISHER)) {
                 RocketMQPublishableExceptionPublisher exceptionPublisher = enode.resolve(RocketMQPublishableExceptionPublisher.class);
                 exceptionPublisher.shutdown();
             }
-            Producer producer = enode.resolve(Producer.class);
-            producer.shutdown();
         }
     }
 }

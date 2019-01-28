@@ -30,9 +30,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import static com.enode.ENode.*;
+
 public class KafkaConfig {
 
     private ENode enode;
+    private Properties producerProps;
+    private Properties consumerProps;
+    private int registerMQFlag;
+
+    public KafkaConfig(ENode enode) {
+        this.enode = enode;
+    }
 
     /**
      * ENode Components
@@ -40,29 +49,6 @@ public class KafkaConfig {
     public ENode getEnode() {
         return enode;
     }
-
-    public static final int COMMAND_SERVICE = 1;
-    public static final int DOMAIN_EVENT_PUBLISHER = 2;
-    public static final int APPLICATION_MESSAGE_PUBLISHER = 4;
-    public static final int EXCEPTION_PUBLISHER = 8;
-    public static final int COMMAND_CONSUMER = 16;
-    public static final int DOMAIN_EVENT_CONSUMER = 32;
-    public static final int APPLICATION_MESSAGE_CONSUMER = 64;
-    public static final int EXCEPTION_CONSUMER = 128;
-    public static final int PUBLISHERS = COMMAND_SERVICE | DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER;
-    public static final int CONSUMERS = COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
-    public static final int ALL_COMPONENTS = PUBLISHERS | CONSUMERS;
-
-    private Properties producerProps;
-
-    private Properties consumerProps;
-
-    private int registerMQFlag;
-
-    public KafkaConfig(ENode enode) {
-        this.enode = enode;
-    }
-
 
     /**
      * use kafka as CommandBus, EventBus
