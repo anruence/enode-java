@@ -1,4 +1,4 @@
-﻿package com.enode.infrastructure;
+package com.enode.infrastructure;
 
-public abstract class ApplicationMessage extends Message implements IApplicationMessage {
+public class ApplicationMessage extends Message implements IApplicationMessage {
 }

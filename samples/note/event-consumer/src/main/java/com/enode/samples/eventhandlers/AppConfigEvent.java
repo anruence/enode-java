@@ -80,7 +80,7 @@ public class AppConfigEvent {
         ENode enode = ENode.create("com.enode.samples").registerDefaultComponents();
         RocketMQConfig config = new RocketMQConfig(enode);
 //        config.useONS(onsproducer, onsconsumer, ENode.DOMAIN_EVENT_CONSUMER, 6002);
-        config.useNativeRocketMQ(producerSetting, consumerSetting, ENode.DOMAIN_EVENT_CONSUMER, 6002);
+        config.useNativeRocketMQ(producerSetting, consumerSetting, ENode.DOMAIN_EVENT_CONSUMER | ENode.PUBLISHERS, 6002);
         return config;
     }
 

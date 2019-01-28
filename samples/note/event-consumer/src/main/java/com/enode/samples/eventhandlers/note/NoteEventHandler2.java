@@ -2,8 +2,8 @@ package com.enode.samples.eventhandlers.note;
 
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.infrastructure.ITwoMessageHandler;
-import com.enode.samples.note.domain.NoteTitleChanged;
-import com.enode.samples.note.domain.NoteTitleChanged2;
+import com.enode.samples.domain.note.NoteTitleChanged;
+import com.enode.samples.domain.note.NoteTitleChanged2;
 
 import java.util.concurrent.CompletableFuture;
 

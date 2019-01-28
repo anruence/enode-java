@@ -1,9 +1,9 @@
-﻿package com.enode.samples.commandhandles.bank;
+package com.enode.samples.commandhandles.bank;
 
 import com.enode.commanding.ICommandContext;
 import com.enode.commanding.ICommandHandler;
-import com.enode.samples.bank.commands.ConfirmTransferInCommand;
-import com.enode.samples.bank.domain.transfertransaction.TransferTransaction;
+import com.enode.samples.commands.bank.ConfirmTransferInCommand;
+import com.enode.samples.domain.bank.transfertransaction.TransferTransaction;
 
 import java.util.concurrent.CompletableFuture;
 

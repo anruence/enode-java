@@ -3,8 +3,8 @@ package com.enode.samples.commandhandles.note;
 import com.enode.commanding.ICommandContext;
 import com.enode.commanding.ICommandHandler;
 import com.enode.common.logging.ENodeLogger;
-import com.enode.samples.note.commands.CreateNoteCommand;
-import com.enode.samples.note.domain.Note;
+import com.enode.samples.commands.note.CreateNoteCommand;
+import com.enode.samples.domain.note.Note;
 import org.slf4j.Logger;
 
 import java.util.concurrent.CompletableFuture;

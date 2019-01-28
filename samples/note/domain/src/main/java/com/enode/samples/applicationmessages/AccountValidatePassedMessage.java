@@ -1,4 +1,4 @@
-﻿package com.enode.samples.applicationmessages;
+package com.enode.samples.applicationmessages;
 
 import com.enode.infrastructure.ApplicationMessage;
 

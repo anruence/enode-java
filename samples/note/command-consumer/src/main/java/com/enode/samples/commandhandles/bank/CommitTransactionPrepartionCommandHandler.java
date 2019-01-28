@@ -1,9 +1,9 @@
-﻿package com.enode.samples.commandhandles.bank;
+package com.enode.samples.commandhandles.bank;
 
 import com.enode.commanding.ICommandContext;
 import com.enode.commanding.ICommandHandler;
-import com.enode.samples.bank.commands.AddTransactionPreparationCommand;
-import com.enode.samples.bank.domain.bankaccount.BankAccount;
+import com.enode.samples.commands.bank.AddTransactionPreparationCommand;
+import com.enode.samples.domain.bank.bankaccount.BankAccount;
 
 import java.util.concurrent.CompletableFuture;
 

@@ -3,16 +3,16 @@ package com.enode.samples.eventhandlers.bank.processmanagers;
 
 import com.enode.commanding.ICommandService;
 import com.enode.common.io.AsyncTaskResult;
-import com.enode.samples.bank.commands.AddTransactionPreparationCommand;
-import com.enode.samples.bank.commands.CommitTransactionPreparationCommand;
-import com.enode.samples.bank.commands.ConfirmDepositCommand;
-import com.enode.samples.bank.commands.ConfirmDepositPreparationCommand;
-import com.enode.samples.bank.domain.TransactionType;
-import com.enode.samples.bank.domain.bankaccount.PreparationType;
-import com.enode.samples.bank.domain.bankaccount.TransactionPreparationAddedEvent;
-import com.enode.samples.bank.domain.bankaccount.TransactionPreparationCommittedEvent;
-import com.enode.samples.bank.domain.deposittransaction.DepositTransactionPreparationCompletedEvent;
-import com.enode.samples.bank.domain.deposittransaction.DepositTransactionStartedEvent;
+import com.enode.samples.commands.bank.AddTransactionPreparationCommand;
+import com.enode.samples.commands.bank.CommitTransactionPreparationCommand;
+import com.enode.samples.commands.bank.ConfirmDepositCommand;
+import com.enode.samples.commands.bank.ConfirmDepositPreparationCommand;
+import com.enode.samples.domain.bank.TransactionType;
+import com.enode.samples.domain.bank.bankaccount.PreparationType;
+import com.enode.samples.domain.bank.bankaccount.TransactionPreparationAddedEvent;
+import com.enode.samples.domain.bank.bankaccount.TransactionPreparationCommittedEvent;
+import com.enode.samples.domain.bank.deposittransaction.DepositTransactionPreparationCompletedEvent;
+import com.enode.samples.domain.bank.deposittransaction.DepositTransactionStartedEvent;
 
 import java.util.concurrent.CompletableFuture;
 

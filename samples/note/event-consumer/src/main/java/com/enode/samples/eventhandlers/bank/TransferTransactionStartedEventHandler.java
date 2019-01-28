@@ -2,7 +2,7 @@ package com.enode.samples.eventhandlers.bank;
 
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.infrastructure.IMessageHandler;
-import com.enode.samples.bank.domain.transfertransaction.TransferTransactionStartedEvent;
+import com.enode.samples.domain.bank.transfertransaction.TransferTransactionStartedEvent;
 
 import java.util.concurrent.CompletableFuture;
 

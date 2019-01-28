@@ -1,4 +1,4 @@
-﻿package com.enode.samples.commandhandles.bank;
+package com.enode.samples.commandhandles.bank;
 
 import com.enode.commanding.ICommandAsyncHandler;
 import com.enode.common.io.AsyncTaskResult;
@@ -6,7 +6,7 @@ import com.enode.common.io.AsyncTaskStatus;
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.samples.applicationmessages.AccountValidateFailedMessage;
 import com.enode.samples.applicationmessages.AccountValidatePassedMessage;
-import com.enode.samples.bank.commands.ValidateAccountCommand;
+import com.enode.samples.commands.bank.ValidateAccountCommand;
 
 import java.util.concurrent.CompletableFuture;
 
