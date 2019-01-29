@@ -36,7 +36,7 @@ public class MysqlEventStore implements IEventStore {
 
     private static final Logger _logger = ENodeLogger.getLog();
 
-    private static final String EventTableNameFormat = "{0}_{1}";
+    private static final String EventTableNameFormat = "%s_%s";
 
     private final String _tableName;
     private final int _tableCount;

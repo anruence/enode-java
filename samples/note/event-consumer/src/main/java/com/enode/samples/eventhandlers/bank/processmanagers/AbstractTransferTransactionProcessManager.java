@@ -23,11 +23,17 @@ import com.enode.samples.domain.bank.transfertransaction.TransferInPreparationCo
 import com.enode.samples.domain.bank.transfertransaction.TransferOutPreparationConfirmedEvent;
 import com.enode.samples.domain.bank.transfertransaction.TransferTransactionStartedEvent;
 
+import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class AbstractTransferTransactionProcessManager {
 
     private ICommandService _commandService;
+
+    @Inject
+    public AbstractTransferTransactionProcessManager(ICommandService commandService) {
+        _commandService = commandService;
+    }
 
     public CompletableFuture<AsyncTaskResult> HandleAsync(TransferTransactionStartedEvent evnt) {
         ValidateAccountCommand command = new ValidateAccountCommand(evnt.TransactionInfo.SourceAccountId, evnt.aggregateRootId());

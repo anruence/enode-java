@@ -20,6 +20,10 @@ public abstract class AbstractDepositTransactionProcessManager {
 
     private ICommandService _commandService;
 
+    public AbstractDepositTransactionProcessManager(ICommandService commandService) {
+        _commandService = commandService;
+    }
+
     public CompletableFuture<AsyncTaskResult> HandleAsync(DepositTransactionStartedEvent evnt) {
         AddTransactionPreparationCommand command = new AddTransactionPreparationCommand(
                 evnt.AccountId,

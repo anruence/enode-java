@@ -37,22 +37,22 @@ public class BankController {
 
         commandService.executeAsync(new CreateAccountCommand(account2, "凯锋"), CommandReturnType.EventHandled).get();
 
-//        //每个账户都存入1000元
-//        commandService.sendAsync(new StartDepositTransactionCommand(ObjectId.generateNewStringId(), account1, 1000)).get();
-//
-//        commandService.sendAsync(new StartDepositTransactionCommand(ObjectId.generateNewStringId(), account2, 1000)).get();
-//
-//        //账户1向账户3转账300元，交易会失败，因为账户3不存在
-//        commandService.sendAsync(new StartTransferTransactionCommand(ObjectId.generateNewStringId(), new TransferTransactionInfo(account1, account3, 300D))).get();
-//
-//        //账户1向账户2转账1200元，交易会失败，因为余额不足
-//        commandService.sendAsync(new StartTransferTransactionCommand(ObjectId.generateNewStringId(), new TransferTransactionInfo(account1, account2, 1200D))).get();
-//
-//        //账户2向账户1转账500元，交易成功
-//        commandService.sendAsync(new StartTransferTransactionCommand(ObjectId.generateNewStringId(), new TransferTransactionInfo(account2, account1, 500D))).get();
-//
-//        Thread.sleep(200);
-//        logger.info("Press Enter to exit...");
+        //每个账户都存入1000元
+        commandService.sendAsync(new StartDepositTransactionCommand(ObjectId.generateNewStringId(), account1, 1000)).get();
+
+        commandService.sendAsync(new StartDepositTransactionCommand(ObjectId.generateNewStringId(), account2, 1000)).get();
+
+        //账户1向账户3转账300元，交易会失败，因为账户3不存在
+        commandService.sendAsync(new StartTransferTransactionCommand(ObjectId.generateNewStringId(), new TransferTransactionInfo(account1, account3, 300D))).get();
+
+        //账户1向账户2转账1200元，交易会失败，因为余额不足
+        commandService.sendAsync(new StartTransferTransactionCommand(ObjectId.generateNewStringId(), new TransferTransactionInfo(account1, account2, 1200D))).get();
+
+        //账户2向账户1转账500元，交易成功
+        commandService.sendAsync(new StartTransferTransactionCommand(ObjectId.generateNewStringId(), new TransferTransactionInfo(account2, account1, 500D))).get();
+
+        Thread.sleep(200);
+        logger.info("Press Enter to exit...");
         return "success";
     }
 
