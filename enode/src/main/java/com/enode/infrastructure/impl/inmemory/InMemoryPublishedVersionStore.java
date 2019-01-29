@@ -27,6 +27,6 @@ public class InMemoryPublishedVersionStore implements IPublishedVersionStore {
     }
 
     private String buildKey(String eventProcessorName, String aggregateRootId) {
-        return String.format("{0}-{1}", eventProcessorName, aggregateRootId);
+        return String.format("%s-%s", eventProcessorName, aggregateRootId);
     }
 }

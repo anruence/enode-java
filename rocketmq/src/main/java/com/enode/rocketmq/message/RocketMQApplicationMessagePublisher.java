@@ -8,9 +8,11 @@ import com.enode.queue.ITopicProvider;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.applicationmessage.ApplicationMessagePublisher;
 import com.enode.rocketmq.client.Producer;
+import com.enode.rocketmq.client.RocketMQFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
 @Singleton
@@ -20,22 +22,31 @@ public class RocketMQApplicationMessagePublisher extends ApplicationMessagePubli
 
     private Producer _producer;
 
+    private RocketMQFactory _mqFactory;
+
     @Inject
-    public RocketMQApplicationMessagePublisher(Producer producer, IJsonSerializer jsonSerializer, ITopicProvider<IApplicationMessage> messageTopicProvider, SendRocketMQService sendMessageService) {
+    public RocketMQApplicationMessagePublisher(RocketMQFactory mqFactory, IJsonSerializer jsonSerializer, ITopicProvider<IApplicationMessage> messageTopicProvider, SendRocketMQService sendMessageService) {
         _jsonSerializer = jsonSerializer;
         _messageTopicProvider = messageTopicProvider;
         _sendMessageService = sendMessageService;
-        _producer = producer;
+        _mqFactory = mqFactory;
+    }
+
+    public RocketMQApplicationMessagePublisher initializeQueue(Properties properties) {
+        _producer = _mqFactory.createProducer(properties);
+        return this;
     }
 
     @Override
     public RocketMQApplicationMessagePublisher start() {
         super.start();
+        _producer.start();
         return this;
     }
 
     @Override
     public RocketMQApplicationMessagePublisher shutdown() {
+        _producer.shutdown();
         super.shutdown();
         return this;
     }

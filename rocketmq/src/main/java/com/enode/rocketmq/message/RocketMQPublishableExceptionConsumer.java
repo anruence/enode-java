@@ -23,19 +23,19 @@ import java.util.Properties;
 public class RocketMQPublishableExceptionConsumer extends PublishableExceptionConsumer implements MessageListenerConcurrently {
 
     private Consumer _consumer;
+    private RocketMQFactory _mqFactory;
 
     @Inject
-    public RocketMQPublishableExceptionConsumer(Consumer consumer, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> publishableExceptionProcessor) {
+    public RocketMQPublishableExceptionConsumer(RocketMQFactory mqFactory, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> publishableExceptionProcessor) {
         _jsonSerializer = jsonSerializer;
         _typeNameProvider = typeNameProvider;
         _publishableExceptionProcessor = publishableExceptionProcessor;
-        _consumer = consumer;
-        _consumer.registerMessageListener(this::consumeMessage);
-
+        _mqFactory = mqFactory;
     }
 
-    public RocketMQPublishableExceptionConsumer initialize(Properties properties) {
-//        _consumer = mqFactory.createPushConsumer(properties);
+    public RocketMQPublishableExceptionConsumer initializeQueue(Properties properties) {
+        _consumer = _mqFactory.createPushConsumer(properties);
+        _consumer.registerMessageListener(this::consumeMessage);
         return this;
     }
 

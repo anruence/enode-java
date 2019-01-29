@@ -13,41 +13,51 @@ import com.enode.queue.QueueMessage;
 import com.enode.queue.SendReplyService;
 import com.enode.queue.domainevent.DomainEventConsumer;
 import com.enode.rocketmq.client.Consumer;
+import com.enode.rocketmq.client.RocketMQFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.Properties;
 
 @Singleton
 public class RocketMQDomainEventConsumer extends DomainEventConsumer implements MessageListenerConcurrently {
 
 
     private Consumer _consumer;
+    private RocketMQFactory _mqFactory;
 
     @Inject
-    public RocketMQDomainEventConsumer(Consumer consumer, IJsonSerializer jsonSerializer, IEventSerializer eventSerializer, IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> processor, SendReplyService sendReplyService) {
+    public RocketMQDomainEventConsumer(RocketMQFactory mqFactory, IJsonSerializer jsonSerializer, IEventSerializer eventSerializer, IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> processor, SendReplyService sendReplyService) {
         _sendReplyService = sendReplyService;
         _jsonSerializer = jsonSerializer;
         _eventSerializer = eventSerializer;
         _processor = processor;
         _sendEventHandledMessage = true;
-        _consumer = consumer;
+        _mqFactory = mqFactory;
+    }
+
+    public RocketMQDomainEventConsumer initializeQueue(Properties properties) {
+        _consumer = _mqFactory.createPushConsumer(properties);
+        _consumer.registerMessageListener(this::consumeMessage);
+        return this;
     }
 
     public RocketMQDomainEventConsumer subscribe(String topic, String subExpression) {
         _consumer.subscribe(topic, subExpression);
-        _consumer.registerMessageListener(this::consumeMessage);
         return this;
     }
 
     @Override
     public RocketMQDomainEventConsumer start() {
         super.start();
+        _consumer.start();
         return this;
     }
 
     @Override
     public RocketMQDomainEventConsumer shutdown() {
+        _consumer.shutdown();
         super.shutdown();
         return this;
     }

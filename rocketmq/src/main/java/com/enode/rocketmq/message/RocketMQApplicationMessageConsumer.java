@@ -12,23 +12,32 @@ import com.enode.infrastructure.ProcessingApplicationMessage;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.applicationmessage.ApplicationMessageConsumer;
 import com.enode.rocketmq.client.Consumer;
+import com.enode.rocketmq.client.RocketMQFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.Properties;
 
 @Singleton
 public class RocketMQApplicationMessageConsumer extends ApplicationMessageConsumer implements MessageListenerConcurrently {
 
     private Consumer _consumer;
 
+    private RocketMQFactory _mqFactory;
+
     @Inject
-    public RocketMQApplicationMessageConsumer(Consumer consumer, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage> processor) {
+    public RocketMQApplicationMessageConsumer(RocketMQFactory mqFactory, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage> processor) {
         _jsonSerializer = jsonSerializer;
         _typeNameProvider = typeNameProvider;
         _processor = processor;
-        _consumer = consumer;
+        _mqFactory = mqFactory;
+    }
+
+    public RocketMQApplicationMessageConsumer initializeQueue(Properties properties) {
+        _consumer = _mqFactory.createPushConsumer(properties);
         _consumer.registerMessageListener(this::consumeMessage);
+        return this;
     }
 
     public RocketMQApplicationMessageConsumer subscribe(String topic, String subExpression) {
@@ -39,11 +48,13 @@ public class RocketMQApplicationMessageConsumer extends ApplicationMessageConsum
     @Override
     public RocketMQApplicationMessageConsumer start() {
         super.start();
+        _consumer.start();
         return this;
     }
 
     @Override
     public RocketMQApplicationMessageConsumer shutdown() {
+        _consumer.shutdown();
         super.shutdown();
         return this;
     }

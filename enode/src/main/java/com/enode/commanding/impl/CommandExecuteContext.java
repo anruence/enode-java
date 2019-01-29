@@ -83,10 +83,8 @@ public class CommandExecuteContext implements ICommandExecuteContext {
      */
     @Override
     public CompletableFuture addAsync(IAggregateRoot aggregateRoot) {
-        return CompletableFuture.supplyAsync(() -> {
-            add(aggregateRoot);
-            return true;
-        });
+        add(aggregateRoot);
+        return CompletableFuture.completedFuture(true);
     }
 
     /**

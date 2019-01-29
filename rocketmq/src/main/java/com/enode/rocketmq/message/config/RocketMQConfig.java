@@ -16,7 +16,6 @@ import com.enode.queue.ITopicProvider;
 import com.enode.queue.SendReplyService;
 import com.enode.queue.TopicTagData;
 import com.enode.queue.command.CommandResultProcessor;
-import com.enode.rocketmq.client.Consumer;
 import com.enode.rocketmq.client.RocketMQFactory;
 import com.enode.rocketmq.client.impl.NativeMQFactory;
 import com.enode.rocketmq.client.ons.ONSFactory;
@@ -33,7 +32,16 @@ import org.slf4j.Logger;
 
 import java.util.Collection;
 
-import static com.enode.ENode.*;
+import static com.enode.ENode.APPLICATION_MESSAGE_CONSUMER;
+import static com.enode.ENode.APPLICATION_MESSAGE_PUBLISHER;
+import static com.enode.ENode.COMMAND_CONSUMER;
+import static com.enode.ENode.COMMAND_SERVICE;
+import static com.enode.ENode.CONSUMERS;
+import static com.enode.ENode.DOMAIN_EVENT_CONSUMER;
+import static com.enode.ENode.DOMAIN_EVENT_PUBLISHER;
+import static com.enode.ENode.EXCEPTION_CONSUMER;
+import static com.enode.ENode.EXCEPTION_PUBLISHER;
+import static com.enode.ENode.PUBLISHERS;
 
 public class RocketMQConfig {
 
@@ -71,10 +79,10 @@ public class RocketMQConfig {
         int registerFlag = multiGroupProps.getRegisterFlag();
         enode.register(SendRocketMQService.class);
         RocketMQFactory mqFactory = isons ? new ONSFactory() : new NativeMQFactory();
+        enode.registerInstance(RocketMQFactory.class, mqFactory);
         if (hasAnyComponents(registerFlag, CONSUMERS)) {
             //CommandConsumer、DomainEventConsumer需要引用SendReplyService
             if (hasAnyComponents(registerFlag, COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER)) {
-
                 enode.register(SendReplyService.class);
             }
             //RocketMQCommandConsumer
@@ -158,6 +166,7 @@ public class RocketMQConfig {
             //RocketMQCommandConsumer
             if (hasComponent(registerFlag, COMMAND_CONSUMER)) {
                 RocketMQCommandConsumer commandConsumer = enode.resolve(RocketMQCommandConsumer.class);
+                commandConsumer.initializeQueue(multiGroupProps.getCommandProps().getConsumerProps());
                 //Command topics
                 ITopicProvider<ICommand> commandTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<ICommand>>() {
                 });
@@ -169,6 +178,7 @@ public class RocketMQConfig {
             //RocketMQDomainEventConsumer
             if (hasComponent(registerFlag, DOMAIN_EVENT_CONSUMER)) {
                 RocketMQDomainEventConsumer domainEventConsumer = enode.resolve(RocketMQDomainEventConsumer.class);
+                domainEventConsumer.initializeQueue(multiGroupProps.getEventProps().getConsumerProps());
                 //Domain event topics
                 ITopicProvider<IDomainEvent> domainEventTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<IDomainEvent>>() {
                 });
@@ -180,6 +190,7 @@ public class RocketMQConfig {
             //RocketMQApplicationMessageConsumer
             if (hasComponent(registerFlag, APPLICATION_MESSAGE_CONSUMER)) {
                 RocketMQApplicationMessageConsumer applicationMessageConsumer = enode.resolve(RocketMQApplicationMessageConsumer.class);
+                applicationMessageConsumer.initializeQueue(multiGroupProps.getApplicationProps().getConsumerProps());
                 //Application message topics
                 ITopicProvider<IApplicationMessage> applicationMessageTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<IApplicationMessage>>() {
                 });
@@ -191,6 +202,7 @@ public class RocketMQConfig {
             //RocketMQPublishableExceptionConsumer
             if (hasComponent(registerFlag, EXCEPTION_CONSUMER)) {
                 RocketMQPublishableExceptionConsumer publishableExceptionConsumer = enode.resolve(RocketMQPublishableExceptionConsumer.class);
+                publishableExceptionConsumer.initializeQueue(multiGroupProps.getExceptionProps().getConsumerProps());
                 //Exception topics
                 ITopicProvider<IPublishableException> exceptionTopicProvider = enode.resolve(new GenericTypeLiteral<ITopicProvider<IPublishableException>>() {
                 });
@@ -204,24 +216,28 @@ public class RocketMQConfig {
             //RocketMQCommandService
             if (hasComponent(registerFlag, COMMAND_SERVICE)) {
                 RocketMQCommandService commandService = enode.resolve(RocketMQCommandService.class);
+                commandService.initializeQueue(multiGroupProps.getCommandProps().getProducerProps());
                 commandService.start();
             }
 
             //RocketMQDomainEventPublisher
             if (hasComponent(registerFlag, DOMAIN_EVENT_PUBLISHER)) {
                 RocketMQDomainEventPublisher domainEventPublisher = enode.resolve(RocketMQDomainEventPublisher.class);
+                domainEventPublisher.initializeQueue(multiGroupProps.getEventProps().getProducerProps());
                 domainEventPublisher.start();
             }
 
             //RocketMQApplicationMessagePublisher
             if (hasComponent(registerFlag, APPLICATION_MESSAGE_PUBLISHER)) {
                 RocketMQApplicationMessagePublisher applicationMessagePublisher = enode.resolve(RocketMQApplicationMessagePublisher.class);
+                applicationMessagePublisher.initializeQueue(multiGroupProps.getApplicationProps().getProducerProps());
                 applicationMessagePublisher.start();
             }
 
             //RocketMQPublishableExceptionPublisher
             if (hasComponent(registerFlag, EXCEPTION_PUBLISHER)) {
                 RocketMQPublishableExceptionPublisher exceptionPublisher = enode.resolve(RocketMQPublishableExceptionPublisher.class);
+                exceptionPublisher.initializeQueue(multiGroupProps.getExceptionProps().getProducerProps());
                 exceptionPublisher.start();
             }
         }
@@ -257,8 +273,6 @@ public class RocketMQConfig {
                 RocketMQPublishableExceptionConsumer publishableExceptionConsumer = enode.resolve(RocketMQPublishableExceptionConsumer.class);
                 publishableExceptionConsumer.shutdown();
             }
-            Consumer consumer = enode.resolve(Consumer.class);
-            consumer.shutdown();
         }
 
         // Shutdown MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)

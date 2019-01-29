@@ -13,42 +13,53 @@ import com.enode.queue.QueueMessage;
 import com.enode.queue.SendReplyService;
 import com.enode.queue.command.CommandConsumer;
 import com.enode.rocketmq.client.Consumer;
+import com.enode.rocketmq.client.RocketMQFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.Properties;
 
 @Singleton
 public class RocketMQCommandConsumer extends CommandConsumer implements MessageListenerConcurrently {
 
     private Consumer _consumer;
 
+    private RocketMQFactory _mqFactory;
+
     @Inject
-    public RocketMQCommandConsumer(Consumer consumer, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateStorage, SendReplyService sendReplyService) {
+    public RocketMQCommandConsumer(RocketMQFactory mqFactory, IJsonSerializer jsonSerializer, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateStorage, SendReplyService sendReplyService) {
         _sendReplyService = sendReplyService;
         _jsonSerializer = jsonSerializer;
         _typeNameProvider = typeNameProvider;
         _processor = commandProcessor;
         _repository = repository;
         _aggregateRootStorage = aggregateStorage;
-        _consumer = consumer;
+        _mqFactory = mqFactory;
 
+    }
+
+    public RocketMQCommandConsumer initializeQueue(Properties properties) {
+        _consumer = _mqFactory.createPushConsumer(properties);
+        _consumer.registerMessageListener(this::consumeMessage);
+        return this;
     }
 
     public RocketMQCommandConsumer subscribe(String topic, String subExpression) {
         _consumer.subscribe(topic, subExpression);
-        _consumer.registerMessageListener(this::consumeMessage);
         return this;
     }
 
     @Override
     public RocketMQCommandConsumer start() {
         super.start();
+        _consumer.start();
         return this;
     }
 
     @Override
     public RocketMQCommandConsumer shutdown() {
+        _consumer.shutdown();
         super.shutdown();
         return this;
     }

@@ -14,9 +14,11 @@ import com.enode.queue.QueueMessage;
 import com.enode.queue.command.CommandResultProcessor;
 import com.enode.queue.command.CommandService;
 import com.enode.rocketmq.client.Producer;
+import com.enode.rocketmq.client.RocketMQFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
 @Singleton
@@ -24,26 +26,35 @@ public class RocketMQCommandService extends CommandService {
 
     private Producer _producer;
 
+    private RocketMQFactory _mqFactory;
+
     private SendRocketMQService _sendMessageService;
 
     @Inject
-    public RocketMQCommandService(Producer producer, IJsonSerializer jsonSerializer, ITopicProvider<ICommand> commandTopicProvider, CommandResultProcessor commandResultProcessor, ICommandRoutingKeyProvider commandRoutingKeyProvider, SendRocketMQService sendMessageService) {
+    public RocketMQCommandService(RocketMQFactory mqFactory, IJsonSerializer jsonSerializer, ITopicProvider<ICommand> commandTopicProvider, CommandResultProcessor commandResultProcessor, ICommandRoutingKeyProvider commandRoutingKeyProvider, SendRocketMQService sendMessageService) {
         _jsonSerializer = jsonSerializer;
         _commandTopicProvider = commandTopicProvider;
         _commandResultProcessor = commandResultProcessor;
         _commandRouteKeyProvider = commandRoutingKeyProvider;
         _sendMessageService = sendMessageService;
-        _producer = producer;
+        _mqFactory = mqFactory;
+    }
+
+    public RocketMQCommandService initializeQueue(Properties properties) {
+        _producer = _mqFactory.createProducer(properties);
+        return this;
     }
 
     @Override
     public RocketMQCommandService start() {
         super.start();
+        _producer.start();
         return this;
     }
 
     @Override
     public RocketMQCommandService shutdown() {
+        _producer.shutdown();
         super.shutdown();
         return this;
     }
