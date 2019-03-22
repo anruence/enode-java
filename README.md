@@ -32,10 +32,9 @@ Command端应用，一般为http服务
 
 - event-consumer
 
-领域时间处理服务
+领域事件处理服务
 
 ### 测试
-
 http://localhost:8001/note/create?id=noteid&t=notetitle
 
 
