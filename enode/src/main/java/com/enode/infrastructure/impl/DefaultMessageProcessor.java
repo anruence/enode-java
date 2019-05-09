@@ -1,6 +1,5 @@
 package com.enode.infrastructure.impl;
 
-import com.enode.ENode;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.scheduling.IScheduleService;
 import com.enode.infrastructure.IMessage;
@@ -22,7 +21,13 @@ public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y exten
 
     private static final Logger _logger = ENodeLogger.getLog();
     private final IScheduleService _scheduleService;
-    private final int _timeoutSeconds;
+
+    // AggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
+
+    private final int _timeoutSeconds = 3600 * 24 * 3;
+
+    private final int _scanExpiredAggregateIntervalMilliseconds = 5000;
+
     private final String _taskName;
     private ConcurrentMap<String, ProcessingMessageMailbox<X, Y>> _mailboxDict;
     private IProcessingMessageScheduler<X, Y> _processingMessageScheduler;
@@ -35,7 +40,6 @@ public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y exten
         _processingMessageScheduler = processingMessageScheduler;
         _processingMessageHandler = processingMessageHandler;
         _scheduleService = scheduleService;
-        _timeoutSeconds = ENode.getInstance().getSetting().getAggregateRootMaxInactiveSeconds();
         _taskName = "CleanInactiveAggregates_" + System.nanoTime() + new Random().nextInt(10000);
     }
 
@@ -56,7 +60,7 @@ public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y exten
 
     @Override
     public void start() {
-        _scheduleService.startTask(_taskName, this::cleanInactiveMailbox, ENode.getInstance().getSetting().getScanExpiredAggregateIntervalMilliseconds(), ENode.getInstance().getSetting().getScanExpiredAggregateIntervalMilliseconds());
+        _scheduleService.startTask(_taskName, this::cleanInactiveMailbox, _scanExpiredAggregateIntervalMilliseconds, _scanExpiredAggregateIntervalMilliseconds);
     }
 
     @Override

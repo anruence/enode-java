@@ -4,18 +4,26 @@ import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.infrastructure.IMessagePublisher;
-import com.enode.queue.ITopicProvider;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.QueueMessageTypeCode;
-import com.enode.queue.TopicTagData;
+import com.enode.queue.TopicData;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ApplicationMessagePublisher implements IMessagePublisher<IApplicationMessage> {
 
+    @Autowired
     protected IJsonSerializer _jsonSerializer;
+    protected TopicData topicData;
 
-    protected ITopicProvider<IApplicationMessage> _messageTopicProvider;
+    public TopicData getTopicData() {
+        return topicData;
+    }
+
+    public void setTopicData(TopicData topicData) {
+        this.topicData = topicData;
+    }
 
     public ApplicationMessagePublisher start() {
         return this;
@@ -31,7 +39,6 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
     }
 
     protected QueueMessage createApplicationMessage(IApplicationMessage message) {
-        TopicTagData topicTagData = _messageTopicProvider.getPublishTopic(message);
         String appMessageData = _jsonSerializer.serialize(message);
         ApplicationDataMessage appDataMessage = new ApplicationDataMessage(appMessageData, message.getClass().getName());
         String data = _jsonSerializer.serialize(appDataMessage);
@@ -41,8 +48,8 @@ public class ApplicationMessagePublisher implements IMessagePublisher<IApplicati
         queueMessage.setRouteKey(routeKey);
         queueMessage.setCode(QueueMessageTypeCode.ApplicationMessage.getValue());
         queueMessage.setKey(message.id());
-        queueMessage.setTopic(topicTagData.getTopic());
-        queueMessage.setTags(topicTagData.getTag());
+        queueMessage.setTopic(topicData.getTopic());
+        queueMessage.setTags(topicData.getTag());
         return queueMessage;
     }
 }

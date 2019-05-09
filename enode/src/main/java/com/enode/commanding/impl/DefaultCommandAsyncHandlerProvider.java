@@ -6,17 +6,14 @@ import com.enode.commanding.ICommandAsyncHandlerProvider;
 import com.enode.commanding.ICommandAsyncHandlerProxy;
 import com.enode.common.container.IObjectContainer;
 import com.enode.infrastructure.impl.AbstractHandlerProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.lang.reflect.Method;
 
 public class DefaultCommandAsyncHandlerProvider extends AbstractHandlerProvider<Class, ICommandAsyncHandlerProxy, Class> implements ICommandAsyncHandlerProvider {
-    private IObjectContainer objectContainer;
 
-    @Inject
-    public DefaultCommandAsyncHandlerProvider(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-    }
+    @Autowired
+    private IObjectContainer objectContainer;
 
     @Override
     protected Class getGenericHandlerType() {

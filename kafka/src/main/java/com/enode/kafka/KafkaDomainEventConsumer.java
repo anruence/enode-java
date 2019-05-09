@@ -12,13 +12,13 @@ import com.enode.queue.command.ConsumeStatus;
 import com.enode.queue.domainevent.DomainEventConsumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.List;
 import java.util.Properties;
 
-@Singleton
+@Component
 public class KafkaDomainEventConsumer extends DomainEventConsumer implements IMessageListener {
 
     private KafkaConsumer _consumer;

@@ -3,9 +3,11 @@ package com.enode.samples.eventhandlers.note;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.infrastructure.IMessageHandler;
 import com.enode.samples.domain.note.NoteTitleChanged;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
+@Component
 public class NoteEventHandler1 implements IMessageHandler<NoteTitleChanged> {
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(NoteTitleChanged evnt) {

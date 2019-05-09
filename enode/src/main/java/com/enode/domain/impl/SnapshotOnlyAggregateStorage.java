@@ -3,17 +3,14 @@ package com.enode.domain.impl;
 import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateSnapshotter;
 import com.enode.domain.IAggregateStorage;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
 public class SnapshotOnlyAggregateStorage implements IAggregateStorage {
-    private final IAggregateSnapshotter _aggregateSnapshotter;
 
-    @Inject
-    public SnapshotOnlyAggregateStorage(IAggregateSnapshotter aggregateSnapshotter) {
-        _aggregateSnapshotter = aggregateSnapshotter;
-    }
+    @Autowired
+    private IAggregateSnapshotter _aggregateSnapshotter;
 
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, String aggregateRootId) {

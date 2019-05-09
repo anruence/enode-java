@@ -12,13 +12,13 @@ import com.enode.queue.command.CommandConsumer;
 import com.enode.queue.command.ConsumeStatus;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.List;
 import java.util.Properties;
 
-@Singleton
+@Component
 public class KafkaCommandConsumer extends CommandConsumer implements IMessageListener {
 
     private KafkaConsumer _consumer;

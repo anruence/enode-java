@@ -13,6 +13,7 @@ import com.enode.queue.IMessageContext;
 import com.enode.queue.IMessageHandler;
 import com.enode.queue.QueueMessage;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class PublishableExceptionConsumer implements IMessageHandler {
 
@@ -20,10 +21,13 @@ public class PublishableExceptionConsumer implements IMessageHandler {
 
     protected String defaultEventConsumerGroup = "ExceptionConsumerGroup";
 
+    @Autowired
     protected IJsonSerializer _jsonSerializer;
 
+    @Autowired
     protected ITypeNameProvider _typeNameProvider;
 
+    @Autowired
     protected IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> _publishableExceptionProcessor;
 
     public PublishableExceptionConsumer start() {

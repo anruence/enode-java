@@ -8,19 +8,18 @@ import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.Ensure;
-import com.enode.queue.ITopicProvider;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.command.CommandResultProcessor;
 import com.enode.queue.command.CommandService;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
-@Singleton
+@Component
 public class KafkaCommandService extends CommandService {
 
     private KafkaProducer _producer;
@@ -28,9 +27,8 @@ public class KafkaCommandService extends CommandService {
     private SendMessageService _sendMessageService;
 
     @Inject
-    public KafkaCommandService(IJsonSerializer jsonSerializer, ITopicProvider<ICommand> commandTopicProvider, CommandResultProcessor commandResultProcessor, ICommandRoutingKeyProvider commandRoutingKeyProvider, SendMessageService sendMessageService) {
+    public KafkaCommandService(IJsonSerializer jsonSerializer, CommandResultProcessor commandResultProcessor, ICommandRoutingKeyProvider commandRoutingKeyProvider, SendMessageService sendMessageService) {
         _jsonSerializer = jsonSerializer;
-        _commandTopicProvider = commandTopicProvider;
         _commandResultProcessor = commandResultProcessor;
         _commandRouteKeyProvider = commandRoutingKeyProvider;
         _sendMessageService = sendMessageService;

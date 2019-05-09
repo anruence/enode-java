@@ -1,8 +1,11 @@
 package com.enode.infrastructure.impl;
 
 import com.enode.infrastructure.ITypeNameProvider;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DefaultTypeNameProvider implements ITypeNameProvider {
+
     @Override
     public String getTypeName(Class type) {
         return type.getName();

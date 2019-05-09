@@ -1,6 +1,5 @@
 package com.enode.commanding.impl;
 
-import com.enode.ENode;
 import com.enode.commanding.ICommandProcessor;
 import com.enode.commanding.IProcessingCommandHandler;
 import com.enode.commanding.ProcessingCommand;
@@ -8,8 +7,8 @@ import com.enode.commanding.ProcessingCommandMailbox;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.scheduling.IScheduleService;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -21,17 +20,20 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     private static final Logger _logger = ENodeLogger.getLog();
 
     private final ConcurrentMap<String, ProcessingCommandMailbox> _mailboxDict;
-    private final IProcessingCommandHandler _handler;
-    private final IScheduleService _scheduleService;
     private final int _timeoutSeconds;
     private final String _taskName;
+    private final int commandMailBoxPersistenceMaxBatchSize = 1000;
+    private final int scanExpiredAggregateIntervalMilliseconds = 5000;
+    private final int eventMailBoxPersistenceMaxBatchSize = 1000;
+    private final int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
+    @Autowired
+    private IProcessingCommandHandler _handler;
+    @Autowired
+    private IScheduleService _scheduleService;
 
-    @Inject
-    public DefaultCommandProcessor(IScheduleService scheduleService, IProcessingCommandHandler handler) {
-        _scheduleService = scheduleService;
+    public DefaultCommandProcessor() {
         _mailboxDict = new ConcurrentHashMap<>();
-        _handler = handler;
-        _timeoutSeconds = ENode.getInstance().getSetting().getAggregateRootMaxInactiveSeconds();
+        _timeoutSeconds = aggregateRootMaxInactiveSeconds;
         _taskName = "CleanInactiveAggregates_" + System.nanoTime() + new Random().nextInt(10000);
     }
 
@@ -49,8 +51,8 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     @Override
     public void start() {
         _scheduleService.startTask(_taskName, this::cleanInactiveMailbox,
-                ENode.getInstance().getSetting().getScanExpiredAggregateIntervalMilliseconds(),
-                ENode.getInstance().getSetting().getScanExpiredAggregateIntervalMilliseconds());
+                scanExpiredAggregateIntervalMilliseconds,
+                scanExpiredAggregateIntervalMilliseconds);
     }
 
     @Override

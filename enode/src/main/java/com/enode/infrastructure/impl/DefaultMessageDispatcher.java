@@ -18,8 +18,8 @@ import com.enode.infrastructure.ITypeNameProvider;
 import com.enode.infrastructure.MessageHandlerData;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -31,25 +31,16 @@ import java.util.stream.Collectors;
 public class DefaultMessageDispatcher implements IMessageDispatcher {
     private static final Logger _logger = ENodeLogger.getLog();
 
-    private final ITypeNameProvider _typeNameProvider;
-    private final IMessageHandlerProvider _handlerProvider;
-    private final ITwoMessageHandlerProvider _twoMessageHandlerProvider;
-    private final IThreeMessageHandlerProvider _threeMessageHandlerProvider;
-    private final IOHelper _ioHelper;
-
-    @Inject
-    public DefaultMessageDispatcher(
-            ITypeNameProvider typeNameProvider,
-            IMessageHandlerProvider handlerProvider,
-            ITwoMessageHandlerProvider twoMessageHandlerProvider,
-            IThreeMessageHandlerProvider threeMessageHandlerProvider,
-            IOHelper ioHelper) {
-        _typeNameProvider = typeNameProvider;
-        _handlerProvider = handlerProvider;
-        _twoMessageHandlerProvider = twoMessageHandlerProvider;
-        _threeMessageHandlerProvider = threeMessageHandlerProvider;
-        _ioHelper = ioHelper;
-    }
+    @Autowired
+    private ITypeNameProvider _typeNameProvider;
+    @Autowired
+    private IMessageHandlerProvider _handlerProvider;
+    @Autowired
+    private ITwoMessageHandlerProvider _twoMessageHandlerProvider;
+    @Autowired
+    private IThreeMessageHandlerProvider _threeMessageHandlerProvider;
+    @Autowired
+    private IOHelper _ioHelper;
 
     @Override
     public CompletableFuture<AsyncTaskResult> dispatchMessageAsync(IMessage message) {

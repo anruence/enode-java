@@ -1,60 +1,34 @@
 package com.enode.rocketmq.message;
 
+import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.common.message.Message;
 import com.enode.common.io.AsyncTaskResult;
-import com.enode.common.serializing.IJsonSerializer;
 import com.enode.infrastructure.IApplicationMessage;
-import com.enode.queue.ITopicProvider;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.applicationmessage.ApplicationMessagePublisher;
-import com.enode.rocketmq.client.Producer;
-import com.enode.rocketmq.client.RocketMQFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
-@Singleton
 public class RocketMQApplicationMessagePublisher extends ApplicationMessagePublisher {
 
+    @Autowired
     private SendRocketMQService _sendMessageService;
 
-    private Producer _producer;
-
-    private RocketMQFactory _mqFactory;
-
-    @Inject
-    public RocketMQApplicationMessagePublisher(RocketMQFactory mqFactory, IJsonSerializer jsonSerializer, ITopicProvider<IApplicationMessage> messageTopicProvider, SendRocketMQService sendMessageService) {
-        _jsonSerializer = jsonSerializer;
-        _messageTopicProvider = messageTopicProvider;
-        _sendMessageService = sendMessageService;
-        _mqFactory = mqFactory;
+    public DefaultMQProducer getProducer() {
+        return producer;
     }
 
-    public RocketMQApplicationMessagePublisher initializeQueue(Properties properties) {
-        _producer = _mqFactory.createProducer(properties);
-        return this;
+    public void setProducer(DefaultMQProducer producer) {
+        this.producer = producer;
     }
 
-    @Override
-    public RocketMQApplicationMessagePublisher start() {
-        super.start();
-        _producer.start();
-        return this;
-    }
-
-    @Override
-    public RocketMQApplicationMessagePublisher shutdown() {
-        _producer.shutdown();
-        super.shutdown();
-        return this;
-    }
+    private DefaultMQProducer producer;
 
     @Override
     public CompletableFuture<AsyncTaskResult> publishAsync(IApplicationMessage message) {
         QueueMessage queueMessage = createApplicationMessage(message);
         Message msg = RocketMQTool.covertToProducerRecord(queueMessage);
-        return _sendMessageService.sendMessageAsync(_producer, msg, queueMessage.getRouteKey());
+        return _sendMessageService.sendMessageAsync(producer, msg, queueMessage.getRouteKey());
     }
 }

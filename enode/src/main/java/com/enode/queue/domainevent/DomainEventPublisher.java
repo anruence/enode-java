@@ -7,20 +7,29 @@ import com.enode.eventing.DomainEventStreamMessage;
 import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessagePublisher;
-import com.enode.queue.ITopicProvider;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.QueueMessageTypeCode;
-import com.enode.queue.TopicTagData;
+import com.enode.queue.TopicData;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.CompletableFuture;
 
-public class DomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
+public abstract class DomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
 
+    @Autowired
     protected IJsonSerializer _jsonSerializer;
 
-    protected ITopicProvider<IDomainEvent> _eventTopicProvider;
-
+    @Autowired
     protected IEventSerializer _eventSerializer;
+    protected TopicData topicData;
+
+    public TopicData getTopicData() {
+        return topicData;
+    }
+
+    public void setTopicData(TopicData topicData) {
+        this.topicData = topicData;
+    }
 
     public DomainEventPublisher start() {
         return this;
@@ -39,13 +48,12 @@ public class DomainEventPublisher implements IMessagePublisher<DomainEventStream
         Ensure.notNull(eventStream.aggregateRootId(), "aggregateRootId");
         EventStreamMessage eventMessage = createEventMessage(eventStream);
         IDomainEvent domainEvent = eventStream.getEvents().size() > 0 ? eventStream.getEvents().get(0) : null;
-        TopicTagData topicTagData = _eventTopicProvider.getPublishTopic(domainEvent);
         String data = _jsonSerializer.serialize(eventMessage);
         String routeKey = eventStream.getRoutingKey() != null ? eventStream.getRoutingKey() : eventMessage.getAggregateRootId();
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setCode(QueueMessageTypeCode.DomainEventStreamMessage.getValue());
-        queueMessage.setTopic(topicTagData.getTopic());
-        queueMessage.setTags(topicTagData.getTag());
+        queueMessage.setTopic(topicData.getTopic());
+        queueMessage.setTags(topicData.getTag());
         queueMessage.setBody(data);
         queueMessage.setKey(eventStream.id());
         queueMessage.setRouteKey(routeKey);

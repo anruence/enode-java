@@ -1,55 +1,36 @@
 package com.enode.domain.impl;
 
 import com.enode.common.io.AsyncTaskResult;
-import com.enode.common.io.IOHelper;
-import com.enode.common.logging.ENodeLogger;
 import com.enode.common.utilities.CompletableFutureUtil;
 import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateRootFactory;
 import com.enode.domain.IAggregateSnapshotter;
 import com.enode.domain.IAggregateStorage;
 import com.enode.eventing.DomainEventStream;
-import com.enode.eventing.DomainEventStreamMessage;
 import com.enode.eventing.IEventStore;
-import com.enode.infrastructure.IMessagePublisher;
-import com.enode.infrastructure.IPublishedVersionStore;
 import com.enode.infrastructure.ITypeNameProvider;
-import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class EventSourcingAggregateStorage implements IAggregateStorage {
-    private static final Logger _logger = ENodeLogger.getLog();
 
     private static final int minVersion = 1;
-    private static final int maxVersion = Integer.MAX_VALUE;
-    private final IAggregateRootFactory _aggregateRootFactory;
-    private final IEventStore _eventStore;
-    private final IPublishedVersionStore _publishedVersionStore;
-    private final IMessagePublisher<DomainEventStreamMessage> _domainEventPublisher;
-    private final IAggregateSnapshotter _aggregateSnapshotter;
-    private final ITypeNameProvider _typeNameProvider;
-    private final IOHelper _ioHelper;
 
-    @Inject
-    public EventSourcingAggregateStorage(
-            IAggregateRootFactory aggregateRootFactory,
-            IEventStore eventStore,
-            IPublishedVersionStore publishedVersionStore,
-            IMessagePublisher<DomainEventStreamMessage> domainEventPublisher,
-            IAggregateSnapshotter aggregateSnapshotter,
-            ITypeNameProvider typeNameProvider,
-            IOHelper ioHelper) {
-        _aggregateRootFactory = aggregateRootFactory;
-        _eventStore = eventStore;
-        _publishedVersionStore = publishedVersionStore;
-        _domainEventPublisher = domainEventPublisher;
-        _aggregateSnapshotter = aggregateSnapshotter;
-        _typeNameProvider = typeNameProvider;
-        _ioHelper = ioHelper;
-    }
+    private static final int maxVersion = Integer.MAX_VALUE;
+
+    @Autowired
+    private IAggregateRootFactory _aggregateRootFactory;
+
+    @Autowired
+    private IEventStore _eventStore;
+
+    @Autowired
+    private IAggregateSnapshotter _aggregateSnapshotter;
+
+    @Autowired
+    private ITypeNameProvider _typeNameProvider;
 
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, String aggregateRootId) {

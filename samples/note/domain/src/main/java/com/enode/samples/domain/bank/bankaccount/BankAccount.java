@@ -19,6 +19,8 @@ public class BankAccount extends AggregateRoot<String> {
         applyEvent(new AccountCreatedEvent(owner));
     }
 
+    public BankAccount() {
+    }
 
     /// <summary>添加一笔预操作
     /// </summary>

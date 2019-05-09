@@ -1,6 +1,5 @@
 package com.enode.eventing.impl;
 
-import com.enode.ENode;
 import com.enode.commanding.CommandResult;
 import com.enode.commanding.CommandStatus;
 import com.enode.commanding.ICommand;
@@ -19,8 +18,8 @@ import com.enode.eventing.IEventService;
 import com.enode.eventing.IEventStore;
 import com.enode.infrastructure.IMessagePublisher;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -30,33 +29,33 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 public class DefaultEventService implements IEventService {
+
     private static final Logger _logger = ENodeLogger.getLog();
+
     private final ConcurrentMap<String, EventMailBox> _mailboxDict;
-    private final IScheduleService _scheduleService;
-    private final IMemoryCache _memoryCache;
-    private final IEventStore _eventStore;
-    private final IMessagePublisher<DomainEventStreamMessage> _domainEventPublisher;
-    private final IOHelper _ioHelper;
     private final int _batchSize;
     private final int _timeoutSeconds;
     private final String _taskName;
+    private final int commandMailBoxPersistenceMaxBatchSize = 1000;
+    private final int scanExpiredAggregateIntervalMilliseconds = 5000;
+    private final int eventMailBoxPersistenceMaxBatchSize = 1000;
+    private final int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
+    @Autowired
+    private IScheduleService _scheduleService;
+    @Autowired
+    private IMemoryCache _memoryCache;
+    @Autowired
+    private IEventStore _eventStore;
+    @Autowired
+    private IMessagePublisher<DomainEventStreamMessage> _domainEventPublisher;
+    @Autowired
+    private IOHelper _ioHelper;
     private IProcessingCommandHandler _processingCommandHandler;
 
-    @Inject
-    public DefaultEventService(
-            IScheduleService scheduleService,
-            IMemoryCache memoryCache,
-            IEventStore eventStore,
-            IMessagePublisher<DomainEventStreamMessage> domainEventPublisher,
-            IOHelper ioHelper) {
+    public DefaultEventService() {
         _mailboxDict = new ConcurrentHashMap<>();
-        _scheduleService = scheduleService;
-        _ioHelper = ioHelper;
-        _memoryCache = memoryCache;
-        _eventStore = eventStore;
-        _domainEventPublisher = domainEventPublisher;
-        _batchSize = ENode.getInstance().getSetting().getEventMailBoxPersistenceMaxBatchSize();
-        _timeoutSeconds = ENode.getInstance().getSetting().getAggregateRootMaxInactiveSeconds();
+        _batchSize = eventMailBoxPersistenceMaxBatchSize;
+        _timeoutSeconds = aggregateRootMaxInactiveSeconds;
         _taskName = "CleanInactiveAggregates_" + System.nanoTime() + new Random().nextInt(10000);
     }
 
@@ -98,7 +97,7 @@ public class DefaultEventService implements IEventService {
 
     @Override
     public void start() {
-        _scheduleService.startTask(_taskName, this::cleanInactiveMailbox, ENode.getInstance().getSetting().getScanExpiredAggregateIntervalMilliseconds(), ENode.getInstance().getSetting().getScanExpiredAggregateIntervalMilliseconds());
+        _scheduleService.startTask(_taskName, this::cleanInactiveMailbox, scanExpiredAggregateIntervalMilliseconds, scanExpiredAggregateIntervalMilliseconds);
     }
 
     @Override

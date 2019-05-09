@@ -7,25 +7,27 @@ import com.enode.common.remoting.netty.NettyRemotingClient;
 import com.enode.common.remoting.protocol.RemotingCommand;
 import com.enode.common.serializing.IJsonSerializer;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.nio.charset.Charset;
 import java.util.concurrent.CompletableFuture;
 
 public class SendReplyService {
+
     private static final Logger _logger = ENodeLogger.getLog();
 
     private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
 
     private RemotingClient remotingClient;
+
+    @Autowired
     private IJsonSerializer _jsonSerializer;
+
     private boolean started;
+
     private boolean stoped;
 
-    @Inject
-    public SendReplyService(IJsonSerializer jsonSerializer) {
-        _jsonSerializer = jsonSerializer;
-
+    public SendReplyService() {
         NettyClientConfig nettyClientConfig = new NettyClientConfig();
         nettyClientConfig.setClientChannelMaxIdleTimeSeconds(3600);
         remotingClient = new NettyRemotingClient(nettyClientConfig);

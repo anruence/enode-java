@@ -8,13 +8,13 @@ import com.enode.queue.QueueMessage;
 import com.enode.queue.publishableexceptions.PublishableExceptionPublisher;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
-@Singleton
+@Component
 public class KafkaPublishableExceptionPublisher extends PublishableExceptionPublisher {
 
     protected KafkaProducer _producer;

@@ -1,6 +1,6 @@
 package com.enode.commanding;
 
-import com.enode.common.extensions.IEnum;
+import com.enode.common.IEnum;
 
 public enum CommandAddResult implements IEnum {
 

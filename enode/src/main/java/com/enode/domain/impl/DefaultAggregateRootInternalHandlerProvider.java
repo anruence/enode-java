@@ -66,13 +66,9 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
 
     private void registerInternalHandler(Class aggregateRootType, Class eventType, Method method) {
         Map<Class, Action2<IAggregateRoot, IDomainEvent>> eventHandlerDic = _mappings.computeIfAbsent(aggregateRootType, k -> new HashMap<>());
-
         try {
-            //转换为MethodHandle提高效率
-            //MethodHandle methodHandle = MethodHandles.lookup().findVirtual(aggregateRootType, method.getName(), MethodType.methodType(method.getReturnType(), method.getParameterTypes()));
             method.setAccessible(true);
             MethodHandle methodHandle = MethodHandles.lookup().unreflect(method);
-
             eventHandlerDic.put(eventType, (aggregateRoot, domainEvent) -> {
                 try {
                     methodHandle.invoke(aggregateRoot, domainEvent);
@@ -86,15 +82,11 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
     }
 
     @Override
-    public Action2<IAggregateRoot, IDomainEvent> getInternalEventHandler(Class<? extends IAggregateRoot> aggregateRootType,
-                                                                         Class<? extends IDomainEvent> anEventType) {
-
+    public Action2<IAggregateRoot, IDomainEvent> getInternalEventHandler(Class<? extends IAggregateRoot> aggregateRootType, Class<? extends IDomainEvent> anEventType) {
         Map<Class, Action2<IAggregateRoot, IDomainEvent>> eventHandlerDic = _mappings.get(aggregateRootType);
-
         if (eventHandlerDic == null) {
             return null;
         }
-
         return eventHandlerDic.get(anEventType);
     }
 }

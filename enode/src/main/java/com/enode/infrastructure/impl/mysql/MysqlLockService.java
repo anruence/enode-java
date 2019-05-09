@@ -1,6 +1,5 @@
 package com.enode.infrastructure.impl.mysql;
 
-import com.enode.ENode;
 import com.enode.common.function.Action;
 import com.enode.common.utilities.Ensure;
 import com.enode.configurations.DefaultDBConfigurationSetting;
@@ -27,7 +26,7 @@ public class MysqlLockService implements ILockService {
         if (optionSetting != null) {
             _tableName = optionSetting.getOptionValue("TableName");
         } else {
-            DefaultDBConfigurationSetting setting = ENode.getInstance().getSetting().getDefaultDBConfigurationSetting();
+            DefaultDBConfigurationSetting setting = new DefaultDBConfigurationSetting();
             _tableName = setting.getLockKeyTableName();
         }
 

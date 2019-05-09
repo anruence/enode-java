@@ -7,6 +7,7 @@ import com.enode.domain.IAggregateRoot;
 import java.util.concurrent.CompletableFuture;
 
 public class AggregateRepositoryProxy<TAggregateRoot extends IAggregateRoot> implements IAggregateRepositoryProxy {
+
     private final IAggregateRepository<TAggregateRoot> _aggregateRepository;
 
     public AggregateRepositoryProxy(IAggregateRepository<TAggregateRoot> aggregateRepository) {

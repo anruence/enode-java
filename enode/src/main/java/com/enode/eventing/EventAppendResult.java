@@ -1,6 +1,6 @@
 package com.enode.eventing;
 
-import com.enode.common.extensions.IEnum;
+import com.enode.common.IEnum;
 
 public enum EventAppendResult implements IEnum {
     Success(1),

@@ -14,6 +14,7 @@ import com.enode.queue.IMessageHandler;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.SendReplyService;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,11 +25,22 @@ public class CommandConsumer implements IMessageHandler {
 
     protected String defaultMessageConsumerGroup = "CommandConsumerGroup";
 
+    @Autowired
     protected SendReplyService _sendReplyService;
+
+    @Autowired
     protected IJsonSerializer _jsonSerializer;
+
+    @Autowired
     protected ITypeNameProvider _typeNameProvider;
+
+    @Autowired
     protected ICommandProcessor _processor;
+
+    @Autowired
     protected IRepository _repository;
+
+    @Autowired
     protected IAggregateStorage _aggregateRootStorage;
 
     public CommandConsumer start() {

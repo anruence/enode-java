@@ -5,9 +5,11 @@ import com.enode.infrastructure.IProcessingMessageHandler;
 import com.enode.infrastructure.IProcessingMessageScheduler;
 import com.enode.infrastructure.IPublishableException;
 import com.enode.infrastructure.ProcessingPublishableExceptionMessage;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
+@Component
 public class DefaultPublishableExceptionProcessor extends DefaultMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> {
     @Inject
     public DefaultPublishableExceptionProcessor(

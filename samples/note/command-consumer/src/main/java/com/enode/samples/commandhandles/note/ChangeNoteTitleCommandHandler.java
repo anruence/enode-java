@@ -6,9 +6,11 @@ import com.enode.common.logging.ENodeLogger;
 import com.enode.samples.commands.note.ChangeNoteTitleCommand;
 import com.enode.samples.domain.note.Note;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
+@Component
 public class ChangeNoteTitleCommandHandler implements ICommandHandler<ChangeNoteTitleCommand> {
     private Logger logger = ENodeLogger.getLog();
 

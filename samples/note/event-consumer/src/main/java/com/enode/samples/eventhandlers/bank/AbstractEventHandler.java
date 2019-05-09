@@ -16,6 +16,7 @@ import com.enode.samples.domain.bank.transfertransaction.TransferTransactionCanc
 import com.enode.samples.domain.bank.transfertransaction.TransferTransactionCompletedEvent;
 import com.enode.samples.domain.bank.transfertransaction.TransferTransactionStartedEvent;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 

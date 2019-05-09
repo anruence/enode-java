@@ -1,12 +1,11 @@
 package com.enode.domain;
 
-import com.enode.ENode;
+import com.enode.common.extensions.ApplicationContextHelper;
 import com.enode.common.function.Action2;
 import com.enode.eventing.DomainEventStream;
 import com.enode.eventing.IDomainEvent;
 import com.google.common.collect.Lists;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -19,7 +18,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot {
 
-    @Inject
     private static IAggregateRootInternalHandlerProvider _eventHandlerProvider;
     protected TAggregateRootId _id;
     private List<IDomainEvent> _emptyEvents = new ArrayList<>();
@@ -73,7 +71,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     private void handleEvent(IDomainEvent domainEvent) {
         if (_eventHandlerProvider == null) {
-            _eventHandlerProvider = ENode.getInstance().resolve(IAggregateRootInternalHandlerProvider.class);
+            _eventHandlerProvider = ApplicationContextHelper.getBean(IAggregateRootInternalHandlerProvider.class);
         }
         Action2<IAggregateRoot, IDomainEvent> handler = _eventHandlerProvider.getInternalEventHandler(getClass(), domainEvent.getClass());
         if (handler == null) {

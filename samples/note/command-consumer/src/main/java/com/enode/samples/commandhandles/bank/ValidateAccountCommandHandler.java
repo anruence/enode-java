@@ -7,12 +7,14 @@ import com.enode.infrastructure.IApplicationMessage;
 import com.enode.samples.applicationmessages.AccountValidateFailedMessage;
 import com.enode.samples.applicationmessages.AccountValidatePassedMessage;
 import com.enode.samples.commands.bank.ValidateAccountCommand;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
 /// <summary>银行账户相关命令处理
 /// </summary>
 //验证账户是否合法
+@Component
 public class ValidateAccountCommandHandler implements ICommandAsyncHandler<ValidateAccountCommand>                   //开户
 {
     @Override

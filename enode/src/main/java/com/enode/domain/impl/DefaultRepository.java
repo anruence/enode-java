@@ -5,12 +5,16 @@ import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateStorage;
 import com.enode.domain.IMemoryCache;
 import com.enode.domain.IRepository;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
+@Component
 public class DefaultRepository implements IRepository {
+
     private final IMemoryCache _memoryCache;
+
     private final IAggregateStorage _aggregateRootStorage;
 
     @Inject

@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AbstractConsumer {
 
     protected final AtomicBoolean started = new AtomicBoolean(false);
+
     private final DefaultMQPushConsumer defaultMQPushConsumer;
 
     protected AbstractConsumer(Properties properties, MQClientInitializer mqClientInitializer) {

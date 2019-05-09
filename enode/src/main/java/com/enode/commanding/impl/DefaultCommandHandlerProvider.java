@@ -7,20 +7,14 @@ import com.enode.commanding.ICommandHandlerProvider;
 import com.enode.commanding.ICommandHandlerProxy;
 import com.enode.common.container.IObjectContainer;
 import com.enode.infrastructure.impl.AbstractHandlerProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.lang.reflect.Method;
 
 public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class, ICommandHandlerProxy, Class> implements ICommandHandlerProvider {
+
+    @Autowired
     private IObjectContainer objectContainer;
-
-    @Inject
-    public DefaultCommandHandlerProvider(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-    }
-
-    public DefaultCommandHandlerProvider() {
-    }
 
     @Override
     protected Class getGenericHandlerType() {

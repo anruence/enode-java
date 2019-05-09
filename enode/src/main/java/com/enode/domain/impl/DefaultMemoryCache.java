@@ -1,6 +1,5 @@
 package com.enode.domain.impl;
 
-import com.enode.ENode;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.scheduling.IScheduleService;
 import com.enode.domain.AggregateCacheInfo;
@@ -9,6 +8,7 @@ import com.enode.domain.IAggregateStorage;
 import com.enode.domain.IMemoryCache;
 import com.enode.infrastructure.ITypeNameProvider;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -19,14 +19,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+@Component
 public class DefaultMemoryCache implements IMemoryCache {
+
     private static final Logger _logger = ENodeLogger.getLog();
 
     private final ConcurrentMap<String, AggregateCacheInfo> _aggregateRootInfoDict;
     private final IAggregateStorage _aggregateStorage;
     private final ITypeNameProvider _typeNameProvider;
     private final IScheduleService _scheduleService;
-    private final int _timeoutSeconds;
+    private final int _timeoutSeconds = 5000;
+
+    private final int scanExpiredAggregateIntervalMilliseconds = 5000;
     private final String _taskName;
 
     @Inject
@@ -35,9 +39,9 @@ public class DefaultMemoryCache implements IMemoryCache {
         _aggregateRootInfoDict = new ConcurrentHashMap<>();
         _typeNameProvider = typeNameProvider;
         _aggregateStorage = aggregateStorage;
-        _timeoutSeconds = ENode.getInstance().getSetting().getAggregateRootMaxInactiveSeconds();
         _taskName = "CleanInactiveAggregates_" + System.nanoTime() + new Random().nextInt(10000);
     }
+
 
     @Override
     public CompletableFuture<IAggregateRoot> getAsync(Object aggregateRootId, Class aggregateRootType) {
@@ -106,7 +110,7 @@ public class DefaultMemoryCache implements IMemoryCache {
 
     @Override
     public void start() {
-        _scheduleService.startTask(_taskName, this::cleanInactiveAggregateRoot, ENode.getInstance().getSetting().getScanExpiredAggregateIntervalMilliseconds(), ENode.getInstance().getSetting().getScanExpiredAggregateIntervalMilliseconds());
+        _scheduleService.startTask(_taskName, this::cleanInactiveAggregateRoot, scanExpiredAggregateIntervalMilliseconds, scanExpiredAggregateIntervalMilliseconds);
     }
 
     @Override

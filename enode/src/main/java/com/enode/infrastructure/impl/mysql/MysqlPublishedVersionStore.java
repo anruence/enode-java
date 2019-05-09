@@ -1,6 +1,5 @@
 package com.enode.infrastructure.impl.mysql;
 
-import com.enode.ENode;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
 import com.enode.common.logging.ENodeLogger;
@@ -36,7 +35,7 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
             _tableName = optionSetting.getOptionValue("TableName");
             _uniqueIndexName = optionSetting.getOptionValue("UniqueIndexName");
         } else {
-            DefaultDBConfigurationSetting setting = ENode.getInstance().getSetting().getDefaultDBConfigurationSetting();
+            DefaultDBConfigurationSetting setting = new DefaultDBConfigurationSetting();
             _tableName = setting.getPublishedVersionTableName();
             _uniqueIndexName = setting.getPublishedVersionUniqueIndexName();
         }

@@ -17,7 +17,6 @@ import com.enode.common.io.IORuntimeException;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.serializing.IJsonSerializer;
 import com.enode.domain.IAggregateRoot;
-import com.enode.domain.IMemoryCache;
 import com.enode.eventing.DomainEventStream;
 import com.enode.eventing.EventCommittingContext;
 import com.enode.eventing.IDomainEvent;
@@ -32,8 +31,8 @@ import com.enode.infrastructure.MessageHandlerData;
 import com.enode.infrastructure.WrappedRuntimeException;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,39 +46,29 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     private static final Logger _logger = ENodeLogger.getLog();
 
+    @Autowired
     private IJsonSerializer _jsonSerializer;
+    @Autowired
     private IEventStore _eventStore;
+    @Autowired
     private ICommandHandlerProvider _commandHandlerProvider;
+    @Autowired
     private ICommandAsyncHandlerProvider _commandAsyncHandlerProvider;
+    @Autowired
     private ITypeNameProvider _typeNameProvider;
+
     private IEventService _eventService;
+
+    @Autowired
     private IMessagePublisher<IApplicationMessage> _applicationMessagePublisher;
+    @Autowired
     private IMessagePublisher<IPublishableException> _exceptionPublisher;
-    private IMemoryCache _memoryCache;
+    @Autowired
     private IOHelper _ioHelper;
 
-    @Inject
-    public DefaultProcessingCommandHandler(
-            IJsonSerializer jsonSerializer,
-            IEventStore eventStore,
-            ICommandHandlerProvider commandHandlerProvider,
-            ICommandAsyncHandlerProvider commandAsyncHandlerProvider,
-            ITypeNameProvider typeNameProvider,
-            IEventService eventService,
-            IMessagePublisher<IApplicationMessage> applicationMessagePublisher,
-            IMessagePublisher<IPublishableException> exceptionPublisher,
-            IMemoryCache memoryCache,
-            IOHelper ioHelper) {
-        _jsonSerializer = jsonSerializer;
-        _eventStore = eventStore;
-        _commandHandlerProvider = commandHandlerProvider;
-        _commandAsyncHandlerProvider = commandAsyncHandlerProvider;
-        _typeNameProvider = typeNameProvider;
+    @Autowired
+    public DefaultProcessingCommandHandler(IEventService eventService) {
         _eventService = eventService;
-        _applicationMessagePublisher = applicationMessagePublisher;
-        _exceptionPublisher = exceptionPublisher;
-        _memoryCache = memoryCache;
-        _ioHelper = ioHelper;
         _eventService.setProcessingCommandHandler(this);
     }
 

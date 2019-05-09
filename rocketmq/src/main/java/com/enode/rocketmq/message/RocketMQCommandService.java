@@ -1,70 +1,32 @@
 package com.enode.rocketmq.message;
 
+import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.common.message.Message;
 import com.enode.commanding.CommandResult;
 import com.enode.commanding.CommandReturnType;
 import com.enode.commanding.ICommand;
-import com.enode.commanding.ICommandRoutingKeyProvider;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
-import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.Ensure;
-import com.enode.queue.ITopicProvider;
 import com.enode.queue.QueueMessage;
-import com.enode.queue.command.CommandResultProcessor;
 import com.enode.queue.command.CommandService;
-import com.enode.rocketmq.client.Producer;
-import com.enode.rocketmq.client.RocketMQFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
-@Singleton
 public class RocketMQCommandService extends CommandService {
 
-    private Producer _producer;
-
-    private RocketMQFactory _mqFactory;
-
+    @Autowired
     private SendRocketMQService _sendMessageService;
 
-    @Inject
-    public RocketMQCommandService(RocketMQFactory mqFactory, IJsonSerializer jsonSerializer, ITopicProvider<ICommand> commandTopicProvider, CommandResultProcessor commandResultProcessor, ICommandRoutingKeyProvider commandRoutingKeyProvider, SendRocketMQService sendMessageService) {
-        _jsonSerializer = jsonSerializer;
-        _commandTopicProvider = commandTopicProvider;
-        _commandResultProcessor = commandResultProcessor;
-        _commandRouteKeyProvider = commandRoutingKeyProvider;
-        _sendMessageService = sendMessageService;
-        _mqFactory = mqFactory;
-    }
-
-    public RocketMQCommandService initializeQueue(Properties properties) {
-        _producer = _mqFactory.createProducer(properties);
-        return this;
-    }
-
-    @Override
-    public RocketMQCommandService start() {
-        super.start();
-        _producer.start();
-        return this;
-    }
-
-    @Override
-    public RocketMQCommandService shutdown() {
-        _producer.shutdown();
-        super.shutdown();
-        return this;
-    }
+    private DefaultMQProducer defaultMQProducer;
 
     @Override
     public CompletableFuture<AsyncTaskResult> sendAsync(ICommand command) {
         try {
             QueueMessage queueMessage = buildCommandMessage(command, false);
             Message message = RocketMQTool.covertToProducerRecord(queueMessage);
-            return _sendMessageService.sendMessageAsync(_producer, message, queueMessage.getRouteKey());
+            return _sendMessageService.sendMessageAsync(defaultMQProducer, message, queueMessage.getRouteKey());
         } catch (Exception ex) {
             return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
         }
@@ -83,7 +45,7 @@ public class RocketMQCommandService extends CommandService {
             _commandResultProcessor.registerProcessingCommand(command, commandReturnType, taskCompletionSource);
             QueueMessage queueMessage = buildCommandMessage(command, true);
             Message message = RocketMQTool.covertToProducerRecord(queueMessage);
-            CompletableFuture<AsyncTaskResult> sendMessageAsync = _sendMessageService.sendMessageAsync(_producer, message, queueMessage.getRouteKey());
+            CompletableFuture<AsyncTaskResult> sendMessageAsync = _sendMessageService.sendMessageAsync(defaultMQProducer, message, queueMessage.getRouteKey());
             sendMessageAsync.thenAccept(sendResult -> {
                 if (sendResult.getStatus().equals(AsyncTaskStatus.Success)) {
                     //_commandResultProcessor中会继续等命令或事件处理完成的状态
@@ -96,5 +58,13 @@ public class RocketMQCommandService extends CommandService {
         } catch (Exception ex) {
             return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
         }
+    }
+
+    public DefaultMQProducer getDefaultMQProducer() {
+        return defaultMQProducer;
+    }
+
+    public void setDefaultMQProducer(DefaultMQProducer defaultMQProducer) {
+        this.defaultMQProducer = defaultMQProducer;
     }
 }

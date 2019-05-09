@@ -5,27 +5,31 @@ import com.enode.common.io.AsyncTaskResult;
 import com.enode.infrastructure.IMessage;
 import com.enode.infrastructure.IMessageHandlerProxy2;
 import com.enode.infrastructure.ITwoMessageHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 
+@Component
+@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
-    private IObjectContainer _objectContainer;
-    private Class _handlerType;
-    private ITwoMessageHandler _handler;
-    private MethodHandle _methodHandle;
-    private Method _method;
-    private Class<?>[] _methodParameterTypes;
 
-    public MessageHandlerProxy2(IObjectContainer objectContainer, Class handlerType, ITwoMessageHandler handler, MethodHandle methodHandle, Method method) {
-        _objectContainer = objectContainer;
-        _handlerType = handlerType;
-        _handler = handler;
-        _methodHandle = methodHandle;
-        _method = method;
-        _methodParameterTypes = method.getParameterTypes();
-    }
+    @Autowired
+    private IObjectContainer _objectContainer;
+
+    private Class _handlerType;
+
+    private Object _handler;
+
+    private MethodHandle _methodHandle;
+
+    private Method _method;
+
+    private Class<?>[] _methodParameterTypes;
 
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message1, IMessage message2) {
@@ -41,17 +45,35 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
         }
     }
 
+
     @Override
     public Object getInnerObject() {
         if (_handler != null) {
             return _handler;
         }
+        _handler = _objectContainer.resolve(_handlerType);
+        return _handler;
+    }
 
-        return _objectContainer.resolve(_handlerType);
+    @Override
+    public void setHandlerType(Class handlerType) {
+        this._handlerType = handlerType;
+    }
+
+    @Override
+    public void setMethodHandle(MethodHandle methodHandle) {
+        this._methodHandle = methodHandle;
     }
 
     @Override
     public Method getMethod() {
         return _method;
     }
+
+    @Override
+    public void setMethod(Method method) {
+        this._method = method;
+        _methodParameterTypes = method.getParameterTypes();
+    }
+
 }

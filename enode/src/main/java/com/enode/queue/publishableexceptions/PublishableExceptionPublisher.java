@@ -5,20 +5,30 @@ import com.enode.common.serializing.IJsonSerializer;
 import com.enode.infrastructure.IMessagePublisher;
 import com.enode.infrastructure.IPublishableException;
 import com.enode.infrastructure.ISequenceMessage;
-import com.enode.queue.ITopicProvider;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.QueueMessageTypeCode;
-import com.enode.queue.TopicTagData;
+import com.enode.queue.TopicData;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public class PublishableExceptionPublisher implements IMessagePublisher<IPublishableException> {
+public abstract class PublishableExceptionPublisher implements IMessagePublisher<IPublishableException> {
 
-    protected ITopicProvider<IPublishableException> _exceptionTopicProvider;
-
+    @Autowired
     protected IJsonSerializer _jsonSerializer;
+    @NotNull
+    protected TopicData topicData;
+
+    public TopicData getTopicData() {
+        return topicData;
+    }
+
+    public void setTopicData(TopicData topicData) {
+        this.topicData = topicData;
+    }
 
     public PublishableExceptionPublisher start() {
         return this;
@@ -34,7 +44,6 @@ public class PublishableExceptionPublisher implements IMessagePublisher<IPublish
     }
 
     protected QueueMessage createExecptionMessage(IPublishableException exception) {
-        TopicTagData topicTagData = _exceptionTopicProvider.getPublishTopic(exception);
         Map<String, String> serializableInfo = new HashMap<>();
         exception.serializeTo(serializableInfo);
         ISequenceMessage sequenceMessage = null;
@@ -52,8 +61,8 @@ public class PublishableExceptionPublisher implements IMessagePublisher<IPublish
         String routeKey = exception.getRoutingKey() == null ? exception.getRoutingKey() : exception.id();
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setCode(QueueMessageTypeCode.ExceptionMessage.getValue());
-        queueMessage.setTopic(topicTagData.getTopic());
-        queueMessage.setTags(topicTagData.getTag());
+        queueMessage.setTopic(topicData.getTopic());
+        queueMessage.setTags(topicData.getTag());
         queueMessage.setBody(data);
         queueMessage.setKey(exception.id());
         queueMessage.setRouteKey(routeKey);

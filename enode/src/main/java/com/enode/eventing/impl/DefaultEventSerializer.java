@@ -5,8 +5,8 @@ import com.enode.eventing.IDomainEvent;
 import com.enode.eventing.IEventSerializer;
 import com.enode.infrastructure.IMessage;
 import com.enode.infrastructure.ITypeNameProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,14 +14,12 @@ import java.util.List;
 import java.util.Map;
 
 public class DefaultEventSerializer implements IEventSerializer {
-    private ITypeNameProvider _typeNameProvider;
-    private IJsonSerializer _jsonSerializer;
 
-    @Inject
-    public DefaultEventSerializer(ITypeNameProvider typeNameProvider, IJsonSerializer jsonSerializer) {
-        _typeNameProvider = typeNameProvider;
-        _jsonSerializer = jsonSerializer;
-    }
+    @Autowired
+    private ITypeNameProvider _typeNameProvider;
+
+    @Autowired
+    private IJsonSerializer _jsonSerializer;
 
     @Override
     public Map<String, String> serialize(List<IDomainEvent> evnts) {

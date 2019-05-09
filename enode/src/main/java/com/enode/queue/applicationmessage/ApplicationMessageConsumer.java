@@ -11,6 +11,7 @@ import com.enode.queue.IMessageContext;
 import com.enode.queue.IMessageHandler;
 import com.enode.queue.QueueMessage;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class ApplicationMessageConsumer implements IMessageHandler {
 
@@ -18,10 +19,13 @@ public class ApplicationMessageConsumer implements IMessageHandler {
 
     protected String defaultMessageConsumerGroup = "ApplicationMessageConsumerGroup";
 
+    @Autowired
     protected IJsonSerializer _jsonSerializer;
 
+    @Autowired
     protected ITypeNameProvider _typeNameProvider;
 
+    @Autowired
     protected IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage> _processor;
 
     public ApplicationMessageConsumer start() {

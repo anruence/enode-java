@@ -4,12 +4,14 @@ import com.enode.commanding.ICommandContext;
 import com.enode.commanding.ICommandHandler;
 import com.enode.samples.commands.bank.ConfirmTransferInPreparationCommand;
 import com.enode.samples.domain.bank.transfertransaction.TransferTransaction;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
 /**
  * 确认预转入
  */
+@Component
 public class ConfirmTransferOutPreparationCommandHandle implements ICommandHandler<ConfirmTransferInPreparationCommand> {
     @Override
     public CompletableFuture handleAsync(ICommandContext context, ConfirmTransferInPreparationCommand command) {

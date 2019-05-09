@@ -1,6 +1,5 @@
 package com.enode.commanding;
 
-import com.enode.ENode;
 import com.enode.common.logging.ENodeLogger;
 import com.enode.common.threading.ManualResetEvent;
 import org.slf4j.Logger;
@@ -26,6 +25,7 @@ public class ProcessingCommandMailbox {
     private final ManualResetEvent _processingWaitHandle;
     private final int _batchSize;
     private final String aggregateRootId;
+    private final int commandMailBoxPersistenceMaxBatchSize = 1000;
     private long _nextSequence;
     private long _consumingSequence;
     private long _consumedSequence;
@@ -39,7 +39,7 @@ public class ProcessingCommandMailbox {
         _requestToCompleteCommandDict = new HashMap<>();
         _pauseWaitHandle = new ManualResetEvent(false);
         _processingWaitHandle = new ManualResetEvent(false);
-        _batchSize = ENode.getInstance().getSetting().getCommandMailBoxPersistenceMaxBatchSize();
+        _batchSize = commandMailBoxPersistenceMaxBatchSize;
         aggregateRootId = aggregaterootid;
         _messageHandler = messageHandler;
         _consumedSequence = -1;

@@ -17,6 +17,7 @@ import com.enode.common.serializing.IJsonSerializer;
 import com.enode.queue.domainevent.DomainEventHandledMessage;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.SocketAddress;
 import java.nio.charset.Charset;
@@ -27,33 +28,42 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class CommandResultProcessor implements NettyRequestProcessor {
+
     private static final Logger _logger = ENodeLogger.getLog();
 
     private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
+
     public SocketAddress _bindingAddress;
+
     private RemotingServer remotingServer;
+
     private ConcurrentMap<String, CommandTaskCompletionSource> _commandTaskDict;
+
     private BlockingQueue<CommandResult> _commandExecutedMessageLocalQueue;
+
     private BlockingQueue<DomainEventHandledMessage> _domainEventHandledMessageLocalQueue;
+
     private Worker _commandExecutedMessageWorker;
+
     private Worker _domainEventHandledMessageWorker;
+
+    @Autowired
     private IJsonSerializer _jsonSerializer;
+
     private boolean _started;
 
-    public CommandResultProcessor(int listenPort, IJsonSerializer jsonSerializer) {
+    public CommandResultProcessor(int listenPort) {
         NettyServerConfig nettyServerConfig = new NettyServerConfig();
         nettyServerConfig.setListenPort(listenPort);
         nettyServerConfig.setServerChannelMaxIdleTimeSeconds(3600);
         remotingServer = new NettyRemotingServer(nettyServerConfig);
         remotingServer.registerProcessor(CommandReturnType.CommandExecuted.getValue(), this);
         remotingServer.registerProcessor(CommandReturnType.EventHandled.getValue(), this);
-
         _commandTaskDict = new ConcurrentHashMap<>();
         _commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
         _domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
         _commandExecutedMessageWorker = new Worker("ProcessExecutedCommandMessage", () -> processExecutedCommandMessage(_commandExecutedMessageLocalQueue.take()));
         _domainEventHandledMessageWorker = new Worker("ProcessDomainEventHandledMessage", () -> processDomainEventHandledMessage(_domainEventHandledMessageLocalQueue.take()));
-        _jsonSerializer = jsonSerializer;
     }
 
     public void registerProcessingCommand(ICommand command, com.enode.commanding.CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
@@ -77,17 +87,12 @@ public class CommandResultProcessor implements NettyRequestProcessor {
         if (_started) {
             return this;
         }
-
         remotingServer.start();
         _bindingAddress = remotingServer.bindAddress();
-
         _commandExecutedMessageWorker.start();
         _domainEventHandledMessageWorker.start();
-
         _started = true;
-
         _logger.info("Command result processor started, bindingAddress: {}", remotingServer.bindAddress());
-
         return this;
     }
 

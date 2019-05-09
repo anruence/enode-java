@@ -1,97 +1,165 @@
 package com.enode.samples.commandhandles;
 
-import com.alibaba.druid.pool.DruidDataSourceFactory;
-import com.enode.ENode;
-import com.enode.commanding.ICommandService;
-import com.enode.kafka.config.KafkaConfig;
-import com.enode.queue.QueueMessageTypeCode;
-import com.enode.rocketmq.client.impl.NativePropertyKey;
-import com.enode.rocketmq.message.config.MultiGroupProps;
+import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
+import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
+import com.enode.ENodeBootstrap;
+import com.enode.commanding.impl.DefaultCommandProcessor;
+import com.enode.commanding.impl.DefaultProcessingCommandHandler;
+import com.enode.eventing.impl.DefaultEventService;
+import com.enode.queue.TopicData;
+import com.enode.queue.command.CommandResultProcessor;
+import com.enode.rocketmq.message.RocketMQApplicationMessagePublisher;
+import com.enode.rocketmq.message.RocketMQCommandConsumer;
+import com.enode.rocketmq.message.RocketMQDomainEventPublisher;
+import com.enode.rocketmq.message.RocketMQPublishableExceptionPublisher;
 import com.enode.rocketmq.message.config.RocketMQConfig;
-import com.enode.rocketmq.message.config.RocketMQProps;
+import com.google.common.collect.Lists;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class AppConfigCommandConsumer {
 
-    //    @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public KafkaConfig kafkaConfig() {
 
-        /**============= Enode数据库配置（内存实现不需要配置） ===========*/
-        Properties properties = new Properties();
-        properties.setProperty("driverClassName", "com.mysql.jdbc.Driver");
-        properties.setProperty("url", "jdbc:mysql://localhost:3306/enode");
-        properties.setProperty("username", "root");
-        properties.setProperty("password", "anruence");
-        properties.setProperty("initialSize", "1");
-        properties.setProperty("maxTotal", "1");
-        /**=============================================================*/
+    public static String COMMAND_TOPIC = "CommandSample";
 
-        DataSource dataSource = null;
-        try {
-            dataSource = DruidDataSourceFactory.createDataSource(properties);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ENode enode = ENode.create("com.enode.samples")
-                .registerDefaultComponents();
-//                .useMysqlComponents(dataSource); // 注销此行，启用内存实现（CommandStore,EventStore,SequenceMessagePublishedVersionStore,MessageHandleRecordStore）
+    public static String EVENT_TOPIC = "EventSample";
 
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092");
-        props.put("group.id", "test");
-        props.put("enable.auto.commit", "true");
-        props.put("auto.commit.interval.ms", "100");
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    public static String NAMESRVADDR = "127.0.0.1:9876";
 
-        Properties producerProps = new Properties();
-        producerProps.put("bootstrap.servers", "localhost:9092");
-        producerProps.put("enable.idempotence", "true");
-        producerProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        producerProps.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        KafkaConfig config = new KafkaConfig(enode);
-        config.useKafka(producerProps, props, ENode.COMMAND_CONSUMER | ENode.PUBLISHERS, 6001);
-        return config;
-    }
+    public static String EVENT_PRODUCER_GROUP = "EventProducerGroup";
 
-    @Bean
-    public ICommandService commandService() {
-        return rocketMQConfig().getEnode().resolve(ICommandService.class);
-    }
+    public static String COMMAND_CONSUMER_GROUP = "CommandConsumerGroup";
+
+//    //    @Bean(initMethod = "start", destroyMethod = "shutdown")
+//    public KafkaConfig kafkaConfig() {
+//
+//        /**============= Enode数据库配置（内存实现不需要配置） ===========*/
+//        Properties properties = new Properties();
+//        properties.setProperty("driverClassName", "com.mysql.jdbc.Driver");
+//        properties.setProperty("url", "jdbc:mysql://localhost:3306/enode");
+//        properties.setProperty("username", "root");
+//        properties.setProperty("password", "anruence");
+//        properties.setProperty("initialSize", "1");
+//        properties.setProperty("maxTotal", "1");
+//        /**=============================================================*/
+//
+//        DataSource dataSource = null;
+//        try {
+//            dataSource = DruidDataSourceFactory.createDataSource(properties);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        Properties props = new Properties();
+//        props.put("bootstrap.servers", "localhost:9092");
+//        props.put("group.id", "test");
+//        props.put("enable.auto.commit", "true");
+//        props.put("auto.commit.interval.ms", "100");
+//        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+//        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+//
+//        Properties producerProps = new Properties();
+//        producerProps.put("bootstrap.servers", "localhost:9092");
+//        producerProps.put("enable.idempotence", "true");
+//        producerProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+//        producerProps.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+//        KafkaConfig config = new KafkaConfig();
+//        return config;
+//    }
+
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public RocketMQConfig rocketMQConfig() {
-        MultiGroupProps groupProps = new MultiGroupProps();
-        for (int i = 1; i <= 4; i++) {
-            Properties producerSetting = new Properties();
-            producerSetting.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
-            producerSetting.setProperty(NativePropertyKey.ProducerGroup, "NoteSampleProducerGroupCommandConsumer" + i);
-            Properties consumerSetting = new Properties();
-            consumerSetting.setProperty(NativePropertyKey.NAMESRV_ADDR, "127.0.0.1:9876");
-            consumerSetting.setProperty(NativePropertyKey.ConsumerGroup, "NoteSampleConsumerGroupCommandConsumer" + i);
-            RocketMQProps mqProps = new RocketMQProps();
-            mqProps.setConsumerProps(consumerSetting);
-            mqProps.setProducerProps(producerSetting);
-            if (i == QueueMessageTypeCode.CommandMessage.getValue()) {
-                groupProps.setCommandProps(mqProps);
-            } else if (i == QueueMessageTypeCode.DomainEventStreamMessage.getValue()) {
-                groupProps.setEventProps(mqProps);
-            } else if (i == QueueMessageTypeCode.ExceptionMessage.getValue()) {
-                groupProps.setExceptionProps(mqProps);
-            } else if (i == QueueMessageTypeCode.ApplicationMessage.getValue()) {
-                groupProps.setApplicationProps(mqProps);
-            }
-        }
-        groupProps.setListenPort(6001);
-        groupProps.setRegisterFlag(ENode.COMMAND_CONSUMER | ENode.PUBLISHERS);
-        ENode enode = ENode.create("com.enode.samples").registerDefaultComponents();
-        RocketMQConfig config = new RocketMQConfig(enode);
-        config.useNativeRocketMQ(groupProps);
-        return config;
+        RocketMQConfig rocketMQConfig = new RocketMQConfig();
+        rocketMQConfig.setRegisterFlag(RocketMQConfig.COMMAND_CONSUMER
+                | RocketMQConfig.DOMAIN_EVENT_PUBLISHER
+                | RocketMQConfig.APPLICATION_MESSAGE_PUBLISHER
+                | RocketMQConfig.EXCEPTION_PUBLISHER
+        );
+        return rocketMQConfig;
     }
+
+    @Bean(initMethod = "start", destroyMethod = "shutdown")
+    public DefaultMQPushConsumer defaultMQPushConsumer(RocketMQCommandConsumer commandConsumer) {
+        DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
+        defaultMQPushConsumer.setConsumerGroup(COMMAND_CONSUMER_GROUP);
+        defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
+        Map<String, String> topic = new HashMap<>();
+        topic.put(COMMAND_TOPIC, "*");
+        defaultMQPushConsumer.setSubscription(topic);
+        defaultMQPushConsumer.setMessageListener(commandConsumer);
+        return defaultMQPushConsumer;
+    }
+
+    @Bean
+    public DefaultEventService defaultEventService() {
+        return new DefaultEventService();
+    }
+
+    @Bean
+    public DefaultProcessingCommandHandler defaultProcessingCommandHandler(DefaultEventService eventService) {
+        return new DefaultProcessingCommandHandler(eventService);
+    }
+
+    @Bean
+    public RocketMQApplicationMessagePublisher rocketMQApplicationMessagePublisher(DefaultMQProducer eventProducer) {
+        RocketMQApplicationMessagePublisher applicationMessagePublisher = new RocketMQApplicationMessagePublisher();
+        applicationMessagePublisher.setProducer(eventProducer);
+        applicationMessagePublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
+        return applicationMessagePublisher;
+    }
+
+    @Bean
+    public RocketMQPublishableExceptionPublisher rocketMQPublishableExceptionPublisher(DefaultMQProducer eventProducer) {
+        RocketMQPublishableExceptionPublisher exceptionPublisher = new RocketMQPublishableExceptionPublisher();
+        exceptionPublisher.setProducer(eventProducer);
+        exceptionPublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
+        return exceptionPublisher;
+    }
+
+
+    @Bean(initMethod = "start", destroyMethod = "shutdown")
+    public DefaultMQProducer eventProducer() {
+        DefaultMQProducer producer = new DefaultMQProducer();
+        producer.setNamesrvAddr(NAMESRVADDR);
+        producer.setProducerGroup(EVENT_PRODUCER_GROUP);
+        return producer;
+    }
+
+    @Bean
+    public RocketMQDomainEventPublisher rocketMQDomainEventPublisher(DefaultMQProducer eventProducer) {
+        RocketMQDomainEventPublisher domainEventPublisher = new RocketMQDomainEventPublisher();
+        domainEventPublisher.setProducer(eventProducer);
+        domainEventPublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
+        return domainEventPublisher;
+    }
+
+    @Bean
+    public DefaultCommandProcessor defaultCommandProcessor() {
+        return new DefaultCommandProcessor();
+    }
+
+    @Bean(initMethod = "start", destroyMethod = "shutdown")
+    public RocketMQCommandConsumer commandConsumer() {
+        RocketMQCommandConsumer commandConsumer = new RocketMQCommandConsumer();
+        return commandConsumer;
+    }
+
+    @Bean(initMethod = "start", destroyMethod = "shutdown")
+    public CommandResultProcessor commandResultProcessor() {
+        CommandResultProcessor processor = new CommandResultProcessor(6001);
+        return processor;
+    }
+
+    @Bean(initMethod = "init")
+    public ENodeBootstrap eNodeBootstrap() {
+        ENodeBootstrap bootstrap = new ENodeBootstrap();
+        bootstrap.setPackages(Lists.newArrayList("com.enode.samples"));
+        return bootstrap;
+    }
+
 }

@@ -5,10 +5,13 @@ import com.enode.eventing.DomainEventStreamMessage;
 import com.enode.infrastructure.IProcessingMessageHandler;
 import com.enode.infrastructure.IProcessingMessageScheduler;
 import com.enode.infrastructure.ProcessingDomainEventStreamMessage;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
+@Component
 public class DefaultDomainEventProcessor extends DefaultMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> {
+
     @Inject
     public DefaultDomainEventProcessor(
             IProcessingMessageScheduler<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> processingMessageScheduler,

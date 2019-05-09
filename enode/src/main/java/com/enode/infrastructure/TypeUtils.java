@@ -8,9 +8,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 public class TypeUtils {
-    public static boolean isComponent(Class type) {
-        return !Modifier.isAbstract(type.getModifiers()) && type.isAnnotationPresent(LifeStyleType.class);
-    }
 
     public static boolean isAggregateRoot(Class type) {
         return !Modifier.isAbstract(type.getModifiers()) && IAggregateRoot.class.isAssignableFrom(type);

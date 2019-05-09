@@ -1,11 +1,11 @@
 package com.enode.queue;
 
-public class TopicTagData {
+public class TopicData {
 
     private String topic;
     private String tag;
 
-    public TopicTagData(String topic, String tag) {
+    public TopicData(String topic, String tag) {
         this.topic = topic;
         this.tag = tag;
     }
@@ -34,7 +34,7 @@ public class TopicTagData {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        TopicTagData that = (TopicTagData) o;
+        TopicData that = (TopicData) o;
 
         if (topic == null || tag == null) {
             return false;

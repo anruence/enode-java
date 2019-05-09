@@ -20,18 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class CommandExecuteContext implements ICommandExecuteContext {
-    private String _result;
-
     private final ConcurrentMap<String, IAggregateRoot> _trackingAggregateRootDict;
-
     private final IRepository _repository;
-
     private final IAggregateStorage _aggregateRootStorage;
-
     private final SendReplyService _sendReplyService;
-
     private final QueueMessage _queueMessage;
-
+    private String _result;
     private IMessageContext _messageContext;
 
     private CommandMessage _commandMessage;

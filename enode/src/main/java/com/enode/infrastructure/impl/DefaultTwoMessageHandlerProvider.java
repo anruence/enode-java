@@ -5,19 +5,16 @@ import com.enode.eventing.IDomainEvent;
 import com.enode.infrastructure.IMessageHandlerProxy2;
 import com.enode.infrastructure.ITwoMessageHandler;
 import com.enode.infrastructure.ITwoMessageHandlerProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
 public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<ManyType, IMessageHandlerProxy2, List<Class>> implements ITwoMessageHandlerProvider {
-    private IObjectContainer objectContainer;
 
-    @Inject
-    public DefaultTwoMessageHandlerProvider(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-    }
+    @Autowired
+    private IObjectContainer objectContainer;
 
     @Override
     protected Class getGenericHandlerType() {

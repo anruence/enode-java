@@ -1,6 +1,5 @@
 package com.enode.eventing.impl;
 
-import com.enode.ENode;
 import com.enode.common.container.IObjectContainer;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
@@ -62,7 +61,8 @@ public class MysqlEventStore implements IEventStore {
             _bulkCopyTimeout = optionSetting.getOptionValue("BulkCopyTimeout") == null ? 0 : Integer.valueOf(optionSetting.getOptionValue("BulkCopyTimeout"));
 
         } else {
-            DefaultDBConfigurationSetting setting = ENode.getInstance().getSetting().getDefaultDBConfigurationSetting();
+            // TODO
+            DefaultDBConfigurationSetting setting = new DefaultDBConfigurationSetting();
             _tableName = setting.getEventTableName();
             _tableCount = setting.getEventTableCount();
             _versionIndexName = setting.getEventTableVersionUniqueIndexName();

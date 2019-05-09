@@ -5,17 +5,14 @@ import com.enode.infrastructure.IMessage;
 import com.enode.infrastructure.IMessageHandler;
 import com.enode.infrastructure.IMessageHandlerProvider;
 import com.enode.infrastructure.IMessageHandlerProxy1;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.lang.reflect.Method;
 
 public class DefaultMessageHandlerProvider extends AbstractHandlerProvider<Class, IMessageHandlerProxy1, Class> implements IMessageHandlerProvider {
-    private IObjectContainer objectContainer;
 
-    @Inject
-    public DefaultMessageHandlerProvider(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-    }
+    @Autowired
+    private IObjectContainer objectContainer;
 
     @Override
     protected Class getGenericHandlerType() {

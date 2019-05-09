@@ -10,6 +10,7 @@ public class WrappedExceptionParser<T extends Throwable> {
     private List<Class<? extends Throwable>> expectExceptionTypes;
     private boolean disrupt;
     private When UNDO = new UndoWhen();
+
     private WrappedExceptionParser(T e) {
         this.exception = e;
         expectExceptionTypes = new ArrayList<>();

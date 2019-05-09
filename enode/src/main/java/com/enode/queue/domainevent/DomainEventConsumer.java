@@ -14,6 +14,7 @@ import com.enode.queue.IMessageHandler;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.SendReplyService;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class DomainEventConsumer implements IMessageHandler {
 
@@ -21,16 +22,19 @@ public class DomainEventConsumer implements IMessageHandler {
 
     protected String defaultEventConsumerGroup = "EventConsumerGroup";
 
+    @Autowired
     protected SendReplyService _sendReplyService;
 
+    @Autowired
     protected IJsonSerializer _jsonSerializer;
 
+    @Autowired
     protected IEventSerializer _eventSerializer;
 
+    @Autowired
     protected IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> _processor;
 
     protected boolean _sendEventHandledMessage;
-
 
     public SendReplyService getSendReplyService() {
         return _sendReplyService;

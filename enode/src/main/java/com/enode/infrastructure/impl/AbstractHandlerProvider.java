@@ -1,10 +1,8 @@
 package com.enode.infrastructure.impl;
 
 import com.enode.common.container.IObjectContainer;
-import com.enode.common.container.LifeStyle;
 import com.enode.infrastructure.IAssemblyInitializer;
 import com.enode.infrastructure.IObjectProxy;
-import com.enode.infrastructure.LifeStyleType;
 import com.enode.infrastructure.MessageHandlerData;
 import com.enode.infrastructure.MethodInvocation;
 import com.enode.infrastructure.Priority;
@@ -27,16 +25,6 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
     private Map<TKey, List<THandlerProxyInterface>> _handlerDict = new HashMap<>();
     private Map<TKey, MessageHandlerData<THandlerProxyInterface>> _messageHandlerDict = new HashMap<>();
     private MethodHandles.Lookup lookup = MethodHandles.lookup();
-
-    private static LifeStyle parseComponentLife(Class type) {
-        LifeStyleType annotation = (LifeStyleType) type.getAnnotation(LifeStyleType.class);
-
-        if (annotation != null) {
-            return annotation.value();
-        }
-
-        return LifeStyle.Singleton;
-    }
 
     /**
      * ICommandHandler、ICommandAsyncHandler、IMessageHandler、ITwoMessageHandler<,>、IThreeMessageHandler<,,>
@@ -96,7 +84,6 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
 
     private int getHandleMethodPriority(THandlerProxyInterface handler) {
         Method method = handler.getMethod();
-
         if ("handleAsync".equals(method.getName())) {
             int priority = 0;
             Priority methodPriority = method.getAnnotation(Priority.class);
@@ -135,8 +122,6 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
     }
 
     private void registerHandler(Class handlerType) {
-        LifeStyle lifeStyle = parseComponentLife(handlerType);
-        Object handleObj = lifeStyle == LifeStyle.Singleton ? getObjectContainer().resolve(handlerType) : null;
 
         Set<Method> handleMethods = ReflectionUtils.getMethods(handlerType, this::isHandleMethodMatch);
 
@@ -145,10 +130,11 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                 //反射Method转换为MethodHandle,提高效率
                 MethodHandle handleMethod = lookup.findVirtual(handlerType, method.getName(), MethodType.methodType(method.getReturnType(), method.getParameterTypes()));
                 TKey key = getKey(method);
-
                 List<THandlerProxyInterface> handlers = _handlerDict.computeIfAbsent(key, k -> new ArrayList<>());
-
-                THandlerProxyInterface handlerProxy = getHandlerProxyImplementationType().getConstructor(IObjectContainer.class, Class.class, getGenericHandlerType(), MethodHandle.class, Method.class).newInstance(getObjectContainer(), handlerType, handleObj, handleMethod, method);
+                THandlerProxyInterface handlerProxy = getObjectContainer().resolve(getHandlerProxyImplementationType());
+                handlerProxy.setHandlerType(handlerType);
+                handlerProxy.setMethod(method);
+                handlerProxy.setMethodHandle(handleMethod);
                 handlers.add(handlerProxy);
             } catch (Exception e) {
                 throw new RuntimeException(e);
