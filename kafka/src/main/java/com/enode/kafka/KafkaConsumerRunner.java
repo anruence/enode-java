@@ -11,10 +11,8 @@ import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class KafkaConsumerRunner<K, V> implements Runnable {
-    private final AtomicBoolean closed = new AtomicBoolean(false);
-
     private static final Logger _logger = ENodeLogger.getLog();
-
+    private final AtomicBoolean closed = new AtomicBoolean(false);
     private KafkaConsumer kafkaConsumer;
 
     private IMessageListener messageListener;

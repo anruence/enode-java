@@ -7,8 +7,8 @@ import com.enode.domain.IAggregateRepositoryProxy;
 import com.enode.domain.IAggregateRoot;
 import com.enode.infrastructure.IAssemblyInitializer;
 import com.enode.infrastructure.TypeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -20,7 +20,7 @@ public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryP
 
     private final Map<Class, IAggregateRepositoryProxy> _repositoryDict = new HashMap<>();
 
-    @Inject
+    @Autowired
     private IObjectContainer objectContainer;
 
     @Override

@@ -3,59 +3,35 @@ package com.enode.kafka;
 import com.enode.commanding.CommandResult;
 import com.enode.commanding.CommandReturnType;
 import com.enode.commanding.ICommand;
-import com.enode.commanding.ICommandRoutingKeyProvider;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
-import com.enode.common.serializing.IJsonSerializer;
 import com.enode.common.utilities.Ensure;
 import com.enode.queue.QueueMessage;
-import com.enode.queue.command.CommandResultProcessor;
 import com.enode.queue.command.CommandService;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
-import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
-@Component
 public class KafkaCommandService extends CommandService {
 
-    private KafkaProducer _producer;
-
+    private KafkaProducer producer;
+    @Autowired
     private SendMessageService _sendMessageService;
 
-    @Inject
-    public KafkaCommandService(IJsonSerializer jsonSerializer, CommandResultProcessor commandResultProcessor, ICommandRoutingKeyProvider commandRoutingKeyProvider, SendMessageService sendMessageService) {
-        _jsonSerializer = jsonSerializer;
-        _commandResultProcessor = commandResultProcessor;
-        _commandRouteKeyProvider = commandRoutingKeyProvider;
-        _sendMessageService = sendMessageService;
+    public KafkaProducer getProducer() {
+        return producer;
     }
 
-    public KafkaCommandService initializeQueue(Properties properties) {
-        _producer = new KafkaProducer(properties);
-        return this;
-    }
-
-    @Override
-    public KafkaCommandService start() {
-        super.start();
-        return this;
-    }
-
-    @Override
-    public KafkaCommandService shutdown() {
-        _producer.close();
-        super.shutdown();
-        return this;
+    public void setProducer(KafkaProducer producer) {
+        this.producer = producer;
     }
 
     @Override
     public CompletableFuture<AsyncTaskResult> sendAsync(ICommand command) {
         try {
-            return _sendMessageService.sendMessageAsync(_producer, buildKafkaMessage(command, false));
+            return _sendMessageService.sendMessageAsync(producer, buildKafkaMessage(command, false));
         } catch (Exception ex) {
             return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
         }
@@ -74,7 +50,7 @@ public class KafkaCommandService extends CommandService {
             CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource = new CompletableFuture<>();
             _commandResultProcessor.registerProcessingCommand(command, commandReturnType, taskCompletionSource);
 
-            CompletableFuture<AsyncTaskResult> sendMessageAsync = _sendMessageService.sendMessageAsync(_producer, buildKafkaMessage(command, true));
+            CompletableFuture<AsyncTaskResult> sendMessageAsync = _sendMessageService.sendMessageAsync(producer, buildKafkaMessage(command, true));
             sendMessageAsync.thenAccept(sendResult -> {
                 if (sendResult.getStatus().equals(AsyncTaskStatus.Success)) {
                     //_commandResultProcessor中会继续等命令或事件处理完成的状态

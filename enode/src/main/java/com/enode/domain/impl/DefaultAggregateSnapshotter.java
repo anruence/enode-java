@@ -4,17 +4,14 @@ import com.enode.domain.IAggregateRepositoryProvider;
 import com.enode.domain.IAggregateRepositoryProxy;
 import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateSnapshotter;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
 public class DefaultAggregateSnapshotter implements IAggregateSnapshotter {
-    private final IAggregateRepositoryProvider _aggregateRepositoryProvider;
 
-    @Inject
-    public DefaultAggregateSnapshotter(IAggregateRepositoryProvider aggregateRepositoryProvider) {
-        _aggregateRepositoryProvider = aggregateRepositoryProvider;
-    }
+    @Autowired
+    private IAggregateRepositoryProvider _aggregateRepositoryProvider;
 
     @Override
     public CompletableFuture<IAggregateRoot> restoreFromSnapshotAsync(Class aggregateRootType, String aggregateRootId) {

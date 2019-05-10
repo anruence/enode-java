@@ -1,7 +1,7 @@
 package com.enode.infrastructure;
 
 /**
- * checked exception转为non-checked exception
+ * checked exception covert to non-checked exception
  */
 public class WrappedRuntimeException extends RuntimeException {
 

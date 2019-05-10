@@ -7,16 +7,11 @@ import com.enode.common.container.IObjectContainer;
 import com.enode.common.io.AsyncTaskResult;
 import com.enode.infrastructure.IApplicationMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 
-@Component
-@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class CommandAsyncHandlerProxy implements ICommandAsyncHandlerProxy {
 
     @Autowired

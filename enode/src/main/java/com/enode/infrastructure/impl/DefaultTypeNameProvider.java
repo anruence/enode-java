@@ -1,9 +1,8 @@
 package com.enode.infrastructure.impl;
 
+import com.enode.common.extensions.ENodeException;
 import com.enode.infrastructure.ITypeNameProvider;
-import org.springframework.stereotype.Component;
 
-@Component
 public class DefaultTypeNameProvider implements ITypeNameProvider {
 
     @Override
@@ -16,7 +15,7 @@ public class DefaultTypeNameProvider implements ITypeNameProvider {
         try {
             return Class.forName(typeName);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new ENodeException("ClassNotFound", e);
         }
     }
 }

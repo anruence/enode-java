@@ -24,27 +24,6 @@ public class WrappedExceptionParser<T extends Throwable> {
         return new WrappedExceptionParser(wrappedExp.getException());
     }
 
-    public static void main(String[] args) {
-        Exception exception = new IllegalArgumentException("test");
-
-
-        WrappedRuntimeException exp = new WrappedRuntimeException(exception);
-
-        WrappedExceptionParser.create(exp)
-                .when(NullPointerException.class).then(System.out::println)
-                .when(RuntimeException.class).then(e -> System.out.println("RuntimeException" + e.getMessage()))
-                .when(IllegalArgumentException.class).then(e -> System.out.println("fuck"))
-                .elze(e -> {
-                    System.out.println("else");
-                    System.out.println(e.getMessage());
-                });
-                /*.when(IllegalArgumentException.class).then(e -> {
-                    System.out.println("catch you");
-                    System.out.print(e);
-                });*/
-
-    }
-
     public <ExpectType extends Throwable> When<ExpectType, T> when(Class<ExpectType> expectTypes) {
         if (!disrupt) {
             return new WhenImpl<>(expectTypes, this);

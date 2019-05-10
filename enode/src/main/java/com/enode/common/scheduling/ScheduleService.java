@@ -16,7 +16,9 @@ public class ScheduleService implements IScheduleService {
     private static final Logger _logger = ENodeLogger.getLog();
 
     private Object _lockObject = new Object();
+
     private Map<String, TimerBasedTask> _taskDict = new HashMap<>();
+
     private ScheduledExecutorService scheduledThreadPool;
 
     public ScheduleService() {
@@ -64,12 +66,10 @@ public class ScheduleService implements IScheduleService {
             if (task != null) {
                 try {
                     if (!task.isStopped()) {
-//                        task.getScheduledFuture().cancel(false);
-//                        task.Timer.Change(Timeout.Infinite, Timeout.Infinite);
                         task.action.apply();
                     }
                 } catch (Exception ex) {
-                    _logger.error(String.format("Task has exception, name: %s, due: %d, period: %d", task.getName(), task.getDueTime(), task.getPeriod()), ex);
+                    _logger.error("Task has exception, name: {}, due: {}, period: {}", task.getName(), task.getDueTime(), task.getPeriod(), ex);
                 }
             }
         }

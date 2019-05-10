@@ -6,16 +6,12 @@ import com.enode.commanding.ICommandHandler;
 import com.enode.commanding.ICommandHandlerProxy;
 import com.enode.common.container.IObjectContainer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 
-@Component
-@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+
 public class CommandHandlerProxy implements ICommandHandlerProxy {
 
     @Autowired

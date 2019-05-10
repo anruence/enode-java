@@ -12,19 +12,21 @@ import com.enode.infrastructure.IPublishedVersionStore;
 import com.enode.infrastructure.ProcessingDomainEventStreamMessage;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
-@Component
 public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>, Y extends IMessage> implements IProcessingMessageHandler<X, Y> {
 
     private static final Logger _logger = ENodeLogger.getLog();
+
     private final String domainEventStreamMessageHandlerName = "DefaultEventProcessor";
+
     @Autowired
     private IMessageDispatcher _dispatcher;
+
     @Autowired
     private IPublishedVersionStore _publishedVersionStore;
+
     @Autowired
     private IOHelper _ioHelper;
 

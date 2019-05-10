@@ -5,23 +5,17 @@ import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateStorage;
 import com.enode.domain.IMemoryCache;
 import com.enode.domain.IRepository;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 
-@Component
 public class DefaultRepository implements IRepository {
 
-    private final IMemoryCache _memoryCache;
+    @Autowired
+    private IMemoryCache _memoryCache;
 
-    private final IAggregateStorage _aggregateRootStorage;
-
-    @Inject
-    public DefaultRepository(IMemoryCache memoryCache, IAggregateStorage aggregateRootStorage) {
-        _memoryCache = memoryCache;
-        _aggregateRootStorage = aggregateRootStorage;
-    }
+    @Autowired
+    private IAggregateStorage _aggregateRootStorage;
 
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, Object aggregateRootId) {

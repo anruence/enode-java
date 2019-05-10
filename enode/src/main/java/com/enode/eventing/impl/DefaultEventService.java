@@ -3,7 +3,6 @@ package com.enode.eventing.impl;
 import com.enode.commanding.CommandResult;
 import com.enode.commanding.CommandStatus;
 import com.enode.commanding.ICommand;
-import com.enode.commanding.IProcessingCommandHandler;
 import com.enode.commanding.ProcessingCommand;
 import com.enode.commanding.ProcessingCommandMailbox;
 import com.enode.common.io.IOHelper;
@@ -33,35 +32,41 @@ public class DefaultEventService implements IEventService {
     private static final Logger _logger = ENodeLogger.getLog();
 
     private final ConcurrentMap<String, EventMailBox> _mailboxDict;
+
     private final int _batchSize;
+
     private final int _timeoutSeconds;
+
     private final String _taskName;
+
     private final int commandMailBoxPersistenceMaxBatchSize = 1000;
+
     private final int scanExpiredAggregateIntervalMilliseconds = 5000;
+
     private final int eventMailBoxPersistenceMaxBatchSize = 1000;
+
     private final int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
+
     @Autowired
     private IScheduleService _scheduleService;
+
     @Autowired
     private IMemoryCache _memoryCache;
+
     @Autowired
     private IEventStore _eventStore;
+
     @Autowired
     private IMessagePublisher<DomainEventStreamMessage> _domainEventPublisher;
+
     @Autowired
     private IOHelper _ioHelper;
-    private IProcessingCommandHandler _processingCommandHandler;
 
     public DefaultEventService() {
         _mailboxDict = new ConcurrentHashMap<>();
         _batchSize = eventMailBoxPersistenceMaxBatchSize;
         _timeoutSeconds = aggregateRootMaxInactiveSeconds;
         _taskName = "CleanInactiveAggregates_" + System.nanoTime() + new Random().nextInt(10000);
-    }
-
-    @Override
-    public void setProcessingCommandHandler(IProcessingCommandHandler processingCommandHandler) {
-        _processingCommandHandler = processingCommandHandler;
     }
 
     @Override

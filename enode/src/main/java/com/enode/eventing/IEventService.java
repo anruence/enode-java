@@ -1,16 +1,8 @@
 package com.enode.eventing;
 
-import com.enode.commanding.IProcessingCommandHandler;
 import com.enode.commanding.ProcessingCommand;
 
 public interface IEventService {
-    /**
-     * Set the command executor for command retring.
-     *
-     * @param processingCommandHandler
-     */
-    void setProcessingCommandHandler(IProcessingCommandHandler processingCommandHandler);
-
     /**
      * Commit the given aggregate's domain events to the eventstore async and publish the domain events.
      *

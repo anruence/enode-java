@@ -6,9 +6,6 @@ import com.enode.infrastructure.IMessage;
 import com.enode.infrastructure.IMessageHandlerProxy3;
 import com.enode.infrastructure.IThreeMessageHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
@@ -18,8 +15,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@Component
-@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
 
     @Autowired

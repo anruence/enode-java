@@ -1,18 +1,17 @@
 package com.enode.infrastructure.impl;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ManyType {
-    private List<Class> _types = new ArrayList<>();
+
+    private List<Class> _types;
 
     public ManyType(List<Class> types) {
         if (new HashSet<>(types).size() != types.size()) {
-            throw new IllegalArgumentException("Invalid ManyType:" + String.join("|", types.stream().map(x -> x.getName()).collect(Collectors.toList())));
+            throw new IllegalArgumentException("Invalid ManyType:" + String.join("|", types.stream().map(Class::getName).collect(Collectors.toList())));
         }
-
         _types = types;
     }
 
@@ -22,7 +21,7 @@ public class ManyType {
 
     @Override
     public int hashCode() {
-        return _types.stream().map(x -> x.hashCode()).reduce((x, y) -> x ^ y).get();
+        return _types.stream().map(Object::hashCode).reduce((x, y) -> x ^ y).get();
     }
 
     @Override

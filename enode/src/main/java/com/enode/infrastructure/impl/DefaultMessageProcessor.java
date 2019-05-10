@@ -9,6 +9,7 @@ import com.enode.infrastructure.IProcessingMessageHandler;
 import com.enode.infrastructure.IProcessingMessageScheduler;
 import com.enode.infrastructure.ProcessingMessageMailbox;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,6 @@ import java.util.stream.Collectors;
 public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y extends IMessage> implements IMessageProcessor<X, Y> {
 
     private static final Logger _logger = ENodeLogger.getLog();
-    private final IScheduleService _scheduleService;
 
     // AggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
 
@@ -30,16 +30,18 @@ public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y exten
 
     private final String _taskName;
     private ConcurrentMap<String, ProcessingMessageMailbox<X, Y>> _mailboxDict;
+
+    @Autowired
+    private IScheduleService _scheduleService;
+
+    @Autowired
     private IProcessingMessageScheduler<X, Y> _processingMessageScheduler;
+
+    @Autowired
     private IProcessingMessageHandler<X, Y> _processingMessageHandler;
 
-    public DefaultMessageProcessor(IProcessingMessageScheduler<X, Y> processingMessageScheduler,
-                                   IProcessingMessageHandler<X, Y> processingMessageHandler,
-                                   IScheduleService scheduleService) {
+    public DefaultMessageProcessor() {
         _mailboxDict = new ConcurrentHashMap<>();
-        _processingMessageScheduler = processingMessageScheduler;
-        _processingMessageHandler = processingMessageHandler;
-        _scheduleService = scheduleService;
         _taskName = "CleanInactiveAggregates_" + System.nanoTime() + new Random().nextInt(10000);
     }
 

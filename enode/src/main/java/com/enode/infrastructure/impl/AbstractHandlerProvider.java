@@ -1,5 +1,6 @@
 package com.enode.infrastructure.impl;
 
+import com.enode.common.Constants;
 import com.enode.common.container.IObjectContainer;
 import com.enode.infrastructure.IAssemblyInitializer;
 import com.enode.infrastructure.IObjectProxy;
@@ -84,7 +85,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
 
     private int getHandleMethodPriority(THandlerProxyInterface handler) {
         Method method = handler.getMethod();
-        if ("handleAsync".equals(method.getName())) {
+        if (Constants.HANDLE_METHOD.equals(method.getName())) {
             int priority = 0;
             Priority methodPriority = method.getAnnotation(Priority.class);
             if (methodPriority != null) {

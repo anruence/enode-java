@@ -4,6 +4,7 @@ import com.enode.commanding.ICommand;
 import com.enode.commanding.ICommandAsyncHandler;
 import com.enode.commanding.ICommandAsyncHandlerProvider;
 import com.enode.commanding.ICommandAsyncHandlerProxy;
+import com.enode.common.Constants;
 import com.enode.common.container.IObjectContainer;
 import com.enode.infrastructure.impl.AbstractHandlerProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class DefaultCommandAsyncHandlerProvider extends AbstractHandlerProvider<
 
     @Override
     protected boolean isHandleMethodMatch(Method method) {
-        if (!"handleAsync".equals(method.getName())) {
+        if (!Constants.HANDLE_METHOD.equals(method.getName())) {
             return false;
         }
         if (method.getParameterTypes().length != 1) {

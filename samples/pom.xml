@@ -8,12 +8,15 @@
         <version>1.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <groupId>com.enode.samples</groupId>
     <artifactId>samples</artifactId>
-    <packaging>pom</packaging>
     <version>1.0.0</version>
-
+    <packaging>pom</packaging>
     <modules>
-        <module>note</module>
+        <module>command-consumer</module>
+        <module>event-consumer</module>
+        <module>command-sender</module>
+        <module>domain</module>
     </modules>
     <dependencies>
         <dependency>
@@ -29,8 +32,9 @@
             <artifactId>enode</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
+            <groupId>com.enode</groupId>
+            <artifactId>rocketmq</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 </project>

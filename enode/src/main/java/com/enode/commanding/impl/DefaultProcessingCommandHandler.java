@@ -48,29 +48,30 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     @Autowired
     private IJsonSerializer _jsonSerializer;
+
     @Autowired
     private IEventStore _eventStore;
+
     @Autowired
     private ICommandHandlerProvider _commandHandlerProvider;
+
     @Autowired
     private ICommandAsyncHandlerProvider _commandAsyncHandlerProvider;
+
     @Autowired
     private ITypeNameProvider _typeNameProvider;
 
+    @Autowired
     private IEventService _eventService;
 
     @Autowired
     private IMessagePublisher<IApplicationMessage> _applicationMessagePublisher;
-    @Autowired
-    private IMessagePublisher<IPublishableException> _exceptionPublisher;
-    @Autowired
-    private IOHelper _ioHelper;
 
     @Autowired
-    public DefaultProcessingCommandHandler(IEventService eventService) {
-        _eventService = eventService;
-        _eventService.setProcessingCommandHandler(this);
-    }
+    private IMessagePublisher<IPublishableException> _exceptionPublisher;
+
+    @Autowired
+    private IOHelper _ioHelper;
 
     @Override
     public CompletableFuture handle(ProcessingCommand processingCommand) {

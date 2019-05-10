@@ -1,5 +1,6 @@
 package com.enode.infrastructure.impl;
 
+import com.enode.common.Constants;
 import com.enode.common.container.IObjectContainer;
 import com.enode.eventing.IDomainEvent;
 import com.enode.infrastructure.IMessageHandlerProxy3;
@@ -48,7 +49,7 @@ public class DefaultThreeMessageHandlerProvider extends AbstractHandlerProvider<
 
     @Override
     protected boolean isHandleMethodMatch(Method method) {
-        return "handleAsync".equals(method.getName())
+        return Constants.HANDLE_METHOD.equals(method.getName())
                 && method.getParameterTypes().length == 3
                 && IDomainEvent.class.isAssignableFrom(method.getParameterTypes()[0])
                 && IDomainEvent.class.isAssignableFrom(method.getParameterTypes()[1])

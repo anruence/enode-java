@@ -3,15 +3,15 @@ package com.enode.infrastructure;
 import java.util.Date;
 
 public class TwoMessageHandleRecord {
-    public String messageId1;
-    public String messageId2;
-    public String message1TypeName;
-    public String message2TypeName;
-    public String handlerTypeName;
-    public String aggregateRootTypeName;
-    public String aggregateRootId;
-    public int version;
-    public Date createdOn;
+    private String messageId1;
+    private String messageId2;
+    private String message1TypeName;
+    private String message2TypeName;
+    private String handlerTypeName;
+    private String aggregateRootTypeName;
+    private String aggregateRootId;
+    private int version;
+    private Date createdOn;
 
     public String getMessageId1() {
         return messageId1;

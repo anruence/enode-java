@@ -13,7 +13,7 @@ public class ThreeMessageHandleRecord {
     private String aggregateRootTypeName;
     private String aggregateRootId;
     private int version;
-    private Date CreatedOn;
+    private Date createdOn;
 
     public String getMessageId1() {
         return messageId1;
@@ -96,10 +96,10 @@ public class ThreeMessageHandleRecord {
     }
 
     public Date getCreatedOn() {
-        return CreatedOn;
+        return createdOn;
     }
 
     public void setCreatedOn(Date createdOn) {
-        CreatedOn = createdOn;
+        this.createdOn = createdOn;
     }
 }

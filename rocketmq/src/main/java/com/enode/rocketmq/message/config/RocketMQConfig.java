@@ -12,16 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class RocketMQConfig {
 
-    public int getRegisterFlag() {
-        return registerFlag;
-    }
-
-    public void setRegisterFlag(int registerFlag) {
-        this.registerFlag = registerFlag;
-    }
-
-    private int registerFlag;
-
     //ENode Components
     public static final int COMMAND_SERVICE = 1;
     public static final int DOMAIN_EVENT_PUBLISHER = 2;
@@ -31,40 +21,38 @@ public class RocketMQConfig {
     public static final int DOMAIN_EVENT_CONSUMER = 32;
     public static final int APPLICATION_MESSAGE_CONSUMER = 64;
     public static final int EXCEPTION_CONSUMER = 128;
-    //Default Composite Components
-
     public static final int PUBLISHERS = COMMAND_SERVICE | DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER;
-
     public static final int CONSUMERS = COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
-
     public static final int ALL_COMPONENTS = PUBLISHERS | CONSUMERS;
-
+    //Default Composite Components
+    private int registerFlag;
     /**
      * use rocketmq as CommandBus, EventBus
      */
     @Autowired(required = false)
     private RocketMQCommandConsumer commandConsumer;
-
     @Autowired(required = false)
     private RocketMQDomainEventConsumer domainEventConsumer;
-
     @Autowired(required = false)
     private RocketMQApplicationMessageConsumer applicationMessageConsumer;
-
     @Autowired(required = false)
     private RocketMQPublishableExceptionConsumer publishableExceptionConsumer;
-
     @Autowired(required = false)
     private RocketMQCommandService commandService;
-
     @Autowired(required = false)
     private RocketMQDomainEventPublisher domainEventPublisher;
-
     @Autowired(required = false)
     private RocketMQApplicationMessagePublisher applicationMessagePublisher;
-
     @Autowired(required = false)
     private RocketMQPublishableExceptionPublisher exceptionPublisher;
+
+    public int getRegisterFlag() {
+        return registerFlag;
+    }
+
+    public void setRegisterFlag(int registerFlag) {
+        this.registerFlag = registerFlag;
+    }
 
     private boolean hasComponent(int componentsFlag, int checkComponent) {
         return (componentsFlag & checkComponent) == checkComponent;

@@ -14,6 +14,7 @@ public class RocketMQApplicationMessagePublisher extends ApplicationMessagePubli
 
     @Autowired
     private SendRocketMQService _sendMessageService;
+    private DefaultMQProducer producer;
 
     public DefaultMQProducer getProducer() {
         return producer;
@@ -22,8 +23,6 @@ public class RocketMQApplicationMessagePublisher extends ApplicationMessagePubli
     public void setProducer(DefaultMQProducer producer) {
         this.producer = producer;
     }
-
-    private DefaultMQProducer producer;
 
     @Override
     public CompletableFuture<AsyncTaskResult> publishAsync(IApplicationMessage message) {

@@ -16,7 +16,7 @@ import com.enode.queue.SendReplyService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class DomainEventConsumer implements IMessageHandler {
+public abstract class DomainEventConsumer implements IMessageHandler {
 
     private static final Logger _logger = ENodeLogger.getLog();
 
@@ -34,7 +34,7 @@ public class DomainEventConsumer implements IMessageHandler {
     @Autowired
     protected IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> _processor;
 
-    protected boolean _sendEventHandledMessage;
+    protected boolean _sendEventHandledMessage = true;
 
     public SendReplyService getSendReplyService() {
         return _sendReplyService;

@@ -12,6 +12,10 @@ import java.util.concurrent.CompletableFuture;
 
 public class RocketMQPublishableExceptionPublisher extends PublishableExceptionPublisher {
 
+    @Autowired
+    protected SendRocketMQService _sendMessageService;
+    private DefaultMQProducer producer;
+
     public DefaultMQProducer getProducer() {
         return producer;
     }
@@ -19,11 +23,6 @@ public class RocketMQPublishableExceptionPublisher extends PublishableExceptionP
     public void setProducer(DefaultMQProducer producer) {
         this.producer = producer;
     }
-
-    private DefaultMQProducer producer;
-
-    @Autowired
-    protected SendRocketMQService _sendMessageService;
 
     @Override
     public CompletableFuture<AsyncTaskResult> publishAsync(IPublishableException exception) {
