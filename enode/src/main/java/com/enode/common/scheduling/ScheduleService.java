@@ -7,9 +7,9 @@ import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class ScheduleService implements IScheduleService {
@@ -22,8 +22,7 @@ public class ScheduleService implements IScheduleService {
     private ScheduledExecutorService scheduledThreadPool;
 
     public ScheduleService() {
-        scheduledThreadPool = Executors.newScheduledThreadPool(2,
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ScheduleService-%d").build());
+        scheduledThreadPool = new ScheduledThreadPoolExecutor(2, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ScheduleService-%d").build());
     }
 
     @Override

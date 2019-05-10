@@ -9,6 +9,7 @@ import com.enode.common.remoting.exception.RemotingSendRequestException;
 import com.enode.common.remoting.exception.RemotingTimeoutException;
 import com.enode.common.remoting.exception.RemotingTooMuchRequestException;
 import com.enode.common.remoting.protocol.RemotingCommand;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -34,9 +35,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class NettyRemotingServer extends NettyRemotingAbstract implements RemotingServer {
@@ -50,7 +52,8 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
     private final ChannelEventListener channelEventListener;
 
-    private final Timer timer = new Timer("NettyServerKeepingService", true);
+    private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("NettyServerKeepingService-%d").build());
+
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
     private int port = 0;
@@ -66,15 +69,6 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
         this.serverBootstrap = new ServerBootstrap();
         this.nettyServerConfig = nettyServerConfig;
         this.channelEventListener = channelEventListener;
-
-        /*eventLoopGroupBoss = new NioEventLoopGroup(1, new ThreadFactory() {
-            private AtomicInteger threadIndex = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(Runnable r) {
-                return new Thread(r, String.format("NettyServerBoss_%d", this.threadIndex.incrementAndGet()));
-            }
-        });*/
 
         if (useEpoll()) {
             eventLoopGroupBoss = new EpollEventLoopGroup(1, new ThreadFactory() {
@@ -178,33 +172,25 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             this.nettyEventExecutor.start();
         }
 
-        this.timer.scheduleAtFixedRate(new TimerTask() {
-
-            @Override
-            public void run() {
-                try {
-                    NettyRemotingServer.this.scanResponseTable();
-                } catch (Throwable e) {
-                    log.error("scanResponseTable exception", e);
-                }
+        this.executorService.scheduleAtFixedRate(() -> {
+            try {
+                NettyRemotingServer.this.scanResponseTable();
+            } catch (Throwable e) {
+                log.error("scanResponseTable exception", e);
             }
-        }, 1000 * 3, 1000);
+        }, 1000 * 3, 1000, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void shutdown() {
         try {
-            if (this.timer != null) {
-                this.timer.cancel();
-            }
+            this.executorService.shutdown();
 
             this.eventLoopGroupBoss.shutdownGracefully();
 
             this.eventLoopGroupSelector.shutdownGracefully();
 
-            if (this.nettyEventExecutor != null) {
-                this.nettyEventExecutor.shutdown();
-            }
+            this.nettyEventExecutor.shutdown();
 
             if (this.defaultEventExecutorGroup != null) {
                 this.defaultEventExecutorGroup.shutdownGracefully();

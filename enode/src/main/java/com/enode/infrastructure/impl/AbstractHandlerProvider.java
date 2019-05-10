@@ -132,7 +132,14 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                 MethodHandle handleMethod = lookup.findVirtual(handlerType, method.getName(), MethodType.methodType(method.getReturnType(), method.getParameterTypes()));
                 TKey key = getKey(method);
                 List<THandlerProxyInterface> handlers = _handlerDict.computeIfAbsent(key, k -> new ArrayList<>());
+                IObjectContainer objectContainer = getObjectContainer();
+                if (objectContainer == null) {
+                    throw new NullPointerException("IObjectContainer is null");
+                }
                 THandlerProxyInterface handlerProxy = getObjectContainer().resolve(getHandlerProxyImplementationType());
+                if (handlerProxy == null) {
+                    throw new NullPointerException("THandlerProxyInterface is null, class:" + getGenericHandlerType().getName());
+                }
                 handlerProxy.setHandlerType(handlerType);
                 handlerProxy.setMethod(method);
                 handlerProxy.setMethodHandle(handleMethod);

@@ -10,6 +10,7 @@ import com.enode.common.remoting.exception.RemotingSendRequestException;
 import com.enode.common.remoting.exception.RemotingTimeoutException;
 import com.enode.common.remoting.exception.RemotingTooMuchRequestException;
 import com.enode.common.remoting.protocol.RemotingCommand;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -33,10 +34,10 @@ import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,9 +55,10 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     private final Lock lockChannelTables = new ReentrantLock();
     private final ConcurrentMap<String /* addr */, ChannelWrapper> channelTables = new ConcurrentHashMap<String, ChannelWrapper>();
 
-    private final Timer timer = new Timer("ClientHouseKeepingService", true);
+    private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ClientHouseKeepingService-%d").build());
 
     private final ChannelEventListener channelEventListener;
+
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
     public NettyRemotingClient(final NettyClientConfig nettyClientConfig) {
@@ -113,16 +115,13 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
                     }
                 });
 
-        this.timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    NettyRemotingClient.this.scanResponseTable();
-                } catch (Throwable e) {
-                    log.error("scanResponseTable exception", e);
-                }
+        this.executorService.scheduleAtFixedRate(() -> {
+            try {
+                NettyRemotingClient.this.scanResponseTable();
+            } catch (Throwable e) {
+                log.error("scanResponseTable exception", e);
             }
-        }, 1000 * 3, 1000);
+        }, 1000 * 3, 1000, TimeUnit.MILLISECONDS);
 
         if (this.channelEventListener != null) {
             this.nettyEventExecutor.start();
@@ -132,7 +131,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     @Override
     public void shutdown() {
         try {
-            this.timer.cancel();
+            this.executorService.shutdown();
 
             for (ChannelWrapper cw : this.channelTables.values()) {
                 this.closeChannel(null, cw.getChannel());

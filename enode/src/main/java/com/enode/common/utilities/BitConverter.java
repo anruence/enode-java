@@ -3,7 +3,8 @@ package com.enode.common.utilities;
 import java.nio.charset.Charset;
 
 public class BitConverter {
-    private static final Charset utf8 = Charset.forName("utf-8");
+
+    private static final Charset UTF_8 = Charset.forName("utf-8");
 
     public static byte[] getBytes(short v) {
         return new byte[]{(byte) v, (byte) (v >> 8)};
@@ -18,7 +19,7 @@ public class BitConverter {
     }
 
     public static byte[] getBytes(String v) {
-        return v.getBytes(utf8);
+        return v.getBytes(UTF_8);
     }
 
     public static short toShort(byte[] b) {
@@ -35,6 +36,6 @@ public class BitConverter {
     }
 
     public static String toString(byte[] b) {
-        return new String(b, utf8);
+        return new String(b, UTF_8);
     }
 }

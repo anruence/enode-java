@@ -1,6 +1,5 @@
 package com.enode.domain.impl;
 
-import com.enode.common.utilities.CompletableFutureUtil;
 import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateStorage;
 import com.enode.domain.IMemoryCache;
@@ -26,11 +25,11 @@ public class DefaultRepository implements IRepository {
             throw new NullPointerException("aggregateRootId");
         }
         CompletableFuture<T> future = _memoryCache.getAsync(aggregateRootId, aggregateRootType);
-        return future.thenApply(aggregateRoot -> {
+        return future.thenCompose(aggregateRoot -> {
             if (aggregateRoot == null) {
-                return CompletableFutureUtil.getValue(_aggregateRootStorage.getAsync(aggregateRootType, aggregateRootId.toString()));
+                return _aggregateRootStorage.getAsync(aggregateRootType, aggregateRootId.toString());
             }
-            return aggregateRoot;
+            return CompletableFuture.completedFuture(aggregateRoot);
         });
     }
 

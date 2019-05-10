@@ -28,14 +28,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MysqlEventStore implements IEventStore {
 
     private static final Logger _logger = ENodeLogger.getLog();
 
-    private static final String EventTableNameFormat = "%s_%s";
+    private static final String EVENT_TABLE_NAME_FORMAT = "%s_%s";
 
     private final String _tableName;
     private final int _tableCount;
@@ -81,7 +83,9 @@ public class MysqlEventStore implements IEventStore {
         _eventSerializer = objectContainer.resolve(IEventSerializer.class);
         _ioHelper = objectContainer.resolve(IOHelper.class);
         _queryRunner = new QueryRunner(ds);
-        executor = Executors.newFixedThreadPool(4,
+        executor = new ThreadPoolExecutor(4, 4,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(),
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MysqlEventStoreExecutor-%d").build());
     }
 
@@ -281,7 +285,7 @@ public class MysqlEventStore implements IEventStore {
 
         int tableIndex = getTableIndex(aggregateRootId);
 
-        return String.format(EventTableNameFormat, _tableName, tableIndex);
+        return String.format(EVENT_TABLE_NAME_FORMAT, _tableName, tableIndex);
     }
 
     private DomainEventStream convertFrom(StreamRecord record) {

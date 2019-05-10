@@ -13,18 +13,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RocketMQConfig {
 
     //ENode Components
-    public static final int COMMAND_SERVICE = 1;
-    public static final int DOMAIN_EVENT_PUBLISHER = 2;
-    public static final int APPLICATION_MESSAGE_PUBLISHER = 4;
-    public static final int EXCEPTION_PUBLISHER = 8;
-    public static final int COMMAND_CONSUMER = 16;
-    public static final int DOMAIN_EVENT_CONSUMER = 32;
-    public static final int APPLICATION_MESSAGE_CONSUMER = 64;
-    public static final int EXCEPTION_CONSUMER = 128;
+    public static final int COMMAND_SERVICE = 1 << 0;
+    public static final int DOMAIN_EVENT_PUBLISHER = 1 << 1;
+    public static final int APPLICATION_MESSAGE_PUBLISHER = 1 << 2;
+    public static final int EXCEPTION_PUBLISHER = 1 << 3;
+    public static final int COMMAND_CONSUMER = 1 << 4;
+    public static final int DOMAIN_EVENT_CONSUMER = 1 << 5;
+    public static final int APPLICATION_MESSAGE_CONSUMER = 1 << 6;
+    public static final int EXCEPTION_CONSUMER = 1 << 7;
     public static final int PUBLISHERS = COMMAND_SERVICE | DOMAIN_EVENT_PUBLISHER | APPLICATION_MESSAGE_PUBLISHER | EXCEPTION_PUBLISHER;
     public static final int CONSUMERS = COMMAND_CONSUMER | DOMAIN_EVENT_CONSUMER | APPLICATION_MESSAGE_CONSUMER | EXCEPTION_CONSUMER;
     public static final int ALL_COMPONENTS = PUBLISHERS | CONSUMERS;
-    //Default Composite Components
+
     private int registerFlag;
     /**
      * use rocketmq as CommandBus, EventBus
@@ -62,53 +62,45 @@ public class RocketMQConfig {
         return (componentsFlag & checkComponents) > 0;
     }
 
-
     public RocketMQConfig start() {
         //Start MQConsumer and any register consumers(RocketMQCommandConsumer、RocketMQDomainEventConsumer、RocketMQApplicationMessageConsumer、RocketMQPublishableExceptionConsumer)
-        if (hasAnyComponents(registerFlag, CONSUMERS)) {
-            //RocketMQCommandConsumer
-            if (hasComponent(registerFlag, COMMAND_CONSUMER)) {
-                commandConsumer.start();
-            }
-
-            // RocketMQDomainEventConsumer
-            if (hasComponent(registerFlag, DOMAIN_EVENT_CONSUMER)) {
-                //Domain event topics
-                domainEventConsumer.start();
-            }
-
-            // RocketMQApplicationMessageConsumer
-            if (hasComponent(registerFlag, APPLICATION_MESSAGE_CONSUMER)) {
-                //Application message topics
-                applicationMessageConsumer.start();
-            }
-
-            // RocketMQPublishableExceptionConsumer
-            if (hasComponent(registerFlag, EXCEPTION_CONSUMER)) {
-                publishableExceptionConsumer.start();
-            }
+        if (hasComponent(registerFlag, COMMAND_CONSUMER)) {
+            commandConsumer.start();
         }
 
-        if (hasAnyComponents(registerFlag, PUBLISHERS)) {
-            //RocketMQCommandService
-            if (hasComponent(registerFlag, COMMAND_SERVICE)) {
-                commandService.start();
-            }
+        // RocketMQDomainEventConsumer
+        if (hasComponent(registerFlag, DOMAIN_EVENT_CONSUMER)) {
+            domainEventConsumer.start();
+        }
 
-            //RocketMQDomainEventPublisher
-            if (hasComponent(registerFlag, DOMAIN_EVENT_PUBLISHER)) {
-                domainEventPublisher.start();
-            }
+        // RocketMQApplicationMessageConsumer
+        if (hasComponent(registerFlag, APPLICATION_MESSAGE_CONSUMER)) {
+            applicationMessageConsumer.start();
+        }
 
-            //RocketMQApplicationMessagePublisher
-            if (hasComponent(registerFlag, APPLICATION_MESSAGE_PUBLISHER)) {
-                applicationMessagePublisher.start();
-            }
+        // RocketMQPublishableExceptionConsumer
+        if (hasComponent(registerFlag, EXCEPTION_CONSUMER)) {
+            publishableExceptionConsumer.start();
+        }
 
-            //RocketMQPublishableExceptionPublisher
-            if (hasComponent(registerFlag, EXCEPTION_PUBLISHER)) {
-                exceptionPublisher.start();
-            }
+        //RocketMQCommandService
+        if (hasComponent(registerFlag, COMMAND_SERVICE)) {
+            commandService.start();
+        }
+
+        //RocketMQDomainEventPublisher
+        if (hasComponent(registerFlag, DOMAIN_EVENT_PUBLISHER)) {
+            domainEventPublisher.start();
+        }
+
+        //RocketMQApplicationMessagePublisher
+        if (hasComponent(registerFlag, APPLICATION_MESSAGE_PUBLISHER)) {
+            applicationMessagePublisher.start();
+        }
+
+        //RocketMQPublishableExceptionPublisher
+        if (hasComponent(registerFlag, EXCEPTION_PUBLISHER)) {
+            exceptionPublisher.start();
         }
         return this;
     }
@@ -116,49 +108,44 @@ public class RocketMQConfig {
     public RocketMQConfig shutdown() {
         //Shutdown MQConsumer and any register consumers(RocketMQCommandConsumer、RocketMQDomainEventConsumer、RocketMQApplicationMessageConsumer、RocketMQPublishableExceptionConsumer)
 
-        if (hasAnyComponents(registerFlag, CONSUMERS)) {
-            //RocketMQCommandConsumer
-            if (hasComponent(registerFlag, COMMAND_CONSUMER)) {
-                commandConsumer.shutdown();
-            }
-
-            //RocketMQDomainEventConsumer
-            if (hasComponent(registerFlag, DOMAIN_EVENT_CONSUMER)) {
-                domainEventConsumer.shutdown();
-            }
-
-            //RocketMQApplicationMessageConsumer
-            if (hasComponent(registerFlag, APPLICATION_MESSAGE_CONSUMER)) {
-                applicationMessageConsumer.shutdown();
-            }
-
-            //RocketMQPublishableExceptionConsumer
-            if (hasComponent(registerFlag, EXCEPTION_CONSUMER)) {
-                publishableExceptionConsumer.shutdown();
-            }
+        //RocketMQCommandConsumer
+        if (hasComponent(registerFlag, COMMAND_CONSUMER)) {
+            commandConsumer.shutdown();
         }
 
-        // Shutdown MQProducer and any register publishers(CommandService、DomainEventPublisher、ApplicationMessagePublisher、PublishableExceptionPublisher)
-        if (hasAnyComponents(registerFlag, PUBLISHERS)) {
-            //RocketMQCommandService
-            if (hasComponent(registerFlag, COMMAND_SERVICE)) {
-                commandService.shutdown();
-            }
+        //RocketMQDomainEventConsumer
+        if (hasComponent(registerFlag, DOMAIN_EVENT_CONSUMER)) {
+            domainEventConsumer.shutdown();
+        }
 
-            //RocketMQDomainEventPublisher
-            if (hasComponent(registerFlag, DOMAIN_EVENT_PUBLISHER)) {
-                domainEventPublisher.shutdown();
-            }
+        //RocketMQApplicationMessageConsumer
+        if (hasComponent(registerFlag, APPLICATION_MESSAGE_CONSUMER)) {
+            applicationMessageConsumer.shutdown();
+        }
 
-            //RocketMQApplicationMessagePublisher
-            if (hasComponent(registerFlag, APPLICATION_MESSAGE_PUBLISHER)) {
-                applicationMessagePublisher.shutdown();
-            }
+        //RocketMQPublishableExceptionConsumer
+        if (hasComponent(registerFlag, EXCEPTION_CONSUMER)) {
+            publishableExceptionConsumer.shutdown();
+        }
 
-            //RocketMQPublishableExceptionPublisher
-            if (hasComponent(registerFlag, EXCEPTION_PUBLISHER)) {
-                exceptionPublisher.shutdown();
-            }
+        //RocketMQCommandService
+        if (hasComponent(registerFlag, COMMAND_SERVICE)) {
+            commandService.shutdown();
+        }
+
+        //RocketMQDomainEventPublisher
+        if (hasComponent(registerFlag, DOMAIN_EVENT_PUBLISHER)) {
+            domainEventPublisher.shutdown();
+        }
+
+        //RocketMQApplicationMessagePublisher
+        if (hasComponent(registerFlag, APPLICATION_MESSAGE_PUBLISHER)) {
+            applicationMessagePublisher.shutdown();
+        }
+
+        //RocketMQPublishableExceptionPublisher
+        if (hasComponent(registerFlag, EXCEPTION_PUBLISHER)) {
+            exceptionPublisher.shutdown();
         }
         return this;
     }

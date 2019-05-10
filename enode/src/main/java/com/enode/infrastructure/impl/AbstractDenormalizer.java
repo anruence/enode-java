@@ -21,7 +21,6 @@ public abstract class AbstractDenormalizer implements IMessageHandler {
                 _queryRunner.update(sql, params);
                 return AsyncTaskResult.Success;
             } catch (SQLException e) {
-//                return new AsyncTaskResult(AsyncTaskStatus.Failed, e.getMessage());
                 throw new RuntimeException(e);
             }
         });

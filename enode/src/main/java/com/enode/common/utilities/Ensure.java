@@ -37,11 +37,6 @@ public class Ensure {
         }
     }
 
-    /*public static void notEmptyGuid(Guid guid, String argumentName) {
-        if (Guid.Empty == guid)
-            throw new IllegalArgumentException(argumentName, argumentName + " shoud be non-empty GUID.");
-    }*/
-
     public static void equal(int expected, int actual, String argumentName) {
         if (expected != actual) {
             throw new IllegalArgumentException(String.format("%s expected value: %d, actual value: %d", argumentName, expected, actual));

@@ -10,7 +10,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public abstract class AbstractAsyncDenormalizer {
@@ -21,7 +23,11 @@ public abstract class AbstractAsyncDenormalizer {
     public AbstractAsyncDenormalizer(DataSource ds) {
         this.ds = ds;
         this._queryRunner = new QueryRunner(ds);
-        executor = Executors.newFixedThreadPool(4, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("AsyncDenormalizerExecutor-%d").build());
+        executor = new ThreadPoolExecutor(4, 4,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("AsyncDenormalizerExecutor-%d").build()
+        );
     }
 
     public CompletableFuture<AsyncTaskResult> tryExecuteAsync(Function<QueryRunner, AsyncTaskResult> executer) {

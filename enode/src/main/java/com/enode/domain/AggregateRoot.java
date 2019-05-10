@@ -18,10 +18,17 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot {
 
+    /**
+     * dynamic inject through ApplicationContext instance
+     */
     private static IAggregateRootInternalHandlerProvider _eventHandlerProvider;
+
     protected TAggregateRootId _id;
+
     private List<IDomainEvent> _emptyEvents = new ArrayList<>();
+
     private Queue<IDomainEvent> _uncommittedEvents;
+
     private int _version;
 
     protected AggregateRoot() {

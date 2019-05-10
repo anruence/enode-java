@@ -1,7 +1,6 @@
 package com.enode.domain.impl;
 
 import com.enode.common.io.AsyncTaskResult;
-import com.enode.common.utilities.CompletableFutureUtil;
 import com.enode.domain.IAggregateRoot;
 import com.enode.domain.IAggregateRootFactory;
 import com.enode.domain.IAggregateSnapshotter;
@@ -16,9 +15,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class EventSourcingAggregateStorage implements IAggregateStorage {
 
-    private static final int minVersion = 1;
+    private static final int MIN_VERSION = 1;
 
-    private static final int maxVersion = Integer.MAX_VALUE;
+    private static final int MAX_VERSION = Integer.MAX_VALUE;
 
     @Autowired
     private IAggregateRootFactory _aggregateRootFactory;
@@ -42,24 +41,28 @@ public class EventSourcingAggregateStorage implements IAggregateStorage {
         }
 
         CompletableFuture<T> aggregateRootFuture = tryGetFromSnapshot(aggregateRootId, aggregateRootType);
-        return aggregateRootFuture.thenApply(aggregateRoot -> {
+
+        // 使用
+        CompletableFuture<T> ret = aggregateRootFuture.thenCompose(aggregateRoot -> {
             if (aggregateRoot != null) {
-                return aggregateRoot;
+                return CompletableFuture.completedFuture(aggregateRoot);
             }
             String aggregateRootTypeName = _typeNameProvider.getTypeName(aggregateRootType);
-            CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> eventStreamsFuture = _eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, minVersion, Integer.MAX_VALUE);
-            // block to retrieve data
-            List<DomainEventStream> eventStreams = CompletableFutureUtil.getValue(eventStreamsFuture).getData();
-            T reAggregateRoot = rebuildAggregateRoot(aggregateRootType, eventStreams);
-            return reAggregateRoot;
+            CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> eventStreamsFuture = _eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, MIN_VERSION, Integer.MAX_VALUE);
+            return eventStreamsFuture.thenApply(eventStreams -> {
+                List<DomainEventStream> domainEventStreams = eventStreams.getData();
+                T reAggregateRoot = rebuildAggregateRoot(aggregateRootType, domainEventStreams);
+                return reAggregateRoot;
+            });
         });
+        return ret;
     }
 
     private <T extends IAggregateRoot> CompletableFuture<T> tryGetFromSnapshot(String aggregateRootId, Class<T> aggregateRootType) {
         CompletableFuture<T> aggregateRootFuture = _aggregateSnapshotter.restoreFromSnapshotAsync(aggregateRootType, aggregateRootId);
-        return aggregateRootFuture.thenApply((aggregateRoot) -> {
+        CompletableFuture<T> ret = aggregateRootFuture.thenCompose((aggregateRoot) -> {
             if (aggregateRoot == null) {
-                return null;
+                return CompletableFuture.completedFuture(null);
             }
             if (aggregateRoot.getClass() != aggregateRootType || !aggregateRoot.uniqueId().equals(aggregateRootId)) {
                 throw new RuntimeException(String.format("AggregateRoot recovery from snapshot is invalid as the aggregateRootType or aggregateRootId is not matched. Snapshot: [aggregateRootType:%s,aggregateRootId:%s], expected: [aggregateRootType:%s,aggregateRootId:%s]",
@@ -70,10 +73,13 @@ public class EventSourcingAggregateStorage implements IAggregateStorage {
             }
             String aggregateRootTypeName = _typeNameProvider.getTypeName(aggregateRootType);
             CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> eventStreamsFuture = _eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, aggregateRoot.version() + 1, Integer.MAX_VALUE);
-            List<DomainEventStream> eventStreamsAfterSnapshot = CompletableFutureUtil.getValue(eventStreamsFuture).getData();
-            aggregateRoot.replayEvents(eventStreamsAfterSnapshot);
-            return aggregateRoot;
+            return eventStreamsFuture.thenApply(eventStreams -> {
+                List<DomainEventStream> eventStreamsAfterSnapshot = eventStreams.getData();
+                aggregateRoot.replayEvents(eventStreamsAfterSnapshot);
+                return aggregateRoot;
+            });
         });
+        return ret;
     }
 
     private <T extends IAggregateRoot> T rebuildAggregateRoot(Class<T> aggregateRootType, List<DomainEventStream> eventStreams) {

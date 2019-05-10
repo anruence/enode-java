@@ -10,7 +10,6 @@ import com.enode.common.extensions.ApplicationContextHelper;
 import com.enode.common.io.IOHelper;
 import com.enode.common.scheduling.ScheduleService;
 import com.enode.common.thirdparty.gson.GsonJsonSerializer;
-import com.enode.domain.IAggregateRepositoryProvider;
 import com.enode.domain.impl.DefaultAggregateRepositoryProvider;
 import com.enode.domain.impl.DefaultAggregateRootFactory;
 import com.enode.domain.impl.DefaultAggregateRootInternalHandlerProvider;

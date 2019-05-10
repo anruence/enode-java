@@ -3,7 +3,6 @@ package com.enode.samples.controller.note;
 import com.enode.commanding.CommandResult;
 import com.enode.commanding.CommandReturnType;
 import com.enode.common.io.AsyncTaskResult;
-import com.enode.common.utilities.CompletableFutureUtil;
 import com.enode.rocketmq.message.RocketMQCommandService;
 import com.enode.samples.commands.note.ChangeNoteTitleCommand;
 import com.enode.samples.commands.note.CreateNoteCommand;

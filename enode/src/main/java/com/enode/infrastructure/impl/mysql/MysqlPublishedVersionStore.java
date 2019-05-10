@@ -17,7 +17,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class MysqlPublishedVersionStore implements IPublishedVersionStore {
     private static final Logger _logger = ENodeLogger.getLog();
@@ -45,8 +47,10 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
 
         _ds = ds;
         _queryRunner = new QueryRunner(ds);
-
-        executor = Executors.newFixedThreadPool(4, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MysqlPublishedVersionStoreExecutor-%d").build());
+        executor = new ThreadPoolExecutor(4, 4,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(),
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MysqlPublishedVersionStoreExecutor-%d").build());
     }
 
     @Override

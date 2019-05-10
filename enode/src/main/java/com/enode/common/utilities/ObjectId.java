@@ -9,24 +9,24 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ObjectId {
-    private static final int __staticMachine;
-    private static final short __staticPid;
-    private static final AtomicInteger __staticIncrement;
-    private static String[] _lookup32 = new String[256];
+    private static final int STATIC_MACHINE;
+    private static final short STATIC_PID;
+    private static final AtomicInteger STATIC_INCREMENT;
+    private static String[] lookup32 = new String[256];
 
     static {
-        __staticMachine = getMachineHash();
-        __staticIncrement = new AtomicInteger(new Random().nextInt());
-        __staticPid = (short) getCurrentProcessId();
+        STATIC_MACHINE = getMachineHash();
+        STATIC_INCREMENT = new AtomicInteger(new Random().nextInt());
+        STATIC_PID = (short) getCurrentProcessId();
         for (int i = 0; i < 256; i++) {
-            _lookup32[i] = String.format("%02x", i);
+            lookup32[i] = String.format("%02x", i);
         }
     }
 
-    private long _timestamp;
-    private int _machine;
-    private short _pid;
-    private int _increment;
+    private long timestamp;
+    private int machine;
+    private short pid;
+    private int increment;
 
     public ObjectId(byte[] bytes) {
         if (bytes == null) {
@@ -48,10 +48,10 @@ public class ObjectId {
             throw new IllegalArgumentException("The increment value must be between 0 and 16777215 (it must fit in 3 bytes).");
         }
 
-        _timestamp = timestamp;
-        _machine = machine;
-        _pid = pid;
-        _increment = increment;
+        this.timestamp = timestamp;
+        this.machine = machine;
+        this.pid = pid;
+        this.increment = increment;
     }
 
     public static ObjectId generateNewId() {
@@ -63,8 +63,9 @@ public class ObjectId {
     }
 
     public static ObjectId generateNewId(long timestamp) {
-        int increment = __staticIncrement.incrementAndGet() & 0x00ffffff;// only use low order 3 bytes
-        return new ObjectId(timestamp, __staticMachine, __staticPid, increment);
+        // only use low order 3 bytes
+        int increment = STATIC_INCREMENT.incrementAndGet() & 0x00ffffff;
+        return new ObjectId(timestamp, STATIC_MACHINE, STATIC_PID, increment);
     }
 
     public static String generateNewStringId() {
@@ -101,7 +102,7 @@ public class ObjectId {
         }
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < bytes.length; i++) {
-            String val = _lookup32[bytes[i] & 0xff];
+            String val = lookup32[bytes[i] & 0xff];
             result.append(val);
         }
         return result.toString();
@@ -125,7 +126,8 @@ public class ObjectId {
 
     public static int getCurrentProcessId() {
         RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-        String name = runtime.getName(); // format: "pid@hostname"
+        // format: "pid@hostname"
+        String name = runtime.getName();
         try {
             return Integer.parseInt(name.substring(0, name.indexOf('@')));
         } catch (Exception e) {
@@ -134,23 +136,23 @@ public class ObjectId {
     }
 
     public long getTimestamp() {
-        return _timestamp;
+        return timestamp;
     }
 
     public Date getCreationTime() {
-        return new Date(_timestamp * 1000);
+        return new Date(timestamp * 1000);
     }
 
     public int getMachine() {
-        return _machine;
+        return machine;
     }
 
     public short getPid() {
-        return _pid;
+        return pid;
     }
 
     public int getIncrement() {
-        return _increment;
+        return increment;
     }
 
     public void unpack(byte[] bytes) {
@@ -160,14 +162,14 @@ public class ObjectId {
         if (bytes.length != 12) {
             throw new IllegalArgumentException("Byte array must be 12 bytes long.");
         }
-        _timestamp = ((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) | ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff);
-        _machine = ((bytes[4] & 0xff) << 16) | ((bytes[5] & 0xff) << 8) | (bytes[6] & 0xff);
-        _pid = (short) (((bytes[7] & 0xff) << 8) | (bytes[8] & 0xff));
-        _increment = ((bytes[9] & 0xff) << 16) | ((bytes[10] & 0xff) << 8) | (bytes[11] & 0xff);
+        timestamp = ((bytes[0] & 0xff) << 24) | ((bytes[1] & 0xff) << 16) | ((bytes[2] & 0xff) << 8) | (bytes[3] & 0xff);
+        machine = ((bytes[4] & 0xff) << 16) | ((bytes[5] & 0xff) << 8) | (bytes[6] & 0xff);
+        pid = (short) (((bytes[7] & 0xff) << 8) | (bytes[8] & 0xff));
+        increment = ((bytes[9] & 0xff) << 16) | ((bytes[10] & 0xff) << 8) | (bytes[11] & 0xff);
     }
 
     public byte[] toByteArray() {
-        return pack(_timestamp, _machine, _pid, _increment);
+        return pack(timestamp, machine, pid, increment);
     }
 
     @Override
