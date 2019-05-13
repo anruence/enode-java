@@ -385,6 +385,9 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     }
 
     enum HandlerFindStatus {
+        /**
+         *
+         */
         NotFound,
         Found,
         TooManyHandlerData,

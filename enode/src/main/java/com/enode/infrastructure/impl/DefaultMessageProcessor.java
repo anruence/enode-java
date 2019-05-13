@@ -29,6 +29,7 @@ public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y exten
     private final int _scanExpiredAggregateIntervalMilliseconds = 5000;
 
     private final String _taskName;
+
     private ConcurrentMap<String, ProcessingMessageMailbox<X, Y>> _mailboxDict;
 
     @Autowired

@@ -78,7 +78,6 @@ public class AppConfigCommandConsumer {
         return domainEventPublisher;
     }
 
-
     /**
      * 应用消息生产者，复用生产者实例发送到不同topic中
      *
@@ -107,12 +106,10 @@ public class AppConfigCommandConsumer {
         return exceptionPublisher;
     }
 
-
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public DefaultCommandProcessor defaultCommandProcessor() {
         return new DefaultCommandProcessor();
     }
-
 
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {

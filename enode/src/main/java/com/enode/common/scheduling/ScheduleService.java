@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class ScheduleService implements IScheduleService {
+
     private static final Logger _logger = ENodeLogger.getLog();
 
     private Object _lockObject = new Object();

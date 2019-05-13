@@ -18,7 +18,6 @@ import com.enode.domain.impl.DefaultMemoryCache;
 import com.enode.domain.impl.DefaultRepository;
 import com.enode.domain.impl.EventSourcingAggregateStorage;
 import com.enode.eventing.impl.DefaultEventSerializer;
-import com.enode.eventing.impl.InMemoryEventStore;
 import com.enode.infrastructure.impl.DefaultApplicationMessageProcessor;
 import com.enode.infrastructure.impl.DefaultDomainEventProcessor;
 import com.enode.infrastructure.impl.DefaultMessageDispatcher;
@@ -32,7 +31,6 @@ import com.enode.infrastructure.impl.DefaultTypeNameProvider;
 import com.enode.infrastructure.impl.MessageHandlerProxy1;
 import com.enode.infrastructure.impl.MessageHandlerProxy2;
 import com.enode.infrastructure.impl.MessageHandlerProxy3;
-import com.enode.infrastructure.impl.inmemory.InMemoryPublishedVersionStore;
 import com.enode.queue.SendReplyService;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
@@ -77,17 +75,18 @@ public class ENodeAutoConfiguration {
         return new DefaultProcessingMessageHandler();
     }
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public DefaultPublishableExceptionProcessor defaultPublishableExceptionProcessor() {
         return new DefaultPublishableExceptionProcessor();
     }
 
-    @Bean
+
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public DefaultApplicationMessageProcessor defaultApplicationMessageProcessor() {
         return new DefaultApplicationMessageProcessor();
     }
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public DefaultDomainEventProcessor defaultDomainEventProcessor() {
         return new DefaultDomainEventProcessor();
     }
@@ -96,7 +95,6 @@ public class ENodeAutoConfiguration {
     public SpringObjectContainer springObjectContainer() {
         return new SpringObjectContainer();
     }
-
 
     /**
      * 原型模式获取bean，每次新建代理执行
@@ -212,16 +210,6 @@ public class ENodeAutoConfiguration {
     @Bean
     public EventSourcingAggregateStorage eventSourcingAggregateStorage() {
         return new EventSourcingAggregateStorage();
-    }
-
-    @Bean
-    public InMemoryEventStore eventStore() {
-        return new InMemoryEventStore();
-    }
-
-    @Bean
-    public InMemoryPublishedVersionStore publishedVersionStore() {
-        return new InMemoryPublishedVersionStore();
     }
 }
 

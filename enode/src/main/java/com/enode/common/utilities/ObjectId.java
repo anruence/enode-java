@@ -114,7 +114,8 @@ public class ObjectId {
             MessageDigest md5 = MessageDigest.getInstance("md5");
             byte[] hash = md5.digest(hostName.getBytes());
 
-            return ((hash[0] & 0xff) << 16) | ((hash[1] & 0xff) << 8) | hash[2] & 0xff; // use first 3 bytes of hash
+            // use first 3 bytes of hash
+            return ((hash[0] & 0xff) << 16) | ((hash[1] & 0xff) << 8) | hash[2] & 0xff;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

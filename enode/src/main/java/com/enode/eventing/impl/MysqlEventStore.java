@@ -63,7 +63,6 @@ public class MysqlEventStore implements IEventStore {
             _bulkCopyTimeout = optionSetting.getOptionValue("BulkCopyTimeout") == null ? 0 : Integer.valueOf(optionSetting.getOptionValue("BulkCopyTimeout"));
 
         } else {
-            // TODO
             DefaultDBConfigurationSetting setting = new DefaultDBConfigurationSetting();
             _tableName = setting.getEventTableName();
             _tableCount = setting.getEventTableCount();
