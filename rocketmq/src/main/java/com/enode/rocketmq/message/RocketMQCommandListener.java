@@ -5,17 +5,15 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.queue.QueueMessage;
-import com.enode.queue.publishableexceptions.PublishableExceptionConsumer;
+import com.enode.queue.command.CommandListener;
 
 import java.util.List;
 
-public class RocketMQPublishableExceptionConsumer extends PublishableExceptionConsumer implements MessageListenerConcurrently {
-
+public class RocketMQCommandListener extends CommandListener implements MessageListenerConcurrently {
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
         QueueMessage queueMessage = RocketMQTool.covertToQueueMessage(msgs);
         handle(queueMessage, message -> {
-            return;
         });
         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
     }

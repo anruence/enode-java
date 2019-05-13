@@ -33,17 +33,13 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
     @Override
     public void handleAsync(X processingMessage) {
         if (processingMessage instanceof ProcessingDomainEventStreamMessage) {
-            handleAsyncDomain((ProcessingDomainEventStreamMessage) processingMessage);
+            handleMessageAsync((ProcessingDomainEventStreamMessage) processingMessage, 0);
             return;
         }
         CompletableFuture<AsyncTaskResult> asyncTaskResultCompletableFuture = _dispatcher.dispatchMessageAsync(processingMessage.getMessage());
         asyncTaskResultCompletableFuture.thenRun(() ->
                 processingMessage.complete()
         );
-    }
-
-    private void handleAsyncDomain(ProcessingDomainEventStreamMessage processingMessage) {
-        handleMessageAsync(processingMessage, 0);
     }
 
     public String getName() {

@@ -6,14 +6,11 @@ import com.enode.common.io.AsyncTaskResult;
 import com.enode.infrastructure.IApplicationMessage;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.applicationmessage.ApplicationMessagePublisher;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.CompletableFuture;
 
 public class RocketMQApplicationMessagePublisher extends ApplicationMessagePublisher {
 
-    @Autowired
-    private SendRocketMQService _sendMessageService;
     private DefaultMQProducer producer;
 
     public DefaultMQProducer getProducer() {
@@ -28,6 +25,6 @@ public class RocketMQApplicationMessagePublisher extends ApplicationMessagePubli
     public CompletableFuture<AsyncTaskResult> publishAsync(IApplicationMessage message) {
         QueueMessage queueMessage = createApplicationMessage(message);
         Message msg = RocketMQTool.covertToProducerRecord(queueMessage);
-        return _sendMessageService.sendMessageAsync(producer, msg, queueMessage.getRouteKey());
+        return SendRocketMQService.sendMessageAsync(producer, msg, queueMessage.getRouteKey());
     }
 }

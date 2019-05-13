@@ -13,11 +13,9 @@ import com.enode.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class ApplicationMessageConsumer implements IMessageHandler {
+public abstract class ApplicationMessageListener implements IMessageHandler {
 
     private static final Logger _logger = ENodeLogger.getLog();
-
-    protected String defaultMessageConsumerGroup = "ApplicationMessageConsumerGroup";
 
     @Autowired
     protected IJsonSerializer _jsonSerializer;
@@ -27,14 +25,6 @@ public class ApplicationMessageConsumer implements IMessageHandler {
 
     @Autowired
     protected IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage> _processor;
-
-    public ApplicationMessageConsumer start() {
-        return this;
-    }
-
-    public ApplicationMessageConsumer shutdown() {
-        return this;
-    }
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {

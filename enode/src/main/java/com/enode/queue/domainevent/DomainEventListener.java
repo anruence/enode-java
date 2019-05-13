@@ -16,11 +16,9 @@ import com.enode.queue.SendReplyService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class DomainEventConsumer implements IMessageHandler {
+public abstract class DomainEventListener implements IMessageHandler {
 
     private static final Logger _logger = ENodeLogger.getLog();
-
-    protected String defaultEventConsumerGroup = "EventConsumerGroup";
 
     @Autowired
     protected SendReplyService _sendReplyService;
@@ -44,25 +42,11 @@ public abstract class DomainEventConsumer implements IMessageHandler {
         return _sendEventHandledMessage;
     }
 
-    public DomainEventConsumer start() {
-        if (_sendEventHandledMessage) {
-            _sendReplyService.start();
-        }
-        return this;
-    }
-
-    public DomainEventConsumer shutdown() {
-        if (_sendEventHandledMessage) {
-            _sendReplyService.stop();
-        }
-        return this;
-    }
-
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
         EventStreamMessage message = _jsonSerializer.deserialize(queueMessage.getBody(), EventStreamMessage.class);
         DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
-        DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(DomainEventConsumer.this, domainEventStreamMessage, queueMessage, context);
+        DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(DomainEventListener.this, domainEventStreamMessage, queueMessage, context);
         ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
         _logger.info("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.id(), domainEventStreamMessage.aggregateRootStringId(), domainEventStreamMessage.aggregateRootTypeName(), domainEventStreamMessage.version());
         _processor.process(processingMessage);
@@ -85,11 +69,11 @@ public abstract class DomainEventConsumer implements IMessageHandler {
     }
 
     class DomainEventStreamProcessContext extends DefaultMessageProcessContext {
-        private final DomainEventConsumer _eventConsumer;
+        private final DomainEventListener _eventConsumer;
         private final DomainEventStreamMessage _domainEventStreamMessage;
 
         public DomainEventStreamProcessContext(
-                DomainEventConsumer eventConsumer, DomainEventStreamMessage domainEventStreamMessage,
+                DomainEventListener eventConsumer, DomainEventStreamMessage domainEventStreamMessage,
                 QueueMessage queueMessage, IMessageContext messageContext) {
             super(queueMessage, messageContext);
             _eventConsumer = eventConsumer;

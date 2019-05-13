@@ -15,11 +15,9 @@ import com.enode.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class PublishableExceptionConsumer implements IMessageHandler {
+public abstract class PublishableExceptionListener implements IMessageHandler {
 
     private static final Logger _logger = ENodeLogger.getLog();
-
-    protected String defaultEventConsumerGroup = "ExceptionConsumerGroup";
 
     @Autowired
     protected IJsonSerializer _jsonSerializer;
@@ -29,14 +27,6 @@ public class PublishableExceptionConsumer implements IMessageHandler {
 
     @Autowired
     protected IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> _publishableExceptionProcessor;
-
-    public PublishableExceptionConsumer start() {
-        return this;
-    }
-
-    public PublishableExceptionConsumer shutdown() {
-        return this;
-    }
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {

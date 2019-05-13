@@ -6,14 +6,10 @@ import com.enode.common.io.AsyncTaskResult;
 import com.enode.eventing.DomainEventStreamMessage;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.domainevent.DomainEventPublisher;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.CompletableFuture;
 
 public class RocketMQDomainEventPublisher extends DomainEventPublisher {
-
-    @Autowired
-    private SendRocketMQService _sendMessageService;
 
     private DefaultMQProducer producer;
 
@@ -21,7 +17,7 @@ public class RocketMQDomainEventPublisher extends DomainEventPublisher {
     public CompletableFuture<AsyncTaskResult> publishAsync(DomainEventStreamMessage eventStream) {
         QueueMessage queueMessage = createDomainEventStreamMessage(eventStream);
         Message message = RocketMQTool.covertToProducerRecord(queueMessage);
-        return _sendMessageService.sendMessageAsync(producer, message, queueMessage.getRouteKey());
+        return SendRocketMQService.sendMessageAsync(producer, message, queueMessage.getRouteKey());
     }
 
     public DefaultMQProducer getProducer() {

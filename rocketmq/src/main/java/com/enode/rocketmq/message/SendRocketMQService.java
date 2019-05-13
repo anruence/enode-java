@@ -11,21 +11,19 @@ import com.enode.common.io.AsyncTaskResult;
 import com.enode.common.io.AsyncTaskStatus;
 import com.enode.common.logging.ENodeLogger;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@Component
 public class SendRocketMQService {
 
     private static Logger logger = ENodeLogger.getLog();
 
-    public CompletableFuture<AsyncTaskResult> sendMessageAsync(DefaultMQProducer producer, Message message, String routingKey) {
+    public static CompletableFuture<AsyncTaskResult> sendMessageAsync(DefaultMQProducer producer, Message message, String routingKey) {
 
-        CompletableFuture promise = new CompletableFuture();
+        CompletableFuture<AsyncTaskResult> promise = new CompletableFuture<>();
         try {
-            producer.send(message, this::messageQueueSelect, routingKey, new SendCallback() {
+            producer.send(message, SendRocketMQService::messageQueueSelect, routingKey, new SendCallback() {
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     promise.complete(AsyncTaskResult.Success);
@@ -36,18 +34,14 @@ public class SendRocketMQService {
                     promise.complete(new AsyncTaskResult(AsyncTaskStatus.IOException, ex.getMessage()));
                 }
             });
-        } catch (MQClientException e) {
-            e.printStackTrace();
-        } catch (RemotingException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (MQClientException | RemotingException | InterruptedException e) {
+            promise.completeExceptionally(e);
+            logger.error("send RocketMQ message failed, message: {}", message, e);
         }
-
         return promise;
     }
 
-    private MessageQueue messageQueueSelect(List<MessageQueue> queues, Message msg, Object routingKey) {
+    private static MessageQueue messageQueueSelect(List<MessageQueue> queues, Message msg, Object routingKey) {
         int hash = Math.abs(routingKey.hashCode());
         return queues.get(hash % queues.size());
     }

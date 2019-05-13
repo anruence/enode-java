@@ -19,11 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CommandConsumer implements IMessageHandler {
+public abstract class CommandListener implements IMessageHandler {
 
     private static final Logger _logger = ENodeLogger.getLog();
-
-    protected String defaultMessageConsumerGroup = "CommandConsumerGroup";
 
     @Autowired
     protected SendReplyService _sendReplyService;
@@ -42,16 +40,6 @@ public class CommandConsumer implements IMessageHandler {
 
     @Autowired
     protected IAggregateStorage _aggregateRootStorage;
-
-    public CommandConsumer start() {
-        _sendReplyService.start();
-        return this;
-    }
-
-    public CommandConsumer shutdown() {
-        _sendReplyService.stop();
-        return this;
-    }
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {

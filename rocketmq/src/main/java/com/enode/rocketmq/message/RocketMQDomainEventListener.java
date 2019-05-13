@@ -5,11 +5,11 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enode.queue.QueueMessage;
-import com.enode.queue.domainevent.DomainEventConsumer;
+import com.enode.queue.domainevent.DomainEventListener;
 
 import java.util.List;
 
-public class RocketMQDomainEventConsumer extends DomainEventConsumer implements MessageListenerConcurrently {
+public class RocketMQDomainEventListener extends DomainEventListener implements MessageListenerConcurrently {
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {

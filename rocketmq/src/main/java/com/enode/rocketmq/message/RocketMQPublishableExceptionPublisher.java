@@ -6,14 +6,11 @@ import com.enode.common.io.AsyncTaskResult;
 import com.enode.infrastructure.IPublishableException;
 import com.enode.queue.QueueMessage;
 import com.enode.queue.publishableexceptions.PublishableExceptionPublisher;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.CompletableFuture;
 
 public class RocketMQPublishableExceptionPublisher extends PublishableExceptionPublisher {
 
-    @Autowired
-    protected SendRocketMQService _sendMessageService;
     private DefaultMQProducer producer;
 
     public DefaultMQProducer getProducer() {
@@ -28,6 +25,6 @@ public class RocketMQPublishableExceptionPublisher extends PublishableExceptionP
     public CompletableFuture<AsyncTaskResult> publishAsync(IPublishableException exception) {
         QueueMessage queueMessage = createExecptionMessage(exception);
         Message message = RocketMQTool.covertToProducerRecord(queueMessage);
-        return _sendMessageService.sendMessageAsync(producer, message, queueMessage.getRouteKey());
+        return SendRocketMQService.sendMessageAsync(producer, message, queueMessage.getRouteKey());
     }
 }

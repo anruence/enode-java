@@ -19,6 +19,7 @@ public abstract class PublishableExceptionPublisher implements IMessagePublisher
 
     @Autowired
     protected IJsonSerializer _jsonSerializer;
+
     @NotNull
     protected TopicData topicData;
 
@@ -28,14 +29,6 @@ public abstract class PublishableExceptionPublisher implements IMessagePublisher
 
     public void setTopicData(TopicData topicData) {
         this.topicData = topicData;
-    }
-
-    public PublishableExceptionPublisher start() {
-        return this;
-    }
-
-    public PublishableExceptionPublisher shutdown() {
-        return this;
     }
 
     @Override
