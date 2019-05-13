@@ -4,7 +4,6 @@ import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.enode.ENodeBootstrap;
 import com.enode.queue.TopicData;
-import com.enode.queue.command.CommandResultProcessor;
 import com.enode.rocketmq.message.RocketMQApplicationMessagePublisher;
 import com.enode.rocketmq.message.RocketMQDomainEventListener;
 import com.enode.rocketmq.message.RocketMQDomainEventPublisher;
@@ -17,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.enode.samples.Constant.EVENT_CONSUMER_GROUP;
+import static com.enode.samples.Constant.EVENT_PRODUCER_GROUP;
 import static com.enode.samples.Constant.EVENT_TOPIC;
 import static com.enode.samples.Constant.NAMESRVADDR;
 
@@ -34,11 +34,6 @@ public class AppConfigEvent {
     @Bean
     public RocketMQDomainEventListener domainEventListener() {
         return new RocketMQDomainEventListener();
-    }
-
-    @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public CommandResultProcessor commandResultProcessor() {
-        return new CommandResultProcessor(6002);
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
@@ -74,7 +69,7 @@ public class AppConfigEvent {
     public DefaultMQProducer eventProducer() {
         DefaultMQProducer producer = new DefaultMQProducer();
         producer.setNamesrvAddr(NAMESRVADDR);
-        producer.setProducerGroup("EVENT_PRODUCER_GROUP");
+        producer.setProducerGroup(EVENT_PRODUCER_GROUP);
         return producer;
     }
 

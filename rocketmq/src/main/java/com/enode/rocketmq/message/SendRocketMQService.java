@@ -32,11 +32,12 @@ public class SendRocketMQService {
                 @Override
                 public void onException(Throwable ex) {
                     promise.complete(new AsyncTaskResult(AsyncTaskStatus.IOException, ex.getMessage()));
+                    logger.error("send callback RocketMQ msg failed, msg: {}", message, ex);
                 }
             });
         } catch (MQClientException | RemotingException | InterruptedException e) {
-            promise.completeExceptionally(e);
-            logger.error("send RocketMQ message failed, message: {}", message, e);
+            promise.complete(new AsyncTaskResult(AsyncTaskStatus.IOException, e.getMessage()));
+            logger.error("send RocketMQ msg failed, msg: {}", message, e);
         }
         return promise;
     }
