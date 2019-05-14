@@ -21,8 +21,16 @@ public class RemotingCommand {
 
     private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
 
-    private static final int RPC_TYPE = 0; // REQUEST or RESPONSE command
-    private static final int RPC_ONEWAY = 1; // OneWay command
+    /**
+     * REQUEST or RESPONSE command
+     */
+    private static final int RPC_TYPE = 0;
+
+    /**
+     * OneWay command
+     */
+    private static final int RPC_ONEWAY = 1;
+
     private static final Map<Class<? extends CommandCustomHeader>, Field[]> CLASS_HASH_MAP = new HashMap<>();
 
     private static final Map<Class, String> CANONICAL_NAME_CACHE = new HashMap<>();
@@ -67,8 +75,7 @@ public class RemotingCommand {
         return createResponseCommand(RemotingSysResponseCode.SYSTEM_ERROR, "not set any response code", classHeader);
     }
 
-    public static RemotingCommand createResponseCommand(int code, String remark,
-                                                        Class<? extends CommandCustomHeader> classHeader) {
+    public static RemotingCommand createResponseCommand(int code, String remark, Class<? extends CommandCustomHeader> classHeader) {
         RemotingCommand cmd = new RemotingCommand();
         cmd.markResponseType();
         cmd.setCode(code);
@@ -78,9 +85,7 @@ public class RemotingCommand {
             try {
                 CommandCustomHeader objectHeader = classHeader.newInstance();
                 cmd.customHeader = objectHeader;
-            } catch (InstantiationException e) {
-                return null;
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 return null;
             }
         }
@@ -122,19 +127,15 @@ public class RemotingCommand {
         return resultRMQ;
     }
 
-    public CommandCustomHeader decodeCommandCustomHeader(
-            Class<? extends CommandCustomHeader> classHeader) throws RemotingCommandException {
+    public CommandCustomHeader decodeCommandCustomHeader(Class<? extends CommandCustomHeader> classHeader) throws RemotingCommandException {
         CommandCustomHeader objectHeader;
         try {
             objectHeader = classHeader.newInstance();
-        } catch (InstantiationException e) {
-            return null;
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             return null;
         }
 
         if (this.extFields != null) {
-
             Field[] fields = getClazzFields(classHeader);
             for (Field field : fields) {
                 if (!Modifier.isStatic(field.getModifiers())) {

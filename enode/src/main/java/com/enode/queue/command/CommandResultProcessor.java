@@ -33,11 +33,11 @@ public class CommandResultProcessor implements NettyRequestProcessor {
 
     private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
 
-    public SocketAddress _bindingAddress;
+    public SocketAddress bindingAddress;
 
     private RemotingServer remotingServer;
 
-    private ConcurrentMap<String, CommandTaskCompletionSource> _commandTaskDict;
+    private ConcurrentMap<String, CommandTaskCompletionSource> commandTaskDict;
 
     private BlockingQueue<CommandResult> _commandExecutedMessageLocalQueue;
 
@@ -59,7 +59,7 @@ public class CommandResultProcessor implements NettyRequestProcessor {
         remotingServer = new NettyRemotingServer(nettyServerConfig);
         remotingServer.registerProcessor(CommandReturnType.CommandExecuted.getValue(), this);
         remotingServer.registerProcessor(CommandReturnType.EventHandled.getValue(), this);
-        _commandTaskDict = new ConcurrentHashMap<>();
+        commandTaskDict = new ConcurrentHashMap<>();
         _commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
         _domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
         _commandExecutedMessageWorker = new Worker("ProcessExecutedCommandMessage", () -> processExecutedCommandMessage(_commandExecutedMessageLocalQueue.take()));
@@ -67,15 +67,14 @@ public class CommandResultProcessor implements NettyRequestProcessor {
     }
 
     public void registerProcessingCommand(ICommand command, com.enode.commanding.CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
-        if (_commandTaskDict.containsKey(command.id())) {
+        if (commandTaskDict.containsKey(command.id())) {
             throw new RuntimeException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.id()));
         }
-
-        _commandTaskDict.put(command.id(), new CommandTaskCompletionSource(commandReturnType, taskCompletionSource));
+        commandTaskDict.put(command.id(), new CommandTaskCompletionSource(commandReturnType, taskCompletionSource));
     }
 
     public void processFailedSendingCommand(ICommand command) {
-        CommandTaskCompletionSource commandTaskCompletionSource = _commandTaskDict.remove(command.id());
+        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.remove(command.id());
 
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Failed, command.id(), command.getAggregateRootId(), "Failed to send the command.", String.class.getName());
@@ -88,7 +87,7 @@ public class CommandResultProcessor implements NettyRequestProcessor {
             return this;
         }
         remotingServer.start();
-        _bindingAddress = remotingServer.bindAddress();
+        bindingAddress = remotingServer.bindAddress();
         _commandExecutedMessageWorker.start();
         _domainEventHandledMessageWorker.start();
         _started = true;
@@ -104,7 +103,7 @@ public class CommandResultProcessor implements NettyRequestProcessor {
     }
 
     public SocketAddress getBindingAddress() {
-        return _bindingAddress;
+        return bindingAddress;
     }
 
     @Override
@@ -129,11 +128,11 @@ public class CommandResultProcessor implements NettyRequestProcessor {
     }
 
     private void processExecutedCommandMessage(CommandResult commandResult) {
-        CommandTaskCompletionSource commandTaskCompletionSource = _commandTaskDict.get(commandResult.getCommandId());
+        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.get(commandResult.getCommandId());
 
         if (commandTaskCompletionSource != null) {
             if (commandTaskCompletionSource.getCommandReturnType().equals(com.enode.commanding.CommandReturnType.CommandExecuted)) {
-                _commandTaskDict.remove(commandResult.getCommandId());
+                commandTaskDict.remove(commandResult.getCommandId());
 
                 if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                     if (_logger.isDebugEnabled()) {
@@ -142,7 +141,7 @@ public class CommandResultProcessor implements NettyRequestProcessor {
                 }
             } else if (commandTaskCompletionSource.getCommandReturnType().equals(com.enode.commanding.CommandReturnType.EventHandled)) {
                 if (commandResult.getStatus().equals(CommandStatus.Failed) || commandResult.getStatus().equals(CommandStatus.NothingChanged)) {
-                    _commandTaskDict.remove(commandResult.getCommandId());
+                    commandTaskDict.remove(commandResult.getCommandId());
                     if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                         if (_logger.isDebugEnabled()) {
                             _logger.debug("Command result return, {}", commandResult);
@@ -154,7 +153,7 @@ public class CommandResultProcessor implements NettyRequestProcessor {
     }
 
     private void processDomainEventHandledMessage(DomainEventHandledMessage message) {
-        CommandTaskCompletionSource commandTaskCompletionSource = _commandTaskDict.remove(message.getCommandId());
+        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.remove(message.getCommandId());
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Success, message.getCommandId(), message.getAggregateRootId(), message.getCommandResult(), message.getCommandResult() != null ? String.class.getName() : null);
 

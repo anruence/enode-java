@@ -1,5 +1,6 @@
 # ENode
 ENode是一个基于【DDD】【CQRS】【ES】【EDA】【In-Memory】架构风格的应用框架
+![](enode-arch.png)
 
 ## 框架特色
 
@@ -24,7 +25,6 @@ ENode是一个基于【DDD】【CQRS】【ES】【EDA】【In-Memory】架构风
 
 ## 系统设计
 > https://www.cnblogs.com/netfocus/p/3859371.html
-
 
 ## 使用说明
 
@@ -59,7 +59,7 @@ Command端应用，一般为http服务
 领域事件处理服务
 
 ### 测试
-http://localhost:8001/note/create?id=noteid&t=notetitle
+http://localhost:8001/note/create?id=noteid&t=notetitle&c=commandid
 
 
 ## 参考项目

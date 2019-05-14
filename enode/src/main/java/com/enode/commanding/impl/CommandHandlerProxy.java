@@ -11,7 +11,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 
-
 public class CommandHandlerProxy implements ICommandHandlerProxy {
 
     @Autowired

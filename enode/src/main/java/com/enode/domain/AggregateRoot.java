@@ -29,7 +29,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     private Queue<IDomainEvent> _uncommittedEvents;
 
-    private int _version;
+    protected int _version;
 
     protected AggregateRoot() {
         _uncommittedEvents = new ConcurrentLinkedDeque<IDomainEvent>() {

@@ -10,19 +10,20 @@ public class WrappedRuntimeException extends RuntimeException {
     /**
      * checked exception
      */
-    private Exception exception;
+    private Throwable exception;
 
-    public WrappedRuntimeException(Exception e) {
+    public WrappedRuntimeException(Throwable e) {
         super(e.getMessage());
         exception = e instanceof WrappedRuntimeException ? ((WrappedRuntimeException) e).getException() : e;
     }
 
-    public WrappedRuntimeException(String msg, Exception e) {
+
+    public WrappedRuntimeException(String msg, Throwable e) {
         super(msg);
         exception = e instanceof WrappedRuntimeException ? ((WrappedRuntimeException) e).getException() : e;
     }
 
-    public Exception getException() {
+    public Throwable getException() {
         return exception;
     }
 }

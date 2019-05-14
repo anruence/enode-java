@@ -241,7 +241,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         //那就判断当前异常是否是需要被发布出去的异常，如果是，则发布该异常给所有消费者；否则，就记录错误日志；
                         //然后，认为该command处理失败即可；
 
-                        Exception exp = exception;
+                        Throwable exp = exception;
                         if (exp instanceof WrappedRuntimeException) {
                             exp = ((WrappedRuntimeException) exp).getException();
                         }
@@ -277,7 +277,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 retryTimes, true);
     }
 
-    private void logCommandExecuteException(ProcessingCommand processingCommand, ICommandHandlerProxy commandHandler, Exception exception) {
+    private void logCommandExecuteException(ProcessingCommand processingCommand, ICommandHandlerProxy commandHandler, Throwable exception) {
         ICommand command = processingCommand.getMessage();
         String errorMessage = String.format("%s raised when %s handling %s. commandId:%s, aggregateRootId:%s",
                 exception.getClass().getName(),

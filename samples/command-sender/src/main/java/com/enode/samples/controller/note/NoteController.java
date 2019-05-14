@@ -19,15 +19,17 @@ public class NoteController {
     RocketMQCommandService commandService;
 
     @RequestMapping("create")
-    public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title) {
+    public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam("c") String cid) {
         CreateNoteCommand command1 = new CreateNoteCommand(noteId, title);
+        command1.setId(cid);
         AsyncTaskResult<CommandResult> promise = CompletableFutureUtil.getValue(commandService.executeAsync(command1, CommandReturnType.EventHandled));
         return promise;
     }
 
     @RequestMapping("change")
-    public Object change(@RequestParam("id") String noteId, @RequestParam("t") String title) {
+    public Object change(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam("c") String cid) {
         ChangeNoteTitleCommand command2 = new ChangeNoteTitleCommand(noteId, title);
+        command2.setId(cid);
         AsyncTaskResult<CommandResult> promise = CompletableFutureUtil.getValue(commandService.executeAsync(command2, CommandReturnType.EventHandled));
         return promise;
     }
