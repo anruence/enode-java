@@ -142,8 +142,7 @@ public class DefaultEventService implements IEventService {
                     }
                 },
                 () -> String.format("[contextListCount:%d]", committingContexts.size()),
-                errorMessage ->
-                        logger.error(String.format("Batch persist event has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage)),
+                errorMessage -> logger.error("Batch persist event has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
                 retryTimes, true);
     }
 
@@ -186,7 +185,7 @@ public class DefaultEventService implements IEventService {
                     }
                 },
                 () -> String.format("[eventStream:%s]", context.getEventStream()),
-                errorMessage -> logger.error(String.format("Persist event has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
+                errorMessage -> logger.error("Persist event has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
                 retryTimes, true);
     }
 
