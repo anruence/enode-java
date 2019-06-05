@@ -1,0 +1,92 @@
+﻿@model IEnumerable<ConferenceManagement.ReadModel.OrderDTO>
+@{
+    ViewBag.Title = "Orders & Attendees";
+    ViewBag.PageType = "page_conference-seats";
+}
+
+@section Navigation
+{
+    <div class="quick__login">@ViewBag.OwnerName</div>
+}
+
+@section PageNavigation {
+    @Html.Partial("Navigation")
+}
+
+<h1 class="page__head page__wrapper">
+    Orders & Attendees
+</h1>
+<div class="page__content">
+    <div class="page__wrapper">
+        <div class="content-main__wrapper">
+            <div class="content content-main__main">
+                <div id="grid-container">
+                    <table id="grid" class="content__table_first-cell-wide">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <span>AccessCode</span>
+                                </th>
+                                <th>
+                                    <span>Status</span>
+                                </th>
+                                <th>
+                                    <span>TotalAmount</span>
+                                </th>
+                                <th>
+                                    <span>RegistrantName</span>
+                                </th>
+                                <th>
+                                    <span>RegistrantEmail</span>
+                                </th>
+                                <th>
+                                    <span>Attendees</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in this.Model)
+                            {
+                                <tr>
+                                    <td>@order.AccessCode</td>
+                                    <td>@order.GetStatusText()</td>
+                                    <td>$@order.TotalAmount</td>
+                                    <td>@order.RegistrantLastName @order.RegistrantFirstName</td>
+                                    <td>@order.RegistrantEmail</td>
+                                    <td>
+                                        <ul>
+                                            @foreach (var attendee in order.GetAttendees())
+                                            {
+                                                <li>@attendee.SeatTypeName: @attendee.AttendeeLastName @attendee.AttendeeFirstName, @attendee.AttendeeEmail</li>
+                                            }
+                                        </ul>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="g-clear"></div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<style>
+    #grid, #grid input, #grid button
+    {
+        clear: both;
+        width: 100%;
+    }
+    #grid thead
+    {
+        white-space: nowrap;
+    }
+    #grid thead a
+    {
+        text-decoration: none;
+    }
+</style>

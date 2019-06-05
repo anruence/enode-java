@@ -1,0 +1,65 @@
+﻿@model Registration.Web.Models.OrderSeatsViewModel
+@{
+    ViewBag.Title = "Assign Seats";
+}
+<h1 class="page__head page__wrapper">Assign Seats</h1>
+<div class="page__content">
+    <div class="page__wrapper content-main content-main_assignseats">
+        <div class="content-main__wrapper">
+            <div class="content-main__main">
+                @using (Html.BeginForm())
+                {
+                    <div class="content-main__header">Seat assignment</div>
+                    <div class="content">
+                        @*TODO: fix styling for validation*@
+                        @Html.ValidationSummary()
+                        @Html.HiddenFor(model => model.OrderId)
+                        <p>
+                            Please assign your purchased seats to the attendees.</p>
+                        <h3>
+                            Seat Assignment</h3>
+                        <table class="content__table_first-cell-wide">
+                            <tr>
+                                <th scope="col">Seat type</th>
+                                <th scope="col">First name</th>
+                                <th scope="col">Last name</th>
+                                <th scope="col">Email</th>
+                            </tr>
+                            @for (var i = 0; i < this.Model.SeatAssignments.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.HiddenFor(model => model.SeatAssignments[i].AssignmentsId)
+                                        @Html.HiddenFor(model => model.SeatAssignments[i].Position)
+                                        <!-- TODO: grab the seat type name from somewhere? -->
+                                        @Html.DisplayFor(model => model.SeatAssignments[i].SeatTypeName)
+                                    </td>
+                                    <td>
+                                        @Html.EditorFor(model => model.SeatAssignments[i].AttendeeFirstName)
+                                    </td>
+                                    <td>
+                                        @Html.EditorFor(model => model.SeatAssignments[i].AttendeeLastName)
+                                    </td>
+                                    <td>
+                                        @Html.EditorFor(model => model.SeatAssignments[i].AttendeeEmail)
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                     <div class="nav content-main__nav">
+                         <button id="Next" class="nav__right" type="submit">Save
+                            <span class="nav__right-small">Attendees will be notified by e-mail</span>
+                         </button>
+                     </div>
+                }
+            </div>
+        </div>
+        <div class="content-main__aside">
+            <div class="content-main__header">
+            </div>
+        </div>
+        <div class="g-clear">
+        </div>
+    </div>
+</div>

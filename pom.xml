@@ -12,6 +12,7 @@
         <module>mysql</module>
         <module>rocketmq</module>
         <module>samples</module>
+        <module>conference</module>
     </modules>
     <packaging>pom</packaging>
     <properties>

@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = "Reservation for " + ViewBag.Conference.Name + "has expired";
+}
+@ConferenceHelpers.ConferenceTitle(ViewBag.Conference.Name, ViewBag.Conference.Tagline)
+<h2 class="page__head page__wrapper">
+    Sorry, there is not enough seats for your reservation.</h2>
+<div class="page__content">
+    <div class="page__wrapper content-main">
+        <p>
+            You can <a href="@Url.Action("StartRegistration", "Registration", new { conferenceCode = this.ViewBag.Conference.Slug })">
+                start a new order</a> or go back to the <a href="@Url.Action("Display", "Conference", new { conferenceCode = this.ViewBag.Conference.Slug })">
+                    conference home page</a>.</p>
+    </div>
+</div>

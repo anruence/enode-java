@@ -1,0 +1,37 @@
+﻿@model Registration.ReadModel.Order
+@{
+    ViewBag.Title = "Registration received for " + ViewBag.Conference.Name;
+}
+<h1 class="page__head page__wrapper">Thank you</h1>
+<div class="page__content">
+    <div class="page__wrapper content-main content-main_register">
+        <div class="content-main__wrapper">
+            <div class="content-main__main">
+                <div class="content-main__header">Registration success</div>
+                <div class="content">
+                    <p>You have successfully submitted your registration!<br/>
+                    You will receive an e-mail with the confirmation for your order #<strong id="accessCode">@Model.AccessCode</strong>.</p>
+					<p>
+						<strong>What's next:</strong>
+					</p>
+                    <p>
+                        You can access your order at any time to update or assign attendees using the provided e-mail address and the order locator code <strong>@Model.AccessCode</strong>.<br />
+                        
+                        <a href="@Url.Action("Display", "Order", new { orderId = Model.OrderId })">Go to my registration</a><br/>
+                        <a href="@Url.Action("Display", "Conference")">Go to the Conference main page</a><br/>
+                    </p>
+                </div>
+                <div class="nav content-main__nav">
+                    <a class="nav__right" href="@Url.Action("Display", "Order", new { orderId = Model.OrderId })">
+						Proceed to Seat Assignment
+						<span class="nav__right-small">You can do this later from &laquo;Locate Registration&raquo;</span>
+					</a>
+                </div>
+            </div>
+        </div>
+        <div class="content-main__aside">
+            <div class="content-main__header"></div>
+        </div>
+        <div class="g-clear"></div>
+    </div>
+</div>

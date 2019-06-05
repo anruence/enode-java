@@ -1,0 +1,49 @@
+﻿@model Registration.Web.Models.RegistrationViewModel
+@using Registration.Web.Utils
+
+@{
+    ViewBag.Title = "Register to " + ViewBag.Conference.Name;
+}
+@section Head
+{
+}
+
+@ConferenceHelpers.ConferenceTitle(ViewBag.Conference.Name, ViewBag.Conference.Tagline)
+
+<div class="page__content">
+    <div class="page__wrapper content-main content-main_register">
+        <div class="content-main__wrapper">
+            <div class="content-main__main">
+                <div class="content-main__header">Seats information</div>
+                <div class="content">
+                    @Html.Partial("_OrderDetails", this.Model.Order)
+                </div>
+                @using (Html.BeginForm())
+                {
+                    @Html.Partial("_RegistrationDetailsEditor", Model.RegistrantDetails)
+                    <div class="nav content-main__nav">
+                        <a class="nav__left" href="@Url.Action("StartRegistration", "Registration", new { orderId = this.Model.Order.OrderId })">Back</a>
+                        <button id="Next" class="nav__right" type="submit">Proceed
+                    @if (!Model.Order.IsFreeOfCharge())
+                    { 
+                            <span class="nav__right-small js-creditcard-proceed">Proceed to Third Party</span>
+                    }
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="content-main__aside">
+            <div class="content-main__header"></div>
+            @ConferenceHelpers.ExpirationBox(Model.Order.ReservationExpirationDate.ToEpochMilliseconds(), Url.Action("ShowExpiredOrder", "Registration", new { conferenceCode = this.ViewBag.Conference.Slug, orderId = this.Model.RegistrantDetails.OrderId }))
+        </div>
+        <div class="g-clear"></div>
+    </div>
+</div>
+
+@section Scripts
+{
+<script type="text/javascript" src="@Url.Content("~/Content/form/form.js")"></script>
+<script type="text/javascript" src="@Url.Content("~/Content/reg-time-info/reg-time-info.js")"></script>
+}
+
