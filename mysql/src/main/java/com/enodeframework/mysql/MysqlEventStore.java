@@ -47,11 +47,14 @@ public class MysqlEventStore implements IEventStore {
     private final QueryRunner queryRunner;
     @Autowired
     private IJsonSerializer jsonSerializer;
+
     @Autowired
     private IEventSerializer eventSerializer;
+
     @Autowired
     private IOHelper ioHelper;
-    private boolean supportBatchAppendEvent;
+
+    private boolean supportBatchAppendEvent = true;
 
     private Executor executor;
 
