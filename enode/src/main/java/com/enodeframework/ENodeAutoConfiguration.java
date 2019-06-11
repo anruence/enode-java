@@ -38,10 +38,8 @@ import com.enodeframework.queue.SendReplyService;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
-@Configuration
 public class ENodeAutoConfiguration {
 
     @Bean
@@ -78,7 +76,6 @@ public class ENodeAutoConfiguration {
     public DefaultPublishableExceptionProcessor defaultPublishableExceptionProcessor() {
         return new DefaultPublishableExceptionProcessor();
     }
-
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public DefaultApplicationMessageProcessor defaultApplicationMessageProcessor() {

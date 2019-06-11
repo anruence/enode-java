@@ -4,12 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.enodeframework</groupId>
-    <artifactId>enode-samples</artifactId>
+    <artifactId>samples</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
     <modules>
-        <module>bank-transfer</module>
-        <module>conference</module>
+        <module>command-consumer</module>
+        <module>event-consumer</module>
+        <module>command-sender</module>
+        <module>domain</module>
     </modules>
     <dependencyManagement>
         <dependencies>

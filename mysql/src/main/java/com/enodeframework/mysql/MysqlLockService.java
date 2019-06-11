@@ -59,8 +59,6 @@ public class MysqlLockService implements ILockService {
                 lockKey(connection, lockKey);
                 action.apply();
                 connection.commit();
-            } catch (SQLException e) {
-                connection.rollback();
             } catch (Exception e) {
                 connection.rollback();
             }

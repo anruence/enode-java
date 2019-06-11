@@ -2,14 +2,17 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.enodeframework</groupId>
-    <artifactId>enode-samples</artifactId>
+    <groupId>com.microsoft.conference</groupId>
+    <artifactId>conference-parent</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
     <modules>
-        <module>bank-transfer</module>
-        <module>conference</module>
+        <module>common</module>
+        <module>management-bc</module>
+        <module>registration-bc</module>
+        <module>payments-bc</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -36,6 +39,10 @@
             <groupId>com.enodeframework</groupId>
             <artifactId>enode-mysql</artifactId>
             <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
         </dependency>
         <dependency>
             <groupId>com.enodeframework</groupId>
