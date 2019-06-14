@@ -195,26 +195,18 @@ public class RemotingUtil {
         channel.close().addListener((ChannelFutureListener) future -> log.info("closeChannel: close the connection to remote address[{}] result: {}", addrRemote,
                 future.isSuccess()));
     }
-
-
-    public static String parseAddress(SocketAddress address) {
-        if (address instanceof InetSocketAddress) {
-            InetSocketAddress socketAddress = (InetSocketAddress) address;
-            int port = socketAddress.getPort();
-
-            InetAddress localAddress = socketAddress.getAddress();
-
-            if (!isSiteLocalAddress(localAddress)) {
-                try {
-                    localAddress = Inet4Address.getLocalHost();
-                } catch (UnknownHostException e) {
-                    throw new WrappedRuntimeException("No local address found", e);
-                }
+    
+    public static String parseAddress(InetSocketAddress socketAddress) {
+        int port = socketAddress.getPort();
+        InetAddress localAddress = socketAddress.getAddress();
+        if (!isSiteLocalAddress(localAddress)) {
+            try {
+                localAddress = Inet4Address.getLocalHost();
+            } catch (UnknownHostException e) {
+                throw new WrappedRuntimeException("No local address found", e);
             }
-            return String.format("%s:%d", localAddress.getHostAddress(), port);
-        } else {
-            throw new RuntimeException("Unknow socket address:" + address);
         }
+        return String.format("%s:%d", localAddress.getHostAddress(), port);
     }
 
     public static boolean isSiteLocalAddress(InetAddress address) {

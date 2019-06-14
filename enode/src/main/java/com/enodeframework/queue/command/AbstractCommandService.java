@@ -11,6 +11,7 @@ import com.enodeframework.queue.QueueMessageTypeCode;
 import com.enodeframework.queue.TopicData;
 import org.springframework.beans.factory.annotation.Autowired;
 
+
 public abstract class AbstractCommandService implements ICommandService {
 
     @Autowired
@@ -35,7 +36,7 @@ public abstract class AbstractCommandService implements ICommandService {
     protected QueueMessage buildCommandMessage(ICommand command, boolean needReply) {
         Ensure.notNull(command.getAggregateRootId(), "aggregateRootId");
         String commandData = jsonSerializer.serialize(command);
-        String replyAddress = needReply && commandResultProcessor != null ? RemotingUtil.parseAddress(commandResultProcessor.getBindingAddress()) : null;
+        String replyAddress = needReply && commandResultProcessor != null ? RemotingUtil.parseAddress(commandResultProcessor.getBindAddress()) : null;
         String messageData = jsonSerializer.serialize(new CommandMessage(commandData, replyAddress, command.getClass().getName()));
         //命令唯一id，聚合根id
         String key = String.format("%s%s", command.id(), command.getAggregateRootId() == null ? "" : "cmd_agg_" + command.getAggregateRootId());

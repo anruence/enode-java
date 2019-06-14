@@ -6,36 +6,30 @@ import com.enodeframework.commanding.CommandStatus;
 import com.enodeframework.commanding.ICommand;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
-import com.enodeframework.common.remoting.RemotingServer;
-import com.enodeframework.common.remoting.netty.NettyRemotingServer;
-import com.enodeframework.common.remoting.netty.NettyRequestProcessor;
-import com.enodeframework.common.remoting.netty.NettyServerConfig;
-import com.enodeframework.common.remoting.protocol.RemotingCommand;
+import com.enodeframework.common.remoting.common.RemoteReply;
 import com.enodeframework.common.scheduling.Worker;
-import com.enodeframework.common.serializing.IJsonSerializer;
 import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
-import io.netty.channel.ChannelHandlerContext;
+import io.vertx.core.Vertx;
+import io.vertx.core.net.NetServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.net.SocketAddress;
-import java.nio.charset.Charset;
+import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class CommandResultProcessor implements NettyRequestProcessor {
+public class CommandResultProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandResultProcessor.class);
 
-    private static final Charset CHARSETUTF8 = Charset.forName("UTF-8");
+    private InetSocketAddress bindAddress;
 
-    public SocketAddress bindingAddress;
+    private NetServer netServer;
 
-    private RemotingServer remotingServer;
+    private int port = 2019;
 
     private ConcurrentMap<String, CommandTaskCompletionSource> commandTaskDict;
 
@@ -47,18 +41,21 @@ public class CommandResultProcessor implements NettyRequestProcessor {
 
     private Worker domainEventHandledMessageWorker;
 
-    @Autowired
-    private IJsonSerializer jsonSerializer;
-
     private boolean started;
 
-    public CommandResultProcessor(int listenPort) {
-        NettyServerConfig nettyServerConfig = new NettyServerConfig();
-        nettyServerConfig.setListenPort(listenPort);
-        nettyServerConfig.setServerChannelMaxIdleTimeSeconds(3600);
-        remotingServer = new NettyRemotingServer(nettyServerConfig);
-        remotingServer.registerProcessor(CommandReturnType.CommandExecuted.getValue(), this);
-        remotingServer.registerProcessor(CommandReturnType.EventHandled.getValue(), this);
+    public CommandResultProcessor() {
+        Vertx vertx = Vertx.vertx();
+        netServer = vertx.createNetServer();
+        netServer.connectHandler(sock -> {
+            sock.endHandler(v -> sock.close()).exceptionHandler(t -> {
+                logger.error("Failed to start Net Server", t);
+                sock.close();
+            }).handler(buffer -> {
+                RemoteReply name = buffer.toJsonObject().mapTo(RemoteReply.class);
+                processRequestInternal(name);
+            });
+        });
+        bindAddress = new InetSocketAddress(port);
         commandTaskDict = new ConcurrentHashMap<>();
         commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
         domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
@@ -86,45 +83,35 @@ public class CommandResultProcessor implements NettyRequestProcessor {
         if (started) {
             return this;
         }
-        remotingServer.start();
-        bindingAddress = remotingServer.bindAddress();
+        netServer.listen(port);
         commandExecutedMessageWorker.start();
         domainEventHandledMessageWorker.start();
         started = true;
-        logger.info("Command result processor started, bindingAddress: {}", remotingServer.bindAddress());
+        logger.info("Command result processor started, bindAddress: {}", bindAddress);
         return this;
     }
 
     public CommandResultProcessor shutdown() {
-        remotingServer.shutdown();
+        netServer.close();
         commandExecutedMessageWorker.stop();
         domainEventHandledMessageWorker.stop();
         return this;
     }
 
-    public SocketAddress getBindingAddress() {
-        return bindingAddress;
+    public InetSocketAddress getBindAddress() {
+        return bindAddress;
     }
 
-    @Override
-    public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) throws Exception {
+    public void processRequestInternal(RemoteReply request) {
         if (request.getCode() == CommandReturnType.CommandExecuted.getValue()) {
-            String body = new String(request.getBody(), CHARSETUTF8);
-            CommandResult result = jsonSerializer.deserialize(body, CommandResult.class);
+            CommandResult result = request.getCommandResult();
             commandExecutedMessageLocalQueue.add(result);
         } else if (request.getCode() == CommandReturnType.EventHandled.getValue()) {
-            String body = new String(request.getBody(), CHARSETUTF8);
-            DomainEventHandledMessage message = jsonSerializer.deserialize(body, DomainEventHandledMessage.class);
+            DomainEventHandledMessage message = request.getEventHandledMessage();
             domainEventHandledMessageLocalQueue.add(message);
         } else {
             logger.error("Invalid remoting request: {}", request);
         }
-        return null;
-    }
-
-    @Override
-    public boolean rejectRequest() {
-        return false;
     }
 
     private void processExecutedCommandMessage(CommandResult commandResult) {
@@ -189,5 +176,13 @@ public class CommandResultProcessor implements NettyRequestProcessor {
         public void setTaskCompletionSource(CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
             this.taskCompletionSource = taskCompletionSource;
         }
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 }
