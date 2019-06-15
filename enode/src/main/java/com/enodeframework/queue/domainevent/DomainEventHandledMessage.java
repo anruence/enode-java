@@ -28,4 +28,13 @@ public class DomainEventHandledMessage {
     public void setCommandResult(String commandResult) {
         this.commandResult = commandResult;
     }
+
+    @Override
+    public String toString() {
+        return "DomainEventHandledMessage{" +
+                "commandId='" + commandId + '\'' +
+                ", aggregateRootId='" + aggregateRootId + '\'' +
+                ", commandResult='" + commandResult + '\'' +
+                '}';
+    }
 }

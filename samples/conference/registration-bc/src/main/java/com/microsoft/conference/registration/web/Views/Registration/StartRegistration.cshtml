@@ -1,0 +1,104 @@
+﻿@model Registration.Web.Models.OrderViewModel
+@{
+    ViewBag.Title = "Register to " + ViewBag.Conference.Name;
+}
+
+@ConferenceHelpers.ConferenceTitle(ViewBag.Conference.Name, ViewBag.Conference.Tagline)
+
+<div class="page__content">
+    <div class="page__wrapper content-main content-main_register">
+        <div class="content-main__wrapper">
+            <div class="content-main__main">
+                 @using (Html.BeginForm())
+                 {
+                     <div class="content-main__header">Register</div>
+                     <div class="content">
+                         @Html.ValidationSummary()
+                         <p>Please make your selection. <br /></p>
+                         <h3>Event tickets</h3>
+                         <table class="content__table_first-cell-wide">
+                             <tr>
+                                 <th style="width: 75%">Registration type</th>
+                                 <th scope="col" style="text-align: right">Price</th>
+                                 <th scope="col">Quantity</th>
+                             </tr>
+                             @for (var i = 0; i < this.Model.Items.Count; i++)
+                             {
+                                 <tr class="lineItem">
+                                     <td>
+                                         @Html.DisplayFor(model => model.Items[i].SeatType.Name)
+                                         <p class="content__note">@Html.DisplayFor(model => model.Items[i].SeatType.Description)</p>
+                                     </td>
+                                     <td style="text-align: right">$<span class="unitPrice">@Html.DisplayFor(model => model.Items[i].SeatType.Price)</span>
+                                     </td>
+                                     <td>
+                                         @Html.Hidden("Seats[" + i + "].SeatType", this.Model.Items[i].SeatType.Id)
+                                         @Html.DropDownList("Seats[" + i + "].Quantity", new SelectList(Enumerable.Range(0, this.Model.Items[i].MaxSelectionQuantity + 1)), new { @class = "itemQuantity" })
+                                     </td>
+                                 </tr>
+                             }
+                             <tr>
+                                 <td colspan="3" class="content__table-cell_right content__cell_total">Estimated Total:</td>
+                                 <td class="content__cell_total content__table-cell_left">$<span id="total">0</span></td>
+                             </tr>
+                         </table>
+                     </div>
+                     <div class="nav content-main__nav">
+                         <a class="nav__left" href="@Url.Action("Display", "Conference")">Back</a>
+                         <button id="Next" class="nav__right" type="submit">Order now</button>
+                     </div>
+                 }
+            </div>
+        </div>
+        <div class="content-main__aside">
+            <div class="content-main__header"></div>
+            @ConferenceHelpers.ExpirationBox(Model.ReservationExpirationDate, Url.Action("ShowExpiredOrder", "Registration", new { conferenceCode = this.ViewBag.Conference.Slug, orderId = this.Model.OrderId }))
+        </div>
+        <div class="g-clear"></div>
+    </div>
+</div>
+
+
+
+@section PageNavigation
+{
+<div class="page__menu menu">
+    <ul class="menu__list">
+        <li class="menu__item"><a class="menu__back" href="@Url.Action("Display", "Conference")"></a></li>
+        <li class="menu__item"><a href="#">About event</a></li>
+        <li class="menu__item menu__item_active">Register</li>
+        <li class="menu__item"><a href="#">Destination</a></li>
+        <li class="menu__item"><a href="#">Speakers</a></li>
+        <li class="menu__item"><a href="#">Sessions</a></li>
+        <li class="menu__item"><a href="#">Sponsors</a></li>
+        <li class="menu__item"><a href="#">Organizers</a></li>
+        <li class="menu__item"><a href="#">Press</a></li>
+    </ul>
+</div>
+}
+
+@section Scripts
+{
+<script type="text/javascript" src="@Url.Content("~/Content/form/form.js")"></script>
+<script type="text/javascript" src="@Url.Content("~/Content/reg-time-info/reg-time-info.js")"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        function calculateTotals() {
+            var total = 0;
+            $(".lineItem").each(function (index, item) {
+                var unitPrice = $(item).find(".unitPrice").text();
+                var quantity = $(item).find(".itemQuantity input").val();
+                total += unitPrice * (quantity ? quantity : 0);
+            });
+
+            // round to 2 decimals
+            total = Math.round(total * 100) / 100;
+            $("#total").text(total);
+        }
+
+        $(".itemQuantity input").change(calculateTotals);
+        calculateTotals();
+    });
+</script>
+
+}

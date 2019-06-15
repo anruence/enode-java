@@ -45,12 +45,13 @@ public class CommandResult {
 
     @Override
     public String toString() {
-        return String.format("[CommandId=%s,Status=%s,AggregateRootId=%s,Result=%s,ResultType=%s]",
-                commandId,
-                status,
-                aggregateRootId,
-                result,
-                resultType);
+        return "CommandResult{" +
+                "status=" + status +
+                ", commandId='" + commandId + '\'' +
+                ", aggregateRootId='" + aggregateRootId + '\'' +
+                ", result='" + result + '\'' +
+                ", resultType='" + resultType + '\'' +
+                '}';
     }
 
     public CommandStatus getStatus() {

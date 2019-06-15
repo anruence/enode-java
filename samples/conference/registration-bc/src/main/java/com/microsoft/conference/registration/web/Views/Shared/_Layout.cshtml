@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewBag.Title</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/style.css")" media="all">
+	<!--[if IE 7]>
+	  <link rel="stylesheet" type="text/css" href="@Url.Content("~/Content/style.ie7.css")" media="all">
+	<![endif]-->
+    <script type="text/javascript" src="~/Scripts/jquery-1.7.2.min.js"></script>
+    @RenderSection("Head", required: false)
+</head>
+
+<body class="page">
+<nav>
+    <div class="page__wrapper quick">
+        <ul class="quick__list">
+            <li class="quick__item quick__item_bold"><a href="#">Contoso Conference Management System</a></li>
+            <li class="quick__item"><a href="@Url.RouteUrl("Home")">All Events</a></li>
+            <li class="quick__item"><a href="#">Contact Us</a></li>
+            <li class="quick__item"><a href="#">Help Centre</a></li>
+        </ul>
+        @RenderSection("Navigation", required: false)
+        @*<a class="quick__login" href="#">Login or Register </a>*@
+    </div>
+</nav>
+    @RenderSection("PageNavigation", required: false)  @*TODO: check wrapping*@
+
+    @RenderBody()
+
+<div class="footer">
+	<footer>
+		<a class="footer__logo" href="#"><img src="@Url.Content("~/Content/footer/footer__logo.png")" alt="Microsoft® pattern & practices" title=""></a>
+		<div class="footer__content">
+			<p>Powered by&nbsp;Contoso Conference Managament System, CQRS Journey Project, Microsoft patterns &amp;&nbsp;practices.<br />
+			<span class="footer__disclaimer">This is a sample application for learning purposes, not a production system!</span><br />
+				All Rights Reserved, 2012. <a href="#">Terms of&nbsp;Service</a>. <a href="#">Privacy Policy</a>.</p>
+
+			<p>Contact the <a href="#">Host</a> for event and ticket information.</p>
+		</div>
+	</footer>
+</div>
+<script src="~/Scripts/jquery.validate.min.js" type="text/javascript"></script>
+@*<script src="~/Scripts/jquery.validate.unobtrusive.min.js" type="text/javascript"></script>*@
+@RenderSection("Scripts", required: false)
+</body>
+</html>

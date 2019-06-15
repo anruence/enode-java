@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>@ViewBag.Title</title>
+    <script type="text/javascript" src="~/Scripts/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="~/Content/form/form.js"></script>
+    <script type="text/javascript" src="~/Content/tabs/tabs.js"></script>
+    <link rel="stylesheet" type="text/css" href="~/Content/style.css" />
+    <link rel="stylesheet" type="text/css" href="~/Content/form/ui/css/custom-theme/jquery-ui-1.8.19.custom.css" />
+    @RenderSection("Head", required: false)
+</head>
+<body class="page page_green @(ViewBag.PageType ?? "page_create-conf")">
+    <nav>
+        <div class="page__wrapper quick">
+            <ul class="quick__list">
+                <li class="quick__item quick__item_bold"><a href="~/">Contoso Conference Management System</a></li>
+            </ul>
+            @*<a class="quick__login" href="#">Login or Register </a>*@
+            @RenderSection("Navigation", required: false)
+        </div>
+    </nav>
+    @RenderSection("PageNavigation", required: false)
+    @RenderBody()
+    <div class="footer">
+        <footer>
+            <a class="footer__logo" href="#"><img src="~/Content/footer/footer__logo.png" alt="Microsoft® pattern & practices" title=""></a>
+            <div class="footer__content">
+                <p>
+                    Powered by&nbsp;Contoso Conference Managament System, CQRS Journey Project, Microsoft patterns &amp;&nbsp;practices.<br />
+                    <span class="footer__disclaimer">This is a sample application for learning purposes, not a production system!</span><br />
+                    All Rights Reserved, 2012. <a href="#">Terms of&nbsp;Service</a>. <a href="#">Privacy Policy</a>.
+                </p>
+                <p>Contact the <a href="#">Host</a> for event and ticket information.</p>
+            </div>
+        </footer>
+    </div>
+    <script src="~/Scripts/jquery.validate.min.js" type="text/javascript"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -10,10 +10,9 @@ public class KafkaConfig {
     @Autowired
     private KafkaTemplate kafkaTemplate;
 
-
     @KafkaListener(topics = "")
     public void list() {
-        ListenableFuture future = kafkaTemplate.send("n", "");
+        ListenableFuture future = kafkaTemplate.send("", "");
         future.completable();
     }
 }

@@ -1,0 +1,36 @@
+﻿@{
+    ViewBag.Title = "Access Conference";
+}
+
+<div class="page__content">
+    <div class="page__wrapper">
+    @using (Html.BeginForm())
+    {
+        <div class="content-main__header">Login</div>
+        @Html.ValidationSummary(false)
+        <fieldset class="content content_login">
+
+            <p>Please enter your email and conference access code to manage your conference:</p>
+            <div class="form">
+                <div class="form__fieldset">
+                    <label class="form__label">Login (E-mail):<span>*</span></label>
+                    <div class="form__field">
+                        <input type="text" name="email" value="@ViewBag.Email" data-val="true" data-val-required="e-mail field is required."  />
+                    </div>
+                </div>
+                <div class="form__fieldset">
+                    <label class="form__label">Access code:<span>*</span></label>
+                    <div class="form__field">
+                        <input type="password" name="accessCode" data-val="true" data-val-required="Access code is required."  />
+                    </div>
+                </div>
+                <div class="form__but-box">
+                    <button class="form__but">Login</button>
+                </div>
+                <div class="g-clear"></div>
+            </div>
+        </fieldset>
+        <div class="g-clear"></div>
+    }
+    </div>
+</div>

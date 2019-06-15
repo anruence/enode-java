@@ -1,0 +1,19 @@
+server:
+  #端口号
+  port: 8004
+
+logging:
+  file: logs/dev_profile_app.log
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    ENodeLog: DEBUG
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost/enode
+    username: root
+    password: anruence
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver

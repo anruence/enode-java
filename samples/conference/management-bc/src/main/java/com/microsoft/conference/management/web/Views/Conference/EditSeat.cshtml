@@ -1,0 +1,29 @@
+﻿@model ConferenceManagement.Web.Models.SeatType
+
+<tr @if (Model != null) {
+    @:data-pkey="@Model.Id"
+}>
+    <td>
+        @Html.EditorFor(model => model.Name)
+        @Html.ValidationMessageFor(model => model.Name)
+    </td>
+    <td>
+        @Html.EditorFor(model => model.Description)
+        @Html.ValidationMessageFor(model => model.Description)
+    </td>
+    <td>
+        @Html.EditorFor(model => model.Quantity)
+        @Html.ValidationMessageFor(model => model.Quantity)
+    </td>
+    <td>
+        @Html.EditorFor(model => model.Price)
+        @Html.ValidationMessageFor(model => model.Price)
+    </td>
+    <td>
+@if (ViewContext.RouteData.Values["Action"].ToString() == "EditSeat") {
+        <button class="form__but editRow">Save</button><button class="form__but cancelEditRow">Cancel</button>
+} else {
+        <button class="form__but createRow">Create</button><button class="form__but cancelCreateRow">Cancel</button>
+}
+    </td>
+</tr>
