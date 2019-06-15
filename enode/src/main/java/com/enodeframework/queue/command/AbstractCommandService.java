@@ -3,7 +3,7 @@ package com.enodeframework.queue.command;
 import com.enodeframework.commanding.ICommand;
 import com.enodeframework.commanding.ICommandRoutingKeyProvider;
 import com.enodeframework.commanding.ICommandService;
-import com.enodeframework.common.remoting.common.RemotingUtil;
+import com.enodeframework.common.utilities.RemotingUtil;
 import com.enodeframework.common.serializing.IJsonSerializer;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.queue.QueueMessage;

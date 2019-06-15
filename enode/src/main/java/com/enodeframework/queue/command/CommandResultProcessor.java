@@ -6,7 +6,7 @@ import com.enodeframework.commanding.CommandStatus;
 import com.enodeframework.commanding.ICommand;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
-import com.enodeframework.common.remoting.common.RemoteReply;
+import com.enodeframework.common.utilities.RemoteReply;
 import com.enodeframework.common.scheduling.Worker;
 import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
 import io.vertx.core.Vertx;

@@ -1,4 +1,4 @@
-package com.enodeframework.common.remoting.common;
+package com.enodeframework.common.utilities;
 
 import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.queue.domainevent.DomainEventHandledMessage;

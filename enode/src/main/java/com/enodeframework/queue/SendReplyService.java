@@ -2,9 +2,9 @@ package com.enodeframework.queue;
 
 import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.commanding.CommandReturnType;
-import com.enodeframework.common.remoting.common.RemotingUtil;
-import com.enodeframework.common.remoting.common.RemoteReply;
 import com.enodeframework.common.serializing.IJsonSerializer;
+import com.enodeframework.common.utilities.RemoteReply;
+import com.enodeframework.common.utilities.RemotingUtil;
 import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -62,7 +62,7 @@ public class SendReplyService {
                     remotingReply.setEventHandledMessage((DomainEventHandledMessage) context.getReplyData());
                 }
                 String message = jsonSerializer.serialize(remotingReply);
-                InetSocketAddress inetSocketAddress = (InetSocketAddress) RemotingUtil.string2SocketAddress(replyAddress);
+                InetSocketAddress inetSocketAddress = RemotingUtil.string2SocketAddress(replyAddress);
                 SocketAddress address = SocketAddress.inetSocketAddress(inetSocketAddress.getPort(), inetSocketAddress.getHostName());
                 clientTables.putIfAbsent(replyAddress, vertx.createNetClient().connect(address, res -> {
                     if (res.succeeded()) {
@@ -77,6 +77,7 @@ public class SendReplyService {
                         socket.write(message);
                     } else {
                         logger.error("Failed to connect Net server", res.cause());
+                        clientTables.remove(replyAddress);
                     }
                 }));
             } catch (Exception ex) {
