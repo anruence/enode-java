@@ -13,6 +13,9 @@ import com.enodeframework.queue.command.AbstractCommandService;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class RocketMQCommandService extends AbstractCommandService {
 
     private DefaultMQProducer defaultMQProducer;

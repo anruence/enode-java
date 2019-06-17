@@ -2,7 +2,7 @@ package com.enodeframework.queue;
 
 import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.commanding.CommandReturnType;
-import com.enodeframework.common.serializing.IJsonSerializer;
+import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.common.utilities.RemoteReply;
 import com.enodeframework.common.utilities.RemotingUtil;
 import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
@@ -13,26 +13,21 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class SendReplyService {
 
     private static final Logger logger = LoggerFactory.getLogger(SendReplyService.class);
-
-    @Autowired
-    private IJsonSerializer jsonSerializer;
-
-    private boolean started;
-
-    private boolean stoped;
-
     private final ConcurrentMap<String, NetClient> clientTables = new ConcurrentHashMap<>();
-
+    private boolean started;
+    private boolean stoped;
     private Vertx vertx;
 
     public void start() {
@@ -61,7 +56,7 @@ public class SendReplyService {
                 } else if (context.getReplyType() == CommandReturnType.EventHandled.getValue()) {
                     remotingReply.setEventHandledMessage((DomainEventHandledMessage) context.getReplyData());
                 }
-                String message = jsonSerializer.serialize(remotingReply);
+                String message = JsonTool.serialize(remotingReply);
                 InetSocketAddress inetSocketAddress = RemotingUtil.string2SocketAddress(replyAddress);
                 SocketAddress address = SocketAddress.inetSocketAddress(inetSocketAddress.getPort(), inetSocketAddress.getHostName());
                 clientTables.putIfAbsent(replyAddress, vertx.createNetClient().connect(address, res -> {

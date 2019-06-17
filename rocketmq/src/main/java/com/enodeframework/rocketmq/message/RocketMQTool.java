@@ -7,6 +7,9 @@ import com.enodeframework.queue.QueueMessage;
 
 import java.util.List;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class RocketMQTool {
 
     public static QueueMessage covertToQueueMessage(List<MessageExt> msg) {

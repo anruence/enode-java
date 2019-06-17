@@ -2,6 +2,9 @@ package com.enodeframework.common.extensions;
 
 import java.util.Comparator;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ClassNameComparator implements Comparator<Class<?>> {
     @Override
     public int compare(Class<?> o1, Class<?> o2) {

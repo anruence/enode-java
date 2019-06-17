@@ -1,5 +1,8 @@
 package com.enodeframework.queue.command;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class CommandMessage {
     private String commandData;
     private String replyAddress;

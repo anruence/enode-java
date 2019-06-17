@@ -17,6 +17,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class InMemoryEventStore implements IEventStore {
     private static final boolean EDITING = true;
     private static final boolean UNEDITING = false;

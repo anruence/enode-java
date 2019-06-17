@@ -1,5 +1,8 @@
 package com.enodeframework.infrastructure;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ProcessingApplicationMessage implements IProcessingMessage<ProcessingApplicationMessage, IApplicationMessage> {
     public IApplicationMessage message;
     private ProcessingMessageMailbox<ProcessingApplicationMessage, IApplicationMessage> mailbox;

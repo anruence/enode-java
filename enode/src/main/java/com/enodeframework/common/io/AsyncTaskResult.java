@@ -1,5 +1,8 @@
 package com.enodeframework.common.io;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class AsyncTaskResult<T> {
 
     public static AsyncTaskResult Success = new AsyncTaskResult(AsyncTaskStatus.Success, null);

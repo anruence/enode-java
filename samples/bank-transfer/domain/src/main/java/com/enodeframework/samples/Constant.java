@@ -1,11 +1,5 @@
 package com.enodeframework.samples;
 
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.net.NetServer;
-import io.vertx.core.net.NetServerOptions;
-import io.vertx.core.net.NetSocket;
-
 public class Constant {
 
     public static String COMMAND_TOPIC = "CommandSample";

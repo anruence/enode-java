@@ -11,6 +11,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
 
     @Autowired

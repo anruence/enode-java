@@ -20,6 +20,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class CommandExecuteContext implements ICommandExecuteContext {
     private final ConcurrentMap<String, IAggregateRoot> trackingAggregateRootDict;
     private final IRepository repository;

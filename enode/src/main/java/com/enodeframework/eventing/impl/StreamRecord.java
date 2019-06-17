@@ -2,6 +2,9 @@ package com.enodeframework.eventing.impl;
 
 import java.util.Date;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class StreamRecord {
     private String aggregateRootTypeName;
     private String aggregateRootId;

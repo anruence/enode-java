@@ -9,6 +9,9 @@ import com.enodeframework.queue.publishableexceptions.AbstractPublishableExcepti
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class RocketMQPublishableExceptionPublisher extends AbstractPublishableExceptionPublisher {
 
     private DefaultMQProducer producer;
@@ -23,7 +26,7 @@ public class RocketMQPublishableExceptionPublisher extends AbstractPublishableEx
 
     @Override
     public CompletableFuture<AsyncTaskResult> publishAsync(IPublishableException exception) {
-        QueueMessage queueMessage = createExecptionMessage(exception);
+        QueueMessage queueMessage = createExceptionMessage(exception);
         Message message = RocketMQTool.covertToProducerRecord(queueMessage);
         return SendRocketMQService.sendMessageAsync(producer, message, queueMessage.getRouteKey());
     }

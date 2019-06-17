@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>, Y extends IMessage> implements IProcessingMessageHandler<X, Y> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingMessageHandler.class);

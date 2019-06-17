@@ -1,5 +1,8 @@
 package com.enodeframework.configurations;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultDBConfigurationSetting {
     /**
      * 数据库连接字符串

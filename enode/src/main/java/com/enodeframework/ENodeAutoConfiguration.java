@@ -8,7 +8,6 @@ import com.enodeframework.commanding.impl.DefaultCommandRoutingKeyProvider;
 import com.enodeframework.common.container.SpringObjectContainer;
 import com.enodeframework.common.io.IOHelper;
 import com.enodeframework.common.scheduling.ScheduleService;
-import com.enodeframework.common.thirdparty.gson.GsonJsonSerializer;
 import com.enodeframework.domain.impl.DefaultAggregateRepositoryProvider;
 import com.enodeframework.domain.impl.DefaultAggregateRootFactory;
 import com.enodeframework.domain.impl.DefaultAggregateRootInternalHandlerProvider;
@@ -40,12 +39,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ENodeAutoConfiguration {
-
-    @Bean
-    public GsonJsonSerializer jsonSerializer() {
-        return new GsonJsonSerializer();
-    }
 
     @Bean
     public ScheduleService scheduleService() {
@@ -129,7 +126,6 @@ public class ENodeAutoConfiguration {
     public DefaultEventSerializer defaultEventSerializer() {
         return new DefaultEventSerializer();
     }
-
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public SendReplyService sendReplyService() {

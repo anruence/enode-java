@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ObjectId {
     private static final int STATIC_MACHINE;
     private static final short STATIC_PID;

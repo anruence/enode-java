@@ -2,6 +2,9 @@ package com.enodeframework.commanding.impl;
 
 import java.util.Date;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class CommandRecord {
     private String commandId;
     private String aggregateRootId;

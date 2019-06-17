@@ -12,6 +12,9 @@ import java.time.Duration;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class IOHelper {
     private static final Logger logger = LoggerFactory.getLogger(IOHelper.class);
 

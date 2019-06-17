@@ -1,6 +1,6 @@
 package com.enodeframework.eventing.impl;
 
-import com.enodeframework.common.serializing.IJsonSerializer;
+import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.eventing.IDomainEvent;
 import com.enodeframework.eventing.IEventSerializer;
 import com.enodeframework.infrastructure.IMessage;
@@ -13,13 +13,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultEventSerializer implements IEventSerializer {
 
     @Autowired
     private ITypeNameProvider typeNameProvider;
-
-    @Autowired
-    private IJsonSerializer jsonSerializer;
 
     @Override
     public Map<String, String> serialize(List<IDomainEvent> evnts) {
@@ -27,7 +27,7 @@ public class DefaultEventSerializer implements IEventSerializer {
 
         evnts.forEach(evnt -> {
             String typeName = typeNameProvider.getTypeName(evnt.getClass());
-            String eventData = jsonSerializer.serialize(evnt);
+            String eventData = JsonTool.serialize(evnt);
             dict.put(typeName, eventData);
         });
 
@@ -39,7 +39,7 @@ public class DefaultEventSerializer implements IEventSerializer {
         List<TEvent> evnts = new ArrayList<>();
         data.forEach((key, value) -> {
             Class eventType = typeNameProvider.getType(key);
-            TEvent evnt = (TEvent) jsonSerializer.deserialize(value, eventType);
+            TEvent evnt = (TEvent) JsonTool.deserialize(value, eventType);
             evnts.add(evnt);
         });
         evnts.sort(Comparator.comparingInt(IMessage::sequence));

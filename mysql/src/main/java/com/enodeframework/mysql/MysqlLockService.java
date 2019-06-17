@@ -14,6 +14,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class MysqlLockService implements ILockService {
     private final String tableName;
     private final String lockKeySqlFormat;

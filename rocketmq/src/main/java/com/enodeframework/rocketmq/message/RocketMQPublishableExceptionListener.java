@@ -9,6 +9,9 @@ import com.enodeframework.queue.publishableexceptions.AbstractPublishableExcepti
 
 import java.util.List;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class RocketMQPublishableExceptionListener extends AbstractPublishableExceptionListener implements MessageListenerConcurrently {
 
     @Override

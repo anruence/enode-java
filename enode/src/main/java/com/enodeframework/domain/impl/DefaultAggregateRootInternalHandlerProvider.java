@@ -19,6 +19,9 @@ import java.util.Set;
 
 import static com.enodeframework.common.Constants.AGGREGATE_ROOT_HANDLE_METHOD_NAME;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRootInternalHandlerProvider, IAssemblyInitializer {
 
     private Map<Class, Map<Class, Action2<IAggregateRoot, IDomainEvent>>> mappings = new HashMap<>();

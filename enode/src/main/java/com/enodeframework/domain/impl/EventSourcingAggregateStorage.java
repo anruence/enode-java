@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class EventSourcingAggregateStorage implements IAggregateStorage {
 
     private static final int MINVERSION = 1;

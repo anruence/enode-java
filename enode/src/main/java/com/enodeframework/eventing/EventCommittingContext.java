@@ -4,6 +4,9 @@ import com.enodeframework.commanding.ProcessingCommand;
 import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.eventing.impl.EventMailBox;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class EventCommittingContext {
     private IAggregateRoot aggregateRoot;
     private DomainEventStream eventStream;

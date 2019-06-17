@@ -9,6 +9,9 @@ import com.enodeframework.queue.applicationmessage.AbstractApplicationMessagePub
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class RocketMQApplicationMessagePublisher extends AbstractApplicationMessagePublisher {
 
     private DefaultMQProducer producer;

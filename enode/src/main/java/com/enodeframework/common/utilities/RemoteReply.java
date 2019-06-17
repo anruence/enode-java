@@ -6,6 +6,10 @@ import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
 /**
  * remote relay used by vert.x
  */
+
+/**
+ * @author anruence@gmail.com
+ */
 public class RemoteReply {
 
     private int code;

@@ -3,6 +3,9 @@ package com.enodeframework.queue.domainevent;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class EventStreamMessage {
     private String id;
     private String aggregateRootId;

@@ -1,5 +1,8 @@
 package com.enodeframework.queue.domainevent;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DomainEventHandledMessage {
     private String commandId;
     private String aggregateRootId;

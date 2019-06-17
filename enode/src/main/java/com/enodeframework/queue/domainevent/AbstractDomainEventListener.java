@@ -1,7 +1,7 @@
 package com.enodeframework.queue.domainevent;
 
 import com.enodeframework.commanding.CommandReturnType;
-import com.enodeframework.common.serializing.IJsonSerializer;
+import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.IDomainEvent;
 import com.enodeframework.eventing.IEventSerializer;
@@ -22,17 +22,11 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
 
     @Autowired
     protected SendReplyService sendReplyService;
-
-    @Autowired
-    protected IJsonSerializer jsonSerializer;
-
     @Autowired
     protected IEventSerializer eventSerializer;
 
     @Autowired
     protected IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> domainEventMessageProcessor;
-
-
     protected boolean sendEventHandledMessage = true;
 
     public SendReplyService getSendReplyService() {
@@ -45,14 +39,13 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
-        EventStreamMessage message = jsonSerializer.deserialize(queueMessage.getBody(), EventStreamMessage.class);
+        EventStreamMessage message = JsonTool.deserialize(queueMessage.getBody(), EventStreamMessage.class);
         DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
         DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(AbstractDomainEventListener.this, domainEventStreamMessage, queueMessage, context);
         ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
         logger.info("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.id(), domainEventStreamMessage.aggregateRootStringId(), domainEventStreamMessage.aggregateRootTypeName(), domainEventStreamMessage.version());
         domainEventMessageProcessor.process(processingMessage);
     }
-
 
     private DomainEventStreamMessage convertToDomainEventStream(EventStreamMessage message) {
         DomainEventStreamMessage domainEventStreamMessage = new DomainEventStreamMessage(

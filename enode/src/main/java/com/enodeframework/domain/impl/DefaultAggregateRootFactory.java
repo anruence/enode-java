@@ -4,6 +4,9 @@ import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.domain.IAggregateRootFactory;
 import com.enodeframework.infrastructure.WrappedRuntimeException;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultAggregateRootFactory implements IAggregateRootFactory {
 
     @Override

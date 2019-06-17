@@ -13,6 +13,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class KafkaCommandService extends AbstractCommandService {
 
     private KafkaTemplate<String, String> producer;

@@ -16,6 +16,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultCommandProcessor implements ICommandProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCommandProcessor.class);
 

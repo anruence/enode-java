@@ -8,6 +8,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class InMemoryPublishedVersionStore implements IPublishedVersionStore {
     private final CompletableFuture<AsyncTaskResult> successTask = CompletableFuture.completedFuture(AsyncTaskResult.Success);
 

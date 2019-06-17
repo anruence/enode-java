@@ -3,6 +3,9 @@ package com.enodeframework.infrastructure;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ProcessingDomainEventStreamMessage implements IProcessingMessage<ProcessingDomainEventStreamMessage, DomainEventStreamMessage>, ISequenceProcessingMessage {
     public DomainEventStreamMessage message;
     private ProcessingMessageMailbox<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> mailbox;

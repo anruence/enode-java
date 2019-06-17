@@ -9,6 +9,9 @@ import com.enodeframework.queue.domainevent.AbstractDomainEventListener;
 
 import java.util.List;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class RocketMQDomainEventListener extends AbstractDomainEventListener implements MessageListenerConcurrently {
 
     @Override

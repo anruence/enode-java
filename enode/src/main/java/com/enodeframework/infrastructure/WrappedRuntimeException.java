@@ -3,6 +3,10 @@ package com.enodeframework.infrastructure;
 /**
  * checked exception covert to non-checked exception
  */
+
+/**
+ * @author anruence@gmail.com
+ */
 public class WrappedRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = -8951926710590746149L;
@@ -20,7 +24,6 @@ public class WrappedRuntimeException extends RuntimeException {
     public WrappedRuntimeException(String msg) {
         super(msg);
     }
-
 
     public WrappedRuntimeException(String msg, Throwable e) {
         super(msg);

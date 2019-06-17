@@ -13,6 +13,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class EventMailBox {
     private static final Logger logger = LoggerFactory.getLogger(EventMailBox.class);
 
@@ -95,7 +98,6 @@ public class EventMailBox {
     public void exit() {
         isRunning.getAndSet(false);
     }
-
 
     public void clear() {
         messageQueue.clear();

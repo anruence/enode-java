@@ -29,6 +29,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultMessageDispatcher implements IMessageDispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultMessageDispatcher.class);

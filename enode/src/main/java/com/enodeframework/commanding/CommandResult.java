@@ -1,5 +1,8 @@
 package com.enodeframework.commanding;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class CommandResult {
     /**
      * Represents the result status of the command.

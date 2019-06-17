@@ -14,6 +14,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
 
     @Autowired

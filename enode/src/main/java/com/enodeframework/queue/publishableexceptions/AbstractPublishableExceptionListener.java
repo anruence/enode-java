@@ -1,6 +1,6 @@
 package com.enodeframework.queue.publishableexceptions;
 
-import com.enodeframework.common.serializing.IJsonSerializer;
+import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.infrastructure.IMessageProcessor;
 import com.enodeframework.infrastructure.IPublishableException;
 import com.enodeframework.infrastructure.ISequenceMessage;
@@ -20,9 +20,6 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
     private static final Logger logger = LoggerFactory.getLogger(AbstractPublishableExceptionListener.class);
 
     @Autowired
-    protected IJsonSerializer jsonSerializer;
-
-    @Autowired
     protected ITypeNameProvider typeNameProvider;
 
     @Autowired
@@ -30,7 +27,7 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
-        PublishableExceptionMessage exceptionMessage = jsonSerializer.deserialize(queueMessage.getBody(), PublishableExceptionMessage.class);
+        PublishableExceptionMessage exceptionMessage = JsonTool.deserialize(queueMessage.getBody(), PublishableExceptionMessage.class);
         Class exceptionType = typeNameProvider.getType(exceptionMessage.getExceptionType());
         IPublishableException exception;
         try {

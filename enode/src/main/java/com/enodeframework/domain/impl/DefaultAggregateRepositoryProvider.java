@@ -16,6 +16,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryProvider, IAssemblyInitializer {
 
     private final Map<Class, IAggregateRepositoryProxy> repositoryDict = new HashMap<>();
