@@ -32,6 +32,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class MysqlEventStore implements IEventStore {
 
     private static final Logger logger = LoggerFactory.getLogger(MysqlEventStore.class);

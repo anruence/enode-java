@@ -2,6 +2,9 @@ package com.enodeframework.infrastructure;
 
 import java.util.Date;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class TwoMessageHandleRecord {
     private String messageId1;
     private String messageId2;

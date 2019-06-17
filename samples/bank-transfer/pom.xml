@@ -10,7 +10,7 @@
     <modules>
         <module>command-consumer</module>
         <module>event-consumer</module>
-        <module>command-sender</module>
+        <module>command-web</module>
         <module>domain</module>
     </modules>
     <dependencyManagement>

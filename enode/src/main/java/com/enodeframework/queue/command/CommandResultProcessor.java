@@ -21,6 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class CommandResultProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandResultProcessor.class);

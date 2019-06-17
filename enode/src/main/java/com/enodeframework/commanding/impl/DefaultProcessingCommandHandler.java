@@ -43,6 +43,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultProcessingCommandHandler implements IProcessingCommandHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingCommandHandler.class);

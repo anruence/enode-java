@@ -6,6 +6,9 @@ import com.enodeframework.infrastructure.IMessagePublisher;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DoNothingPublisher<TMessage extends IMessage> implements IMessagePublisher<TMessage> {
 
     private static final CompletableFuture<AsyncTaskResult> SUCCESSRESULTTASK = CompletableFuture.completedFuture(AsyncTaskResult.Success);

@@ -18,7 +18,7 @@ public abstract class AbstractCommandService implements ICommandService {
     @Autowired
     protected CommandResultProcessor commandResultProcessor;
 
-    protected TopicData topicData;
+    private TopicData topicData;
 
     public TopicData getTopicData() {
         return topicData;
@@ -30,6 +30,7 @@ public abstract class AbstractCommandService implements ICommandService {
 
     protected QueueMessage buildCommandMessage(ICommand command, boolean needReply) {
         Ensure.notNull(command.getAggregateRootId(), "aggregateRootId");
+        Ensure.notNull(topicData, "topicData");
         String commandData = JsonTool.serialize(command);
         String replyAddress = needReply && commandResultProcessor != null ? RemotingUtil.parseAddress(commandResultProcessor.getBindAddress()) : null;
         String messageData = JsonTool.serialize(new CommandMessage(commandData, replyAddress, command.getClass().getName()));

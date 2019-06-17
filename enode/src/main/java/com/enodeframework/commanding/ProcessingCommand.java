@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ProcessingCommand {
     private final ICommand message;
     private final ICommandExecuteContext commandExecuteContext;

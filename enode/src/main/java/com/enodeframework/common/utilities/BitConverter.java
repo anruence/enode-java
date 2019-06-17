@@ -2,6 +2,9 @@ package com.enodeframework.common.utilities;
 
 import java.nio.charset.Charset;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class BitConverter {
 
     private static final Charset UTF8 = Charset.forName("utf-8");

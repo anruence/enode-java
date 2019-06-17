@@ -7,6 +7,9 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class TypeUtils {
 
     public static boolean isAggregateRoot(Class type) {

@@ -4,6 +4,9 @@ import com.enodeframework.common.function.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class Worker {
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 

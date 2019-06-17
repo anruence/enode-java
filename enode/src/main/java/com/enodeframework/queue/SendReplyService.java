@@ -19,6 +19,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class SendReplyService {
 
     private static final Logger logger = LoggerFactory.getLogger(SendReplyService.class);

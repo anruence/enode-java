@@ -26,6 +26,7 @@ public abstract class AbstractDomainEventPublisher implements IMessagePublisher<
 
     protected QueueMessage createDomainEventStreamMessage(DomainEventStreamMessage eventStream) {
         Ensure.notNull(eventStream.aggregateRootId(), "aggregateRootId");
+        Ensure.notNull(topicData, "topicData");
         EventStreamMessage eventMessage = createEventMessage(eventStream);
         String data = JsonTool.serialize(eventMessage);
         String routeKey = eventStream.getRoutingKey() != null ? eventStream.getRoutingKey() : eventMessage.getAggregateRootId();

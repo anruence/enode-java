@@ -2,6 +2,9 @@ package com.enodeframework.common.threading;
 
 import com.enodeframework.infrastructure.WrappedRuntimeException;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ManualResetEvent {
 
     private final Object monitor = new Object();

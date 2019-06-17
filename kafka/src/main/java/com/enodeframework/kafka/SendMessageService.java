@@ -9,6 +9,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class SendMessageService {
 
     private static Logger logger = LoggerFactory.getLogger(SendMessageService.class);
@@ -18,7 +21,7 @@ public class SendMessageService {
         producer.send(record).completable().whenComplete((r, e) -> {
             if (e != null) {
                 future.complete(new AsyncTaskResult(AsyncTaskStatus.IOException));
-                logger.error("send kafka msg error, record:{}", record, e);
+                logger.error("send kafka record error, record:{}", record, e);
                 return;
             }
             future.complete(AsyncTaskResult.Success);

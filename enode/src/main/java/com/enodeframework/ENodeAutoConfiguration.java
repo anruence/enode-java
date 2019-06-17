@@ -39,6 +39,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ENodeAutoConfiguration {
 
     @Bean

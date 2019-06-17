@@ -7,6 +7,9 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class KafkaTool {
 
     public static String HEADERCODE = "CODE";

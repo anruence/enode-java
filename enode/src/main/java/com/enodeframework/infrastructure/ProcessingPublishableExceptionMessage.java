@@ -1,5 +1,8 @@
 package com.enodeframework.infrastructure;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ProcessingPublishableExceptionMessage implements IProcessingMessage<ProcessingPublishableExceptionMessage, IPublishableException> {
     private ProcessingMessageMailbox<ProcessingPublishableExceptionMessage, IPublishableException> mailbox;
 

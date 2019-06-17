@@ -25,6 +25,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ClassPathScanHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassPathScanHandler.class);

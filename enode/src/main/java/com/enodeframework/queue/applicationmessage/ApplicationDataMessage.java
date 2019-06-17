@@ -1,5 +1,8 @@
 package com.enodeframework.queue.applicationmessage;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ApplicationDataMessage {
     private String applicationMessageData;
     private String applicationMessageType;

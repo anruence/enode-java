@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Method;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class, ICommandHandlerProxy, Class> implements ICommandHandlerProvider {
 
     @Autowired

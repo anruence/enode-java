@@ -7,6 +7,10 @@ import java.util.concurrent.CompletableFuture;
 /**
  * write code looks like C# Task
  */
+
+/**
+ * @author anruence@gmail.com
+ */
 public class Task extends CompletableFuture {
 
     public static CompletableFuture CompletedTask = CompletableFuture.completedFuture(null);

@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.enodeframework.common.io.Task.await;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y extends IMessage> {
     private static final Logger logger = LoggerFactory.getLogger(ProcessingMessageMailbox.class);
 

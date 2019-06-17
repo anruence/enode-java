@@ -1,5 +1,8 @@
 package com.enodeframework.configurations;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ConfigurationSetting {
     /**
      * 处理领域事件的处理器的名字，默认为DefaultEventHandler

@@ -3,6 +3,9 @@ package com.enodeframework.configurations;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class OptionSetting {
 
     private Map<String, String> options;

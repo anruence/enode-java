@@ -1,5 +1,8 @@
 package com.enodeframework.common.utilities;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class Ensure {
     public static <T> void notNull(T argument, String argumentName) {
         if (argument == null) {

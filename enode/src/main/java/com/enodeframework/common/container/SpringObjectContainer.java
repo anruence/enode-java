@@ -7,6 +7,10 @@ import org.springframework.context.ApplicationContextAware;
 /**
  * Spring Ioc容器
  */
+
+/**
+ * @author anruence@gmail.com
+ */
 public class SpringObjectContainer implements IObjectContainer, ApplicationContextAware {
 
     private static ApplicationContext applicationContext;

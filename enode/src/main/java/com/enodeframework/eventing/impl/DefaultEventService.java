@@ -28,6 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultEventService implements IEventService {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultEventService.class);

@@ -9,6 +9,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class KafkaApplicationMessagePublisher extends AbstractApplicationMessagePublisher {
 
     private KafkaTemplate<String, String> producer;

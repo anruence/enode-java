@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class RocketMQApplicationMessageListener extends AbstractApplicationMessageListener implements MessageListenerConcurrently {
 
     private final Logger LOGGER = LoggerFactory.getLogger(RocketMQApplicationMessageListener.class);

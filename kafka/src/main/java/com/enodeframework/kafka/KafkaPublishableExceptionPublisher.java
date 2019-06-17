@@ -9,6 +9,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class KafkaPublishableExceptionPublisher extends AbstractPublishableExceptionPublisher {
 
     private KafkaTemplate<String, String> producer;
@@ -27,7 +30,7 @@ public class KafkaPublishableExceptionPublisher extends AbstractPublishableExcep
     }
 
     protected ProducerRecord<String, String> buildKafkaMessage(IPublishableException exception) {
-        QueueMessage queueMessage = createExecptionMessage(exception);
+        QueueMessage queueMessage = createExceptionMessage(exception);
         return KafkaTool.covertToProducerRecord(queueMessage);
     }
 }

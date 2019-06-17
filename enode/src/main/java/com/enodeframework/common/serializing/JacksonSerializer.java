@@ -1,5 +1,8 @@
 package com.enodeframework.common.serializing;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class JacksonSerializer implements IJsonSerializer {
 
     @Override

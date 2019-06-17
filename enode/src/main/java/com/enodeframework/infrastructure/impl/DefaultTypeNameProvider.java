@@ -3,6 +3,9 @@ package com.enodeframework.infrastructure.impl;
 import com.enodeframework.infrastructure.ITypeNameProvider;
 import com.enodeframework.infrastructure.WrappedRuntimeException;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultTypeNameProvider implements ITypeNameProvider {
 
     @Override

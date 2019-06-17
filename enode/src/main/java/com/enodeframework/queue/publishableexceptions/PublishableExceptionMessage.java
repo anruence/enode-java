@@ -3,6 +3,9 @@ package com.enodeframework.queue.publishableexceptions;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class PublishableExceptionMessage {
     private String uniqueId;
     private String aggregateRootId;

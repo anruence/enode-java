@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class SendRocketMQService {
 
     private static Logger logger = LoggerFactory.getLogger(SendRocketMQService.class);

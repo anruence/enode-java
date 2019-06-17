@@ -1,5 +1,8 @@
 package com.enodeframework.queue;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class TopicData {
 
     private String topic;

@@ -19,6 +19,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DefaultMemoryCache implements IMemoryCache {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultMemoryCache.class);

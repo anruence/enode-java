@@ -12,6 +12,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class ScheduleService implements IScheduleService {
 
     private static final Logger logger = LoggerFactory.getLogger(ScheduleService.class);

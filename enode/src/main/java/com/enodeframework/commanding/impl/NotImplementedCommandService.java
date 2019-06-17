@@ -8,6 +8,9 @@ import com.enodeframework.common.io.AsyncTaskResult;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class NotImplementedCommandService implements ICommandService {
     @Override
     public CompletableFuture<AsyncTaskResult> sendAsync(ICommand command) {

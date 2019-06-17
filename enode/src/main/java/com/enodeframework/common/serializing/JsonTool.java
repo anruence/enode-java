@@ -21,6 +21,9 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class JsonTool {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonTool.class);

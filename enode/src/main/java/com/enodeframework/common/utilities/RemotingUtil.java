@@ -25,6 +25,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class RemotingUtil {
 
     public static final String OS_NAME = System.getProperty("os.name");

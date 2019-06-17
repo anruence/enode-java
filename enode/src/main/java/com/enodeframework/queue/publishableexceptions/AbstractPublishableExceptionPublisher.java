@@ -1,6 +1,7 @@
 package com.enodeframework.queue.publishableexceptions;
 
 import com.enodeframework.common.serializing.JsonTool;
+import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.infrastructure.IMessagePublisher;
 import com.enodeframework.infrastructure.IPublishableException;
 import com.enodeframework.infrastructure.ISequenceMessage;
@@ -12,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractPublishableExceptionPublisher implements IMessagePublisher<IPublishableException> {
-    protected TopicData topicData;
+    private TopicData topicData;
 
     public TopicData getTopicData() {
         return topicData;
@@ -22,7 +23,8 @@ public abstract class AbstractPublishableExceptionPublisher implements IMessageP
         this.topicData = topicData;
     }
 
-    protected QueueMessage createExecptionMessage(IPublishableException exception) {
+    protected QueueMessage createExceptionMessage(IPublishableException exception) {
+        Ensure.notNull(topicData, "topicData");
         Map<String, String> serializableInfo = new HashMap<>();
         exception.serializeTo(serializableInfo);
         ISequenceMessage sequenceMessage = null;

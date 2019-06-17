@@ -2,6 +2,9 @@ package com.enodeframework.infrastructure;
 
 import java.util.Date;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class MessageHandleRecord {
     private String messageId;
     private String handlerTypeName;

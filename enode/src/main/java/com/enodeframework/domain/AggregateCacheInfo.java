@@ -1,5 +1,8 @@
 package com.enodeframework.domain;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class AggregateCacheInfo {
     private IAggregateRoot aggregateRoot;
     private long lastUpdateTimeMillis;

@@ -1,6 +1,7 @@
 package com.enodeframework.queue.applicationmessage;
 
 import com.enodeframework.common.serializing.JsonTool;
+import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.infrastructure.IMessagePublisher;
 import com.enodeframework.queue.QueueMessage;
@@ -8,7 +9,7 @@ import com.enodeframework.queue.QueueMessageTypeCode;
 import com.enodeframework.queue.TopicData;
 
 public abstract class AbstractApplicationMessagePublisher implements IMessagePublisher<IApplicationMessage> {
-    protected TopicData topicData;
+    private TopicData topicData;
 
     public TopicData getTopicData() {
         return topicData;
@@ -19,6 +20,7 @@ public abstract class AbstractApplicationMessagePublisher implements IMessagePub
     }
 
     protected QueueMessage createApplicationMessage(IApplicationMessage message) {
+        Ensure.notNull(topicData, "topicData");
         String appMessageData = JsonTool.serialize(message);
         ApplicationDataMessage appDataMessage = new ApplicationDataMessage(appMessageData, message.getClass().getName());
         String data = JsonTool.serialize(appDataMessage);

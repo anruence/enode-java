@@ -8,6 +8,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class DelayedTask {
 
     private static final ScheduledExecutorService EXECUTOR = new ScheduledThreadPoolExecutor(

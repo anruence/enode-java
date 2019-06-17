@@ -1,5 +1,8 @@
 package com.enodeframework.configurations;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class StringKeyValuePair {
     private String key;
     private String value;

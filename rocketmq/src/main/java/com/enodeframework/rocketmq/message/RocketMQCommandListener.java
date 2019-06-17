@@ -9,6 +9,9 @@ import com.enodeframework.queue.command.AbstractCommandListener;
 
 import java.util.List;
 
+/**
+ * @author anruence@gmail.com
+ */
 public class RocketMQCommandListener extends AbstractCommandListener implements MessageListenerConcurrently {
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
