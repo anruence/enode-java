@@ -15,7 +15,7 @@ import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.IOHelper;
 import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.common.io.Task;
-import com.enodeframework.common.serializing.IJsonSerializer;
+import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.EventCommittingContext;
@@ -46,10 +46,6 @@ import java.util.stream.Collectors;
 public class DefaultProcessingCommandHandler implements IProcessingCommandHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingCommandHandler.class);
-
-    @Autowired
-    private IJsonSerializer jsonSerializer;
-
     @Autowired
     private IEventStore eventStore;
 
@@ -352,7 +348,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         ioHelper.tryAsyncActionRecursively("PublishApplicationMessageAsync",
                 () -> applicationMessagePublisher.publishAsync(message),
                 currentRetryTimes -> publishMessageAsync(processingCommand, message, currentRetryTimes),
-                result -> completeCommand(processingCommand, CommandStatus.Success, message.getTypeName(), jsonSerializer.serialize(message)),
+                result -> completeCommand(processingCommand, CommandStatus.Success, message.getTypeName(), JsonTool.serialize(message)),
                 () -> String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.id(), message.getClass().getName(), command.id(), command.getClass().getName()),
                 errorMessage -> logger.error(String.format("Publish application message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true);

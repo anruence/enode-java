@@ -1,6 +1,6 @@
 package com.enodeframework.queue.domainevent;
 
-import com.enodeframework.common.serializing.IJsonSerializer;
+import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.IEventSerializer;
@@ -11,10 +11,6 @@ import com.enodeframework.queue.TopicData;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractDomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
-
-    @Autowired
-    protected IJsonSerializer jsonSerializer;
-
     @Autowired
     protected IEventSerializer eventSerializer;
 
@@ -31,7 +27,7 @@ public abstract class AbstractDomainEventPublisher implements IMessagePublisher<
     protected QueueMessage createDomainEventStreamMessage(DomainEventStreamMessage eventStream) {
         Ensure.notNull(eventStream.aggregateRootId(), "aggregateRootId");
         EventStreamMessage eventMessage = createEventMessage(eventStream);
-        String data = jsonSerializer.serialize(eventMessage);
+        String data = JsonTool.serialize(eventMessage);
         String routeKey = eventStream.getRoutingKey() != null ? eventStream.getRoutingKey() : eventMessage.getAggregateRootId();
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setCode(QueueMessageTypeCode.DomainEventStreamMessage.getValue());

@@ -21,7 +21,6 @@ public class WrappedRuntimeException extends RuntimeException {
         super(msg);
     }
 
-
     public WrappedRuntimeException(String msg, Throwable e) {
         super(msg);
         exception = e instanceof WrappedRuntimeException ? ((WrappedRuntimeException) e).getException() : e;

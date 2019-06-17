@@ -65,4 +65,17 @@ public class QueueMessage {
     public void setTags(String tags) {
         this.tags = tags;
     }
+
+    @Override
+    public String toString() {
+        return "QueueMessage{" +
+                "body='" + body + '\'' +
+                ", topic='" + topic + '\'' +
+                ", tags='" + tags + '\'' +
+                ", code=" + code +
+                ", version=" + version +
+                ", routeKey='" + routeKey + '\'' +
+                ", key='" + key + '\'' +
+                '}';
+    }
 }

@@ -4,8 +4,6 @@ import com.enodeframework.commanding.ICommand;
 import com.enodeframework.commanding.ICommandContext;
 import com.enodeframework.commanding.ICommandHandlerProxy;
 import com.enodeframework.common.container.IObjectContainer;
-import com.enodeframework.common.io.AsyncTaskResult;
-import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.infrastructure.WrappedRuntimeException;
 import org.springframework.beans.factory.annotation.Autowired;
 

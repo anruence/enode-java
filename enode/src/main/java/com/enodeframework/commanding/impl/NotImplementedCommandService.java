@@ -14,7 +14,6 @@ public class NotImplementedCommandService implements ICommandService {
         throw new UnsupportedOperationException();
     }
 
-
     @Override
     public CompletableFuture<AsyncTaskResult<CommandResult>> executeAsync(ICommand command) {
         throw new UnsupportedOperationException();

@@ -6,8 +6,8 @@ import com.enodeframework.commanding.CommandStatus;
 import com.enodeframework.commanding.ICommand;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
-import com.enodeframework.common.utilities.RemoteReply;
 import com.enodeframework.common.scheduling.Worker;
+import com.enodeframework.common.utilities.RemoteReply;
 import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetServer;
@@ -152,6 +152,14 @@ public class CommandResultProcessor {
         }
     }
 
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     class CommandTaskCompletionSource {
         private com.enodeframework.commanding.CommandReturnType commandReturnType;
         private CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource;
@@ -176,13 +184,5 @@ public class CommandResultProcessor {
         public void setTaskCompletionSource(CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
             this.taskCompletionSource = taskCompletionSource;
         }
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 }

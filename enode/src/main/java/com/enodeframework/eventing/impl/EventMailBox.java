@@ -96,7 +96,6 @@ public class EventMailBox {
         isRunning.getAndSet(false);
     }
 
-
     public void clear() {
         messageQueue.clear();
     }

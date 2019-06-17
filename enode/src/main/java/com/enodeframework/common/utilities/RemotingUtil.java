@@ -20,7 +20,10 @@ import com.enodeframework.infrastructure.WrappedRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 public class RemotingUtil {
 
@@ -40,11 +43,9 @@ public class RemotingUtil {
         }
     }
 
-
     public static boolean isLinuxPlatform() {
         return isLinuxPlatform;
     }
-
 
     public static InetSocketAddress string2SocketAddress(final String addr) {
         String[] s = addr.split(":");
@@ -52,7 +53,6 @@ public class RemotingUtil {
         return isa;
     }
 
-    
     public static String parseAddress(InetSocketAddress socketAddress) {
         int port = socketAddress.getPort();
         InetAddress localAddress = socketAddress.getAddress();

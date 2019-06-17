@@ -3,7 +3,7 @@ package com.enodeframework.mysql;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.IOHelper;
-import com.enodeframework.common.serializing.IJsonSerializer;
+import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.configurations.DefaultDBConfigurationSetting;
 import com.enodeframework.configurations.OptionSetting;
@@ -45,8 +45,7 @@ public class MysqlEventStore implements IEventStore {
     private final int bulkCopyBatchSize;
     private final int bulkCopyTimeout;
     private final QueryRunner queryRunner;
-    @Autowired
-    private IJsonSerializer jsonSerializer;
+
 
     @Autowired
     private IEventSerializer eventSerializer;
@@ -153,7 +152,7 @@ public class MysqlEventStore implements IEventStore {
         for (int i = 0, len = eventStreams.size(); i < len; i++) {
             DomainEventStream eventStream = eventStreams.get(i);
             params[i] = new Object[]{eventStream.aggregateRootId(), eventStream.aggregateRootTypeName(), eventStream.commandId(), eventStream.version(), eventStream.timestamp(),
-                    jsonSerializer.serialize(eventSerializer.serialize(eventStream.events()))};
+                    JsonTool.serialize(eventSerializer.serialize(eventStream.events()))};
         }
 
         try {
@@ -274,13 +273,13 @@ public class MysqlEventStore implements IEventStore {
                 record.getAggregateRootTypeName(),
                 record.getVersion(),
                 record.getCreatedOn(),
-                eventSerializer.deserialize(jsonSerializer.deserialize(record.getEvents(), Map.class), IDomainEvent.class),
+                eventSerializer.deserialize(JsonTool.deserialize(record.getEvents(), Map.class), IDomainEvent.class),
                 null);
     }
 
     private StreamRecord convertTo(DomainEventStream eventStream) {
         return new StreamRecord(eventStream.commandId(), eventStream.aggregateRootId(), eventStream.aggregateRootTypeName(),
                 eventStream.version(), eventStream.timestamp(),
-                jsonSerializer.serialize(eventSerializer.serialize(eventStream.events())));
+                JsonTool.serialize(eventSerializer.serialize(eventStream.events())));
     }
 }

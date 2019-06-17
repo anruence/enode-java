@@ -41,7 +41,6 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
         });
     }
 
-
     @Override
     public Object getInnerObject() {
         if (handler != null) {
