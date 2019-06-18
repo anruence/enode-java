@@ -50,35 +50,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingCommandHandler.class);
 
-
-    public void setEventStore(IEventStore eventStore) {
-        this.eventStore = eventStore;
-    }
-
-    public void setCommandHandlerProvider(ICommandHandlerProvider commandHandlerProvider) {
-        this.commandHandlerProvider = commandHandlerProvider;
-    }
-
-    public void setCommandAsyncHandlerProvider(ICommandAsyncHandlerProvider commandAsyncHandlerProvider) {
-        this.commandAsyncHandlerProvider = commandAsyncHandlerProvider;
-    }
-
-    public void setTypeNameProvider(ITypeNameProvider typeNameProvider) {
-        this.typeNameProvider = typeNameProvider;
-    }
-
-    public void setEventService(IEventService eventService) {
-        this.eventService = eventService;
-    }
-
-    public void setApplicationMessagePublisher(IMessagePublisher<IApplicationMessage> applicationMessagePublisher) {
-        this.applicationMessagePublisher = applicationMessagePublisher;
-    }
-
-    public void setExceptionPublisher(IMessagePublisher<IPublishableException> exceptionPublisher) {
-        this.exceptionPublisher = exceptionPublisher;
-    }
-
     @Autowired
     private IEventStore eventStore;
 
