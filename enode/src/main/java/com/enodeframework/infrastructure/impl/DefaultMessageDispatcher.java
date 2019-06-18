@@ -44,8 +44,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
     private ITwoMessageHandlerProvider twoMessageHandlerProvider;
     @Autowired
     private IThreeMessageHandlerProvider threeMessageHandlerProvider;
-    @Autowired
-    private IOHelper ioHelper;
+
 
     @Override
     public CompletableFuture<AsyncTaskResult> dispatchMessageAsync(IMessage message) {
@@ -162,7 +161,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
             int retryTimes) {
         IMessage message = singleMessageDispatching.getMessage();
 
-        ioHelper.tryAsyncActionRecursively("HandleSingleMessageAsync",
+        IOHelper.tryAsyncActionRecursively("HandleSingleMessageAsync",
                 () -> handlerProxy.handleAsync(message),
                 currentRetryTimes -> handleSingleMessageAsync(singleMessageDispatching, handlerProxy, handlerTypeName, messageTypeName, queueHandler, currentRetryTimes),
                 result ->
@@ -189,7 +188,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         IMessage message1 = messages[0];
         IMessage message2 = messages[1];
 
-        ioHelper.tryAsyncActionRecursively("HandleTwoMessageAsync",
+        IOHelper.tryAsyncActionRecursively("HandleTwoMessageAsync",
                 () -> handlerProxy.handleAsync(message1, message2),
                 currentRetryTimes -> handleTwoMessageAsync(multiMessageDispatching, handlerProxy, handlerTypeName, queueHandler, currentRetryTimes),
                 result ->
@@ -217,7 +216,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         IMessage message2 = messages[1];
         IMessage message3 = messages[2];
 
-        ioHelper.tryAsyncActionRecursively("HandleThreeMessageAsync",
+        IOHelper.tryAsyncActionRecursively("HandleThreeMessageAsync",
                 () -> handlerProxy.handleAsync(message1, message2, message3),
                 currentRetryTimes -> handleThreeMessageAsync(multiMessageDispatching, handlerProxy, handlerTypeName, queueHandler, currentRetryTimes),
 

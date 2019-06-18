@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 public class IOHelper {
     private static final Logger logger = LoggerFactory.getLogger(IOHelper.class);
 
-    public <TAsyncResult extends AsyncTaskResult> void tryAsyncActionRecursively(
+    public static <TAsyncResult extends AsyncTaskResult> void tryAsyncActionRecursively(
             String asyncActionName,
             Func<CompletableFuture<TAsyncResult>> asyncAction,
             Action1<Integer> mainAction,
@@ -30,7 +30,7 @@ public class IOHelper {
         tryAsyncActionRecursively(asyncActionName, asyncAction, mainAction, successAction, getContextInfoFunc, failedAction, retryTimes, retryWhenFailed, 3, 1000);
     }
 
-    public <TAsyncResult extends AsyncTaskResult> void tryAsyncActionRecursively(
+    public static <TAsyncResult extends AsyncTaskResult> void tryAsyncActionRecursively(
             String asyncActionName,
             Func<CompletableFuture<TAsyncResult>> asyncAction,
             Action1<Integer> mainAction,
@@ -48,7 +48,7 @@ public class IOHelper {
         asyncTaskExecutionContext.execute();
     }
 
-    public void tryIOAction(Action action, String actionName) {
+    public static void tryIOAction(Action action, String actionName) {
         Ensure.notNull(action, "action");
         Ensure.notNull(actionName, "actionName");
         try {
@@ -58,7 +58,7 @@ public class IOHelper {
         }
     }
 
-    public <T> T tryIOFunc(Func<T> func, String funcName) {
+    public static <T> T tryIOFunc(Func<T> func, String funcName) {
         Ensure.notNull(func, "func");
         Ensure.notNull(funcName, "funcName");
         try {
@@ -68,7 +68,7 @@ public class IOHelper {
         }
     }
 
-    public <T> CompletableFuture<T> tryIOFuncAsync(Func<CompletableFuture<T>> func, String funcName) {
+    public static <T> CompletableFuture<T> tryIOFuncAsync(Func<CompletableFuture<T>> func, String funcName) {
         Ensure.notNull(func, "func");
         Ensure.notNull(funcName, "funcName");
         try {

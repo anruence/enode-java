@@ -22,7 +22,9 @@ public class KafkaCommandListener extends AbstractCommandListener implements Ack
         handle(queueMessage, context -> {
         });
         //TODO retry when execute failed
-        acknowledgment.acknowledge();
+        if (acknowledgment != null) {
+            acknowledgment.acknowledge();
+        }
     }
 
     /**

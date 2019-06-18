@@ -63,9 +63,6 @@ public class DefaultEventService implements IEventService {
     @Autowired
     private IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
 
-    @Autowired
-    private IOHelper ioHelper;
-
     public DefaultEventService() {
         this.mailboxDict = new ConcurrentHashMap<>();
         this.batchSize = eventMailBoxPersistenceMaxBatchSize;
@@ -115,7 +112,7 @@ public class DefaultEventService implements IEventService {
     }
 
     private void batchPersistEventAsync(List<EventCommittingContext> committingContexts, int retryTimes) {
-        ioHelper.tryAsyncActionRecursively("BatchPersistEventAsync",
+        IOHelper.tryAsyncActionRecursively("BatchPersistEventAsync",
                 () -> eventStore.batchAppendAsync(committingContexts.stream().map(x -> x.getEventStream()).collect(Collectors.toList())),
                 currentRetryTimes -> batchPersistEventAsync(committingContexts, currentRetryTimes),
                 result ->
@@ -155,7 +152,7 @@ public class DefaultEventService implements IEventService {
     }
 
     private void persistEvent(EventCommittingContext context, int retryTimes) {
-        ioHelper.tryAsyncActionRecursively("PersistEvent",
+        IOHelper.tryAsyncActionRecursively("PersistEvent",
                 () -> eventStore.appendAsync(context.getEventStream()),
                 currentRetryTimes -> persistEvent(context, currentRetryTimes),
 
@@ -221,7 +218,7 @@ public class DefaultEventService implements IEventService {
     private void tryToRepublishEventAsync(EventCommittingContext context, int retryTimes) {
         ICommand command = context.getProcessingCommand().getMessage();
 
-        ioHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
+        IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
                 () -> eventStore.findAsync(context.getEventStream().aggregateRootId(), command.id()),
                 currentRetryTimes -> tryToRepublishEventAsync(context, currentRetryTimes),
                 result ->
@@ -257,7 +254,7 @@ public class DefaultEventService implements IEventService {
     private void handleFirstEventDuplicationAsync(EventCommittingContext context, int retryTimes) {
         DomainEventStream eventStream = context.getEventStream();
 
-        ioHelper.tryAsyncActionRecursively("FindFirstEventByVersion",
+        IOHelper.tryAsyncActionRecursively("FindFirstEventByVersion",
                 () -> eventStore.findAsync(eventStream.aggregateRootId(), 1),
                 currentRetryTimes -> handleFirstEventDuplicationAsync(context, currentRetryTimes),
                 result ->
@@ -320,7 +317,7 @@ public class DefaultEventService implements IEventService {
     }
 
     private void publishDomainEventAsync(ProcessingCommand processingCommand, DomainEventStreamMessage eventStream, int retryTimes) {
-        ioHelper.tryAsyncActionRecursively("PublishDomainEventAsync",
+        IOHelper.tryAsyncActionRecursively("PublishDomainEventAsync",
                 () -> domainEventPublisher.publishAsync(eventStream),
                 currentRetryTimes -> publishDomainEventAsync(processingCommand, eventStream, currentRetryTimes),
                 result ->

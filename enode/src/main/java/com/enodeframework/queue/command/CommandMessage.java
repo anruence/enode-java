@@ -4,15 +4,12 @@ package com.enodeframework.queue.command;
  * @author anruence@gmail.com
  */
 public class CommandMessage {
-    private String commandData;
-    private String replyAddress;
-    private String commandType;
 
-    public CommandMessage(String commandData, String replyAddress, String commandType) {
-        this.commandData = commandData;
-        this.replyAddress = replyAddress;
-        this.commandType = commandType;
-    }
+    private String commandData;
+
+    private String replyAddress;
+
+    private String commandType;
 
     public String getCommandData() {
         return commandData;
@@ -32,5 +29,9 @@ public class CommandMessage {
 
     public String getCommandType() {
         return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
     }
 }

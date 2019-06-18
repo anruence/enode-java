@@ -44,6 +44,11 @@
             <artifactId>enode-rocketmq</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.enodeframework</groupId>
+            <artifactId>enode-kafka</artifactId>
+            <version>1.0.0</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

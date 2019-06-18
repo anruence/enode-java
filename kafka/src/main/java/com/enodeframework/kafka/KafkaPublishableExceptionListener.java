@@ -22,7 +22,9 @@ public class KafkaPublishableExceptionListener extends AbstractPublishableExcept
         QueueMessage queueMessage = KafkaTool.covertToQueueMessage(data);
         handle(queueMessage, context -> {
         });
-        acknowledgment.acknowledge();
+        if (acknowledgment != null) {
+            acknowledgment.acknowledge();
+        }
     }
 
     /**
