@@ -53,8 +53,7 @@ public class MysqlEventStore implements IEventStore {
     @Autowired
     private IEventSerializer eventSerializer;
 
-    @Autowired
-    private IOHelper ioHelper;
+
 
     private boolean supportBatchAppendEvent = true;
 
@@ -114,7 +113,7 @@ public class MysqlEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
-        return ioHelper.tryIOFuncAsync(() ->
+        return IOHelper.tryIOFuncAsync(() ->
                 CompletableFuture.supplyAsync(() -> {
                     try {
                         String sql = String.format("SELECT * FROM `%s` WHERE AggregateRootId = ? AND Version >= ? AND Version <= ? ORDER BY Version", getTableName(aggregateRootId));
@@ -176,7 +175,7 @@ public class MysqlEventStore implements IEventStore {
     }
 
     public AsyncTaskResult<EventAppendResult> append(DomainEventStream eventStream) {
-        return ioHelper.tryIOFunc(() -> doAppend(eventStream), "AppendEvents");
+        return IOHelper.tryIOFunc(() -> doAppend(eventStream), "AppendEvents");
     }
 
     private AsyncTaskResult<EventAppendResult> doAppend(final DomainEventStream eventStream) {
@@ -207,7 +206,7 @@ public class MysqlEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, int version) {
-        return ioHelper.tryIOFuncAsync(() ->
+        return IOHelper.tryIOFuncAsync(() ->
                 CompletableFuture.supplyAsync(() -> {
                     try {
                         StreamRecord record = queryRunner.query(String.format("select * from `%s` where AggregateRootId=? and Version=?", getTableName(aggregateRootId)),
@@ -230,7 +229,7 @@ public class MysqlEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, String commandId) {
-        return ioHelper.tryIOFuncAsync(() ->
+        return IOHelper.tryIOFuncAsync(() ->
                 CompletableFuture.supplyAsync(() -> {
                     try {
 

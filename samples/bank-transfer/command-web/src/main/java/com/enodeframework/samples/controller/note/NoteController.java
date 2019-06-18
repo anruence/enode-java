@@ -2,9 +2,9 @@ package com.enodeframework.samples.controller.note;
 
 import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.commanding.CommandReturnType;
+import com.enodeframework.commanding.ICommandService;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.Task;
-import com.enodeframework.rocketmq.message.RocketMQCommandService;
 import com.enodeframework.samples.commands.note.ChangeNoteTitleCommand;
 import com.enodeframework.samples.commands.note.CreateNoteCommand;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class NoteController {
 
     @Autowired
-    RocketMQCommandService commandService;
+    private ICommandService commandService;
 
     @RequestMapping("create")
     public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam("c") String cid) {

@@ -23,7 +23,9 @@ public class KafkaApplicationMessageListener extends AbstractApplicationMessageL
         handle(queueMessage, context -> {
 
         });
-        acknowledgment.acknowledge();
+        if (acknowledgment != null) {
+            acknowledgment.acknowledge();
+        }
     }
 
     /**

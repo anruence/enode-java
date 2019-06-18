@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
 public class DefaultProcessingCommandHandler implements IProcessingCommandHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingCommandHandler.class);
+
     @Autowired
     private IEventStore eventStore;
 
@@ -69,9 +70,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     @Autowired
     private IMessagePublisher<IPublishableException> exceptionPublisher;
-
-    @Autowired
-    private IOHelper ioHelper;
 
     @Override
     public CompletableFuture<Void> handle(ProcessingCommand processingCommand) {
@@ -189,7 +187,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     private void processIfNoEventsOfCommand(ProcessingCommand processingCommand, int retryTimes) {
         ICommand command = processingCommand.getMessage();
 
-        ioHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
+        IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
                 () -> eventStore.findAsync(command.getAggregateRootId(), command.id()),
                 currentRetryTimes -> processIfNoEventsOfCommand(processingCommand, currentRetryTimes),
 
@@ -225,7 +223,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     private void handleExceptionAsync(ProcessingCommand processingCommand, ICommandHandlerProxy commandHandler, Exception exception, int retryTimes) {
         ICommand command = processingCommand.getMessage();
 
-        ioHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
+        IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
                 () -> eventStore.findAsync(command.getAggregateRootId(), command.id()),
                 currentRetryTimes -> handleExceptionAsync(processingCommand, commandHandler, exception, currentRetryTimes),
 
@@ -265,7 +263,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     }
 
     private void publishExceptionAsync(ProcessingCommand processingCommand, IPublishableException exception, int retryTimes) {
-        ioHelper.tryAsyncActionRecursively("PublishExceptionAsync",
+        IOHelper.tryAsyncActionRecursively("PublishExceptionAsync",
                 () -> exceptionPublisher.publishAsync(exception),
                 currentRetryTimes -> publishExceptionAsync(processingCommand, exception, currentRetryTimes),
                 result -> completeCommand(processingCommand, CommandStatus.Failed, exception.getClass().getName(), ((Exception) exception).getMessage()),
@@ -296,7 +294,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     private CompletableFuture<Void> handleCommandAsync(ProcessingCommand processingCommand, ICommandAsyncHandlerProxy commandHandler, int retryTimes) {
         ICommand command = processingCommand.getMessage();
-        ioHelper.tryAsyncActionRecursively("HandleCommandAsync",
+        IOHelper.tryAsyncActionRecursively("HandleCommandAsync",
                 () ->
                 {
                     try {
@@ -348,7 +346,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     private void publishMessageAsync(ProcessingCommand processingCommand, IApplicationMessage message, int retryTimes) {
         ICommand command = processingCommand.getMessage();
 
-        ioHelper.tryAsyncActionRecursively("PublishApplicationMessageAsync",
+        IOHelper.tryAsyncActionRecursively("PublishApplicationMessageAsync",
                 () -> applicationMessagePublisher.publishAsync(message),
                 currentRetryTimes -> publishMessageAsync(processingCommand, message, currentRetryTimes),
                 result -> completeCommand(processingCommand, CommandStatus.Success, message.getTypeName(), JsonTool.serialize(message)),

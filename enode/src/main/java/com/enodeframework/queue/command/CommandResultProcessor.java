@@ -58,7 +58,6 @@ public class CommandResultProcessor {
                 processRequestInternal(name);
             });
         });
-        bindAddress = new InetSocketAddress(port);
         commandTaskDict = new ConcurrentHashMap<>();
         commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
         domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
@@ -83,6 +82,7 @@ public class CommandResultProcessor {
     }
 
     public CommandResultProcessor start() {
+        bindAddress = new InetSocketAddress(port);
         if (started) {
             return this;
         }

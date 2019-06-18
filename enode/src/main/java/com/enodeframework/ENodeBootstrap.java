@@ -17,12 +17,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
+ * @author anruence@gmail.com
  * 应用的核心引导启动类
  * 负责扫描在applicationContext.xml中配置的packages. 获取到Command，Event
- */
-
-/**
- * @author anruence@gmail.com
  */
 public class ENodeBootstrap {
 

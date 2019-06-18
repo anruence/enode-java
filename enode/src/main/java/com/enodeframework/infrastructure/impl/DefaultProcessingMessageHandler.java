@@ -31,9 +31,6 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
     @Autowired
     private IPublishedVersionStore publishedVersionStore;
 
-    @Autowired
-    private IOHelper ioHelper;
-
     @Override
     public CompletableFuture<Void> handleAsync(X processingMessage) {
         if (processingMessage instanceof ProcessingDomainEventStreamMessage) {
@@ -52,7 +49,7 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
 
     private CompletableFuture<Void> handleMessageAsync(ProcessingDomainEventStreamMessage processingMessage, int retryTimes) {
         DomainEventStreamMessage message = processingMessage.getMessage();
-        ioHelper.tryAsyncActionRecursively("GetPublishedVersionAsync",
+        IOHelper.tryAsyncActionRecursively("GetPublishedVersionAsync",
                 () -> publishedVersionStore.getPublishedVersionAsync(getName(), message.aggregateRootTypeName(), message.aggregateRootStringId()),
                 currentRetryTimes -> handleMessageAsync(processingMessage, currentRetryTimes),
                 result ->
@@ -75,7 +72,7 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
     }
 
     private void doDispatchProcessingMessageAsync(ProcessingDomainEventStreamMessage processingMessage, int retryTimes) {
-        ioHelper.tryAsyncActionRecursively("DispatchProcessingMessageAsync",
+        IOHelper.tryAsyncActionRecursively("DispatchProcessingMessageAsync",
                 () -> dispatchProcessingMessageAsync(processingMessage),
                 currentRetryTimes -> doDispatchProcessingMessageAsync(processingMessage, currentRetryTimes),
                 result -> updatePublishedVersionAsync(processingMessage, 0),
@@ -85,7 +82,7 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
     }
 
     private void updatePublishedVersionAsync(ProcessingDomainEventStreamMessage processingMessage, int retryTimes) {
-        ioHelper.tryAsyncActionRecursively("UpdatePublishedVersionAsync",
+        IOHelper.tryAsyncActionRecursively("UpdatePublishedVersionAsync",
                 () -> publishedVersionStore.updatePublishedVersionAsync(getName(), processingMessage.getMessage().aggregateRootTypeName(), processingMessage.getMessage().aggregateRootStringId(), processingMessage.getMessage().version()),
                 currentRetryTimes -> updatePublishedVersionAsync(processingMessage, currentRetryTimes),
                 result -> processingMessage.complete(),
