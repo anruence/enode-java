@@ -50,11 +50,6 @@ public class ENodeAutoConfiguration {
     }
 
     @Bean
-    public IOHelper ioHelper() {
-        return new IOHelper();
-    }
-
-    @Bean
     public DefaultProcessingMessageScheduler defaultProcessingMessageScheduler() {
         return new DefaultProcessingMessageScheduler();
     }

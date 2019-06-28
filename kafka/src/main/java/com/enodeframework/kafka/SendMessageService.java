@@ -6,6 +6,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -18,13 +20,17 @@ public class SendMessageService {
 
     public static CompletableFuture<AsyncTaskResult> sendMessageAsync(KafkaTemplate<String, String> producer, ProducerRecord<String, String> record) {
         CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
-        producer.send(record).completable().whenComplete((r, e) -> {
-            if (e != null) {
+        producer.send(record).addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+                logger.error("send kafka record error, record:{}", record, throwable);
                 future.complete(new AsyncTaskResult(AsyncTaskStatus.IOException));
-                logger.error("send kafka record error, record:{}", record, e);
-                return;
             }
-            future.complete(AsyncTaskResult.Success);
+
+            @Override
+            public void onSuccess(SendResult<String, String> stringStringSendResult) {
+                future.complete(AsyncTaskResult.Success);
+            }
         });
         return future;
     }
