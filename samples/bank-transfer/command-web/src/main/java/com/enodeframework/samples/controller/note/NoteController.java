@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.CompletableFuture;
+
 @RestController
 @RequestMapping("/note")
 public class NoteController {
@@ -21,9 +23,10 @@ public class NoteController {
 
     @RequestMapping("create")
     public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam("c") String cid) {
-        CreateNoteCommand command1 = new CreateNoteCommand(noteId, title);
-        command1.setId(cid);
-        AsyncTaskResult<CommandResult> promise = Task.get(commandService.executeAsync(command1, CommandReturnType.EventHandled));
+        CreateNoteCommand createNoteCommand = new CreateNoteCommand(noteId, title);
+        createNoteCommand.setId(cid);
+        CompletableFuture<AsyncTaskResult<CommandResult>> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
+        AsyncTaskResult<CommandResult> promise = Task.get(future);
         return promise;
     }
 
