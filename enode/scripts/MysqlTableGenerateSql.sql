@@ -10,8 +10,7 @@ CREATE TABLE `EventStream`
     PRIMARY KEY (`Sequence`),
     UNIQUE KEY `IX_EventStream_AggId_Version` (`AggregateRootId`, `Version`),
     UNIQUE KEY `IX_EventStream_AggId_CommandId` (`AggregateRootId`, `CommandId`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 CREATE TABLE `PublishedVersion`
 (
@@ -23,5 +22,4 @@ CREATE TABLE `PublishedVersion`
     `CreatedOn`             DATETIME              NOT NULL,
     PRIMARY KEY (`Sequence`),
     UNIQUE KEY `IX_PublishedVersion_AggId_Version` (`ProcessorName`, `AggregateRootId`, `Version`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;

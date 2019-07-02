@@ -30,5 +30,4 @@ public class RocketMQDomainEventPublisher extends AbstractDomainEventPublisher {
     public void setProducer(DefaultMQProducer producer) {
         this.producer = producer;
     }
-
 }

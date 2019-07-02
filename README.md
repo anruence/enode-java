@@ -47,14 +47,107 @@ ICommandHandler，ICommandAsyncHandler这两个接口是用于不同的业务场
 - @Event
 - @Subscribe
 
-### Kafka配置 
+### 消息
+
+发送命令代码
+```java
+        CompletableFuture<AsyncTaskResult<CommandResult>> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
+```
+
+消费命令消息
+```java
+@Command
+public class CreateNoteCommandHandler {
+    /**
+     * Handle the given aggregate command.
+     */
+    @Subscribe
+    public void handleAsync(ICommandContext context, CreateNoteCommand command) {
+        Note note = new Note(command.getAggregateRootId(), command.getTitle());
+        context.add(note);
+    }
+}
+
+```
+领域事件消费
+```java
+@Event
+public class NoteEventHandler {
+
+    @Subscribe
+    public AsyncTaskResult handleAsync(NoteTitleChanged evnt) {
+        System.out.println(String.format("Note denormalizered, title：%s, Version: %d", evnt.getTitle(), evnt.version()));
+        return (AsyncTaskResult.Success);
+    }
+
+    @Subscribe
+    public AsyncTaskResult handleAsync(NoteTitleChanged2 evnt) {
+        System.out.println(String.format("Note denormalizered, title：%s, Version: %d", evnt.getTitle(), evnt.version()));
+        return (AsyncTaskResult.Success);
+    }
+}
+
+```
+
+## 启动配置
+
+### enode启动配置
+```java
+    @Bean(initMethod = "start", destroyMethod = "shutdown")
+    public CommandResultProcessor commandResultProcessor() {
+        CommandResultProcessor processor = new CommandResultProcessor();
+        processor.setPort(6000);
+        return processor;
+    }
+
+    @Bean(initMethod = "init")
+    public ENodeBootstrap eNodeBootstrap() {
+        ENodeBootstrap bootstrap = new ENodeBootstrap();
+        bootstrap.setPackages(Lists.newArrayList("com.enodeframework.samples"));
+        return bootstrap;
+    }
+```
+
+### 数据源选择
+#### MySQL
+需要下面两张表来存储事件
+```mysql
+CREATE TABLE `EventStream`
+(
+    `Sequence`              BIGINT AUTO_INCREMENT NOT NULL,
+    `AggregateRootTypeName` VARCHAR(256)          NOT NULL,
+    `AggregateRootId`       VARCHAR(36)           NOT NULL,
+    `Version`               INT                   NOT NULL,
+    `CommandId`             VARCHAR(36)           NOT NULL,
+    `CreatedOn`             DATETIME              NOT NULL,
+    `Events`                MEDIUMTEXT            NOT NULL,
+    PRIMARY KEY (`Sequence`),
+    UNIQUE KEY `IX_EventStream_AggId_Version` (`AggregateRootId`, `Version`),
+    UNIQUE KEY `IX_EventStream_AggId_CommandId` (`AggregateRootId`, `CommandId`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE `PublishedVersion`
+(
+    `Sequence`              BIGINT AUTO_INCREMENT NOT NULL,
+    `ProcessorName`         VARCHAR(128)          NOT NULL,
+    `AggregateRootTypeName` VARCHAR(256)          NOT NULL,
+    `AggregateRootId`       VARCHAR(36)           NOT NULL,
+    `Version`               INT                   NOT NULL,
+    `CreatedOn`             DATETIME              NOT NULL,
+    PRIMARY KEY (`Sequence`),
+    UNIQUE KEY `IX_PublishedVersion_AggId_Version` (`ProcessorName`, `AggregateRootId`, `Version`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+```
+### MQ配置启动
+多选一
+#### Kafka
 https://kafka.apache.org/quickstart
 ```bash
 bin/zookeeper-server-start.sh config/zookeeper.properties
 
 bin/kafka-server-start.sh config/server.properties
 ```
-### RocketMQ配置 
+#### RocketMQ
 https://rocketmq.apache.org/docs/quick-start/
 启动RocketMQ服务
 ```bash
@@ -63,22 +156,18 @@ nohup sh bin/mqnamesrv &
 nohup sh bin/mqbroker -n 127.0.0.1:9876 &
 ```
 
-### 分别顺序启动以下项目
- 
-- command-web
+### command-web启动
 
 CQRS架构中的Command端应用
-
 主要用来接收Command，将Command发送到消息队列
 
-- command-consumer
+### command-consumer启动
 消费Command队列中的消息的服务
-
 将领域事件消息持久化才算是Command执行成功，Command执行的结果可以通过发送命令时注册的监听器获取
 
-- event-consumer
+### event-consumer启动
 领域事件处理服务
-事件可能会多次投递，所以需要消费端逻辑保证幂等消费
+事件可能会多次投递，所以需要消费端逻辑保证幂等处理
 
 ### 测试
 http://localhost:8001/note/create?id=noteid&t=notetitle&c=commandid
