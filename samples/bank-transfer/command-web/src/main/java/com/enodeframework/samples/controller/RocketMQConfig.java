@@ -5,9 +5,9 @@ import com.enodeframework.queue.TopicData;
 import com.enodeframework.rocketmq.message.RocketMQCommandService;
 import org.springframework.context.annotation.Bean;
 
-import static com.enodeframework.samples.Constant.COMMAND_PRODUCER_GROUP;
-import static com.enodeframework.samples.Constant.COMMAND_TOPIC;
-import static com.enodeframework.samples.Constant.NAMESRVADDR;
+import static com.enodeframework.samples.QueueProperties.COMMAND_PRODUCER_GROUP;
+import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
+import static com.enodeframework.samples.QueueProperties.NAMESRVADDR;
 
 public class RocketMQConfig {
 

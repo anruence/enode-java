@@ -22,12 +22,12 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.enodeframework.samples.Constant.APPLICATION_TOPIC;
-import static com.enodeframework.samples.Constant.COMMAND_CONSUMER_GROUP;
-import static com.enodeframework.samples.Constant.COMMAND_TOPIC;
-import static com.enodeframework.samples.Constant.EVENT_TOPIC;
-import static com.enodeframework.samples.Constant.EXCEPTION_TOPIC;
-import static com.enodeframework.samples.Constant.KAFKA_SERVER;
+import static com.enodeframework.samples.QueueProperties.APPLICATION_TOPIC;
+import static com.enodeframework.samples.QueueProperties.COMMAND_CONSUMER_GROUP;
+import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
+import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
+import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
+import static com.enodeframework.samples.QueueProperties.KAFKA_SERVER;
 
 @Configuration
 public class KafkaConfig {
@@ -90,7 +90,7 @@ public class KafkaConfig {
         // 消费者配置参数
         Map<String, Object> props = new HashMap<>();
         //连接地址
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
         //GroupID
         props.put(ConsumerConfig.GROUP_ID_CONFIG, COMMAND_CONSUMER_GROUP);
         //是否自动提交

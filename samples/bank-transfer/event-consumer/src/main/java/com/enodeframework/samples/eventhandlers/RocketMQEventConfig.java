@@ -9,16 +9,15 @@ import com.enodeframework.rocketmq.message.RocketMQDomainEventListener;
 import com.enodeframework.rocketmq.message.RocketMQDomainEventPublisher;
 import com.enodeframework.rocketmq.message.RocketMQPublishableExceptionPublisher;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.enodeframework.samples.Constant.COMMAND_TOPIC;
-import static com.enodeframework.samples.Constant.EVENT_CONSUMER_GROUP;
-import static com.enodeframework.samples.Constant.EVENT_PRODUCER_GROUP;
-import static com.enodeframework.samples.Constant.EVENT_TOPIC;
-import static com.enodeframework.samples.Constant.NAMESRVADDR;
+import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
+import static com.enodeframework.samples.QueueProperties.EVENT_CONSUMER_GROUP;
+import static com.enodeframework.samples.QueueProperties.EVENT_PRODUCER_GROUP;
+import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
+import static com.enodeframework.samples.QueueProperties.NAMESRVADDR;
 
 public class RocketMQEventConfig {
 

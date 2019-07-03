@@ -6,7 +6,6 @@ import com.enodeframework.commanding.impl.DefaultCommandAsyncHandlerProvider;
 import com.enodeframework.commanding.impl.DefaultCommandHandlerProvider;
 import com.enodeframework.commanding.impl.DefaultCommandRoutingKeyProvider;
 import com.enodeframework.common.container.SpringObjectContainer;
-import com.enodeframework.common.io.IOHelper;
 import com.enodeframework.common.scheduling.ScheduleService;
 import com.enodeframework.domain.impl.DefaultAggregateRepositoryProvider;
 import com.enodeframework.domain.impl.DefaultAggregateRootFactory;

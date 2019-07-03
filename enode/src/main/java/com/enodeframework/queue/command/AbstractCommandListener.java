@@ -25,6 +25,7 @@ public abstract class AbstractCommandListener implements IMessageHandler {
 
     @Autowired
     protected SendReplyService sendReplyService;
+
     @Autowired
     protected ITypeNameProvider typeNameProvider;
 
