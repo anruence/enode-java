@@ -12,13 +12,13 @@ import org.springframework.context.annotation.Bean;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.enodeframework.samples.Constant.APPLICATION_TOPIC;
-import static com.enodeframework.samples.Constant.COMMAND_CONSUMER_GROUP;
-import static com.enodeframework.samples.Constant.COMMAND_TOPIC;
-import static com.enodeframework.samples.Constant.EVENT_PRODUCER_GROUP;
-import static com.enodeframework.samples.Constant.EVENT_TOPIC;
-import static com.enodeframework.samples.Constant.EXCEPTION_TOPIC;
-import static com.enodeframework.samples.Constant.NAMESRVADDR;
+import static com.enodeframework.samples.QueueProperties.APPLICATION_TOPIC;
+import static com.enodeframework.samples.QueueProperties.COMMAND_CONSUMER_GROUP;
+import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
+import static com.enodeframework.samples.QueueProperties.EVENT_PRODUCER_GROUP;
+import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
+import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
+import static com.enodeframework.samples.QueueProperties.NAMESRVADDR;
 
 public class RocketMQConfig {
 

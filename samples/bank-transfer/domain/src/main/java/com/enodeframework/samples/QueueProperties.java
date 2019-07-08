@@ -1,6 +1,6 @@
 package com.enodeframework.samples;
 
-public class Constant {
+public class QueueProperties {
 
     public static String COMMAND_TOPIC = "CommandSample";
 

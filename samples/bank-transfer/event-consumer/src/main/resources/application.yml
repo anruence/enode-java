@@ -12,8 +12,8 @@ logging:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost/enode
+    url: jdbc:mysql://localhost:3306/enode
     username: root
-    password: anruence
+    password: root
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver

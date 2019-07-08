@@ -13,8 +13,8 @@ import org.springframework.kafka.core.ProducerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.enodeframework.samples.Constant.COMMAND_TOPIC;
-import static com.enodeframework.samples.Constant.KAFKA_SERVER;
+import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
+import static com.enodeframework.samples.QueueProperties.KAFKA_SERVER;
 
 @Configuration
 public class KafkaConfig {
