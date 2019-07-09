@@ -7,6 +7,7 @@ import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.samples.commands.note.ChangeNoteTitleCommand;
 import com.enodeframework.samples.commands.note.CreateNoteCommand;
+import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,19 +23,21 @@ public class NoteController {
     private ICommandService commandService;
 
     @RequestMapping("create")
-    public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam("c") String cid) {
+    public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam(value = "c", required = false) String cid) {
         CreateNoteCommand createNoteCommand = new CreateNoteCommand(noteId, title);
-        createNoteCommand.setId(cid);
+        if (!Strings.isNullOrEmpty(cid)) {
+            createNoteCommand.setId(cid);
+        }
         CompletableFuture<AsyncTaskResult<CommandResult>> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
-        AsyncTaskResult<CommandResult> promise = Task.get(future);
-        return promise;
+        return Task.get(future);
     }
 
     @RequestMapping("change")
-    public Object change(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam("c") String cid) {
-        ChangeNoteTitleCommand command2 = new ChangeNoteTitleCommand(noteId, title);
-        command2.setId(cid);
-        AsyncTaskResult<CommandResult> promise = Task.get(commandService.executeAsync(command2, CommandReturnType.EventHandled));
-        return promise;
+    public Object change(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam(value = "c", required = false) String cid) {
+        ChangeNoteTitleCommand titleCommand = new ChangeNoteTitleCommand(noteId, title);
+        if (!Strings.isNullOrEmpty(cid)) {
+            titleCommand.setId(cid);
+        }
+        return Task.get(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
     }
 }

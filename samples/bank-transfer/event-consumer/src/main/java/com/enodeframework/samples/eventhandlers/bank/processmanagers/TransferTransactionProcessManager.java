@@ -44,7 +44,7 @@ import java.util.concurrent.CompletableFuture;
 public class TransferTransactionProcessManager {
 
     @Autowired
-    private ICommandService _commandService;
+    private ICommandService commandService;
 
     @Subscribe
     public AsyncTaskResult handleAsync(TransferTransactionStartedEvent evnt) {
@@ -52,8 +52,8 @@ public class TransferTransactionProcessManager {
         command.setId(evnt.id());
         ValidateAccountCommand targetCommand = new ValidateAccountCommand(evnt.TransactionInfo.TargetAccountId, evnt.aggregateRootId());
         targetCommand.setId(evnt.id());
-        CompletableFuture task1 = _commandService.sendAsync(command);
-        CompletableFuture task2 = _commandService.sendAsync(targetCommand);
+        CompletableFuture task1 = commandService.sendAsync(command);
+        CompletableFuture task2 = commandService.sendAsync(targetCommand);
         CompletableFuture.allOf(task1, task2);
         return (AsyncTaskResult.Success);
     }
@@ -62,7 +62,7 @@ public class TransferTransactionProcessManager {
     public AsyncTaskResult handleAsync(AccountValidatePassedMessage message) {
         ConfirmAccountValidatePassedCommand command = new ConfirmAccountValidatePassedCommand(message.TransactionId, message.AccountId);
         command.setId(message.id());
-        return Task.get(_commandService.sendAsync(command));
+        return Task.get(commandService.sendAsync(command));
 
     }
 
@@ -70,7 +70,7 @@ public class TransferTransactionProcessManager {
     public AsyncTaskResult handleAsync(AccountValidateFailedMessage message) {
         CancelTransferTransactionCommand command = new CancelTransferTransactionCommand(message.TransactionId);
         command.setId(message.id());
-        return Task.get(_commandService.sendAsync(command));
+        return Task.get(commandService.sendAsync(command));
     }
 
     @Subscribe
@@ -82,7 +82,7 @@ public class TransferTransactionProcessManager {
                 PreparationType.DebitPreparation,
                 evnt.TransactionInfo.Amount);
         command.setId(evnt.id());
-        return Task.get(_commandService.sendAsync(command));
+        return Task.get(commandService.sendAsync(command));
 
     }
 
@@ -92,11 +92,11 @@ public class TransferTransactionProcessManager {
             if (evnt.TransactionPreparation.preparationType == PreparationType.DebitPreparation) {
                 ConfirmTransferOutPreparationCommand command = new ConfirmTransferOutPreparationCommand(evnt.TransactionPreparation.TransactionId);
                 command.setId(evnt.id());
-                return Task.get(_commandService.sendAsync(command));
+                return Task.get(commandService.sendAsync(command));
             } else if (evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
                 ConfirmTransferInPreparationCommand command = new ConfirmTransferInPreparationCommand(evnt.TransactionPreparation.TransactionId);
                 command.setId(evnt.id());
-                return Task.get(_commandService.sendAsync(command));
+                return Task.get(commandService.sendAsync(command));
             }
         }
         return (AsyncTaskResult.Success);
@@ -107,7 +107,7 @@ public class TransferTransactionProcessManager {
         if (exception.TransactionType == TransactionType.TransferTransaction) {
             CancelTransferTransactionCommand command = new CancelTransferTransactionCommand(exception.TransactionId);
             command.setId(exception.id());
-            return Task.get(_commandService.sendAsync(command));
+            return Task.get(commandService.sendAsync(command));
         }
         return (AsyncTaskResult.Success);
     }
@@ -121,7 +121,7 @@ public class TransferTransactionProcessManager {
                 PreparationType.CreditPreparation,
                 evnt.TransactionInfo.Amount);
         command.setId(evnt.id());
-        return Task.get(_commandService.sendAsync(command));
+        return Task.get(commandService.sendAsync(command));
     }
 
     @Subscribe
@@ -130,8 +130,8 @@ public class TransferTransactionProcessManager {
         command.setId(evnt.id());
         CommitTransactionPreparationCommand targetCommand = new CommitTransactionPreparationCommand(evnt.TransactionInfo.TargetAccountId, evnt.aggregateRootId());
         targetCommand.setId(evnt.id());
-        CompletableFuture task1 = _commandService.sendAsync(command);
-        CompletableFuture task2 = _commandService.sendAsync(targetCommand);
+        CompletableFuture task1 = commandService.sendAsync(command);
+        CompletableFuture task2 = commandService.sendAsync(targetCommand);
         return (AsyncTaskResult.Success);
     }
 
@@ -141,11 +141,11 @@ public class TransferTransactionProcessManager {
             if (evnt.TransactionPreparation.preparationType == PreparationType.DebitPreparation) {
                 ConfirmTransferOutCommand command = new ConfirmTransferOutCommand(evnt.TransactionPreparation.TransactionId);
                 command.setId(evnt.id());
-                return Task.get(_commandService.sendAsync(command));
+                return Task.get(commandService.sendAsync(command));
             } else if (evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
                 ConfirmTransferInCommand command = new ConfirmTransferInCommand(evnt.TransactionPreparation.TransactionId);
                 command.setId(evnt.id());
-                return Task.get(_commandService.sendAsync(command));
+                return Task.get(commandService.sendAsync(command));
             }
         }
         return (AsyncTaskResult.Success);

@@ -14,8 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
-import static com.enodeframework.samples.QueueProperties.EVENT_CONSUMER_GROUP;
-import static com.enodeframework.samples.QueueProperties.EVENT_PRODUCER_GROUP;
+import static com.enodeframework.samples.QueueProperties.DEFAULT_PRODUCER_GROUP;
 import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
 import static com.enodeframework.samples.QueueProperties.NAMESRVADDR;
 
@@ -38,7 +37,7 @@ public class RocketMQEventConfig {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQPushConsumer eventConsumer(RocketMQDomainEventListener domainEventListener) {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
-        defaultMQPushConsumer.setConsumerGroup(EVENT_CONSUMER_GROUP);
+        defaultMQPushConsumer.setConsumerGroup(DEFAULT_PRODUCER_GROUP);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
         Map<String, String> topic = new HashMap<>();
         topic.put(EVENT_TOPIC, "*");
@@ -67,7 +66,7 @@ public class RocketMQEventConfig {
     public DefaultMQProducer eventProducer() {
         DefaultMQProducer producer = new DefaultMQProducer();
         producer.setNamesrvAddr(NAMESRVADDR);
-        producer.setProducerGroup(EVENT_PRODUCER_GROUP);
+        producer.setProducerGroup(DEFAULT_PRODUCER_GROUP);
         return producer;
     }
 

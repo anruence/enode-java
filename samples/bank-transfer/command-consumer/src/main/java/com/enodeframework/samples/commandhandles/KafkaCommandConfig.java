@@ -10,7 +10,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -23,21 +22,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.enodeframework.samples.QueueProperties.APPLICATION_TOPIC;
-import static com.enodeframework.samples.QueueProperties.COMMAND_CONSUMER_GROUP;
 import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
+import static com.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP;
 import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
 import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.KAFKA_SERVER;
 
-@Configuration
-public class KafkaConfig {
+public class KafkaCommandConfig {
 
     @Bean
     public KafkaMessageListenerContainer kafkaMessageListenerContainer(KafkaCommandListener commandListener) {
         ContainerProperties properties = new ContainerProperties(COMMAND_TOPIC);
-        properties.setGroupId(COMMAND_CONSUMER_GROUP);
+        properties.setGroupId(DEFAULT_CONSUMER_GROUP);
         properties.setMessageListener(commandListener);
-        return new KafkaMessageListenerContainer(consumerFactory(), properties);
+        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
     @Bean
@@ -46,37 +44,31 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate eventProducer) {
+    public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate kafkaTemplate) {
         KafkaDomainEventPublisher domainEventPublisher = new KafkaDomainEventPublisher();
-        domainEventPublisher.setProducer(eventProducer);
+        domainEventPublisher.setProducer(kafkaTemplate);
         domainEventPublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
         return domainEventPublisher;
     }
 
     /**
      * 应用消息生产者，复用生产者实例发送到不同topic中
-     *
-     * @param eventProducer
-     * @return
      */
     @Bean
-    public KafkaApplicationMessagePublisher kafkaApplicationMessagePublisher(KafkaTemplate eventProducer) {
+    public KafkaApplicationMessagePublisher kafkaApplicationMessagePublisher(KafkaTemplate kafkaTemplate) {
         KafkaApplicationMessagePublisher applicationMessagePublisher = new KafkaApplicationMessagePublisher();
-        applicationMessagePublisher.setProducer(eventProducer);
+        applicationMessagePublisher.setProducer(kafkaTemplate);
         applicationMessagePublisher.setTopicData(new TopicData(APPLICATION_TOPIC, "*"));
         return applicationMessagePublisher;
     }
 
     /**
      * 异常消息生产者，复用生产者实例发送到不同topic中
-     *
-     * @param eventProducer
-     * @return
      */
     @Bean
-    public KafkaPublishableExceptionPublisher kafkaPublishableExceptionPublisher(KafkaTemplate eventProducer) {
+    public KafkaPublishableExceptionPublisher kafkaPublishableExceptionPublisher(KafkaTemplate kafkaTemplate) {
         KafkaPublishableExceptionPublisher exceptionPublisher = new KafkaPublishableExceptionPublisher();
-        exceptionPublisher.setProducer(eventProducer);
+        exceptionPublisher.setProducer(kafkaTemplate);
         exceptionPublisher.setTopicData(new TopicData(EXCEPTION_TOPIC, "*"));
         return exceptionPublisher;
     }
@@ -92,7 +84,7 @@ public class KafkaConfig {
         //连接地址
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
         //GroupID
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, COMMAND_CONSUMER_GROUP);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, DEFAULT_CONSUMER_GROUP);
         //是否自动提交
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
         //自动提交的频率

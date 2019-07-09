@@ -5,10 +5,6 @@ import com.enodeframework.infrastructure.WrappedRuntimeException;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * write code looks like C# Task
- */
-
-/**
  * @author anruence@gmail.com
  */
 public class Task extends CompletableFuture {

@@ -1,9 +1,11 @@
 package com.enodeframework.samples.eventhandlers;
 
+import com.enodeframework.kafka.KafkaApplicationMessageListener;
 import com.enodeframework.kafka.KafkaApplicationMessagePublisher;
 import com.enodeframework.kafka.KafkaCommandService;
 import com.enodeframework.kafka.KafkaDomainEventListener;
 import com.enodeframework.kafka.KafkaDomainEventPublisher;
+import com.enodeframework.kafka.KafkaPublishableExceptionListener;
 import com.enodeframework.kafka.KafkaPublishableExceptionPublisher;
 import com.enodeframework.queue.TopicData;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -11,7 +13,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -23,16 +24,17 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.enodeframework.samples.QueueProperties.APPLICATION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
-import static com.enodeframework.samples.QueueProperties.EVENT_CONSUMER_GROUP;
+import static com.enodeframework.samples.QueueProperties.DEFAULT_PRODUCER_GROUP;
 import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
+import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.KAFKA_SERVER;
 
-@Configuration
 public class KafkaEventConfig {
 
     @Bean
-    public KafkaCommandService kafkaCommandService(KafkaTemplate kafkaTemplate) {
+    public KafkaCommandService kafkaCommandService(KafkaTemplate<String, String> kafkaTemplate) {
         KafkaCommandService kafkaCommandService = new KafkaCommandService();
         kafkaCommandService.setProducer(kafkaTemplate);
         TopicData topicData = new TopicData(COMMAND_TOPIC, "*");
@@ -45,16 +47,26 @@ public class KafkaEventConfig {
         return new KafkaDomainEventListener();
     }
 
+    @Bean
+    public KafkaApplicationMessageListener applicationMessageListener() {
+        return new KafkaApplicationMessageListener();
+    }
+
+    @Bean
+    public KafkaPublishableExceptionListener publishableExceptionListener() {
+        return new KafkaPublishableExceptionListener();
+    }
+
     /**
      * 根据consumerProps填写的参数创建消费者工厂
      */
     @Bean
-    public ConsumerFactory consumerFactory() {
+    public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         //连接地址
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
         //GroupID
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, EVENT_CONSUMER_GROUP);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, DEFAULT_PRODUCER_GROUP);
         //是否自动提交
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         //自动提交的频率
@@ -72,7 +84,7 @@ public class KafkaEventConfig {
      * 根据senderProps填写的参数创建生产者工厂
      */
     @Bean
-    public ProducerFactory producerFactory() {
+    public ProducerFactory<Object, Object> producerFactory() {
         Map<String, Object> props = new HashMap<>();
         //连接地址
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
@@ -95,37 +107,55 @@ public class KafkaEventConfig {
      * kafkaTemplate实现了Kafka发送接收等功能
      */
     @Bean
-    public KafkaTemplate kafkaTemplate() {
+    public KafkaTemplate<Object, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
-    public KafkaMessageListenerContainer kafkaMessageListenerContainer(KafkaDomainEventListener domainEventListener) {
+    public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener) {
         ContainerProperties properties = new ContainerProperties(EVENT_TOPIC);
-        properties.setGroupId(EVENT_CONSUMER_GROUP);
+        properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(domainEventListener);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer(consumerFactory(), properties);
+        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
     @Bean
-    public KafkaApplicationMessagePublisher kafkaApplicationMessagePublisher(KafkaTemplate kafkaTemplate) {
+    public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener) {
+        ContainerProperties properties = new ContainerProperties(APPLICATION_TOPIC);
+        properties.setGroupId(DEFAULT_PRODUCER_GROUP);
+        properties.setMessageListener(applicationMessageListener);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
+    }
+
+    @Bean
+    public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener) {
+        ContainerProperties properties = new ContainerProperties(EXCEPTION_TOPIC);
+        properties.setGroupId(DEFAULT_PRODUCER_GROUP);
+        properties.setMessageListener(publishableExceptionListener);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
+    }
+
+    @Bean
+    public KafkaApplicationMessagePublisher kafkaApplicationMessagePublisher(KafkaTemplate<String, String> kafkaTemplate) {
         KafkaApplicationMessagePublisher applicationMessagePublisher = new KafkaApplicationMessagePublisher();
         applicationMessagePublisher.setProducer(kafkaTemplate);
-        applicationMessagePublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
+        applicationMessagePublisher.setTopicData(new TopicData(APPLICATION_TOPIC, "*"));
         return applicationMessagePublisher;
     }
 
     @Bean
-    public KafkaPublishableExceptionPublisher kafkaPublishableExceptionPublisher(KafkaTemplate kafkaTemplate) {
+    public KafkaPublishableExceptionPublisher kafkaPublishableExceptionPublisher(KafkaTemplate<String, String> kafkaTemplate) {
         KafkaPublishableExceptionPublisher exceptionPublisher = new KafkaPublishableExceptionPublisher();
         exceptionPublisher.setProducer(kafkaTemplate);
-        exceptionPublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
+        exceptionPublisher.setTopicData(new TopicData(EXCEPTION_TOPIC, "*"));
         return exceptionPublisher;
     }
 
     @Bean
-    public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate kafkaTemplate) {
+    public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate<String, String> kafkaTemplate) {
         KafkaDomainEventPublisher domainEventPublisher = new KafkaDomainEventPublisher();
         domainEventPublisher.setProducer(kafkaTemplate);
         domainEventPublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
