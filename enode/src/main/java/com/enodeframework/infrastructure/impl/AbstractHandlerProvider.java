@@ -4,7 +4,6 @@ import com.enodeframework.annotation.Command;
 import com.enodeframework.annotation.Event;
 import com.enodeframework.annotation.Priority;
 import com.enodeframework.annotation.Subscribe;
-import com.enodeframework.common.Constants;
 import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.infrastructure.IAssemblyInitializer;
 import com.enodeframework.infrastructure.IObjectProxy;
@@ -86,24 +85,20 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
 
     private int getHandleMethodPriority(THandlerProxyInterface handler) {
         Method method = handler.getMethod();
-        if (Constants.COMMAND_HANDLE_METHOD.equals(method.getName())) {
-            int priority = 0;
-            Priority methodPriority = method.getAnnotation(Priority.class);
-            if (methodPriority != null) {
-                priority = methodPriority.value();
-            }
-
-            if (priority == 0) {
-                Priority classPriority = handler.getInnerObject().getClass().getAnnotation(Priority.class);
-                if (classPriority != null) {
-                    priority = classPriority.value();
-                }
-            }
-
-            return priority;
-        } else {
-            return 0;
+        int priority = 0;
+        Priority methodPriority = method.getAnnotation(Priority.class);
+        if (methodPriority != null) {
+            priority = methodPriority.value();
         }
+
+        if (priority == 0) {
+            Priority classPriority = handler.getInnerObject().getClass().getAnnotation(Priority.class);
+            if (classPriority != null) {
+                priority = classPriority.value();
+            }
+        }
+
+        return priority;
     }
 
     private boolean isHandlerType(Class type) {

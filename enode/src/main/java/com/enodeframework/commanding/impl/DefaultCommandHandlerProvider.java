@@ -4,7 +4,6 @@ import com.enodeframework.commanding.ICommand;
 import com.enodeframework.commanding.ICommandContext;
 import com.enodeframework.commanding.ICommandHandlerProvider;
 import com.enodeframework.commanding.ICommandHandlerProxy;
-import com.enodeframework.common.Constants;
 import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.infrastructure.impl.AbstractHandlerProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +35,6 @@ public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class
 
     @Override
     protected boolean isHandleMethodMatch(Method method) {
-        if (!Constants.COMMAND_HANDLE_METHOD.equals(method.getName())) {
-            return false;
-        }
         if (method.getParameterTypes().length != 2) {
             return false;
         }

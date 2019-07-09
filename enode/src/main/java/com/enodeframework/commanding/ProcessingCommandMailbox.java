@@ -101,16 +101,14 @@ public class ProcessingCommandMailbox {
                 lastActiveTime = new Date();
                 if (processingCommand.getSequence() == consumedSequence + 1) {
                     messageDict.remove(processingCommand.getSequence());
-                    return completeCommand(processingCommand, commandResult).thenAccept(r ->
-                            consumedSequence = processNextCompletedCommands(processingCommand.getSequence())
-                    );
+                    await(completeCommand(processingCommand, commandResult));
+                    consumedSequence = processNextCompletedCommands(processingCommand.getSequence());
                 } else if (processingCommand.getSequence() > consumedSequence + 1) {
                     requestToCompleteCommandDict.put(processingCommand.getSequence(), commandResult);
                 } else if (processingCommand.getSequence() < consumedSequence + 1) {
                     messageDict.remove(processingCommand.getSequence());
-                    return completeCommand(processingCommand, commandResult).thenAccept(r ->
-                            requestToCompleteCommandDict.remove(processingCommand.getSequence())
-                    );
+                    await(completeCommand(processingCommand, commandResult));
+                    requestToCompleteCommandDict.remove(processingCommand.getSequence());
                 }
             } catch (Exception ex) {
                 logger.error(String.format("Command mailbox complete command failed, commandId: %s, aggregateRootId: %s", processingCommand.getMessage().id(), processingCommand.getMessage().getAggregateRootId()), ex);

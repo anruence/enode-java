@@ -31,6 +31,11 @@ import static com.enodeframework.samples.QueueProperties.KAFKA_SERVER;
 public class KafkaCommandConfig {
 
     @Bean
+    public KafkaCommandListener commandListener() {
+        return new KafkaCommandListener();
+    }
+
+    @Bean
     public KafkaMessageListenerContainer kafkaMessageListenerContainer(KafkaCommandListener commandListener) {
         ContainerProperties properties = new ContainerProperties(COMMAND_TOPIC);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP);
@@ -38,10 +43,6 @@ public class KafkaCommandConfig {
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
-    @Bean
-    public KafkaCommandListener kafkaCommandListener() {
-        return new KafkaCommandListener();
-    }
 
     @Bean
     public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate kafkaTemplate) {

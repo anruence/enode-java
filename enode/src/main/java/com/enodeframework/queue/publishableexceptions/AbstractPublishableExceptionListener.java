@@ -31,7 +31,7 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
         Class exceptionType = typeNameProvider.getType(exceptionMessage.getExceptionType());
         IPublishableException exception;
         try {
-            exception = (IPublishableException) exceptionType.getConstructor().newInstance();
+            exception = (IPublishableException) exceptionType.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new WrappedRuntimeException(e);
         }

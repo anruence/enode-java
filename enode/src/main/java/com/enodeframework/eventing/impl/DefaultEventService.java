@@ -28,6 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import static com.enodeframework.common.io.Task.await;
+
 /**
  * @author anruence@gmail.com
  */
@@ -189,7 +191,7 @@ public class DefaultEventService implements IEventService {
                 retryTimes, true);
     }
 
-    private CompletableFuture<Void> resetCommandMailBoxConsumingSequence(EventCommittingContext context, long consumingSequence) {
+    private void resetCommandMailBoxConsumingSequence(EventCommittingContext context, long consumingSequence) {
         EventMailBox eventMailBox = context.getEventMailBox();
         ProcessingCommand processingCommand = context.getProcessingCommand();
         ICommand command = processingCommand.getMessage();
@@ -198,21 +200,16 @@ public class DefaultEventService implements IEventService {
         commandMailBox.pause();
         try {
             // await 阻塞获取
-            return refreshAggregateMemoryCacheToLatestVersion(context.getEventStream().aggregateRootTypeName(), context.getEventStream().aggregateRootId()).thenAccept(r -> {
-                commandMailBox.resetConsumingSequence(consumingSequence);
-                eventMailBox.clear();
-                eventMailBox.exit();
-                logger.info("ResetCommandMailBoxConsumingSequence success, commandId: {}, aggregateRootId: {}, consumingSequence: {}", command.id(), command.getAggregateRootId(), consumingSequence);
-            }).exceptionally(ex -> {
-                logger.error(String.format("ResetCommandMailBoxConsumingOffset has unknown exception, commandId: %s, aggregateRootId: %s", command.id(), command.getAggregateRootId()), ex);
-                return null;
-            });
+            await(refreshAggregateMemoryCacheToLatestVersion(context.getEventStream().aggregateRootTypeName(), context.getEventStream().aggregateRootId()));
+            commandMailBox.resetConsumingSequence(consumingSequence);
+            eventMailBox.clear();
+            eventMailBox.exit();
+            logger.info("ResetCommandMailBoxConsumingSequence success, commandId: {}, aggregateRootId: {}, consumingSequence: {}", command.id(), command.getAggregateRootId(), consumingSequence);
         } catch (Exception ex) {
             logger.error(String.format("ResetCommandMailBoxConsumingOffset has unknown exception, commandId: %s, aggregateRootId: %s", command.id(), command.getAggregateRootId()), ex);
         } finally {
             commandMailBox.resume();
         }
-        return Task.CompletedTask;
     }
 
     private void tryToRepublishEventAsync(EventCommittingContext context, int retryTimes) {
@@ -265,9 +262,8 @@ public class DefaultEventService implements IEventService {
                         //之所以要这样做，是因为虽然该command产生的事件已经持久化成功，但并不表示事件也已经发布出去了；
                         //有可能事件持久化成功了，但那时正好机器断电了，则发布事件都没有做；
                         if (context.getProcessingCommand().getMessage().id().equals(firstEventStream.commandId())) {
-                            resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1).thenRun(() -> {
-                                publishDomainEventAsync(context.getProcessingCommand(), firstEventStream);
-                            });
+                            resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1);
+                            publishDomainEventAsync(context.getProcessingCommand(), firstEventStream);
                         } else {
                             //如果不是同一个command，则认为是两个不同的command重复创建ID相同的聚合根，我们需要记录错误日志，然后通知当前command的处理完成；
                             String errorMessage = String.format("Duplicate aggregate creation. current commandId:%s, existing commandId:%s, aggregateRootId:%s, aggregateRootTypeName:%s",
@@ -276,10 +272,9 @@ public class DefaultEventService implements IEventService {
                                     firstEventStream.aggregateRootId(),
                                     firstEventStream.aggregateRootTypeName());
                             logger.error(errorMessage);
-                            resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1).thenRun(() -> {
-                                CommandResult commandResult = new CommandResult(CommandStatus.Failed, context.getProcessingCommand().getMessage().id(), eventStream.aggregateRootId(), "Duplicate aggregate creation.", String.class.getName());
-                                completeCommand(context.getProcessingCommand(), commandResult);
-                            });
+                            resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1);
+                            CommandResult commandResult = new CommandResult(CommandStatus.Failed, context.getProcessingCommand().getMessage().id(), eventStream.aggregateRootId(), "Duplicate aggregate creation.", String.class.getName());
+                            completeCommand(context.getProcessingCommand(), commandResult);
                         }
                     } else {
                         String errorMessage = String.format("Duplicate aggregate creation, but we cannot find the existing eventstream from eventstore. commandId:%s, aggregateRootId:%s, aggregateRootTypeName:%s",
@@ -287,10 +282,9 @@ public class DefaultEventService implements IEventService {
                                 eventStream.aggregateRootId(),
                                 eventStream.aggregateRootTypeName());
                         logger.error(errorMessage);
-                        resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1).thenRun(() -> {
-                            CommandResult commandResult = new CommandResult(CommandStatus.Failed, context.getProcessingCommand().getMessage().id(), eventStream.aggregateRootId(), "Duplicate aggregate creation, but we cannot find the existing eventstream from eventstore.", String.class.getName());
-                            completeCommand(context.getProcessingCommand(), commandResult);
-                        });
+                        resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1);
+                        CommandResult commandResult = new CommandResult(CommandStatus.Failed, context.getProcessingCommand().getMessage().id(), eventStream.aggregateRootId(), "Duplicate aggregate creation, but we cannot find the existing eventstream from eventstore.", String.class.getName());
+                        completeCommand(context.getProcessingCommand(), commandResult);
                     }
                 },
                 () -> String.format("[eventStream:%s]", eventStream),

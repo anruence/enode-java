@@ -1,6 +1,5 @@
 package com.enodeframework.infrastructure.impl;
 
-import com.enodeframework.common.Constants;
 import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.eventing.IDomainEvent;
 import com.enodeframework.infrastructure.IMessageHandlerProxy3;
@@ -46,9 +45,6 @@ public class DefaultThreeMessageHandlerProvider extends AbstractHandlerProvider<
 
     @Override
     protected boolean isHandleMethodMatch(Method method) {
-        if (!Constants.EVENT_HANDLE_METHOD.equals(method.getName())) {
-            return false;
-        }
         if (method.getParameterTypes().length != 3) {
             return false;
         }

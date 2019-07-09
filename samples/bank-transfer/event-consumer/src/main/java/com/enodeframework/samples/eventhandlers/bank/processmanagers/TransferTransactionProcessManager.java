@@ -55,7 +55,7 @@ public class TransferTransactionProcessManager {
         CompletableFuture task1 = commandService.sendAsync(command);
         CompletableFuture task2 = commandService.sendAsync(targetCommand);
         CompletableFuture.allOf(task1, task2);
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 
     @Subscribe
@@ -99,7 +99,7 @@ public class TransferTransactionProcessManager {
                 return Task.get(commandService.sendAsync(command));
             }
         }
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 
     @Subscribe
@@ -109,7 +109,7 @@ public class TransferTransactionProcessManager {
             command.setId(exception.id());
             return Task.get(commandService.sendAsync(command));
         }
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 
     @Subscribe
@@ -132,7 +132,7 @@ public class TransferTransactionProcessManager {
         targetCommand.setId(evnt.id());
         CompletableFuture task1 = commandService.sendAsync(command);
         CompletableFuture task2 = commandService.sendAsync(targetCommand);
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 
     @Subscribe
@@ -148,6 +148,6 @@ public class TransferTransactionProcessManager {
                 return Task.get(commandService.sendAsync(command));
             }
         }
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 }

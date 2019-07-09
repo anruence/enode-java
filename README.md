@@ -41,6 +41,11 @@ ICommandHandler，ICommandAsyncHandler这两个接口是用于不同的业务场
 
 ## 使用说明
 
+### 聚合根
+聚合根需要定义一个无参构造函数，因为聚合根初始化时使用了
+```java
+aggregateRootType.getDeclaredConstructor().newInstance();
+```
 ### 编程方式
 新增了三个注解，系统限定了只扫描@Command和@Event标识的类，执行的方法上需要添加@Subscribe注解
 - @Command
@@ -77,13 +82,13 @@ public class NoteEventHandler {
     @Subscribe
     public AsyncTaskResult handleAsync(NoteTitleChanged evnt) {
         System.out.println(String.format("Note denormalizered, title：%s, Version: %d", evnt.getTitle(), evnt.version()));
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 
     @Subscribe
     public AsyncTaskResult handleAsync(NoteTitleChanged2 evnt) {
         System.out.println(String.format("Note denormalizered, title：%s, Version: %d", evnt.getTitle(), evnt.version()));
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 }
 

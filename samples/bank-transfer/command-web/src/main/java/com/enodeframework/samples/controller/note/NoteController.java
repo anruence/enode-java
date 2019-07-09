@@ -9,11 +9,10 @@ import com.enodeframework.samples.commands.note.ChangeNoteTitleCommand;
 import com.enodeframework.samples.commands.note.CreateNoteCommand;
 import com.google.common.base.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/note")
@@ -28,8 +27,15 @@ public class NoteController {
         if (!Strings.isNullOrEmpty(cid)) {
             createNoteCommand.setId(cid);
         }
-        CompletableFuture<AsyncTaskResult<CommandResult>> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
-        return Task.get(future);
+        AsyncTaskResult<CommandResult> asyncTaskResult = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
+        Assert.notNull(asyncTaskResult, "asyncTaskResult");
+        commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
+        commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
+        commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
+        commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
+        ChangeNoteTitleCommand titleCommand = new ChangeNoteTitleCommand(noteId, title + " change");
+        // always block here
+        return Task.get(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
     }
 
     @RequestMapping("change")

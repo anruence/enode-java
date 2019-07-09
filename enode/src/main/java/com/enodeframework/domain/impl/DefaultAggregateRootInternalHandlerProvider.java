@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static com.enodeframework.common.Constants.AGGREGATE_ROOT_HANDLE_METHOD_NAME;
+import static com.enodeframework.common.SysProperties.AGGREGATE_ROOT_HANDLE_METHOD_NAME;
 
 /**
  * @author anruence@gmail.com
