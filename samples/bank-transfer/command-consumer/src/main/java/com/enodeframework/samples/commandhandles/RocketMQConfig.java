@@ -21,23 +21,23 @@ import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.NAMESRVADDR;
 
 public class RocketMQConfig {
+    @Bean
+    public RocketMQCommandListener commandListener() {
+        return new RocketMQCommandListener();
+    }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer defaultMQPushConsumer(RocketMQCommandListener rocketMQCommandListener) {
+    public DefaultMQPushConsumer defaultMQPushConsumer(RocketMQCommandListener commandListener) {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
         Map<String, String> topic = new HashMap<>();
         topic.put(COMMAND_TOPIC, "*");
         defaultMQPushConsumer.setSubscription(topic);
-        defaultMQPushConsumer.setMessageListener(rocketMQCommandListener);
+        defaultMQPushConsumer.setMessageListener(commandListener);
         return defaultMQPushConsumer;
     }
 
-    @Bean
-    public RocketMQCommandListener rocketMQCommandListener() {
-        return new RocketMQCommandListener();
-    }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQProducer defaultMQProducer() {

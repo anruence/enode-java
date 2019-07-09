@@ -22,6 +22,7 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
 
     @Autowired
     protected SendReplyService sendReplyService;
+
     @Autowired
     protected IEventSerializer eventSerializer;
 
