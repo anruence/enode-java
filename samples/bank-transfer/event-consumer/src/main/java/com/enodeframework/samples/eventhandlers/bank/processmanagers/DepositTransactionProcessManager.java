@@ -51,7 +51,7 @@ public class DepositTransactionProcessManager {
             command.setId(evnt.id());
             return Task.get(_commandService.sendAsync(command));
         }
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 
     @Subscribe
@@ -69,6 +69,6 @@ public class DepositTransactionProcessManager {
             command.setId(evnt.id());
             return Task.get(_commandService.sendAsync(command));
         }
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 }

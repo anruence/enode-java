@@ -1,7 +1,7 @@
 package com.enodeframework.samples;
 
 public class QueueProperties {
-    public static String NAMESRVADDR = "p.anruence.com:9876";
+    public static String NAMESRVADDR = "p.anruene.com:9876";
 
     public static String KAFKA_SERVER = "p.anruence.com:9092";
 
@@ -14,7 +14,13 @@ public class QueueProperties {
     public static String EXCEPTION_TOPIC = "ExceptionSample";
 
     public static String DEFAULT_PRODUCER_GROUP = "DefaultProducerGroup";
+    public static String DEFAULT_PRODUCER_GROUP1 = "DefaultProducerGroup1";
+    public static String DEFAULT_PRODUCER_GROUP2 = "DefaultProducerGroup2";
+    public static String DEFAULT_PRODUCER_GROUP3 = "DefaultProducerGroup3";
 
     public static String DEFAULT_CONSUMER_GROUP = "DefaultConsumerGroup";
+    public static String DEFAULT_CONSUMER_GROUP1 = "DefaultConsumerGroup1";
+    public static String DEFAULT_CONSUMER_GROUP2 = "DefaultConsumerGroup2";
+    public static String DEFAULT_CONSUMER_GROUP3 = "DefaultConsumerGroup3";
 
 }

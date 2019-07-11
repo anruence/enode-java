@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = {"com.enodeframework"})
-@ImportAutoConfiguration(value = {ENodeAutoConfiguration.class})
+@ImportAutoConfiguration(value = {ENodeAutoConfiguration.class, KafkaConfig.class})
 public class WebApplication {
     public static void main(String[] args) {
         SpringApplication.run(WebApplication.class, args);

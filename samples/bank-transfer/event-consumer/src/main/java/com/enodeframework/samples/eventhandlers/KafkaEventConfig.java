@@ -118,7 +118,7 @@ public class KafkaEventConfig {
         ContainerProperties properties = new ContainerProperties(EVENT_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(domainEventListener);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.RECORD);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -127,7 +127,7 @@ public class KafkaEventConfig {
         ContainerProperties properties = new ContainerProperties(APPLICATION_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(applicationMessageListener);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.RECORD);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -136,7 +136,7 @@ public class KafkaEventConfig {
         ContainerProperties properties = new ContainerProperties(EXCEPTION_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(publishableExceptionListener);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.RECORD);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 

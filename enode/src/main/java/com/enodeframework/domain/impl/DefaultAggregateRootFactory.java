@@ -12,7 +12,7 @@ public class DefaultAggregateRootFactory implements IAggregateRootFactory {
     @Override
     public <T extends IAggregateRoot> T createAggregateRoot(Class<T> aggregateRootType) {
         try {
-            return aggregateRootType.newInstance();
+            return aggregateRootType.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new WrappedRuntimeException(e);
         }
