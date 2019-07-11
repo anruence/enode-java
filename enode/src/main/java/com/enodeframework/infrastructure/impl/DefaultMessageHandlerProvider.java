@@ -1,6 +1,5 @@
 package com.enodeframework.infrastructure.impl;
 
-import com.enodeframework.common.Constants;
 import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.infrastructure.IMessage;
 import com.enodeframework.infrastructure.IMessageHandlerProvider;
@@ -34,9 +33,6 @@ public class DefaultMessageHandlerProvider extends AbstractHandlerProvider<Class
 
     @Override
     protected boolean isHandleMethodMatch(Method method) {
-        if (!Constants.EVENT_HANDLE_METHOD.equals(method.getName())) {
-            return false;
-        }
         if (method.getParameterTypes().length != 1) {
             return false;
         }

@@ -1,13 +1,14 @@
 *.class
-
 .mtj.tmp/
-
 *.jar
 *.war
 *.ear
 logs/
-
 .idea
+.classpath
+.project
+.settings
 *.iml
 target/
 test/
+.sts4-cache/

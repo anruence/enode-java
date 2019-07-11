@@ -77,13 +77,13 @@ public class NoteEventHandler {
     @Subscribe
     public AsyncTaskResult handleAsync(NoteTitleChanged evnt) {
         System.out.println(String.format("Note denormalizered, title：%s, Version: %d", evnt.getTitle(), evnt.version()));
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 
     @Subscribe
     public AsyncTaskResult handleAsync(NoteTitleChanged2 evnt) {
         System.out.println(String.format("Note denormalizered, title：%s, Version: %d", evnt.getTitle(), evnt.version()));
-        return (AsyncTaskResult.Success);
+        return AsyncTaskResult.Success;
     }
 }
 

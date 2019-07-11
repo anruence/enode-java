@@ -20,6 +20,9 @@ public class ChangeNoteTitleCommandHandler {
         logger.info(command.getTitle());
         CompletableFuture<Note> future = context.getAsync(command.getAggregateRootId(), false, Note.class);
         Note note = Task.get(future);
+        if (note == null) {
+            return;
+        }
         logger.info("note:{}", note.id());
         note.changeTitle(command.getTitle());
     }
