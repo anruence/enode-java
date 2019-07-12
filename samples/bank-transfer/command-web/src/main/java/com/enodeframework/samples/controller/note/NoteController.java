@@ -23,10 +23,10 @@ public class NoteController {
 
     @RequestMapping("create")
     public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam(value = "c", required = false) String cid) {
+        CreateNoteCommand createNoteCommand = new CreateNoteCommand(noteId, title);
         if (!Strings.isNullOrEmpty(cid)) {
             createNoteCommand.setId(cid);
         }
-        CreateNoteCommand createNoteCommand = new CreateNoteCommand(noteId, title);
         AsyncTaskResult<CommandResult> asyncTaskResult = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
         Assert.notNull(asyncTaskResult, "asyncTaskResult");
         commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
@@ -35,8 +35,7 @@ public class NoteController {
         commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
         ChangeNoteTitleCommand titleCommand = new ChangeNoteTitleCommand(noteId, title + " change");
         // always block here
-        Task.get(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
-        return null;
+        return Task.get(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
     }
 
     @RequestMapping("change")
