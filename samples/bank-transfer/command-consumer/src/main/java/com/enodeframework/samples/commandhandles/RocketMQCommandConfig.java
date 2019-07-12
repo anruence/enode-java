@@ -15,12 +15,13 @@ import java.util.Map;
 import static com.enodeframework.samples.QueueProperties.APPLICATION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
 import static com.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP;
+import static com.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP3;
 import static com.enodeframework.samples.QueueProperties.DEFAULT_PRODUCER_GROUP;
 import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
 import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.NAMESRVADDR;
 
-public class RocketMQConfig {
+public class RocketMQCommandConfig {
     @Bean
     public RocketMQCommandListener commandListener() {
         return new RocketMQCommandListener();
@@ -29,7 +30,7 @@ public class RocketMQConfig {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQPushConsumer defaultMQPushConsumer(RocketMQCommandListener commandListener) {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
-        defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP);
+        defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP3);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
         Map<String, String> topic = new HashMap<>();
         topic.put(COMMAND_TOPIC, "*");

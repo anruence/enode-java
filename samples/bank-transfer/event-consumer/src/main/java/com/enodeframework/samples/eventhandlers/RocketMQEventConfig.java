@@ -40,7 +40,7 @@ public class RocketMQEventConfig {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQPushConsumer eventConsumer(RocketMQDomainEventListener domainEventListener) {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
-        defaultMQPushConsumer.setConsumerGroup(DEFAULT_PRODUCER_GROUP);
+        defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
         Map<String, String> topic = new HashMap<>();
         topic.put(EVENT_TOPIC, "*");
@@ -52,7 +52,7 @@ public class RocketMQEventConfig {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQPushConsumer applicationConsumer(RocketMQApplicationMessageListener applicationMessageListener) {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
-        defaultMQPushConsumer.setConsumerGroup(DEFAULT_PRODUCER_GROUP);
+        defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP1);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
         Map<String, String> topic = new HashMap<>();
         topic.put(APPLICATION_TOPIC, "*");
@@ -64,7 +64,7 @@ public class RocketMQEventConfig {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQPushConsumer exceptionConsumer(RocketMQPublishableExceptionListener publishableExceptionListener) {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
-        defaultMQPushConsumer.setConsumerGroup(DEFAULT_PRODUCER_GROUP);
+        defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP2);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
         Map<String, String> topic = new HashMap<>();
         topic.put(EXCEPTION_TOPIC, "*");

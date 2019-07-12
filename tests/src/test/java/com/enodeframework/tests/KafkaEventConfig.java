@@ -55,9 +55,9 @@ public class KafkaEventConfig {
         //GroupID
         props.put(ConsumerConfig.GROUP_ID_CONFIG, DEFAULT_PRODUCER_GROUP);
         //是否自动提交
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
         //自动提交的频率
-//        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
         //Session超时设置
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "15000");
         //键的反序列化方式
@@ -133,7 +133,7 @@ public class KafkaEventConfig {
         ContainerProperties properties = new ContainerProperties(EVENT_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(domainEventListener);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.RECORD);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -142,7 +142,7 @@ public class KafkaEventConfig {
         ContainerProperties properties = new ContainerProperties(APPLICATION_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(applicationMessageListener);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.RECORD);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -151,7 +151,7 @@ public class KafkaEventConfig {
         ContainerProperties properties = new ContainerProperties(EXCEPTION_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(publishableExceptionListener);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.RECORD);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 

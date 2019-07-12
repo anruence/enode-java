@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan(value = "com.enodeframework.test")
+@ComponentScan(value = "com.enodeframework")
 public class EnodeExtensionConfig {
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
@@ -22,7 +22,7 @@ public class EnodeExtensionConfig {
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
         ENodeBootstrap bootstrap = new ENodeBootstrap();
-        bootstrap.setPackages(Lists.newArrayList("com.enodeframework.test"));
+        bootstrap.setPackages(Lists.newArrayList("com.enodeframework.tests"));
         return bootstrap;
     }
 

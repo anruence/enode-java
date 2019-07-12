@@ -87,14 +87,14 @@ public class CommandAndEventServiceTest extends AbstractTest {
         CommandResult commandResult = asyncResult.getData();
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-        TestAggregate note = (TestAggregate) Task.get(_memoryCache.getAsync(aggregateId));
+        TestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Sample Note", note.getTitle());
-        Assert.assertEquals(1, ((IAggregateRoot) note).version());
+        Assert.assertEquals(1, note.version());
 
         //执行修改聚合根的命令
         ChangeTestAggregateTitleCommand command2 = new ChangeTestAggregateTitleCommand();
-        command2.setId(aggregateId);
+        command2.aggregateRootId = aggregateId;
         command2.setTitle("Changed Note");
         asyncResult = Task.get(_commandService.executeAsync(command2));
         Assert.assertNotNull(asyncResult);
@@ -102,10 +102,10 @@ public class CommandAndEventServiceTest extends AbstractTest {
         commandResult = asyncResult.getData();
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-        note = (TestAggregate) Task.get(_memoryCache.getAsync(aggregateId));
+        note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Changed Note", note.getTitle());
-        Assert.assertEquals(2, ((IAggregateRoot) note).version());
+        Assert.assertEquals(2, note.version());
     }
 
     @Test
@@ -125,11 +125,12 @@ public class CommandAndEventServiceTest extends AbstractTest {
         InheritTestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, InheritTestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Sample Note", note.getTitle());
-        Assert.assertEquals(1, ((IAggregateRoot) note).version());
+        Assert.assertEquals(1, note.version());
+        asyncResult = Task.get(_commandService.executeAsync(command));
 
         //执行修改聚合根的命令
         ChangeInheritTestAggregateTitleCommand command2 = new ChangeInheritTestAggregateTitleCommand();
-        command2.setId(aggregateId);
+        command2.aggregateRootId = aggregateId;
         command2.setTitle("Changed Note");
 
         asyncResult = Task.get(_commandService.executeAsync(command2));
@@ -141,7 +142,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         note = Task.get(_memoryCache.getAsync(aggregateId, InheritTestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Changed Note", note.getTitle());
-        Assert.assertEquals(2, ((IAggregateRoot) note).version());
+        Assert.assertEquals(2, note.version());
     }
 
     @Test
@@ -159,19 +160,19 @@ public class CommandAndEventServiceTest extends AbstractTest {
         TestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Sample Note", note.getTitle());
-        Assert.assertEquals(1, ((IAggregateRoot) note).version());
+        Assert.assertEquals(1, note.version());
 
         //执行修改聚合根的命令
         ChangeTestAggregateTitleCommand command2 = new ChangeTestAggregateTitleCommand();
-        command.aggregateRootId = aggregateId;
-        command.setTitle("Changed Note");
+        command2.aggregateRootId = aggregateId;
+        command2.setTitle("Changed Note");
         commandResult = Task.get(_commandService.executeAsync(command2));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getData().getStatus());
         note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Changed Note", note.getTitle());
-        Assert.assertEquals(2, ((IAggregateRoot) note).version());
+        Assert.assertEquals(2, note.version());
     }
 
     @Test
@@ -191,7 +192,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         TestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Sample Note", note.getTitle());
-        Assert.assertEquals(1, ((IAggregateRoot) note).version());
+        Assert.assertEquals(1, note.version());
 
         //用同一个命令再次执行创建聚合根的命令
         asyncResult = Task.get(_commandService.executeAsync(command));
@@ -201,7 +202,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         Assert.assertEquals("Sample Note", note.getTitle());
-        Assert.assertEquals(1, ((IAggregateRoot) note).version());
+        Assert.assertEquals(1, note.version());
 
         //用另一个命令再次执行创建相同聚合根的命令
         command = new CreateTestAggregateCommand();
@@ -214,7 +215,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
         Assert.assertEquals("Sample Note", note.getTitle());
-        Assert.assertEquals(1, ((IAggregateRoot) note).version());
+        Assert.assertEquals(1, note.version());
     }
 
     @Test
@@ -222,7 +223,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
     public void duplicate_update_aggregate_command_test() {
         String aggregateId = ObjectId.generateNewStringId();
         CreateTestAggregateCommand command1 = new CreateTestAggregateCommand();
-        command1.setId(aggregateId);
+        command1.aggregateRootId = aggregateId;
         command1.setTitle("Sample Note");
 
         //先创建一个聚合根
@@ -230,7 +231,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals(CommandStatus.Success, status);
 
         ChangeTestAggregateTitleCommand command2 = new ChangeTestAggregateTitleCommand();
-        command2.setId(aggregateId);
+        command2.aggregateRootId = aggregateId;
         command2.setTitle("Changed Note");
 
         //执行修改聚合根的命令
@@ -243,7 +244,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         TestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Changed Note", note.getTitle());
-        Assert.assertEquals(2, ((IAggregateRoot) note).version());
+        Assert.assertEquals(2, note.version());
 
         //在重复执行该命令
         asyncResult = Task.get(_commandService.executeAsync(command2));
@@ -255,7 +256,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Changed Note", note.getTitle());
-        Assert.assertEquals(2, ((IAggregateRoot) note).version());
+        Assert.assertEquals(2, note.version());
     }
 
     @Test
@@ -276,7 +277,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         TestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Sample Note", note.getTitle());
-        Assert.assertEquals(1, ((IAggregateRoot) note).version());
+        Assert.assertEquals(1, note.version());
 
         //并发执行修改聚合根的命令
         int totalCount = 100;
@@ -310,7 +311,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
 
     public void change_nothing_test() {
         ChangeNothingCommand command = new ChangeNothingCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
@@ -323,7 +324,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
 
     public void set_result_command_test() {
         SetResultCommand command = new SetResultCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         command.setResult("CommandResult");
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);
@@ -341,7 +342,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         command1.setTitle("Sample Note1");
         await(_commandService.executeAsync(command1));
         CreateTestAggregateCommand command2 = new CreateTestAggregateCommand();
-        command2.setId(ObjectId.generateNewStringId());
+        command2.aggregateRootId = ObjectId.generateNewStringId();
         command2.setTitle("Sample Note2");
         await(_commandService.executeAsync(command2));
         ChangeMultipleAggregatesCommand command3 = new ChangeMultipleAggregatesCommand();
@@ -360,7 +361,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
 
     public void no_handler_command_test() {
         NoHandlerCommand command = new NoHandlerCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
@@ -373,7 +374,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
 
     public void two_handlers_command_test() {
         TwoHandlersCommand command = new TwoHandlersCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
@@ -386,7 +387,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
 
     public void handler_throw_exception_command_test() {
         ThrowExceptionCommand command = new ThrowExceptionCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
@@ -406,7 +407,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         await(_commandService.executeAsync(command));
 
         AggregateThrowExceptionCommand command1 = new AggregateThrowExceptionCommand();
-        command1.setId(aggregateId);
+        command1.aggregateRootId = aggregateId;
         command1.setPublishableException(false);
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
@@ -416,7 +417,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
 
         AggregateThrowExceptionCommand command2 = new AggregateThrowExceptionCommand();
-        command2.setId(aggregateId);
+        command2.aggregateRootId = aggregateId;
         command2.setPublishableException(true);
 
         asyncResult = Task.get(_commandService.executeAsync(command2));
@@ -431,7 +432,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
 
     public void command_inheritance_test() {
         BaseCommand command = new BaseCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
@@ -441,7 +442,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals("ResultFromBaseCommand", commandResult.getResult());
 
         command = new ChildCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
@@ -468,7 +469,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
     @Test
     public void async_command_handler_throw_exception_test() {
         AsyncHandlerCommand command = new AsyncHandlerCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         command.setShouldThrowException(true);
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
@@ -566,7 +567,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
 
     public void async_command_inheritance_test() {
         AsyncHandlerBaseCommand command = new AsyncHandlerBaseCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
@@ -575,7 +576,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
 
         command = new AsyncHandlerChildCommand();
-        command.setId(ObjectId.generateNewStringId());
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
@@ -620,7 +621,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
 
         //执行创建聚合根的命令
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
-        command.setId(commandId);
+        command.aggregateRootId = (commandId);
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
@@ -659,7 +660,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         waitHandle.waitOne();
         TestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
-        Assert.assertEquals(commandList.size() + 1, ((IAggregateRoot) note).version());
+        Assert.assertEquals(commandList.size() + 1, note.version());
     }
 
     @Test
@@ -729,7 +730,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         TestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals(true, createCommandSuccess.get());
-        Assert.assertEquals(commandList.size(), ((IAggregateRoot) note).version());
+        Assert.assertEquals(commandList.size(), note.version());
     }
 
     @Test
@@ -799,7 +800,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
             TestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
             Assert.assertNotNull(note);
             Assert.assertEquals("Note Title", note.getTitle());
-            Assert.assertEquals(1, ((IAggregateRoot) note).version());
+            Assert.assertEquals(1, note.version());
 
             //执行创建聚合根的命令
             command = new CreateTestAggregateCommand();
@@ -815,7 +816,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
             note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
             Assert.assertNotNull(note);
             Assert.assertEquals("Note Title", note.getTitle());
-            Assert.assertEquals(1, ((IAggregateRoot) note).version());
+            Assert.assertEquals(1, note.version());
         } finally {
             _eventStore.setSupportBatchAppendEvent(true);
         }
@@ -839,7 +840,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         TestAggregate note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Sample Note", note.getTitle());
-        Assert.assertEquals(1, ((IAggregateRoot) note).version());
+        Assert.assertEquals(1, note.version());
 
         TestAggregateTitleChanged aggregateTitleChanged = new TestAggregateTitleChanged("Changed Title");
         aggregateTitleChanged.setAggregateRootId(aggregateId);
@@ -890,7 +891,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         waitHandle.waitOne();
         note = Task.get(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
-        Assert.assertEquals(2 + commandList.size(), ((IAggregateRoot) note).version());
+        Assert.assertEquals(2 + commandList.size(), note.version());
         Assert.assertEquals("Changed Note2", note.getTitle());
     }
 

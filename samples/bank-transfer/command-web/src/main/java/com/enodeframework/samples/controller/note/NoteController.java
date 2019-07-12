@@ -28,8 +28,13 @@ public class NoteController {
         if (!Strings.isNullOrEmpty(cid)) {
             createNoteCommand.setId(cid);
         }
-        CompletableFuture<AsyncTaskResult<CommandResult>> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
-        return Task.get(future);
+        CompletableFuture<AsyncTaskResult<CommandResult>> future = commandService.executeAsync(createNoteCommand, CommandReturnType.CommandExecuted);
+        commandService.executeAsync(createNoteCommand, CommandReturnType.CommandExecuted).join();
+        commandService.executeAsync(createNoteCommand, CommandReturnType.CommandExecuted).join();
+        commandService.executeAsync(createNoteCommand, CommandReturnType.CommandExecuted).join();
+        commandService.executeAsync(createNoteCommand, CommandReturnType.CommandExecuted).join();
+        ChangeNoteTitleCommand titleCommand = new ChangeNoteTitleCommand(noteId, title + " change");
+        return Task.get(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
     }
 
     @RequestMapping("change")
