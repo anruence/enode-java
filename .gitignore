@@ -10,5 +10,4 @@ logs/
 .settings
 *.iml
 target/
-test/
 .sts4-cache/
