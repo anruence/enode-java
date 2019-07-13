@@ -449,7 +449,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
 
         AsyncHandlerCommand command1 = new AsyncHandlerCommand();
-        command1.setId(ObjectId.generateNewStringId());
+        command1.aggregateRootId  =ObjectId.generateNewStringId();
         command1.setShouldThrowIOException(true);
         asyncResult = Task.get(_commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
