@@ -1,15 +1,15 @@
 package com.enodeframework.tests.TestClasses;
 
-import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
-import com.enodeframework.tests.Commands.CreateTestAggregateCommand;
-import com.enodeframework.tests.Mocks.FailedType;
-import com.enodeframework.tests.Mocks.MockPublishableExceptionPublisher;
 import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.commanding.CommandStatus;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.common.utilities.ObjectId;
+import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
+import com.enodeframework.tests.Commands.CreateTestAggregateCommand;
+import com.enodeframework.tests.Mocks.FailedType;
+import com.enodeframework.tests.Mocks.MockPublishableExceptionPublisher;
 import org.junit.Assert;
 import org.junit.Test;
 

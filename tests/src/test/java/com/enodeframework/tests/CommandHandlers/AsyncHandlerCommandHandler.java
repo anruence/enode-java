@@ -4,16 +4,14 @@ import com.enodeframework.annotation.Command;
 import com.enodeframework.annotation.Subscribe;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
+import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.tests.Commands.AsyncHandlerCommand;
 
-import java.io.IOException;
-
 @Command
 public class AsyncHandlerCommandHandler {
-    private int _count;
-
     public boolean CheckCommandHandledFirst;
+    private int _count;
 
     @Subscribe
     public AsyncTaskResult<IApplicationMessage> HandleAsync(AsyncHandlerCommand command) throws Exception {
@@ -24,7 +22,7 @@ public class AsyncHandlerCommandHandler {
         } else if (command.ShouldThrowIOException) {
             _count++;
             if (_count <= 5) {
-                throw new IOException ("AsyncCommandIOException" + _count);
+                throw new IORuntimeException("AsyncCommandIOException" + _count);
             }
             _count = 0;
             return new AsyncTaskResult<IApplicationMessage>(AsyncTaskStatus.Success);

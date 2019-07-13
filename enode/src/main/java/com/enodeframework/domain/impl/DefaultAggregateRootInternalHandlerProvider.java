@@ -79,7 +79,7 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
                     throw new WrappedRuntimeException(throwable);
                 }
             });
-        } catch (Exception e) {
+        } catch (IllegalAccessException e) {
             throw new WrappedRuntimeException(e);
         }
     }

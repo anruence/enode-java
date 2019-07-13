@@ -2,6 +2,7 @@ package com.enodeframework.infrastructure.impl;
 
 import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.io.AsyncTaskResult;
+import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.infrastructure.IMessage;
 import com.enodeframework.infrastructure.IMessageHandlerProxy2;
 import com.enodeframework.infrastructure.WrappedRuntimeException;
@@ -39,6 +40,9 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
                     return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), message2, message1);
                 }
             } catch (Throwable throwable) {
+                if (throwable instanceof IORuntimeException) {
+                    throw new IORuntimeException(throwable);
+                }
                 throw new WrappedRuntimeException(throwable);
             }
         });

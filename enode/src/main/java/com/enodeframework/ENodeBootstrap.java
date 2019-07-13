@@ -6,7 +6,6 @@ import com.enodeframework.common.extensions.ClassNameComparator;
 import com.enodeframework.common.extensions.ClassPathScanHandler;
 import com.enodeframework.domain.impl.DefaultAggregateRepositoryProvider;
 import com.enodeframework.domain.impl.DefaultAggregateRootInternalHandlerProvider;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
 import com.enodeframework.infrastructure.impl.DefaultMessageHandlerProvider;
 import com.enodeframework.infrastructure.impl.DefaultThreeMessageHandlerProvider;
 import com.enodeframework.infrastructure.impl.DefaultTwoMessageHandlerProvider;
@@ -71,7 +70,7 @@ public class ENodeBootstrap {
      */
     private Set<Class<?>> scanConfiguredPackages() {
         if (packages == null) {
-            throw new WrappedRuntimeException("Command packages is not specified");
+            throw new IllegalArgumentException("Command packages is not specified");
         }
         String[] pkgs = new String[packages.size()];
         handler = new ClassPathScanHandler(packages.toArray(pkgs));

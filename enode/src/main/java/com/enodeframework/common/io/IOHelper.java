@@ -122,11 +122,10 @@ public class IOHelper {
             } catch (Exception ex) {
                 asyncResult.completeExceptionally(ex);
             }
-            asyncResult.exceptionally(ex -> {
-                taskContinueAction(null, ex);
-                return null;
-            }).handleAsync((result, e) -> {
-                taskContinueAction(result, e);
+            asyncResult.thenAccept(result -> {
+                taskContinueAction(result, null);
+            }).exceptionally(ex -> {
+                taskContinueAction(null, ex.getCause());
                 return null;
             });
         }
@@ -217,7 +216,8 @@ public class IOHelper {
                     doRetry();
                 }
             } catch (Exception ex) {
-                logger.error(String.format("Failed to execute the retryAction, actionName:%s, contextInfo:%s", actionName, getContextInfo(contextInfoFunc)), ex);
+                logger.error("Failed to execute the retryAction, actionName:{}, contextInfo:{}", actionName, getContextInfo(contextInfoFunc), ex)
+                ;
             }
         }
 
@@ -231,7 +231,8 @@ public class IOHelper {
                 try {
                     successAction.apply(result);
                 } catch (Exception ex) {
-                    logger.error(String.format("Failed to execute the successAction, actionName:%s, contextInfo:%s", actionName, getContextInfo(contextInfoFunc)), ex);
+                    logger.error("Failed to execute the successAction, actionName:{}, contextInfo:{}", actionName, getContextInfo(contextInfoFunc), ex)
+                    ;
                 }
             }
         }
@@ -242,7 +243,7 @@ public class IOHelper {
                     failedAction.apply(errorMessage);
                 }
             } catch (Exception ex) {
-                logger.error(String.format("Failed to execute the failedAction of action:%s, contextInfo:%s", actionName, getContextInfo(contextInfoFunc)), ex);
+                logger.error("Failed to execute the failedAction of action:{}, contextInfo:{}", actionName, getContextInfo(contextInfoFunc), ex);
             }
         }
 
@@ -257,10 +258,10 @@ public class IOHelper {
 
         private void processTaskException(Throwable exception) {
             if (exception instanceof IORuntimeException) {
-                logger.error(String.format("Task '%s' has io exception, contextInfo:%s, current retryTimes:%d, try to run the async task again.", actionName, getContextInfo(contextInfoFunc), currentRetryTimes), exception);
+                logger.error("Task '{}' has io exception, contextInfo:{}, current retryTimes:{}, try to run the async task again.", actionName, getContextInfo(contextInfoFunc), currentRetryTimes, exception);
                 executeRetryAction();
             } else {
-                logger.error(String.format("Task '%s' has unknown exception, contextInfo:%s, current retryTimes:%d", actionName, getContextInfo(contextInfoFunc), currentRetryTimes), exception);
+                logger.error("Task '{}' has unknown exception, contextInfo:{}, current retryTimes:{}", actionName, getContextInfo(contextInfoFunc), currentRetryTimes, exception);
                 if (retryWhenFailed) {
                     executeRetryAction();
                 } else {

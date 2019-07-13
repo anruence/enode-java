@@ -2,8 +2,10 @@ package com.enodeframework.infrastructure.impl;
 
 import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.io.AsyncTaskResult;
+import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.infrastructure.IMessage;
 import com.enodeframework.infrastructure.IMessageHandlerProxy3;
+import com.enodeframework.infrastructure.WrappedRuntimeException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.invoke.MethodHandle;
@@ -47,7 +49,10 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
                 //参数按照方法定义参数类型列表传递
                 return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), params.get(0), params.get(1), params.get(2));
             } catch (Throwable throwable) {
-                throw new RuntimeException(throwable);
+                if (throwable instanceof IORuntimeException) {
+                    throw new IORuntimeException(throwable);
+                }
+                throw new WrappedRuntimeException(throwable);
             }
         });
     }

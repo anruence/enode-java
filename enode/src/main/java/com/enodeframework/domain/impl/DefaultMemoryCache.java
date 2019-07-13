@@ -49,7 +49,7 @@ public class DefaultMemoryCache implements IMemoryCache {
         }
         AggregateCacheInfo aggregateRootInfo = aggregateRootInfoDict.get(aggregateRootId.toString());
         if (aggregateRootInfo == null) {
-            return Task.CompletedTask;
+            return Task.completedFuture(null);
         }
         IAggregateRoot aggregateRoot = aggregateRootInfo.getAggregateRoot();
         if (aggregateRoot.getClass() != aggregateRootType) {
@@ -89,7 +89,7 @@ public class DefaultMemoryCache implements IMemoryCache {
             Class aggregateRootType = typeNameProvider.getType(aggregateRootTypeName);
             if (aggregateRootType == null) {
                 logger.error("Could not find aggregate root type by aggregate root type name [{}].", aggregateRootTypeName);
-                return Task.CompletedTask;
+                return Task.completedTask;
             }
             CompletableFuture<IAggregateRoot> future = aggregateStorage.getAsync(aggregateRootType, aggregateRootId);
             return future.thenAccept(aggregateRoot -> {
@@ -100,7 +100,7 @@ public class DefaultMemoryCache implements IMemoryCache {
         } catch (Exception ex) {
             logger.error(String.format("Refresh aggregate from event store has unknown exception, aggregateRootTypeName:%s, aggregateRootId:%s", aggregateRootTypeName, aggregateRootId), ex);
         }
-        return Task.CompletedTask;
+        return Task.completedTask;
     }
 
     @Override

@@ -1,10 +1,10 @@
 package com.enodeframework.tests.EventHandlers;
 
-import com.enodeframework.tests.Domain.Event1;
 import com.enodeframework.annotation.Event;
 import com.enodeframework.annotation.Priority;
 import com.enodeframework.annotation.Subscribe;
 import com.enodeframework.common.io.AsyncTaskResult;
+import com.enodeframework.tests.Domain.Event1;
 
 @Priority(1)
 @Event

@@ -1,5 +1,6 @@
 package com.enodeframework.common.function;
 
+import com.enodeframework.infrastructure.WrappedRuntimeException;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.time.Duration;
@@ -17,17 +18,17 @@ public class DelayedTask {
             1, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DelayedThread-%d").build());
 
     public static <T> CompletableFuture<T> startDelayedTaskFuture(Duration duration, Func<T> action) {
-        CompletableFuture<T> promise = new CompletableFuture<>();
-        EXECUTOR.schedule(() -> promise.complete(action.apply()), duration.toMillis(), TimeUnit.MILLISECONDS);
-        return promise;
+        CompletableFuture<T> future = new CompletableFuture<>();
+        EXECUTOR.schedule(() -> future.complete(action.apply()), duration.toMillis(), TimeUnit.MILLISECONDS);
+        return future;
     }
 
     public static void startDelayedTask(Duration duration, Action action) {
         DelayedTask.EXECUTOR.schedule(() -> {
             try {
                 action.apply();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new WrappedRuntimeException(e);
             }
         }, duration.toMillis(), TimeUnit.MILLISECONDS);
     }

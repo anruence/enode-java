@@ -4,6 +4,7 @@ import com.enodeframework.commanding.ICommand;
 import com.enodeframework.commanding.ICommandAsyncHandlerProxy;
 import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.io.AsyncTaskResult;
+import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.infrastructure.WrappedRuntimeException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,11 @@ public class CommandAsyncHandlerProxy implements ICommandAsyncHandlerProxy {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return (AsyncTaskResult<IApplicationMessage>) methodHandle.invoke(getInnerObject(), command);
-            } catch (Throwable e) {
-                throw new WrappedRuntimeException(e);
+            } catch (Throwable throwable) {
+                if (throwable instanceof IORuntimeException) {
+                    throw new IORuntimeException(throwable);
+                }
+                throw new WrappedRuntimeException(throwable);
             }
         });
     }
