@@ -15,12 +15,38 @@ import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.EventAppendResult;
 import com.enodeframework.eventing.impl.InMemoryEventStore;
 import com.enodeframework.infrastructure.ProcessingDomainEventStreamMessage;
-import com.enodeframework.tests.Commands.*;
+import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
+import com.enodeframework.tests.Commands.AsyncHandlerBaseCommand;
+import com.enodeframework.tests.Commands.AsyncHandlerChildCommand;
+import com.enodeframework.tests.Commands.AsyncHandlerCommand;
+import com.enodeframework.tests.Commands.BaseCommand;
+import com.enodeframework.tests.Commands.ChangeInheritTestAggregateTitleCommand;
+import com.enodeframework.tests.Commands.ChangeMultipleAggregatesCommand;
+import com.enodeframework.tests.Commands.ChangeNothingCommand;
+import com.enodeframework.tests.Commands.ChangeTestAggregateTitleCommand;
+import com.enodeframework.tests.Commands.ChildCommand;
+import com.enodeframework.tests.Commands.CreateInheritTestAggregateCommand;
+import com.enodeframework.tests.Commands.CreateTestAggregateCommand;
+import com.enodeframework.tests.Commands.NoHandlerCommand;
+import com.enodeframework.tests.Commands.NotCheckAsyncHandlerExistWithResultCommand;
+import com.enodeframework.tests.Commands.SetResultCommand;
+import com.enodeframework.tests.Commands.TestEventPriorityCommand;
+import com.enodeframework.tests.Commands.ThrowExceptionCommand;
+import com.enodeframework.tests.Commands.TwoAsyncHandlersCommand;
+import com.enodeframework.tests.Commands.TwoHandlersCommand;
 import com.enodeframework.tests.Domain.InheritTestAggregate;
 import com.enodeframework.tests.Domain.TestAggregate;
 import com.enodeframework.tests.Domain.TestAggregateCreated;
 import com.enodeframework.tests.Domain.TestAggregateTitleChanged;
-import com.enodeframework.tests.EventHandlers.*;
+import com.enodeframework.tests.EventHandlers.Handler1;
+import com.enodeframework.tests.EventHandlers.Handler121;
+import com.enodeframework.tests.EventHandlers.Handler122;
+import com.enodeframework.tests.EventHandlers.Handler123;
+import com.enodeframework.tests.EventHandlers.Handler1231;
+import com.enodeframework.tests.EventHandlers.Handler1232;
+import com.enodeframework.tests.EventHandlers.Handler1233;
+import com.enodeframework.tests.EventHandlers.Handler2;
+import com.enodeframework.tests.EventHandlers.Handler3;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.junit.Assert;
@@ -32,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -308,7 +335,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
     @Test
     public void change_multiple_aggregates_test() {
         CreateTestAggregateCommand command1 = new CreateTestAggregateCommand();
-        command1.setId(ObjectId.generateNewStringId());
+        command1.aggregateRootId = ObjectId.generateNewStringId();
         command1.setTitle("Sample Note1");
         await(_commandService.executeAsync(command1));
         CreateTestAggregateCommand command2 = new CreateTestAggregateCommand();
@@ -316,7 +343,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         command2.setTitle("Sample Note2");
         await(_commandService.executeAsync(command2));
         ChangeMultipleAggregatesCommand command3 = new ChangeMultipleAggregatesCommand();
-        command3.setId(ObjectId.generateNewStringId());
+        command3.aggregateRootId = ObjectId.generateNewStringId();
         command3.setAggregateRootId1(command1.getAggregateRootId());
         command3.setAggregateRootId2(command2.getAggregateRootId());
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command3));
@@ -449,7 +476,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
 
         AsyncHandlerCommand command1 = new AsyncHandlerCommand();
-        command1.setId(ObjectId.generateNewStringId());
+        command1.aggregateRootId = ObjectId.generateNewStringId();
         command1.setShouldThrowIOException(true);
         asyncResult = Task.get(_commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
@@ -686,7 +713,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
                 CommandResult commandResult = t.getData();
                 Assert.assertNotNull(commandResult);
                 Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-                if (commandResult.getCommandId() != commandId) {
+                if (!Objects.equals(commandResult.getCommandId(), commandId)) {
                     long totalCount = count.incrementAndGet();
                     if (totalCount == commandList.size() - 1) {
                         waitHandle.set();

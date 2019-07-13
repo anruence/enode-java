@@ -30,10 +30,6 @@ public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<Ma
 
     @Override
     protected boolean isHandlerSourceMatchKey(List<Class> handlerSource, ManyType key) {
-        if (handlerSource.size() != 2) {
-            return false;
-        }
-
         for (Class type : key.getTypes()) {
             if (!handlerSource.stream().anyMatch(x -> x == type)) {
                 return false;

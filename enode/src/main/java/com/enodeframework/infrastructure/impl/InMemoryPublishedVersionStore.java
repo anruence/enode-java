@@ -25,7 +25,7 @@ public class InMemoryPublishedVersionStore implements IPublishedVersionStore {
     @Override
     public CompletableFuture<AsyncTaskResult<Integer>> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
         Integer version = versionDict.get(buildKey(processorName, aggregateRootId));
-        int publishedVersion = version == null ? 0 : version;
+        Integer publishedVersion = version == null ? 0 : version;
         return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, publishedVersion));
     }
 

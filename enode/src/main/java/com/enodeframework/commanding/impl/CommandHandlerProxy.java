@@ -4,6 +4,7 @@ import com.enodeframework.commanding.ICommand;
 import com.enodeframework.commanding.ICommandContext;
 import com.enodeframework.commanding.ICommandHandlerProxy;
 import com.enodeframework.common.container.IObjectContainer;
+import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.infrastructure.WrappedRuntimeException;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,6 +34,9 @@ public class CommandHandlerProxy implements ICommandHandlerProxy {
             try {
                 methodHandle.invoke(getInnerObject(), context, command);
             } catch (Throwable throwable) {
+                if (throwable instanceof IORuntimeException) {
+                    throw new IORuntimeException(throwable);
+                }
                 throw new WrappedRuntimeException(throwable);
             }
         });

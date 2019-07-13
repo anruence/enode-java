@@ -68,7 +68,7 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
                 errorMessage ->
                         logger.error(String.format("Get published version has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true);
-        return Task.CompletedTask;
+        return Task.completedTask;
     }
 
     private void doDispatchProcessingMessageAsync(ProcessingDomainEventStreamMessage processingMessage, int retryTimes) {

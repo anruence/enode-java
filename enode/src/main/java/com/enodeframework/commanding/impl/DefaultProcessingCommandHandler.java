@@ -107,16 +107,16 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 return completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), errorMessage);
             }
         }
-        return Task.CompletedTask;
+        return Task.completedTask;
     }
 
     private CompletableFuture<Void> handleCommand(ProcessingCommand processingCommand, ICommandHandlerProxy commandHandler) {
         ICommand command = processingCommand.getMessage();
         processingCommand.getCommandExecuteContext().clear();
         //调用command handler执行当前command
-        boolean handleSuccess = false;
-        try {
-            await(commandHandler.handleAsync(processingCommand.getCommandExecuteContext(), command));
+        CompletableFuture<Void> future = commandHandler.handleAsync(processingCommand.getCommandExecuteContext(), command);
+        return future.thenAccept(r -> {
+            //如果command执行成功，则提交执行后的结果
             if (logger.isDebugEnabled()) {
                 logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                         commandHandler.getInnerObject().getClass().getName(),
@@ -124,13 +124,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         command.id(),
                         command.getAggregateRootId());
             }
-            handleSuccess = true;
-        } catch (Exception ex) {
-            handleExceptionAsync(processingCommand, commandHandler, ex, 0);
-            return Task.CompletedTask;
-        }
-        //如果command执行成功，则提交执行后的结果
-        if (handleSuccess) {
             try {
                 commitAggregateChanges(processingCommand);
             } catch (Exception ex) {
@@ -138,8 +131,10 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 // await
                 await(completeCommand(processingCommand, CommandStatus.Failed, ex.getClass().getName(), "Unknown exception caught when committing changes of command."));
             }
-        }
-        return Task.CompletedTask;
+        }).exceptionally(ex -> {
+            handleExceptionAsync(processingCommand, commandHandler, (Exception) ex, 0);
+            return null;
+        });
     }
 
     private void commitAggregateChanges(ProcessingCommand processingCommand) {
@@ -243,7 +238,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         //那就判断当前异常是否是需要被发布出去的异常，如果是，则发布该异常给所有消费者；否则，就记录错误日志；
                         //然后，认为该command处理失败即可；
 
-                        Throwable exp = exception;
+                        Throwable exp = exception.getCause();
                         if (exp instanceof WrappedRuntimeException) {
                             exp = ((WrappedRuntimeException) exp).getException();
                         }
@@ -297,38 +292,37 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     private CompletableFuture<Void> handleCommandAsync(ProcessingCommand processingCommand, ICommandAsyncHandlerProxy commandHandler, int retryTimes) {
         ICommand command = processingCommand.getMessage();
         IOHelper.tryAsyncActionRecursively("HandleCommandAsync", () -> {
-                    try {
-                        CompletableFuture<AsyncTaskResult<IApplicationMessage>> asyncResult = commandHandler.handleAsync(command);
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Handle command async success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                    commandHandler.getInnerObject().getClass().getName(),
-                                    command.getClass().getName(),
-                                    command.id(),
-                                    command.getAggregateRootId());
-                        }
-                        return asyncResult;
-                    } catch (IORuntimeException ex) {
-                        logger.error(String.format("Handle command async has io exception. handlerType:%s, commandType:%s, commandId:%s, aggregateRootId:%s",
+                    CompletableFuture<AsyncTaskResult<IApplicationMessage>> asyncResult = commandHandler.handleAsync(command);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Handle command async success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                 commandHandler.getInnerObject().getClass().getName(),
                                 command.getClass().getName(),
                                 command.id(),
-                                command.getAggregateRootId()), ex);
-                        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage()));
-                    } catch (Exception ex) {
+                                command.getAggregateRootId());
+                    }
+                    return asyncResult.exceptionally(ex -> {
+                        if (ex.getCause() instanceof IORuntimeException) {
+                            logger.error(String.format("Handle command async has io exception. handlerType:%s, commandType:%s, commandId:%s, aggregateRootId:%s",
+                                    commandHandler.getInnerObject().getClass().getName(),
+                                    command.getClass().getName(),
+                                    command.id(),
+                                    command.getAggregateRootId()), ex);
+                            return new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage());
+                        }
                         logger.error(String.format("Handle command async has unknown exception. handlerType:%s, commandType:%s, commandId:%s, aggregateRootId:%s",
                                 commandHandler.getInnerObject().getClass().getName(),
                                 command.getClass().getName(),
                                 command.id(),
                                 command.getAggregateRootId()), ex);
-                        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
-                    }
+                        return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage());
+                    });
                 },
                 currentRetryTimes -> handleCommandAsync(processingCommand, commandHandler, currentRetryTimes),
                 result -> commitChangesAsync(processingCommand, true, result.getData(), null),
                 () -> String.format("[command:[id:%s,type:%s],handlerType:%s]", command.id(), command.getClass().getName(), commandHandler.getInnerObject().getClass().getName()),
                 errorMessage -> commitChangesAsync(processingCommand, false, null, errorMessage),
                 retryTimes, false);
-        return Task.CompletedTask;
+        return Task.completedTask;
     }
 
     private void commitChangesAsync(ProcessingCommand processingCommand, boolean success, IApplicationMessage message, String errorMessage) {

@@ -15,7 +15,6 @@ import com.enodeframework.infrastructure.IThreeMessageHandlerProvider;
 import com.enodeframework.infrastructure.ITwoMessageHandlerProvider;
 import com.enodeframework.infrastructure.ITypeNameProvider;
 import com.enodeframework.infrastructure.MessageHandlerData;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,11 +110,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
 
             if (messageHandlerData.ListHandlers != null && !messageHandlerData.ListHandlers.isEmpty()) {
                 messageHandlerData.ListHandlers.forEach(handler -> {
-                    try {
-                        dispatchAction.apply(multiMessageDispatching, handler, null, 0);
-                    } catch (Exception e) {
-                        throw new WrappedRuntimeException(e);
-                    }
+                    dispatchAction.apply(multiMessageDispatching, handler, null, 0);
                 });
             }
 
@@ -124,11 +119,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                         dispatchAction.apply(multiMessageDispatching, nextHandler, currentQueuedHandler, 0)
                 );
 
-                try {
-                    dispatchAction.apply(multiMessageDispatching, queuedHandler.dequeueHandler(), queuedHandler, 0);
-                } catch (Exception e) {
-                    throw new WrappedRuntimeException(e);
-                }
+                dispatchAction.apply(multiMessageDispatching, queuedHandler.dequeueHandler(), queuedHandler, 0);
             }
         });
     }
@@ -362,11 +353,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         public void onHandlerFinished(T handler) {
             T nextHandler = dequeueHandler();
             if (nextHandler != null) {
-                try {
-                    dispatchToNextHandler.apply(this, nextHandler);
-                } catch (Exception e) {
-                    throw new WrappedRuntimeException(e);
-                }
+                dispatchToNextHandler.apply(this, nextHandler);
             }
         }
     }

@@ -96,6 +96,9 @@ public class InMemoryEventStore implements IEventStore {
 
         try {
             if (eventStream.version() == aggregateInfo.getCurrentVersion() + 1) {
+                if (aggregateInfo.getCommandDict().containsKey(eventStream.commandId())){
+                    return EventAppendResult.DuplicateCommand;
+                }
                 aggregateInfo.getEventDict().put(eventStream.version(), eventStream);
                 aggregateInfo.getCommandDict().put(eventStream.commandId(), eventStream);
                 aggregateInfo.setCurrentVersion(eventStream.version());

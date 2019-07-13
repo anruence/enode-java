@@ -54,7 +54,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     public CompletableFuture<Void> onCommandExecutedAsync(CommandResult commandResult) {
         messageContext.onMessageHandled(queueMessage);
         if (Strings.isNullOrEmpty(commandMessage.getReplyAddress())) {
-            return Task.CompletedTask;
+            return Task.completedTask;
         }
         return sendReplyService.sendReply(CommandReturnType.CommandExecuted.getValue(), commandResult, commandMessage.getReplyAddress());
     }
@@ -81,7 +81,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     @Override
     public CompletableFuture<Void> addAsync(IAggregateRoot aggregateRoot) {
         add(aggregateRoot);
-        return Task.CompletedTask;
+        return Task.completedTask;
     }
 
     /**

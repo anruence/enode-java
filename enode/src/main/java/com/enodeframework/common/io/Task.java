@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Task extends CompletableFuture {
 
-    public static CompletableFuture CompletedTask = CompletableFuture.completedFuture(null);
+    public static CompletableFuture<Void> completedTask = CompletableFuture.completedFuture(null);
 
     public static <T> CompletableFuture<T> fromResult(T o) {
         return Task.completedFuture(o);

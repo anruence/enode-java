@@ -114,7 +114,7 @@ public class ProcessingCommandMailbox {
                 logger.error(String.format("Command mailbox complete command failed, commandId: %s, aggregateRootId: %s", processingCommand.getMessage().id(), processingCommand.getMessage().getAggregateRootId()), ex);
             }
         }
-        return Task.CompletedTask;
+        return Task.completedTask;
     }
 
     public void run() {

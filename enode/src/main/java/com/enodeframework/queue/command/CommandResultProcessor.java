@@ -61,8 +61,12 @@ public class CommandResultProcessor {
         commandTaskDict = new ConcurrentHashMap<>();
         commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
         domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
-        commandExecutedMessageWorker = new Worker("ProcessExecutedCommandMessage", () -> processExecutedCommandMessage(commandExecutedMessageLocalQueue.take()));
-        domainEventHandledMessageWorker = new Worker("ProcessDomainEventHandledMessage", () -> processDomainEventHandledMessage(domainEventHandledMessageLocalQueue.take()));
+        commandExecutedMessageWorker = new Worker("ProcessExecutedCommandMessage", () -> {
+            processExecutedCommandMessage(commandExecutedMessageLocalQueue.take());
+        });
+        domainEventHandledMessageWorker = new Worker("ProcessDomainEventHandledMessage", () -> {
+            processDomainEventHandledMessage(domainEventHandledMessageLocalQueue.take());
+        });
     }
 
     public void registerProcessingCommand(ICommand command, com.enodeframework.commanding.CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {

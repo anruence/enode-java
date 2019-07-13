@@ -307,7 +307,7 @@ public class DefaultEventService implements IEventService {
         } catch (Exception ex) {
             logger.error("Refresh aggregate memory cache to latest version has unknown exception, aggregateRootTypeName:{}, aggregateRootId:{}", aggregateRootTypeName, aggregateRootId, ex);
         }
-        return Task.CompletedTask;
+        return Task.completedTask;
     }
 
     private void publishDomainEventAsync(ProcessingCommand processingCommand, DomainEventStreamMessage eventStream, int retryTimes) {
