@@ -7,6 +7,7 @@ import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.tests.Commands.AsyncHandlerCommand;
+import com.enodeframework.tests.Commands.TwoAsyncHandlersCommand;
 
 @Command
 public class AsyncHandlerCommandHandler {
@@ -29,5 +30,15 @@ public class AsyncHandlerCommandHandler {
         } else {
             return new AsyncTaskResult<IApplicationMessage>(AsyncTaskStatus.Success);
         }
+    }
+
+    @Subscribe
+    public AsyncTaskResult<IApplicationMessage> HandleAsync1(TwoAsyncHandlersCommand command) {
+        return new AsyncTaskResult<IApplicationMessage>(AsyncTaskStatus.Success);
+    }
+
+    @Subscribe
+    public AsyncTaskResult<IApplicationMessage> HandleAsync2(TwoAsyncHandlersCommand command) {
+        return new AsyncTaskResult<IApplicationMessage>(AsyncTaskStatus.Success);
     }
 }

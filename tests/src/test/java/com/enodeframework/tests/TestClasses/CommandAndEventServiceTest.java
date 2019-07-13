@@ -58,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -334,7 +335,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
     @Test
     public void change_multiple_aggregates_test() {
         CreateTestAggregateCommand command1 = new CreateTestAggregateCommand();
-        command1.setId(ObjectId.generateNewStringId());
+        command1.aggregateRootId = ObjectId.generateNewStringId();
         command1.setTitle("Sample Note1");
         await(_commandService.executeAsync(command1));
         CreateTestAggregateCommand command2 = new CreateTestAggregateCommand();
@@ -342,7 +343,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         command2.setTitle("Sample Note2");
         await(_commandService.executeAsync(command2));
         ChangeMultipleAggregatesCommand command3 = new ChangeMultipleAggregatesCommand();
-        command3.setId(ObjectId.generateNewStringId());
+        command3.aggregateRootId = ObjectId.generateNewStringId();
         command3.setAggregateRootId1(command1.getAggregateRootId());
         command3.setAggregateRootId2(command2.getAggregateRootId());
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command3));
@@ -712,7 +713,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
                 CommandResult commandResult = t.getData();
                 Assert.assertNotNull(commandResult);
                 Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-                if (commandResult.getCommandId() != commandId) {
+                if (!Objects.equals(commandResult.getCommandId(), commandId)) {
                     long totalCount = count.incrementAndGet();
                     if (totalCount == commandList.size() - 1) {
                         waitHandle.set();

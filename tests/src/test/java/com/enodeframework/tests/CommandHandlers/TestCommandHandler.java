@@ -115,10 +115,7 @@ public class TestCommandHandler {
         context.setResult("ResultFromChildCommand");
     }
 
-    @Subscribe
-    public AsyncTaskResult<IApplicationMessage> HandleAsync(TwoAsyncHandlersCommand command) {
-        return new AsyncTaskResult<IApplicationMessage>(AsyncTaskStatus.Success);
-    }
+
 
     @Subscribe
     public AsyncTaskResult<IApplicationMessage> HandleAsync(NotCheckAsyncHandlerExistCommand command) {

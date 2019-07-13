@@ -4,6 +4,8 @@ import com.enodeframework.ENodeBootstrap;
 import com.enodeframework.commanding.impl.DefaultCommandProcessor;
 import com.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import com.enodeframework.eventing.impl.DefaultEventService;
+import com.enodeframework.eventing.impl.InMemoryEventStore;
+import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
 import com.enodeframework.queue.command.CommandResultProcessor;
 import com.google.common.collect.Lists;
 import org.springframework.context.annotation.Bean;
@@ -39,5 +41,15 @@ public class EnodeExtensionConfig {
     @Bean(initMethod = "start", destroyMethod = "stop")
     public DefaultCommandProcessor defaultCommandProcessor() {
         return new DefaultCommandProcessor();
+    }
+
+    @Bean
+    public InMemoryEventStore eventStore() {
+        return new InMemoryEventStore();
+    }
+
+    @Bean
+    public InMemoryPublishedVersionStore publishedVersionStore() {
+        return new InMemoryPublishedVersionStore();
     }
 }

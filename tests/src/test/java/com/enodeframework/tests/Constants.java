@@ -2,8 +2,11 @@ package com.enodeframework.tests;
 
 public class Constants {
     public static String CommandTopic = "ENodeTestCommandTopic";
+
     public static String EventTopic = "ENodeTestEventTopic";
+
     public static String ApplicationMessageTopic = "ENodeTestApplicationMessageTopic";
+
     public static String ExceptionTopic = "ENodeTestExceptionTopic";
 
     public static String NAMESRVADDR = "p.anruence.com:9876";

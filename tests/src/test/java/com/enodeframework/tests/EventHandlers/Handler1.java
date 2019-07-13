@@ -5,23 +5,23 @@ import com.enodeframework.annotation.Priority;
 import com.enodeframework.annotation.Subscribe;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.tests.Domain.Event1;
+import com.enodeframework.tests.TestClasses.CommandAndEventServiceTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 
 @Priority(1)
 @Event
 public class Handler1 {
+
+    private Logger logger = LoggerFactory.getLogger(Handler1.class);
+
     @Priority(4)
     @Subscribe
     public AsyncTaskResult HandleAsync(Event1 evnt) {
-//        _logger.Info("event1 handled by handler1.");
-//        CommandAndEventServiceTest.HandlerTypes.AddOrUpdate(1,
-//                x = > new List<String> {
-//            GetType().Name
-//        },
-//        (x, existing) =>
-//        {
-//            existing.Add(GetType().Name);
-//            return existing;
-//        });
+        logger.info("event1 handled by handler1.");
+        CommandAndEventServiceTest.HandlerTypes.computeIfAbsent(1, k -> new ArrayList<>()).add(getClass().getName());
         return AsyncTaskResult.Success;
     }
 }

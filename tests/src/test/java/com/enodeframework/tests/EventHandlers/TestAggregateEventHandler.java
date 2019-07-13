@@ -11,7 +11,7 @@ public class TestAggregateEventHandler {
 
     @Subscribe
     public AsyncTaskResult HandleAsync(TestAggregateCreated evnt) {
-        System.out.println("this was exec");
+        System.out.println("this was executed" + evnt.Title);
         //DO NOTHING
         return AsyncTaskResult.Success;
     }

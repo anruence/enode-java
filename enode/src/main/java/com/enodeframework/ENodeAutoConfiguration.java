@@ -14,10 +14,7 @@ import com.enodeframework.domain.impl.DefaultAggregateSnapshotter;
 import com.enodeframework.domain.impl.DefaultMemoryCache;
 import com.enodeframework.domain.impl.DefaultRepository;
 import com.enodeframework.domain.impl.EventSourcingAggregateStorage;
-import com.enodeframework.eventing.IEventStore;
 import com.enodeframework.eventing.impl.DefaultEventSerializer;
-import com.enodeframework.eventing.impl.InMemoryEventStore;
-import com.enodeframework.infrastructure.IPublishedVersionStore;
 import com.enodeframework.infrastructure.impl.DefaultApplicationMessageProcessor;
 import com.enodeframework.infrastructure.impl.DefaultDomainEventProcessor;
 import com.enodeframework.infrastructure.impl.DefaultMessageDispatcher;
@@ -28,13 +25,11 @@ import com.enodeframework.infrastructure.impl.DefaultPublishableExceptionProcess
 import com.enodeframework.infrastructure.impl.DefaultThreeMessageHandlerProvider;
 import com.enodeframework.infrastructure.impl.DefaultTwoMessageHandlerProvider;
 import com.enodeframework.infrastructure.impl.DefaultTypeNameProvider;
-import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
 import com.enodeframework.infrastructure.impl.MessageHandlerProxy1;
 import com.enodeframework.infrastructure.impl.MessageHandlerProxy2;
 import com.enodeframework.infrastructure.impl.MessageHandlerProxy3;
 import com.enodeframework.queue.SendReplyService;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 
@@ -194,18 +189,6 @@ public class ENodeAutoConfiguration {
     @Bean
     public EventSourcingAggregateStorage eventSourcingAggregateStorage() {
         return new EventSourcingAggregateStorage();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IEventStore.class)
-    public InMemoryEventStore eventStore() {
-        return new InMemoryEventStore();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(IPublishedVersionStore.class)
-    public InMemoryPublishedVersionStore publishedVersionStore() {
-        return new InMemoryPublishedVersionStore();
     }
 }
 

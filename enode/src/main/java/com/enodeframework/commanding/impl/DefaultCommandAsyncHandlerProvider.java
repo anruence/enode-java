@@ -29,7 +29,7 @@ public class DefaultCommandAsyncHandlerProvider extends AbstractHandlerProvider<
 
     @Override
     protected boolean isHandlerSourceMatchKey(Class handlerSource, Class key) {
-        return key.isAssignableFrom(handlerSource);
+        return key.equals(handlerSource);
     }
 
     @Override

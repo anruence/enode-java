@@ -28,7 +28,7 @@ public class DefaultMessageHandlerProvider extends AbstractHandlerProvider<Class
 
     @Override
     protected boolean isHandlerSourceMatchKey(Class handlerSource, Class key) {
-        return key.isAssignableFrom(handlerSource);
+        return key.equals(handlerSource);
     }
 
     @Override
