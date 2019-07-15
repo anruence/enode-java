@@ -2,6 +2,7 @@ package com.enodeframework.tests.Mocks;
 
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
+import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.infrastructure.IMessagePublisher;
 import com.enodeframework.infrastructure.WrappedRuntimeException;
@@ -34,7 +35,7 @@ public class MockApplicationMessagePublisher implements IMessagePublisher<IAppli
             if (_failedType == FailedType.UnKnownException) {
                 throw new WrappedRuntimeException("PublishApplicationMessageAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
-                throw new WrappedRuntimeException("PublishApplicationMessageAsyncIOException" + _currentFailedCount);
+                throw new IORuntimeException("PublishApplicationMessageAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
                 return CompletableFuture.completedFuture(new AsyncTaskResult(AsyncTaskStatus.Failed, "PublishApplicationMessageAsyncError" + _currentFailedCount));
             }

@@ -2,6 +2,7 @@ package com.enodeframework.tests.Mocks;
 
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
+import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.infrastructure.IMessagePublisher;
@@ -34,7 +35,7 @@ public class MockDomainEventPublisher implements IMessagePublisher<DomainEventSt
             if (_failedType == FailedType.UnKnownException) {
                 throw new WrappedRuntimeException("PublishDomainEventStreamMessageAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
-                throw new WrappedRuntimeException("PublishDomainEventStreamMessageAsyncIOException" + _currentFailedCount);
+                throw new IORuntimeException("PublishDomainEventStreamMessageAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
                 return Task.fromResult(new AsyncTaskResult(AsyncTaskStatus.Failed, "PublishDomainEventStreamMessageAsyncError" + _currentFailedCount));
             }
