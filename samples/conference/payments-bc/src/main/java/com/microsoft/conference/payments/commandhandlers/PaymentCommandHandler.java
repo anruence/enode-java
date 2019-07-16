@@ -1,17 +1,18 @@
 package com.microsoft.conference.payments.commandhandlers;
 
-import com.enodeframework.annotation.Command;
-import com.enodeframework.commanding.ICommandContext;
 import com.microsoft.conference.common.payment.commands.CancelPayment;
 import com.microsoft.conference.common.payment.commands.CompletePayment;
 import com.microsoft.conference.common.payment.commands.CreatePayment;
-import com.microsoft.conference.payments.domain.Models.Payment;
-import com.microsoft.conference.payments.domain.Models.PaymentItem;
+import com.microsoft.conference.payments.domain.models.Payment;
+import com.microsoft.conference.payments.domain.models.PaymentItem;
+import org.enodeframework.annotation.Command;
+import org.enodeframework.annotation.Subscribe;
+import org.enodeframework.commanding.ICommandContext;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.enodeframework.common.io.Task.await;
+import static org.enodeframework.common.io.Task.await;
 
 /**
  * ICommandHandler<CreatePayment>,
@@ -20,24 +21,28 @@ import static com.enodeframework.common.io.Task.await;
  */
 @Command
 public class PaymentCommandHandler {
-    public void HandleAsync(ICommandContext context, CreatePayment command) {
-        List<PaymentItem> paymentItemList = command.Lines.stream().map(x -> new PaymentItem(x.Description, x.Amount)).collect(Collectors.toList());
+
+    @Subscribe
+    public void handleAsync(ICommandContext context, CreatePayment command) {
+        List<PaymentItem> paymentItemList = command.lines.stream().map(x -> new PaymentItem(x.description, x.amount)).collect(Collectors.toList());
         context.addAsync(new Payment(
-                command.aggregateRootId,
-                command.OrderId,
-                command.ConferenceId,
-                command.Description,
-                command.TotalAmount,
+                command.getAggregateRootId(),
+                command.orderId,
+                command.conferenceId,
+                command.description,
+                command.totalAmount,
                 paymentItemList));
     }
 
-    public void HandleAsync(ICommandContext context, CompletePayment command) {
-        Payment payment = await(context.getAsync(command.aggregateRootId, Payment.class));
-        payment.Complete();
+    @Subscribe
+    public void handleAsync(ICommandContext context, CompletePayment command) {
+        Payment payment = await(context.getAsync(command.getAggregateRootId(), Payment.class));
+        payment.complete();
     }
 
-    public void HandleAsync(ICommandContext context, CancelPayment command) {
-        Payment payment = await(context.getAsync(command.aggregateRootId, Payment.class));
-        payment.Cancel();
+    @Subscribe
+    public void handleAsync(ICommandContext context, CancelPayment command) {
+        Payment payment = await(context.getAsync(command.getAggregateRootId(), Payment.class));
+        payment.cancel();
     }
 }

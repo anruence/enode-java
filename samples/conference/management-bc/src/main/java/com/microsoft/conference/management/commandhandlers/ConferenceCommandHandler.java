@@ -1,7 +1,5 @@
 package com.microsoft.conference.management.commandhandlers;
 
-import com.enodeframework.commanding.ICommandContext;
-import com.enodeframework.infrastructure.ILockService;
 import com.microsoft.conference.common.management.commands.AddSeatType;
 import com.microsoft.conference.common.management.commands.CancelSeatReservation;
 import com.microsoft.conference.common.management.commands.CommitSeatReservation;
@@ -12,105 +10,116 @@ import com.microsoft.conference.common.management.commands.RemoveSeatType;
 import com.microsoft.conference.common.management.commands.UnpublishConference;
 import com.microsoft.conference.common.management.commands.UpdateConference;
 import com.microsoft.conference.common.management.commands.UpdateSeatType;
-import com.microsoft.conference.management.domain.Models.Conference;
-import com.microsoft.conference.management.domain.Models.ConferenceEditableInfo;
-import com.microsoft.conference.management.domain.Models.ConferenceInfo;
-import com.microsoft.conference.management.domain.Models.ConferenceOwner;
-import com.microsoft.conference.management.domain.Models.ConferenceSlugIndex;
-import com.microsoft.conference.management.domain.Models.ReservationItem;
-import com.microsoft.conference.management.domain.Models.SeatTypeInfo;
-import com.microsoft.conference.management.domain.Services.RegisterConferenceSlugService;
+import com.microsoft.conference.management.domain.models.Conference;
+import com.microsoft.conference.management.domain.models.ConferenceEditableInfo;
+import com.microsoft.conference.management.domain.models.ConferenceInfo;
+import com.microsoft.conference.management.domain.models.ConferenceOwner;
+import com.microsoft.conference.management.domain.models.ConferenceSlugIndex;
+import com.microsoft.conference.management.domain.models.ReservationItem;
+import com.microsoft.conference.management.domain.models.SeatTypeInfo;
+import com.microsoft.conference.management.domain.services.RegisterConferenceSlugService;
+import org.enodeframework.annotation.Command;
+import org.enodeframework.annotation.Subscribe;
+import org.enodeframework.commanding.ICommandContext;
+import org.enodeframework.infrastructure.ILockService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.stream.Collectors;
 
-import static com.enodeframework.common.io.Task.await;
+import static org.enodeframework.common.io.Task.await;
 
+@Command
 public class ConferenceCommandHandler {
 
-    private ILockService _lockService;
+    @Autowired
+    private ILockService lockService;
 
-    private RegisterConferenceSlugService _registerConferenceSlugService;
+    @Autowired
+    private RegisterConferenceSlugService registerConferenceSlugService;
 
-    public ConferenceCommandHandler(ILockService lockService, RegisterConferenceSlugService registerConferenceSlugService) {
-        _lockService = lockService;
-        _registerConferenceSlugService = registerConferenceSlugService;
-    }
-
-    public void HandleAsync(ICommandContext context, CreateConference command) {
-        _lockService.executeInLock(ConferenceSlugIndex.class.getName(), () ->
-        {
-            Conference conference = new Conference(command.aggregateRootId, new ConferenceInfo(
-                    command.AccessCode,
-                    new ConferenceOwner(command.OwnerName, command.OwnerEmail),
-                    command.Slug,
-                    command.Name,
-                    command.Description,
-                    command.Location,
-                    command.Tagline,
-                    command.TwitterSearch,
-                    command.StartDate,
-                    command.EndDate));
-            _registerConferenceSlugService.RegisterSlug(command.id, conference.id(), command.Slug);
+    @Subscribe
+    public void handleAsync(ICommandContext context, CreateConference command) {
+        lockService.executeInLock(ConferenceSlugIndex.class.getName(), () -> {
+            Conference conference = new Conference(command.getAggregateRootId(), new ConferenceInfo(
+                    command.getAccessCode(),
+                    new ConferenceOwner(command.getOwnerName(), command.getOwnerEmail()),
+                    command.getSlug(),
+                    command.getName(),
+                    command.getDescription(),
+                    command.getLocation(),
+                    command.getTagline(),
+                    command.getTwitterSearch(),
+                    command.getStartDate(),
+                    command.getEndDate()));
+            registerConferenceSlugService.RegisterSlug(command.getId(), conference.getId(), command.getSlug());
             context.add(conference);
         });
     }
 
-    public void HandleAsync(ICommandContext context, UpdateConference command) {
-        Conference conference = await(context.getAsync(command.aggregateRootId, Conference.class));
-        conference.Update(new ConferenceEditableInfo(
-                command.Name,
-                command.Description,
-                command.Location,
-                command.Tagline,
-                command.TwitterSearch,
-                command.StartDate,
-                command.EndDate));
+    @Subscribe
+    public void handleAsync(ICommandContext context, UpdateConference command) {
+        Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
+        conference.update(new ConferenceEditableInfo(
+                command.name,
+                command.description,
+                command.location,
+                command.tagline,
+                command.twitterSearch,
+                command.startDate,
+                command.endDate));
     }
 
-    public void HandleAsync(ICommandContext context, PublishConference command) {
-        Conference conference = await(context.getAsync(command.aggregateRootId, Conference.class));
-        conference.Publish();
+    @Subscribe
+    public void handleAsync(ICommandContext context, PublishConference command) {
+        Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
+        conference.publish();
     }
 
-    public void HandleAsync(ICommandContext context, UnpublishConference command) {
-        Conference conference = await(context.getAsync(command.aggregateRootId, Conference.class));
-        conference.Unpublish();
+    @Subscribe
+    public void handleAsync(ICommandContext context, UnpublishConference command) {
+        Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
+        conference.unpublish();
     }
 
-    public void HandleAsync(ICommandContext context, AddSeatType command) {
-        Conference conference = await(context.getAsync(command.aggregateRootId, Conference.class));
+    @Subscribe
+    public void handleAsync(ICommandContext context, AddSeatType command) {
+        Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
         conference.addSeat(new SeatTypeInfo(
-                command.Name,
-                command.Description,
-                command.Price), command.Quantity);
+                command.name,
+                command.description,
+                command.price), command.quantity);
     }
 
-    public void HandleAsync(ICommandContext context, RemoveSeatType command) {
-        Conference conference = await(context.getAsync(command.aggregateRootId, Conference.class));
-        conference.removeSeat(command.SeatTypeId);
+    @Subscribe
+    public void handleAsync(ICommandContext context, RemoveSeatType command) {
+        Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
+        conference.removeSeat(command.getSeatTypeId());
     }
 
-    public void HandleAsync(ICommandContext context, UpdateSeatType command) {
-        Conference conference = await(context.getAsync(command.aggregateRootId, Conference.class));
-        conference.UpdateSeat(
-                command.SeatTypeId,
-                new SeatTypeInfo(command.Name, command.Description, command.Price),
-                command.Quantity);
+    @Subscribe
+    public void handleAsync(ICommandContext context, UpdateSeatType command) {
+        Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
+        conference.updateSeat(
+                command.seatTypeId,
+                new SeatTypeInfo(command.name, command.description, command.price),
+                command.quantity);
     }
 
-    public void HandleAsync(ICommandContext context, MakeSeatReservation command) {
-        Conference conference = await(context.getAsync(command.aggregateRootId, Conference.class));
-        conference.MakeReservation(command.ReservationId, command.Seats.stream().map(x -> new ReservationItem(x.SeatType, x.Quantity)).collect(Collectors.toList()));
+    @Subscribe
+    public void handleAsync(ICommandContext context, MakeSeatReservation command) {
+        Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
+        conference.makeReservation(command.reservationId, command.seats.stream().map(x -> new ReservationItem(x.seatType, x.quantity)).collect(Collectors.toList()));
     }
 
-    public void HandleAsync(ICommandContext context, CommitSeatReservation command) {
-        Conference conference = await(context.getAsync(command.aggregateRootId, Conference.class));
-        conference.CommitReservation(command.ReservationId);
+    @Subscribe
+    public void handleAsync(ICommandContext context, CommitSeatReservation command) {
+        Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
+        conference.commitReservation(command.reservationId);
     }
 
-    public void HandleAsync(ICommandContext context, CancelSeatReservation command) {
-        Conference conference = await(context.getAsync(command.aggregateRootId, Conference.class));
-        conference.CancelReservation(command.ReservationId);
+    @Subscribe
+    public void handleAsync(ICommandContext context, CancelSeatReservation command) {
+        Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
+        conference.cancelReservation(command.reservationId);
     }
-
 }

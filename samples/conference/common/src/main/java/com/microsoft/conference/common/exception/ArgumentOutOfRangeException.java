@@ -1,7 +1,18 @@
 package com.microsoft.conference.common.exception;
 
 public class ArgumentOutOfRangeException extends RuntimeException {
-    public ArgumentOutOfRangeException(String s) {
-        super(s);
+
+    private static final long serialVersionUID = 2875478983753773571L;
+
+    public ArgumentOutOfRangeException(String msg) {
+        super(msg);
+    }
+
+    public ArgumentOutOfRangeException(Throwable cause) {
+        super(cause);
+    }
+
+    public ArgumentOutOfRangeException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 }

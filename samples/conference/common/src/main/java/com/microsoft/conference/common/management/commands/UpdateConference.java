@@ -1,15 +1,15 @@
 package com.microsoft.conference.common.management.commands;
 
-import com.enodeframework.commanding.Command;
+import org.enodeframework.commanding.Command;
 
 import java.util.Date;
 
 public class UpdateConference extends Command<String> {
-    public String Name;
-    public String Description;
-    public String Location;
-    public String Tagline;
-    public String TwitterSearch;
-    public Date StartDate;
-    public Date EndDate;
+    public String name;
+    public String description;
+    public String location;
+    public String tagline;
+    public String twitterSearch;
+    public Date startDate;
+    public Date endDate;
 }

@@ -1,20 +1,25 @@
 package com.microsoft.conference.management.readmodel;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Date;
 
+@Getter
+@Setter
 public class ConferenceDTO {
-    public String Id;
-    public String Name;
-    public String Description;
-    public String Location;
-    public String Tagline;
-    public String TwitterSearch;
-    public Date StartDate;
-    public Date EndDate;
-    public boolean IsPublished;
-    public String AccessCode;
-    public String OwnerName;
-    public String OwnerEmail;
-    public String Slug;
-    public boolean WasEverPublished;
+    private String id;
+    private String name;
+    private String description;
+    private String location;
+    private String tagline;
+    private String twitterSearch;
+    private Date startDate;
+    private Date endDate;
+    private Boolean isPublished;
+    private String accessCode;
+    private String ownerName;
+    private String ownerEmail;
+    private String slug;
+    private boolean wasEverPublished;
 }

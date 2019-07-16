@@ -1,8 +1,5 @@
 package com.microsoft.conference.registration.processmanagers;
 
-import com.enodeframework.commanding.ICommandService;
-import com.enodeframework.common.io.AsyncTaskResult;
-import com.enodeframework.common.io.Task;
 import com.microsoft.conference.common.management.commands.CancelSeatReservation;
 import com.microsoft.conference.common.management.commands.CommitSeatReservation;
 import com.microsoft.conference.common.management.commands.MakeSeatReservation;
@@ -13,16 +10,18 @@ import com.microsoft.conference.common.management.message.SeatsReservationCommit
 import com.microsoft.conference.common.management.message.SeatsReservedMessage;
 import com.microsoft.conference.common.payment.message.PaymentCompletedMessage;
 import com.microsoft.conference.common.payment.message.PaymentRejectedMessage;
-import com.microsoft.conference.common.registration.commands.Orders.CloseOrder;
-import com.microsoft.conference.common.registration.commands.Orders.ConfirmPayment;
-import com.microsoft.conference.common.registration.commands.Orders.ConfirmReservation;
-import com.microsoft.conference.common.registration.commands.Orders.MarkAsSuccess;
-import com.microsoft.conference.common.registration.commands.SeatAssignments.CreateSeatAssignments;
-import com.microsoft.conference.registration.domain.Orders.Events.OrderExpired;
-import com.microsoft.conference.registration.domain.Orders.Events.OrderPaymentConfirmed;
-import com.microsoft.conference.registration.domain.Orders.Events.OrderPlaced;
-import com.microsoft.conference.registration.domain.Orders.Events.OrderSuccessed;
-import com.microsoft.conference.registration.domain.Orders.Models.OrderStatus;
+import com.microsoft.conference.common.registration.commands.orders.CloseOrder;
+import com.microsoft.conference.common.registration.commands.orders.ConfirmPayment;
+import com.microsoft.conference.common.registration.commands.orders.ConfirmReservation;
+import com.microsoft.conference.common.registration.commands.orders.MarkAsSuccess;
+import com.microsoft.conference.common.registration.commands.seatassignments.CreateSeatAssignments;
+import com.microsoft.conference.registration.domain.order.events.OrderExpired;
+import com.microsoft.conference.registration.domain.order.events.OrderPaymentConfirmed;
+import com.microsoft.conference.registration.domain.order.events.OrderPlaced;
+import com.microsoft.conference.registration.domain.order.events.OrderSuccessed;
+import com.microsoft.conference.registration.domain.order.models.OrderStatus;
+import org.enodeframework.commanding.ICommandService;
+import org.enodeframework.common.io.Task;
 
 import java.util.stream.Collectors;
 
@@ -45,64 +44,62 @@ import java.util.stream.Collectors;
  * IMessageHandler<OrderExpired>                           //订单过期时(15分钟过期)发生(Order)
  */
 public class RegistrationProcessManager {
-    private ICommandService _commandService;
+    private ICommandService commandService;
 
     public RegistrationProcessManager(ICommandService commandService) {
-        _commandService = commandService;
+        this.commandService = commandService;
     }
 
-    public AsyncTaskResult HandleAsync(OrderPlaced evnt) {
-        MakeSeatReservation reservation = new MakeSeatReservation(evnt.ConferenceId);
-        reservation.ReservationId = evnt.aggregateRootId();
-        reservation.Seats = evnt.OrderTotal.Lines.stream().map(x -> {
+    public void handleAsync(OrderPlaced evnt) {
+        MakeSeatReservation reservation = new MakeSeatReservation(evnt.conferenceId);
+        reservation.reservationId = evnt.getAggregateRootId();
+        reservation.seats = evnt.orderTotal.orderLines.stream().map(x -> {
             SeatReservationItemInfo itemInfo = new SeatReservationItemInfo();
-            itemInfo.SeatType = x.SeatQuantity.Seat.SeatTypeId;
-            itemInfo.Quantity = x.SeatQuantity.Quantity;
+            itemInfo.seatType = x.seatQuantity.seatType.seatTypeId;
+            itemInfo.quantity = x.seatQuantity.quantity;
             return itemInfo;
         }).collect(Collectors.toList());
-
-        return Task.get(_commandService.sendAsync(reservation));
+        Task.await(commandService.sendAsync(reservation));
     }
 
-    public AsyncTaskResult HandleAsync(SeatsReservedMessage message) {
-        return Task.get(_commandService.sendAsync(new ConfirmReservation(message.ReservationId, true)));
+    public void handleAsync(SeatsReservedMessage message) {
+        Task.await(commandService.sendAsync(new ConfirmReservation(message.reservationId, true)));
     }
 
-    public AsyncTaskResult HandleAsync(SeatInsufficientMessage message) {
-        return Task.get(_commandService.sendAsync(new ConfirmReservation(message.ReservationId, false)));
+    public void handleAsync(SeatInsufficientMessage message) {
+        Task.await(commandService.sendAsync(new ConfirmReservation(message.reservationId, false)));
     }
 
-    public AsyncTaskResult HandleAsync(PaymentCompletedMessage message) {
-        return Task.get(_commandService.sendAsync(new ConfirmPayment(message.OrderId, true)));
+    public void handleAsync(PaymentCompletedMessage message) {
+        Task.await(commandService.sendAsync(new ConfirmPayment(message.orderId, true)));
     }
 
-    public AsyncTaskResult HandleAsync(PaymentRejectedMessage message) {
-        return Task.get(_commandService.sendAsync(new ConfirmPayment(message.OrderId, false)));
+    public void handleAsync(PaymentRejectedMessage message) {
+        Task.await(commandService.sendAsync(new ConfirmPayment(message.orderId, false)));
     }
 
-    public AsyncTaskResult HandleAsync(OrderPaymentConfirmed evnt) {
+    public void handleAsync(OrderPaymentConfirmed evnt) {
         if (evnt.orderStatus == OrderStatus.PaymentSuccess) {
-            return Task.get(_commandService.sendAsync(new CommitSeatReservation(evnt.ConferenceId, evnt.aggregateRootId())));
+            Task.await(commandService.sendAsync(new CommitSeatReservation(evnt.conferenceId, evnt.getAggregateRootId())));
         } else if (evnt.orderStatus == OrderStatus.PaymentRejected) {
-            return Task.get(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.aggregateRootId())));
+            Task.await(commandService.sendAsync(new CancelSeatReservation(evnt.conferenceId, evnt.getAggregateRootId())));
         }
-        return AsyncTaskResult.Success;
     }
 
-    public AsyncTaskResult HandleAsync(SeatsReservationCommittedMessage message) {
-        return Task.get(_commandService.sendAsync(new MarkAsSuccess(message.ReservationId)));
+    public void handleAsync(SeatsReservationCommittedMessage message) {
+        Task.await(commandService.sendAsync(new MarkAsSuccess(message.reservationId)));
     }
 
-    public AsyncTaskResult HandleAsync(SeatsReservationCancelledMessage message) {
-        return Task.get(_commandService.sendAsync(new CloseOrder(message.ReservationId)));
+    public void handleAsync(SeatsReservationCancelledMessage message) {
+        Task.await(commandService.sendAsync(new CloseOrder(message.reservationId)));
     }
 
-    public AsyncTaskResult HandleAsync(OrderSuccessed evnt) {
-        return Task.get(_commandService.sendAsync(new CreateSeatAssignments(evnt.aggregateRootId())));
+    public void handleAsync(OrderSuccessed evnt) {
+        Task.await(commandService.sendAsync(new CreateSeatAssignments(evnt.getAggregateRootId())));
     }
 
-    public AsyncTaskResult HandleAsync(OrderExpired evnt) {
-        return Task.get(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.aggregateRootId())));
+    public void handleAsync(OrderExpired evnt) {
+        Task.await(commandService.sendAsync(new CancelSeatReservation(evnt.conferenceId, evnt.getAggregateRootId())));
     }
 }
         

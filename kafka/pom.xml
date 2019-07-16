@@ -2,21 +2,21 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.enodeframework</groupId>
+        <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
-        <version>1.0.0</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>enode-kafka</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>${revision}</version>
     <dependencies>
         <dependency>
-            <groupId>com.enodeframework</groupId>
+            <groupId>org.enodeframework</groupId>
             <artifactId>enode</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>

@@ -1,35 +1,42 @@
 package com.microsoft.conference.payments.messagepublishers;
 
-import com.enodeframework.common.io.AsyncTaskResult;
-import com.enodeframework.infrastructure.IApplicationMessage;
-import com.enodeframework.infrastructure.IMessagePublisher;
-import com.microsoft.conference.payments.domain.Events.PaymentCompleted;
-import com.microsoft.conference.payments.domain.Events.PaymentRejected;
 import com.microsoft.conference.common.payment.message.PaymentCompletedMessage;
 import com.microsoft.conference.common.payment.message.PaymentRejectedMessage;
+import com.microsoft.conference.payments.domain.events.PaymentCompleted;
+import com.microsoft.conference.payments.domain.events.PaymentRejected;
+import org.enodeframework.annotation.Event;
+import org.enodeframework.annotation.Subscribe;
+import org.enodeframework.messaging.IApplicationMessage;
+import org.enodeframework.messaging.IMessagePublisher;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import static com.enodeframework.common.io.Task.await;
+import static org.enodeframework.common.io.Task.await;
 
+@Event
 public class PaymentMessagePublisher {
-    private IMessagePublisher<IApplicationMessage> _messagePublisher;
+
+    @Autowired
+    private IMessagePublisher<IApplicationMessage> messagePublisher;
 
     public PaymentMessagePublisher(IMessagePublisher<IApplicationMessage> messagePublisher) {
-        _messagePublisher = messagePublisher;
+        this.messagePublisher = messagePublisher;
     }
 
-    public AsyncTaskResult HandleAsync(PaymentCompleted evnt) {
+    @Subscribe
+    public void handleAsync(PaymentCompleted evnt) {
         PaymentCompletedMessage message = new PaymentCompletedMessage();
-        message.PaymentId = evnt.aggregateRootId();
-        message.ConferenceId = evnt.ConferenceId;
-        message.OrderId = evnt.OrderId;
-        return await(_messagePublisher.publishAsync(message));
+        message.paymentId = evnt.getAggregateRootId();
+        message.conferenceId = evnt.getConferenceId();
+        message.orderId = evnt.getOrderId();
+        await(messagePublisher.publishAsync(message));
     }
 
-    public AsyncTaskResult HandleAsync(PaymentRejected evnt) {
+    @Subscribe
+    public void handleAsync(PaymentRejected evnt) {
         PaymentRejectedMessage message = new PaymentRejectedMessage();
-        message.PaymentId = evnt.aggregateRootId();
-        message.ConferenceId = evnt.ConferenceId;
-        message.OrderId = evnt.OrderId;
-        return await(_messagePublisher.publishAsync(message));
+        message.paymentId = evnt.getAggregateRootId();
+        message.conferenceId = evnt.getConferenceId();
+        message.orderId = evnt.getOrderId();
+        await(messagePublisher.publishAsync(message));
     }
 }

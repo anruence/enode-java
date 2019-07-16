@@ -4,7 +4,7 @@ package com.microsoft.conference.registration.readmodel;
  *
  */
 public class OrderViewModelGenerator {
-//    public AsyncTaskResult HandleAsync(OrderPlaced evnt) {
+//    public void handleAsync(OrderPlaced evnt) {
 //        return TryTransactionAsync((connection, transaction) =>
 //        {
 //            var tasks = new List<Task>();
@@ -12,7 +12,7 @@ public class OrderViewModelGenerator {
 //            //插入订单主记录
 //            tasks.add(connection.InsertAsync(new
 //            {
-//                OrderId = evnt.aggregateRootId(),
+//                OrderId = evnt.getAggregateRootId(),
 //                        ConferenceId = evnt.ConferenceId,
 //                        Status = (int) OrderStatus.Placed,
 //                        AccessCode = evnt.AccessCode,
@@ -26,7 +26,7 @@ public class OrderViewModelGenerator {
 //            {
 //                tasks.add(connection.InsertAsync(new
 //                {
-//                    OrderId = evnt.aggregateRootId(),
+//                    OrderId = evnt.getAggregateRootId(),
 //                            SeatTypeId = line.SeatQuantity.Seat.SeatTypeId,
 //                            SeatTypeName = line.SeatQuantity.Seat.SeatTypeName,
 //                            Quantity = line.SeatQuantity.Quantity,
@@ -39,7 +39,7 @@ public class OrderViewModelGenerator {
 //        });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderRegistrantAssigned evnt) {
+//    public void handleAsync(OrderRegistrantAssigned evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -50,13 +50,13 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderReservationConfirmed evnt) {
+//    public void handleAsync(OrderReservationConfirmed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -65,13 +65,13 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderPaymentConfirmed evnt) {
+//    public void handleAsync(OrderPaymentConfirmed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -80,13 +80,13 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderExpired evnt) {
+//    public void handleAsync(OrderExpired evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -95,13 +95,13 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderClosed evnt) {
+//    public void handleAsync(OrderClosed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -110,13 +110,13 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderSuccessed evnt) {
+//    public void handleAsync(OrderSuccessed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -125,23 +125,23 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
 //    }
 //
-//    private async AsyncTaskResult
+//    private async void
 //
 //    TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action) {
 //        using(var connection = GetConnection())
 //        {
 //            await action (connection);
-//            return AsyncTaskResult.Success;
+//            return void.Success;
 //        }
 //    }
 //
-//    private async AsyncTaskResult
+//    private async void
 //
 //    TryTransactionAsync(Func<IDbConnection, IDbTransaction, List<Task>> actions) {
 //        using(var connection = GetConnection())
@@ -152,7 +152,7 @@ public class OrderViewModelGenerator {
 //            try {
 //                await Task.WhenAll(actions(connection, transaction)).ConfigureAwait(false);
 //                await Task.Run(() = > transaction.Commit()).ConfigureAwait(false);
-//                return AsyncTaskResult.Success;
+//                return void.Success;
 //            } catch
 //            {
 //                transaction.Rollback();
@@ -164,5 +164,4 @@ public class OrderViewModelGenerator {
 //    private SqlConnection GetConnection() {
 //        return new SqlConnection(ConfigSettings.ConferenceConnectionString);
 //    }
-
 }

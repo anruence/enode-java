@@ -1,8 +1,12 @@
 package com.microsoft.conference.common.registration.commands;
 
-public class PersonalInfo {
-    public String FirstName;
-    public String LastName;
-    public String Email;
-}
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+public class PersonalInfo {
+    private String firstName;
+    private String lastName;
+    private String email;
+}

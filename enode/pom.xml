@@ -2,15 +2,16 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.enodeframework</groupId>
+        <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
-        <version>1.0.0</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>enode</artifactId>
-    <version>1.0.0</version>
+    <name>${project.artifactId}</name>
+    <version>${revision}</version>
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -25,12 +26,8 @@
             <artifactId>vertx-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
     </dependencies>
 </project>

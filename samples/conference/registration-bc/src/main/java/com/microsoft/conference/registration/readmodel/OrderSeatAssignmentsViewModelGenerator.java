@@ -1,10 +1,11 @@
-import com.enodeframework.common.io.AsyncTaskResult;
-import com.microsoft.conference.registration.domain.SeatAssigning.Events.OrderSeatAssignmentsCreated;
-import com.microsoft.conference.registration.domain.SeatAssigning.Events.SeatAssigned;
-import com.microsoft.conference.registration.domain.SeatAssigning.Events.SeatUnassigned;
+package com.microsoft.conference.registration.readmodel;
+
+import com.microsoft.conference.registration.domain.seatassigning.Events.OrderSeatAssignmentsCreated;
+import com.microsoft.conference.registration.domain.seatassigning.Events.SeatAssigned;
+import com.microsoft.conference.registration.domain.seatassigning.Events.SeatUnassigned;
 
 public class OrderSeatAssignmentsViewModelGenerator {
-    public AsyncTaskResult HandleAsync(OrderSeatAssignmentsCreated evnt) {
+    public void handleAsync(OrderSeatAssignmentsCreated evnt) {
 //            return TryTransactionAsync((connection, transaction) =>
 //            {
 //                var tasks = new List<Task>();
@@ -13,7 +14,7 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //                {
 //                    tasks.add(connection.InsertAsync(new
 //                    {
-//                        AssignmentsId = evnt.aggregateRootId(),
+//                        AssignmentsId = evnt.getAggregateRootId(),
 //                        OrderId = evnt.OrderId,
 //                        Position = assignment.Position,
 //                        SeatTypeId = assignment.Seat.SeatTypeId,
@@ -23,10 +24,10 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //
 //                return tasks;
 //            });
-        return null;
+
     }
 
-    public AsyncTaskResult HandleAsync(SeatAssigned evnt) {
+    public void handleAsync(SeatAssigned evnt) {
 //            return TryUpdateRecordAsync(connection =>
 //            {
 //                return connection.UpdateAsync(new
@@ -36,14 +37,14 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //                    AttendeeEmail = evnt.Attendee.Email
 //                }, new
 //                {
-//                    AssignmentsId = evnt.aggregateRootId(),
+//                    AssignmentsId = evnt.getAggregateRootId(),
 //                    Position = evnt.Position
 //                }, ConfigSettings.OrderSeatAssignmentsTable);
 //            });
-        return null;
+
     }
 
-    public AsyncTaskResult HandleAsync(SeatUnassigned evnt) {
+    public void handleAsync(SeatUnassigned evnt) {
 //            return TryUpdateRecordAsync(connection =>
 //            {
 //                return connection.UpdateAsync(new
@@ -53,22 +54,21 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //                    AttendeeEmail = String.Empty
 //                }, new
 //                {
-//                    AssignmentsId = evnt.aggregateRootId(),
+//                    AssignmentsId = evnt.getAggregateRootId(),
 //                    Position = evnt.Position
 //                }, ConfigSettings.OrderSeatAssignmentsTable);
 //            });
-        return null;
-    }
 
-//        private async AsyncTaskResult TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action)
+    }
+//        private async void TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action)
 //        {
 //            using (var connection = GetConnection())
 //            {
 //                await action(connection);
-//                return AsyncTaskResult.Success;
+//                return void.Success;
 //            }
 //        }
-//        private async AsyncTaskResult TryTransactionAsync(Func<IDbConnection, IDbTransaction, List<Task>> actions)
+//        private async void TryTransactionAsync(Func<IDbConnection, IDbTransaction, List<Task>> actions)
 //        {
 //            using (var connection = GetConnection())
 //            {
@@ -78,7 +78,7 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //                {
 //                    await Task.WhenAll(actions(connection, transaction)).ConfigureAwait(false);
 //                    await Task.Run(() => transaction.Commit()).ConfigureAwait(false);
-//                    return AsyncTaskResult.Success;
+//                    return void.Success;
 //                }
 //                catch
 //                {
@@ -91,5 +91,4 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //        {
 //            return new SqlConnection(ConfigSettings.ConferenceConnectionString);
 //        }
-
 }

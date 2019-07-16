@@ -3,18 +3,17 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>samples</artifactId>
-        <groupId>com.enodeframework</groupId>
-        <version>1.0.0</version>
+        <artifactId>bank-transfer</artifactId>
+        <groupId>org.enodeframework</groupId>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>command-web</artifactId>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>com.enodeframework</groupId>
-            <artifactId>domain</artifactId>
-            <version>1.0.0</version>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>samples-domain</artifactId>
         </dependency>
     </dependencies>
 </project>

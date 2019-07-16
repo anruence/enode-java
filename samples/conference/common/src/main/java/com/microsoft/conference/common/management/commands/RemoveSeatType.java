@@ -1,9 +1,13 @@
 package com.microsoft.conference.common.management.commands;
 
-import com.enodeframework.commanding.Command;
+import lombok.Getter;
+import lombok.Setter;
+import org.enodeframework.commanding.Command;
 
+@Getter
+@Setter
 public class RemoveSeatType extends Command<String> {
-    public String SeatTypeId;
+    private String seatTypeId;
 
     public RemoveSeatType() {
     }

@@ -1,11 +1,16 @@
 package com.microsoft.conference.management.readmodel;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 
+@Getter
+@Setter
 public class SeatTypeDTO {
-    public String Id;
-    public String Name;
-    public String Description;
-    public int Quantity;
-    public BigDecimal Price;
+    private String id;
+    private String name;
+    private String description;
+    private int quantity;
+    private BigDecimal price;
 }

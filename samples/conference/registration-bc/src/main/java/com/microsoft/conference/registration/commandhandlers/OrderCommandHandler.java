@@ -1,65 +1,69 @@
 package com.microsoft.conference.registration.commandhandlers;
 
-import com.enodeframework.commanding.ICommandContext;
-import com.microsoft.conference.common.registration.commands.Orders.AssignRegistrantDetails;
-import com.microsoft.conference.common.registration.commands.Orders.CloseOrder;
-import com.microsoft.conference.common.registration.commands.Orders.ConfirmPayment;
-import com.microsoft.conference.common.registration.commands.Orders.ConfirmReservation;
-import com.microsoft.conference.common.registration.commands.Orders.MarkAsSuccess;
-import com.microsoft.conference.common.registration.commands.Orders.PlaceOrder;
-import com.microsoft.conference.registration.domain.Orders.IPricingService;
-import com.microsoft.conference.registration.domain.Orders.Models.Order;
+import com.microsoft.conference.common.registration.commands.orders.AssignRegistrantDetails;
+import com.microsoft.conference.common.registration.commands.orders.CloseOrder;
+import com.microsoft.conference.common.registration.commands.orders.ConfirmPayment;
+import com.microsoft.conference.common.registration.commands.orders.ConfirmReservation;
+import com.microsoft.conference.common.registration.commands.orders.MarkAsSuccess;
+import com.microsoft.conference.common.registration.commands.orders.PlaceOrder;
 import com.microsoft.conference.registration.domain.SeatQuantity;
 import com.microsoft.conference.registration.domain.SeatType;
+import com.microsoft.conference.registration.domain.order.IPricingService;
+import com.microsoft.conference.registration.domain.order.models.Order;
+import org.enodeframework.annotation.Command;
+import org.enodeframework.annotation.Subscribe;
+import org.enodeframework.commanding.ICommandContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.enodeframework.common.io.Task.await;
+import static org.enodeframework.common.io.Task.await;
 
+@Command
 public class OrderCommandHandler {
-    private IPricingService _pricingService;
 
-    public OrderCommandHandler(IPricingService pricingService) {
-        _pricingService = pricingService;
-    }
+    @Autowired
+    private IPricingService pricingService;
 
-    //  .stream().filter(x -> new SeatQuantity(new SeatType(x.SeatType, x.SeatName, x.UnitPrice), x.Quantity)).findFirst().orElse(null),
-    public void HandleAsync(ICommandContext context, PlaceOrder command) {
+    @Subscribe
+    public void handleAsync(ICommandContext context, PlaceOrder command) {
         List<SeatQuantity> seats = new ArrayList<>();
-        command.Seats.forEach(x -> seats.add(new SeatQuantity(new SeatType(x.SeatType, x.SeatName, x.UnitPrice), x.Quantity)));
+        command.seatInfos.forEach(x -> seats.add(new SeatQuantity(new SeatType(x.seatType, x.seatName, x.unitPrice), x.quantity)));
         context.addAsync(new Order(
                 command.aggregateRootId,
-                command.ConferenceId,
+                command.conferenceId,
                 seats,
-                _pricingService));
+                pricingService));
     }
 
-    public void HandleAsync(ICommandContext context, AssignRegistrantDetails command) {
+    @Subscribe
+    public void handleAsync(ICommandContext context, AssignRegistrantDetails command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-        order.AssignRegistrant(command.FirstName, command.LastName, command.Email);
+        order.assignRegistrant(command.firstName, command.lastName, command.email);
     }
 
-    public void HandleAsync(ICommandContext context, ConfirmReservation command) {
+    @Subscribe
+    public void handleAsync(ICommandContext context, ConfirmReservation command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-
-        order.ConfirmReservation(command.IsReservationSuccess);
+        order.confirmReservation(command.isReservationSuccess);
     }
 
-    public void HandleAsync(ICommandContext context, ConfirmPayment command) {
+    @Subscribe
+    public void handleAsync(ICommandContext context, ConfirmPayment command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-
-        order.ConfirmPayment(command.IsPaymentSuccess);
+        order.confirmPayment(command.isPaymentSuccess);
     }
 
-    public void HandleAsync(ICommandContext context, MarkAsSuccess command) {
+    @Subscribe
+    public void handleAsync(ICommandContext context, MarkAsSuccess command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-
-        order.MarkAsSuccess();
+        order.markAsSuccess();
     }
 
-    public void HandleAsync(ICommandContext context, CloseOrder command) {
+    @Subscribe
+    public void handleAsync(ICommandContext context, CloseOrder command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-        order.Close();
+        order.close();
     }
 }

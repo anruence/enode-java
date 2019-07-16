@@ -4,36 +4,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.enodeframework</groupId>
+        <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
-        <version>1.0.0</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
+    <properties>
+        <maven.skip.deploy>true</maven.skip.deploy>
+    </properties>
     <artifactId>enode-samples</artifactId>
-    <version>1.0.0</version>
     <packaging>pom</packaging>
+    <version>${revision}</version>
     <modules>
         <module>bank-transfer</module>
         <module>conference</module>
     </modules>
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.enodeframework</groupId>
-            <artifactId>enode</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.enodeframework</groupId>
-            <artifactId>enode-mysql</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.enodeframework</groupId>
-            <artifactId>enode-rocketmq</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-    </dependencies>
 </project>

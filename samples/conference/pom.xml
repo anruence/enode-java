@@ -2,11 +2,14 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.enodeframework</groupId>
+        <artifactId>enode-samples</artifactId>
+        <version>${revision}</version>
+    </parent>
     <groupId>com.microsoft.conference</groupId>
-    <artifactId>conference-parent</artifactId>
-    <version>1.0.0</version>
+    <artifactId>conference</artifactId>
     <packaging>pom</packaging>
     <modules>
         <module>common</module>
@@ -14,14 +17,43 @@
         <module>registration-bc</module>
         <module>payments-bc</module>
     </modules>
+    <properties>
+        <mybatis-plus.version>3.3.2</mybatis-plus.version>
+        <org.mapstruct.version>1.3.1.Final</org.mapstruct.version>
+    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.1.6.RELEASE</version>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-dependencies-bom</artifactId>
+                <version>${revision}</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.conference</groupId>
+                <artifactId>conference-common</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-annotation</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-core</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${org.mapstruct.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -31,23 +63,40 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.enodeframework</groupId>
+            <groupId>org.enodeframework</groupId>
             <artifactId>enode</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.enodeframework</groupId>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.enodeframework</groupId>
             <artifactId>enode-mysql</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.enodeframework</groupId>
-            <artifactId>enode-rocketmq</artifactId>
-            <version>1.0.0</version>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -55,11 +104,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <encoding>UTF-8</encoding>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${org.mapstruct.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.8</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
