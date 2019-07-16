@@ -68,7 +68,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         appendUncommittedEvent(domainEvent);
     }
 
-    protected void applyEvents(IDomainEvent<TAggregateRootId>[] domainEvents) {
+    protected void applyEvents(List<IDomainEvent<TAggregateRootId>> domainEvents) {
         for (IDomainEvent<TAggregateRootId> domainEvent : domainEvents) {
             applyEvent(domainEvent);
         }

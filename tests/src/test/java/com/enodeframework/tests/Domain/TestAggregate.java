@@ -1,7 +1,7 @@
 package com.enodeframework.tests.Domain;
 
 import com.enodeframework.domain.AggregateRoot;
-import com.enodeframework.eventing.DomainEvent;
+import com.google.common.collect.Lists;
 
 public class TestAggregate extends AggregateRoot<String> {
     private String _title;
@@ -32,7 +32,7 @@ public class TestAggregate extends AggregateRoot<String> {
     }
 
     public void TestEvents() {
-        applyEvents(new DomainEvent[]{new Event1(), new Event2(), new Event3()});
+        applyEvents(Lists.newArrayList(new Event1(), new Event2(), new Event3()));
     }
 
     private void Handle(TestAggregateCreated evnt) {
