@@ -6,9 +6,9 @@ public interface IEventService {
     /**
      * Commit the given aggregate's domain events to the eventstore async and publish the domain events.
      *
-     * @param context
+     * @param eventCommittingContext
      */
-    void commitDomainEventAsync(EventCommittingContext context);
+    void commitDomainEventAsync(EventCommittingContext eventCommittingContext);
 
     /**
      * Publish the given domain event stream async.

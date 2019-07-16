@@ -945,11 +945,11 @@ public class CommandAndEventServiceTest extends AbstractTest {
         IAggregateRoot aggregate = note;
         DomainEventStreamMessage message1 = CreateMessage(aggregate);
 
-        aggregate.acceptChanges(1);
+        aggregate.acceptChanges();
         note.ChangeTitle("title1");
         DomainEventStreamMessage message2 = CreateMessage(aggregate);
 
-        aggregate.acceptChanges(2);
+        aggregate.acceptChanges();
         note.ChangeTitle("title2");
         DomainEventStreamMessage message3 = CreateMessage(aggregate);
 

@@ -44,7 +44,9 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
         DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(AbstractDomainEventListener.this, domainEventStreamMessage, queueMessage, context);
         ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
-        logger.info("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.id(), domainEventStreamMessage.aggregateRootStringId(), domainEventStreamMessage.aggregateRootTypeName(), domainEventStreamMessage.version());
+        if (logger.isDebugEnabled()) {
+            logger.debug("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.id(), domainEventStreamMessage.aggregateRootStringId(), domainEventStreamMessage.aggregateRootTypeName(), domainEventStreamMessage.version());
+        }
         domainEventMessageProcessor.process(processingMessage);
     }
 

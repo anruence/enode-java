@@ -7,6 +7,7 @@ import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.domain.IAggregateStorage;
 import com.enodeframework.domain.IMemoryCache;
 import com.enodeframework.infrastructure.ITypeNameProvider;
+import com.enodeframework.infrastructure.WrappedRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 public class DefaultMemoryCache implements IMemoryCache {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultMemoryCache.class);
-
+    private Object lockObj = new Object();
     private final ConcurrentMap<String, AggregateCacheInfo> aggregateRootInfoDict;
     private final int timeoutSeconds = 5000;
     private final int scanExpiredAggregateIntervalMilliseconds = 5000;
@@ -47,19 +48,22 @@ public class DefaultMemoryCache implements IMemoryCache {
         if (aggregateRootId == null) {
             throw new NullPointerException("aggregateRootId");
         }
+        if (aggregateRootType == null) {
+            throw new NullPointerException("aggregateRootType");
+        }
         AggregateCacheInfo aggregateRootInfo = aggregateRootInfoDict.get(aggregateRootId.toString());
         if (aggregateRootInfo == null) {
             return Task.completedFuture(null);
         }
         IAggregateRoot aggregateRoot = aggregateRootInfo.getAggregateRoot();
         if (aggregateRoot.getClass() != aggregateRootType) {
-            throw new RuntimeException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRoot.getClass(), aggregateRootType));
+            throw new WrappedRuntimeException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRoot.getClass(), aggregateRootType));
         }
         if (aggregateRoot.getChanges().size() > 0) {
             CompletableFuture<IAggregateRoot> lastestAggregateRootFuture = aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString());
             return lastestAggregateRootFuture.thenApply(lastestAggregateRoot -> {
                 if (lastestAggregateRoot != null) {
-                    setInternal(lastestAggregateRoot);
+                    resetAggregateRootCache(lastestAggregateRoot);
                 }
                 return lastestAggregateRoot;
             });
@@ -79,28 +83,42 @@ public class DefaultMemoryCache implements IMemoryCache {
     }
 
     @Override
-    public void set(IAggregateRoot aggregateRoot) {
-        setInternal(aggregateRoot);
+    public CompletableFuture<Void> updateAggregateRootCache(IAggregateRoot aggregateRoot) {
+        resetAggregateRootCache(aggregateRoot);
+        return Task.completedTask;
     }
 
     @Override
-    public CompletableFuture<Void> refreshAggregateFromEventStoreAsync(String aggregateRootTypeName, String aggregateRootId) {
-        try {
-            Class aggregateRootType = typeNameProvider.getType(aggregateRootTypeName);
-            if (aggregateRootType == null) {
-                logger.error("Could not find aggregate root type by aggregate root type name [{}].", aggregateRootTypeName);
-                return Task.completedTask;
-            }
-            CompletableFuture<IAggregateRoot> future = aggregateStorage.getAsync(aggregateRootType, aggregateRootId);
-            return future.thenAccept(aggregateRoot -> {
-                if (aggregateRoot != null) {
-                    setInternal(aggregateRoot);
-                }
-            });
-        } catch (Exception ex) {
-            logger.error(String.format("Refresh aggregate from event store has unknown exception, aggregateRootTypeName:%s, aggregateRootId:%s", aggregateRootTypeName, aggregateRootId), ex);
+    public CompletableFuture<IAggregateRoot> refreshAggregateFromEventStoreAsync(String aggregateRootTypeName, Object aggregateRootId) {
+        if (aggregateRootTypeName == null) {
+            throw new NullPointerException("aggregateRootTypeName");
         }
-        return Task.completedTask;
+        Class aggregateRootType = typeNameProvider.getType(aggregateRootTypeName);
+        if (aggregateRootType == null) {
+            logger.error("Could not find aggregate root type by aggregate root type name [{}].", aggregateRootTypeName);
+            return Task.completedFuture(null);
+        }
+        return refreshAggregateFromEventStoreAsync(aggregateRootType, aggregateRootId);
+    }
+
+    @Override
+    public <T extends IAggregateRoot> CompletableFuture<T> refreshAggregateFromEventStoreAsync(Class<T> aggregateRootType, Object aggregateRootId) {
+        if (aggregateRootId == null) {
+            throw new NullPointerException("aggregateRootId");
+        }
+        if (aggregateRootType == null) {
+            throw new NullPointerException("aggregateRootType");
+        }
+
+        return aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString()).thenApply(aggregateRoot -> {
+            if (aggregateRoot != null) {
+                resetAggregateRootCache(aggregateRoot);
+            }
+            return aggregateRoot;
+        }).exceptionally(ex -> {
+            logger.error("Refresh aggregate from event store has unknown exception, aggregateRootTypeName:{}, aggregateRootId:{}", typeNameProvider.getTypeName(aggregateRootType), aggregateRootId, ex);
+            return null;
+        });
     }
 
     @Override
@@ -113,21 +131,27 @@ public class DefaultMemoryCache implements IMemoryCache {
         scheduleService.stopTask(taskName);
     }
 
-    private void setInternal(IAggregateRoot aggregateRoot) {
-        if (aggregateRoot == null) {
-            throw new NullPointerException("aggregateRoot");
-        }
-
-        aggregateRootInfoDict.merge(aggregateRoot.uniqueId(), new AggregateCacheInfo(aggregateRoot), (oldValue, value) -> {
-            oldValue.setAggregateRoot(aggregateRoot);
-            oldValue.setLastUpdateTimeMillis(System.currentTimeMillis());
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("In memory aggregate updated, type: {}, id: {}, version: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.version());
+    private void resetAggregateRootCache(IAggregateRoot aggregateRoot) {
+        synchronized (lockObj) {
+            if (aggregateRoot == null) {
+                throw new NullPointerException("aggregateRoot");
             }
+            AggregateCacheInfo cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.uniqueId(), x -> {
+                if (logger.isDebugEnabled()) {
 
-            return oldValue;
-        });
+                    logger.debug("Aggregate root in-memory cache init, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.version());
+                }
+
+                return new AggregateCacheInfo(aggregateRoot);
+            });
+            int aggregateRootOldVersion = cacheInfo.getAggregateRoot().version();
+
+            cacheInfo.setAggregateRoot(aggregateRoot);
+            cacheInfo.setLastUpdateTimeMillis(System.currentTimeMillis());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Aggregate root in-memory cache reset, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.version(), aggregateRootOldVersion);
+            }
+        }
     }
 
     private void cleanInactiveAggregateRoot() {

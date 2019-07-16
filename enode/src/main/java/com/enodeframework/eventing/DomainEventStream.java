@@ -1,5 +1,7 @@
 package com.enodeframework.eventing;
 
+import com.enodeframework.common.utilities.ObjectId;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +12,7 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class DomainEventStream {
+    private String id;
     private String commandId;
     private String aggregateRootTypeName;
     private String aggregateRootId;
@@ -19,6 +22,7 @@ public class DomainEventStream {
     private Map<String, String> items;
 
     public DomainEventStream(String commandId, String aggregateRootId, String aggregateRootTypeName, int version, Date timestamp, List<IDomainEvent> events, Map<String, String> items) {
+        this.id = ObjectId.generateNewStringId();
         this.commandId = commandId;
         this.aggregateRootId = aggregateRootId;
         this.aggregateRootTypeName = aggregateRootTypeName;
@@ -39,6 +43,14 @@ public class DomainEventStream {
             event.setAggregateRootTypeName(aggregateRootTypeName);
             event.setSequence(sequence++);
         }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String commandId() {
@@ -99,8 +111,9 @@ public class DomainEventStream {
 
     @Override
     public String toString() {
-        String format = "[CommandId=%s,AggregateRootTypeName=%s,AggregateRootId=%s,Version=%d,Timestamp=%tc,Events=%s,Items=%s]";
+        String format = "[Id=%s,CommandId=%s,AggregateRootTypeName=%s,AggregateRootId=%s,Version=%d,Timestamp=%tc,Events=%s,Items=%s]";
         return String.format(format,
+                id,
                 commandId,
                 aggregateRootTypeName,
                 aggregateRootId,

@@ -28,19 +28,22 @@ public class SendRocketMQService {
         try {
             producer.send(message, SendRocketMQService::messageQueueSelect, routingKey, new SendCallback() {
                 @Override
-                public void onSuccess(SendResult sendResult) {
+                public void onSuccess(SendResult result) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("ENode message async send success, sendResult: {}, message: {}", result, message);
+                    }
                     promise.complete(AsyncTaskResult.Success);
                 }
 
                 @Override
                 public void onException(Throwable ex) {
                     promise.complete(new AsyncTaskResult(AsyncTaskStatus.IOException, ex.getMessage()));
-                    logger.error("send callback RocketMQ msg failed, msg: {}", message, ex);
+                    logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, routingKey, ex);
                 }
             });
-        } catch (MQClientException | RemotingException | InterruptedException e) {
-            promise.complete(new AsyncTaskResult(AsyncTaskStatus.IOException, e.getMessage()));
-            logger.error("send RocketMQ msg failed, msg: {}", message, e);
+        } catch (MQClientException | RemotingException | InterruptedException ex) {
+            promise.complete(new AsyncTaskResult(AsyncTaskStatus.IOException, ex.getMessage()));
+            logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, routingKey, ex);
         }
         return promise;
     }

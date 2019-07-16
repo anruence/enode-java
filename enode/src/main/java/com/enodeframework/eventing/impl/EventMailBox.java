@@ -1,121 +1,79 @@
 package com.enodeframework.eventing.impl;
 
+import com.enodeframework.common.function.Action1;
+import com.enodeframework.common.io.Task;
 import com.enodeframework.eventing.EventCommittingContext;
+import com.enodeframework.infrastructure.DefaultMailBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author anruence@gmail.com
  */
-public class EventMailBox {
+public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean> {
+
     private static final Logger logger = LoggerFactory.getLogger(EventMailBox.class);
 
-    private final String aggregateRootId;
-    private final Queue<EventCommittingContext> messageQueue;
-    private final Consumer<List<EventCommittingContext>> handleMessageAction;
-    private AtomicBoolean isRunning;
-    private int batchSize;
-    private Date lastActiveTime;
+    private ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> _aggregateDictDict;
 
-    public EventMailBox(String aggregateRootId, int batchSize, Consumer<List<EventCommittingContext>> handleMessageAction) {
-        this.aggregateRootId = aggregateRootId;
-        this.batchSize = batchSize;
-        this.handleMessageAction = handleMessageAction;
-        this.messageQueue = new ConcurrentLinkedQueue<>();
-        this.isRunning = new AtomicBoolean(false);
-        this.lastActiveTime = new Date();
+    public EventMailBox(String routingKey, int batchSize, Action1<List<EventCommittingContext>> handleMessageAction) {
+        super(routingKey, batchSize, true, null, (x -> {
+            handleMessageAction.apply(x);
+            return Task.completedTask;
+        }));
+        _aggregateDictDict = new ConcurrentHashMap<>();
     }
 
-    public String getAggregateRootId() {
-        return aggregateRootId;
-    }
-
+    @Override
     public void enqueueMessage(EventCommittingContext message) {
-        messageQueue.add(message);
-        lastActiveTime = new Date();
-        tryRun(false);
-    }
-
-    public void tryRun() {
-        tryRun(false);
-    }
-
-    public void tryRun(boolean exitFirst) {
-        if (exitFirst) {
-            exit();
-        }
-        if (tryEnter()) {
-            CompletableFuture.runAsync(this::run);
+        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.computeIfAbsent(message.getEventStream().aggregateRootId(), x -> new ConcurrentHashMap<>());
+        byte value = 1;
+        if (eventDict.putIfAbsent(message.getEventStream().getId(), value) == null) {
+            super.enqueueMessage(message);
         }
     }
 
-    public void run() {
-        lastActiveTime = new Date();
-        List<EventCommittingContext> contextList = null;
-        try {
-            EventCommittingContext context = null;
+    @Override
+    public CompletableFuture completeMessage(EventCommittingContext message, Boolean result) {
+        return super.completeMessage(message, result).thenAccept(x -> {
+            removeEventCommittingContext(message);
+        });
+    }
 
-            while ((context = messageQueue.poll()) != null) {
-                context.setEventMailBox(this);
-                if (contextList == null) {
-                    contextList = new ArrayList<>();
-                }
-                contextList.add(context);
-
-                if (contextList.size() == batchSize) {
-                    break;
-                }
-            }
-            if (contextList != null && contextList.size() > 0) {
-                handleMessageAction.accept(contextList);
-            }
-        } catch (Exception ex) {
-            logger.error(String.format("Event mailbox run has unknown exception, aggregateRootId: %s", aggregateRootId), ex);
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                //ignore
-            }
-        } finally {
-            if (contextList == null || contextList.size() == 0) {
-                exit();
-                if (!messageQueue.isEmpty()) {
-                    tryRun();
+    @Override
+    protected List<EventCommittingContext> FilterMessages(List<EventCommittingContext> messages) {
+        List<EventCommittingContext> filterCommittingContextList = new ArrayList<>();
+        if (messages != null && messages.size() > 0) {
+            for (EventCommittingContext committingContext : messages) {
+                if (containsEventCommittingContext(committingContext)) {
+                    filterCommittingContextList.add(committingContext);
                 }
             }
         }
+        return filterCommittingContextList;
     }
 
-    public void exit() {
-        isRunning.getAndSet(false);
+    public boolean containsEventCommittingContext(EventCommittingContext eventCommittingContext) {
+        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.get(eventCommittingContext.getEventStream().aggregateRootId());
+        if (eventDict == null) {
+            return false;
+        }
+        return eventDict.containsKey(eventCommittingContext.getEventStream().getId());
     }
 
-    public void clear() {
-        messageQueue.clear();
+    public void removeAggregateAllEventCommittingContexts(String aggregateRootId) {
+        _aggregateDictDict.remove(aggregateRootId);
     }
 
-    public boolean isInactive(int timeoutSeconds) {
-        return (System.currentTimeMillis() - lastActiveTime.getTime()) >= timeoutSeconds * 1000;
-    }
-
-    private boolean tryEnter() {
-        return isRunning.compareAndSet(false, true);
-    }
-
-    public Date getLastActiveTime() {
-        return this.lastActiveTime;
-    }
-
-    public boolean isRunning() {
-        return isRunning.get();
+    public void removeEventCommittingContext(EventCommittingContext eventCommittingContext) {
+        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.get(eventCommittingContext.getEventStream().aggregateRootId());
+        if (eventDict != null) {
+            eventDict.remove(eventCommittingContext.getEventStream().getId());
+        }
     }
 }

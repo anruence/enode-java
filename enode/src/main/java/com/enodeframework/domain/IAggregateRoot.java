@@ -15,7 +15,15 @@ public interface IAggregateRoot {
 
     List<IDomainEvent> getChanges();
 
-    void acceptChanges(int newVersion);
+    /**
+     * Accept changes of the aggregate root.
+     */
+    void acceptChanges();
 
+    /**
+     * Replay the given event streams.
+     *
+     * @param eventStreams
+     */
     void replayEvents(List<DomainEventStream> eventStreams);
 }

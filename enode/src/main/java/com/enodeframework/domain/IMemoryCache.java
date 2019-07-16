@@ -21,20 +21,30 @@ public interface IMemoryCache {
      */
     <T extends IAggregateRoot> CompletableFuture<T> getAsync(Object aggregateRootId, Class<T> aggregateRootType);
 
-    /**
-     * Set an aggregate to memory cache.
-     *
-     * @param aggregateRoot
-     */
-    void set(IAggregateRoot aggregateRoot);
 
     /**
-     * Refresh the aggregate memory cache by replaying events of event store.
+     * Update the given aggregate root's memory cache.
+     *
+     * @param aggregateRoot
+     * @return
+     */
+    CompletableFuture<Void> updateAggregateRootCache(IAggregateRoot aggregateRoot);
+
+    /**
+     * Refresh the aggregate memory cache by replaying events of event store, and return the refreshed aggregate root.
      *
      * @param aggregateRootTypeName
      * @param aggregateRootId
      */
-    CompletableFuture<Void> refreshAggregateFromEventStoreAsync(String aggregateRootTypeName, String aggregateRootId);
+    CompletableFuture<IAggregateRoot> refreshAggregateFromEventStoreAsync(String aggregateRootTypeName, Object aggregateRootId);
+
+    /**
+     * Refresh the aggregate memory cache by replaying events of event store, and return the refreshed aggregate root.
+     *
+     * @param aggregateRootType
+     * @param aggregateRootId
+     */
+    <T extends IAggregateRoot> CompletableFuture<T> refreshAggregateFromEventStoreAsync(Class<T> aggregateRootType, Object aggregateRootId);
 
     /**
      * Start background tasks.

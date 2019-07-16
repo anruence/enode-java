@@ -135,12 +135,11 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     }
 
     @Override
-    public void acceptChanges(int newVersion) {
-        if (version + 1 != newVersion) {
-            throw new UnsupportedOperationException(String.format("Cannot accept invalid version: %d, expect version: %d, current aggregateRoot type: %s, id: %s", newVersion, version + 1, this.getClass().getName(), id));
+    public void acceptChanges() {
+        if (uncommittedEvents != null && !uncommittedEvents.isEmpty()) {
+            version = uncommittedEvents.peek().version();
+            uncommittedEvents.clear();
         }
-        this.version = newVersion;
-        uncommittedEvents.clear();
     }
 
     @Override
@@ -152,7 +151,6 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         eventStreams.forEach(eventStream -> {
             verifyEvent(eventStream);
             eventStream.events().forEach(this::handleEvent);
-
             this.version = eventStream.version();
         });
     }

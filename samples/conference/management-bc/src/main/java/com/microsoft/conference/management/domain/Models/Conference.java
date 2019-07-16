@@ -85,20 +85,20 @@ public class Conference extends AggregateRoot<String> {
             throw new RuntimeException("Can't make reservation to the conference which is not published.");
         }
         if (_reservations.containsKey(reservationId)) {
-            throw new RuntimeException(String.format("Duplicated reservation, reservationId:{0}", reservationId));
+            throw new RuntimeException(String.format("Duplicated reservation, reservationId:{}", reservationId));
         }
         if (reservationItems == null || reservationItems.size() == 0) {
-            throw new RuntimeException(String.format("Reservation items can't be null or empty, reservationId:{0}", reservationId));
+            throw new RuntimeException(String.format("Reservation items can't be null or empty, reservationId:{}", reservationId));
         }
 
         List<SeatAvailableQuantity> seatAvailableQuantities = new ArrayList<>();
         for (ReservationItem reservationItem : reservationItems) {
             if (reservationItem.Quantity <= 0) {
-                throw new RuntimeException(String.format("Quantity must be bigger than than zero, reservationId:{0}, seatTypeId:{1}", reservationId, reservationItem.SeatTypeId));
+                throw new RuntimeException(String.format("Quantity must be bigger than than zero, reservationId:{}, seatTypeId:{}", reservationId, reservationItem.SeatTypeId));
             }
             SeatType seatType = _seatTypes.stream().filter(x -> x.Id == reservationItem.SeatTypeId).findFirst().orElse(null);
             if (seatType == null) {
-                throw new WrappedRuntimeException(String.format("Seat type '{0}' not exist.", reservationItem.SeatTypeId));
+                throw new WrappedRuntimeException(String.format("Seat type '{}' not exist.", reservationItem.SeatTypeId));
             }
             int availableQuantity = seatType.Quantity - GetTotalReservationQuantity(seatType.Id);
             if (availableQuantity < reservationItem.Quantity) {
