@@ -2,6 +2,7 @@ package com.enodeframework.tests.Mocks;
 
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
+import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.EventAppendResult;
@@ -49,7 +50,7 @@ public class MockEventStore implements IEventStore {
             if (_failedType == FailedType.UnKnownException) {
                 throw new WrappedRuntimeException("BatchAppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
-                throw new WrappedRuntimeException("BatchAppendAsyncIOException" + _currentFailedCount);
+                throw new IORuntimeException("BatchAppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
                 return Task.fromResult(new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.Failed, "BatchAppendAsyncError" + _currentFailedCount));
             }
@@ -65,7 +66,7 @@ public class MockEventStore implements IEventStore {
             if (_failedType == FailedType.UnKnownException) {
                 throw new WrappedRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
-                throw new WrappedRuntimeException("AppendAsyncIOException" + _currentFailedCount);
+                throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
                 return Task.fromResult(new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.Failed, "AppendAsyncError" + _currentFailedCount));
             }
@@ -81,7 +82,7 @@ public class MockEventStore implements IEventStore {
             if (_failedType == FailedType.UnKnownException) {
                 throw new WrappedRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
-                throw new WrappedRuntimeException("AppendAsyncIOException" + _currentFailedCount);
+                throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
                 return Task.fromResult(new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.Failed, "AppendAsyncError" + _currentFailedCount));
             }
