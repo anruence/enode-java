@@ -17,6 +17,7 @@ import com.enodeframework.common.io.IORuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.domain.IAggregateRoot;
+import com.enodeframework.domain.IMemoryCache;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.EventCommittingContext;
 import com.enodeframework.eventing.IDomainEvent;
@@ -66,6 +67,9 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     @Autowired
     private IEventService eventService;
+
+    @Autowired
+    private IMemoryCache memoryCache;
 
     @Autowired
     private IMessagePublisher<IApplicationMessage> applicationMessagePublisher;
@@ -174,10 +178,28 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
             return;
         }
 
-        //构造出一个事件流对象
-        DomainEventStream eventStream = buildDomainEventStream(dirtyAggregateRoot, changedEvents, processingCommand);
+        //接受聚合根的最新修改
+        dirtyAggregateRoot.acceptChanges();
 
-        //将事件流提交到EventStore
+        //刷新聚合根的内存缓存
+        memoryCache.updateAggregateRootCache(dirtyAggregateRoot);
+        //构造出一个事件流对象
+
+        String commandResult = processingCommand.getCommandExecuteContext().getResult();
+        if (commandResult != null)
+        {
+            processingCommand.getItems().put("CommandResult",commandResult);
+        }
+        DomainEventStream eventStream = new DomainEventStream(
+                processingCommand.getMessage().id(),
+                dirtyAggregateRoot.uniqueId(),
+                typeNameProvider.getTypeName(dirtyAggregateRoot.getClass()),
+                changedEvents.get(0).version(),
+                new Date(),
+                changedEvents,
+                processingCommand.getItems());
+
+        //异步将事件流提交到EventStore
         eventService.commitDomainEventAsync(new EventCommittingContext(dirtyAggregateRoot, eventStream, processingCommand));
     }
 
@@ -374,7 +396,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     private CompletableFuture<Void> completeCommand(ProcessingCommand processingCommand, CommandStatus commandStatus, String resultType, String result) {
         CommandResult commandResult = new CommandResult(commandStatus, processingCommand.getMessage().id(), processingCommand.getMessage().getAggregateRootId(), result, resultType);
-        return processingCommand.getMailbox().completeMessage(processingCommand, commandResult);
+        return processingCommand.getMailBox().completeMessage(processingCommand, commandResult);
     }
 
     enum HandlerFindStatus {

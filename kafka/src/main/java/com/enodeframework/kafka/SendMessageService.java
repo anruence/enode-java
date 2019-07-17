@@ -18,17 +18,20 @@ public class SendMessageService {
 
     private static Logger logger = LoggerFactory.getLogger(SendMessageService.class);
 
-    public static CompletableFuture<AsyncTaskResult> sendMessageAsync(KafkaTemplate<String, String> producer, ProducerRecord<String, String> record) {
+    public static CompletableFuture<AsyncTaskResult> sendMessageAsync(KafkaTemplate<String, String> producer, ProducerRecord<String, String> message) {
         CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
-        producer.send(record).addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+        producer.send(message).addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
             @Override
             public void onFailure(Throwable throwable) {
-                logger.error("send kafka record error, record:{}", record, throwable);
                 future.complete(new AsyncTaskResult(AsyncTaskStatus.IOException));
+                logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, throwable);
             }
 
             @Override
-            public void onSuccess(SendResult<String, String> stringStringSendResult) {
+            public void onSuccess(SendResult<String, String> result) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("ENode message async send success, sendResult: {}, message: {}", result, message);
+                }
                 future.complete(AsyncTaskResult.Success);
             }
         });

@@ -30,7 +30,9 @@ public abstract class AbstractApplicationMessageListener implements IMessageHand
         IApplicationMessage message = (IApplicationMessage) JsonTool.deserialize(appDataMessage.getApplicationMessageData(), applicationMessageType);
         DefaultMessageProcessContext processContext = new DefaultMessageProcessContext(queueMessage, context);
         ProcessingApplicationMessage processingMessage = new ProcessingApplicationMessage(message, processContext);
-        logger.info("ENode application message received, messageId: {}, routingKey: {}", message.id(), message.getRoutingKey());
+        if (logger.isDebugEnabled()) {
+            logger.debug("ENode application message received, messageId: {}, routingKey: {}", message.id(), message.getRoutingKey());
+        }
         applicationMessageProcessor.process(processingMessage);
     }
 }
