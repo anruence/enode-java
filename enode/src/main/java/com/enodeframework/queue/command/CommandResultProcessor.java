@@ -70,17 +70,17 @@ public class CommandResultProcessor {
     }
 
     public void registerProcessingCommand(ICommand command, com.enodeframework.commanding.CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
-        if (commandTaskDict.containsKey(command.id())) {
-            throw new RuntimeException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.id()));
+        if (commandTaskDict.containsKey(command.getId())) {
+            throw new RuntimeException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.getId()));
         }
-        commandTaskDict.put(command.id(), new CommandTaskCompletionSource(commandReturnType, taskCompletionSource));
+        commandTaskDict.put(command.getId(), new CommandTaskCompletionSource(commandReturnType, taskCompletionSource));
     }
 
     public void processFailedSendingCommand(ICommand command) {
-        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.remove(command.id());
+        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.remove(command.getId());
 
         if (commandTaskCompletionSource != null) {
-            CommandResult commandResult = new CommandResult(CommandStatus.Failed, command.id(), command.getAggregateRootId(), "Failed to send the command.", String.class.getName());
+            CommandResult commandResult = new CommandResult(CommandStatus.Failed, command.getId(), command.getAggregateRootId(), "Failed to send the command.", String.class.getName());
             commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult));
         }
     }

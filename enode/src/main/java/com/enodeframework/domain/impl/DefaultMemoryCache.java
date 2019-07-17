@@ -7,7 +7,7 @@ import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.domain.IAggregateStorage;
 import com.enodeframework.domain.IMemoryCache;
 import com.enodeframework.infrastructure.ITypeNameProvider;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +57,7 @@ public class DefaultMemoryCache implements IMemoryCache {
         }
         IAggregateRoot aggregateRoot = aggregateRootInfo.getAggregateRoot();
         if (aggregateRoot.getClass() != aggregateRootType) {
-            throw new WrappedRuntimeException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRoot.getClass(), aggregateRootType));
+            throw new EnodeRuntimeException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRoot.getClass(), aggregateRootType));
         }
         if (aggregateRoot.getChanges().size() > 0) {
             CompletableFuture<IAggregateRoot> lastestAggregateRootFuture = aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString());
@@ -139,17 +139,17 @@ public class DefaultMemoryCache implements IMemoryCache {
             AggregateCacheInfo cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.uniqueId(), x -> {
                 if (logger.isDebugEnabled()) {
 
-                    logger.debug("Aggregate root in-memory cache init, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.version());
+                    logger.debug("Aggregate root in-memory cache init, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.getVersion());
                 }
 
                 return new AggregateCacheInfo(aggregateRoot);
             });
-            int aggregateRootOldVersion = cacheInfo.getAggregateRoot().version();
+            int aggregateRootOldVersion = cacheInfo.getAggregateRoot().getVersion();
 
             cacheInfo.setAggregateRoot(aggregateRoot);
             cacheInfo.setLastUpdateTimeMillis(System.currentTimeMillis());
             if (logger.isDebugEnabled()) {
-                logger.debug("Aggregate root in-memory cache reset, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.version(), aggregateRootOldVersion);
+                logger.debug("Aggregate root in-memory cache reset, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.getVersion(), aggregateRootOldVersion);
             }
         }
     }

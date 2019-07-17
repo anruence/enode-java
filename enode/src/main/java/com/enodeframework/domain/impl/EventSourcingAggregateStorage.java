@@ -72,7 +72,7 @@ public class EventSourcingAggregateStorage implements IAggregateStorage {
                         aggregateRootId));
             }
             String aggregateRootTypeName = typeNameProvider.getTypeName(aggregateRootType);
-            CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> eventStreamsFuture = eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, aggregateRoot.version() + 1, MAXVERSION);
+            CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> eventStreamsFuture = eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, aggregateRoot.getVersion() + 1, MAXVERSION);
             return eventStreamsFuture.thenApply(eventStreams -> {
                 List<DomainEventStream> eventStreamsAfterSnapshot = eventStreams.getData();
                 aggregateRoot.replayEvents(eventStreamsAfterSnapshot);

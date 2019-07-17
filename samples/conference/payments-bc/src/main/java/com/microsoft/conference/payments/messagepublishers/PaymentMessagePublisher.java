@@ -19,7 +19,7 @@ public class PaymentMessagePublisher {
 
     public AsyncTaskResult HandleAsync(PaymentCompleted evnt) {
         PaymentCompletedMessage message = new PaymentCompletedMessage();
-        message.PaymentId = evnt.aggregateRootId();
+        message.PaymentId = evnt.getAggregateRootId();
         message.ConferenceId = evnt.ConferenceId;
         message.OrderId = evnt.OrderId;
         return await(_messagePublisher.publishAsync(message));
@@ -27,7 +27,7 @@ public class PaymentMessagePublisher {
 
     public AsyncTaskResult HandleAsync(PaymentRejected evnt) {
         PaymentRejectedMessage message = new PaymentRejectedMessage();
-        message.PaymentId = evnt.aggregateRootId();
+        message.PaymentId = evnt.getAggregateRootId();
         message.ConferenceId = evnt.ConferenceId;
         message.OrderId = evnt.OrderId;
         return await(_messagePublisher.publishAsync(message));

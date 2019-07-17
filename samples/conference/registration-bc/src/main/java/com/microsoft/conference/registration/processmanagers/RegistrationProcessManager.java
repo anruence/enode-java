@@ -53,7 +53,7 @@ public class RegistrationProcessManager {
 
     public AsyncTaskResult HandleAsync(OrderPlaced evnt) {
         MakeSeatReservation reservation = new MakeSeatReservation(evnt.ConferenceId);
-        reservation.ReservationId = evnt.aggregateRootId();
+        reservation.ReservationId = evnt.getAggregateRootId();
         reservation.Seats = evnt.OrderTotal.Lines.stream().map(x -> {
             SeatReservationItemInfo itemInfo = new SeatReservationItemInfo();
             itemInfo.SeatType = x.SeatQuantity.Seat.SeatTypeId;
@@ -82,9 +82,9 @@ public class RegistrationProcessManager {
 
     public AsyncTaskResult HandleAsync(OrderPaymentConfirmed evnt) {
         if (evnt.orderStatus == OrderStatus.PaymentSuccess) {
-            return Task.get(_commandService.sendAsync(new CommitSeatReservation(evnt.ConferenceId, evnt.aggregateRootId())));
+            return Task.get(_commandService.sendAsync(new CommitSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
         } else if (evnt.orderStatus == OrderStatus.PaymentRejected) {
-            return Task.get(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.aggregateRootId())));
+            return Task.get(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
         }
         return AsyncTaskResult.Success;
     }
@@ -98,11 +98,11 @@ public class RegistrationProcessManager {
     }
 
     public AsyncTaskResult HandleAsync(OrderSuccessed evnt) {
-        return Task.get(_commandService.sendAsync(new CreateSeatAssignments(evnt.aggregateRootId())));
+        return Task.get(_commandService.sendAsync(new CreateSeatAssignments(evnt.getAggregateRootId())));
     }
 
     public AsyncTaskResult HandleAsync(OrderExpired evnt) {
-        return Task.get(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.aggregateRootId())));
+        return Task.get(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
     }
 }
         

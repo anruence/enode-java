@@ -1,5 +1,6 @@
 package com.enodeframework.common.io;
 
+import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.function.Action;
 import com.enodeframework.common.function.Action1;
 import com.enodeframework.common.function.DelayedTask;

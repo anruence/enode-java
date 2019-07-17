@@ -27,7 +27,7 @@ public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean
 
     @Override
     public void enqueueMessage(EventCommittingContext message) {
-        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.computeIfAbsent(message.getEventStream().aggregateRootId(), x -> new ConcurrentHashMap<>());
+        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.computeIfAbsent(message.getEventStream().getAggregateRootId(), x -> new ConcurrentHashMap<>());
         byte value = 1;
         if (eventDict.putIfAbsent(message.getEventStream().getId(), value) == null) {
             super.enqueueMessage(message);
@@ -42,7 +42,7 @@ public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean
     }
 
     @Override
-    protected List<EventCommittingContext> FilterMessages(List<EventCommittingContext> messages) {
+    protected List<EventCommittingContext> filterMessages(List<EventCommittingContext> messages) {
         List<EventCommittingContext> filterCommittingContextList = new ArrayList<>();
         if (messages != null && messages.size() > 0) {
             for (EventCommittingContext committingContext : messages) {
@@ -55,7 +55,7 @@ public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean
     }
 
     public boolean containsEventCommittingContext(EventCommittingContext eventCommittingContext) {
-        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.get(eventCommittingContext.getEventStream().aggregateRootId());
+        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.get(eventCommittingContext.getEventStream().getAggregateRootId());
         if (eventDict == null) {
             return false;
         }
@@ -67,7 +67,7 @@ public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean
     }
 
     public void removeEventCommittingContext(EventCommittingContext eventCommittingContext) {
-        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.get(eventCommittingContext.getEventStream().aggregateRootId());
+        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.get(eventCommittingContext.getEventStream().getAggregateRootId());
         if (eventDict != null) {
             eventDict.remove(eventCommittingContext.getEventStream().getId());
         }

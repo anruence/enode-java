@@ -35,7 +35,7 @@ public abstract class PublishableException extends RuntimeException implements I
     }
 
     @Override
-    public String id() {
+    public String getId() {
         return id;
     }
 
@@ -45,7 +45,7 @@ public abstract class PublishableException extends RuntimeException implements I
     }
 
     @Override
-    public Date timestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
@@ -55,7 +55,7 @@ public abstract class PublishableException extends RuntimeException implements I
     }
 
     @Override
-    public int sequence() {
+    public int getSequence() {
         return sequence;
     }
 

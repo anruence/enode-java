@@ -1,10 +1,9 @@
 package com.enodeframework.tests.Exceptions;
 
-import com.enodeframework.common.io.IORuntimeException;
+import com.enodeframework.common.exception.IORuntimeException;
 import org.junit.Test;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class Future {
 

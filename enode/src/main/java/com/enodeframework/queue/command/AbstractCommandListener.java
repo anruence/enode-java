@@ -47,7 +47,7 @@ public abstract class AbstractCommandListener implements IMessageHandler {
         CommandExecuteContext commandExecuteContext = new CommandExecuteContext(repository, aggregateRootStorage, queueMessage, context, commandMessage, sendReplyService);
         commandItems.put("CommandReplyAddress", commandMessage.getReplyAddress());
         if (logger.isDebugEnabled()) {
-            logger.debug("ENode command message received, messageId: {}, aggregateRootId: {}", command.id(), command.getAggregateRootId());
+            logger.debug("ENode command message received, messageId: {}, aggregateRootId: {}", command.getId(), command.getAggregateRootId());
         }
         commandProcessor.process(new ProcessingCommand(command, commandExecuteContext, commandItems));
     }

@@ -1,6 +1,6 @@
 package com.enodeframework.common.threading;
 
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 
 /**
  * @author anruence@gmail.com
@@ -21,7 +21,7 @@ public class ManualResetEvent {
                 try {
                     monitor.wait();
                 } catch (InterruptedException e) {
-                    throw new WrappedRuntimeException(e);
+                    throw new EnodeRuntimeException(e);
                 }
             }
             return open;
@@ -34,7 +34,7 @@ public class ManualResetEvent {
                 try {
                     monitor.wait(timeout);
                 } catch (InterruptedException e) {
-                    throw new WrappedRuntimeException(e);
+                    throw new EnodeRuntimeException(e);
                 }
             }
             return open;

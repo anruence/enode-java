@@ -33,12 +33,12 @@ public class DomainEventStream {
         int sequence = 1;
 
         for (IDomainEvent event : events) {
-            if (event.version() != this.version()) {
+            if (event.getVersion() != this.getVersion()) {
                 throw new RuntimeException(String.format("Invalid domain event version, aggregateRootTypeName: %s aggregateRootId: %s expected version: %d, but was: %d",
-                        this.aggregateRootTypeName(),
-                        this.aggregateRootId(),
-                        this.version(),
-                        event.version()));
+                        this.getAggregateRootTypeName(),
+                        this.getAggregateRootId(),
+                        this.getVersion(),
+                        event.getVersion()));
             }
             event.setAggregateRootTypeName(aggregateRootTypeName);
             event.setSequence(sequence++);
@@ -53,7 +53,7 @@ public class DomainEventStream {
         this.id = id;
     }
 
-    public String commandId() {
+    public String getCommandId() {
         return commandId;
     }
 
@@ -61,7 +61,7 @@ public class DomainEventStream {
         this.commandId = commandId;
     }
 
-    public String aggregateRootTypeName() {
+    public String getAggregateRootTypeName() {
         return aggregateRootTypeName;
     }
 
@@ -69,7 +69,7 @@ public class DomainEventStream {
         this.aggregateRootTypeName = aggregateRootTypeName;
     }
 
-    public String aggregateRootId() {
+    public String getAggregateRootId() {
         return aggregateRootId;
     }
 
@@ -77,7 +77,7 @@ public class DomainEventStream {
         this.aggregateRootId = aggregateRootId;
     }
 
-    public int version() {
+    public int getVersion() {
         return version;
     }
 
@@ -93,7 +93,7 @@ public class DomainEventStream {
         this.events = events;
     }
 
-    public Date timestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
@@ -101,7 +101,7 @@ public class DomainEventStream {
         this.timestamp = timestamp;
     }
 
-    public Map<String, String> items() {
+    public Map<String, String> getItems() {
         return items;
     }
 

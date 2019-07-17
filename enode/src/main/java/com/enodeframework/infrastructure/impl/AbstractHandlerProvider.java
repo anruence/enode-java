@@ -9,7 +9,7 @@ import com.enodeframework.infrastructure.IAssemblyInitializer;
 import com.enodeframework.infrastructure.IObjectProxy;
 import com.enodeframework.infrastructure.MessageHandlerData;
 import com.enodeframework.infrastructure.MethodInvocation;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import org.reflections.ReflectionUtils;
 
 import java.lang.invoke.MethodHandle;
@@ -153,7 +153,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                 handlerProxy.setMethodHandle(handleMethod);
                 handlers.add(handlerProxy);
             } catch (Exception e) {
-                throw new WrappedRuntimeException(e);
+                throw new EnodeRuntimeException(e);
             }
         });
     }

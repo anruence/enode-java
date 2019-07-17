@@ -2,13 +2,13 @@ package com.enodeframework.tests.Mocks;
 
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
-import com.enodeframework.common.io.IORuntimeException;
+import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.EventAppendResult;
 import com.enodeframework.eventing.IEventStore;
 import com.enodeframework.eventing.impl.InMemoryEventStore;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
@@ -48,7 +48,7 @@ public class MockEventStore implements IEventStore {
             _currentFailedCount++;
 
             if (_failedType == FailedType.UnKnownException) {
-                throw new WrappedRuntimeException("BatchAppendAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("BatchAppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("BatchAppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
@@ -64,7 +64,7 @@ public class MockEventStore implements IEventStore {
             _currentFailedCount++;
 
             if (_failedType == FailedType.UnKnownException) {
-                throw new WrappedRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
@@ -80,7 +80,7 @@ public class MockEventStore implements IEventStore {
             _currentFailedCount++;
 
             if (_failedType == FailedType.UnKnownException) {
-                throw new WrappedRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {

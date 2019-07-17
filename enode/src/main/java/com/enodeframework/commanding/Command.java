@@ -30,6 +30,10 @@ public class Command<TAggregateRootId> extends Message implements ICommand {
         }
     }
 
+    public void setAggregateRootId(TAggregateRootId aggregateRootId) {
+        this.aggregateRootId = aggregateRootId;
+    }
+
     @Override
     public String getRoutingKey() {
         return getAggregateRootId();

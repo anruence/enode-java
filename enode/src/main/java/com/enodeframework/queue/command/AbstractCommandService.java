@@ -39,7 +39,7 @@ public abstract class AbstractCommandService implements ICommandService {
         commandMessage.setCommandType(command.getClass().getName());
         String messageData = JsonTool.serialize(commandMessage);
         //命令唯一id，聚合根id
-        String key = String.format("%s%s", command.id(), command.getAggregateRootId() == null ? "" : "cmd_agg_" + command.getAggregateRootId());
+        String key = String.format("%s%s", command.getId(), command.getAggregateRootId() == null ? "" : "cmd_agg_" + command.getAggregateRootId());
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setBody(messageData);
         queueMessage.setRouteKey(commandRouteKeyProvider.getRoutingKey(command));

@@ -3,9 +3,9 @@ package com.microsoft.conference.registration.domain.SeatAssigning.Models;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.common.utilities.ObjectId;
 import com.enodeframework.domain.AggregateRoot;
-import com.microsoft.conference.common.exception.ArgumentOutOfRangeException;
-import com.microsoft.conference.Linq;
-import com.microsoft.conference.common.exception.ArgumentException;
+import com.enodeframework.common.exception.ArgumentOutOfRangeException;
+import com.enodeframework.common.utilities.Linq;
+import com.enodeframework.common.exception.ArgumentException;
 import com.microsoft.conference.registration.domain.Orders.Models.OrderLine;
 import com.microsoft.conference.registration.domain.SeatAssigning.Events.OrderSeatAssignmentsCreated;
 import com.microsoft.conference.registration.domain.SeatAssigning.Events.SeatAssigned;
@@ -35,7 +35,7 @@ public class OrderSeatAssignments extends AggregateRoot<String> {
     }
 
     public void AssignSeat(int position, Attendee attendee) {
-        SeatAssignment current = Linq.SingleOrDefault(_assignments, x -> x.Position == position);
+        SeatAssignment current = Linq.singleOrDefault(_assignments, x -> x.Position == position);
         if (current == null) {
             throw new ArgumentOutOfRangeException("position");
         }
@@ -45,7 +45,7 @@ public class OrderSeatAssignments extends AggregateRoot<String> {
     }
 
     public void UnassignSeat(int position) {
-        SeatAssignment current = Linq.SingleOrDefault(_assignments, x -> x.Position == position);
+        SeatAssignment current = Linq.singleOrDefault(_assignments, x -> x.Position == position);
         if (current == null) {
             throw new ArgumentOutOfRangeException("position");
         }
@@ -53,17 +53,17 @@ public class OrderSeatAssignments extends AggregateRoot<String> {
     }
 
     private void Handle(OrderSeatAssignmentsCreated evnt) {
-        id = evnt.aggregateRootId();
+        id = evnt.getAggregateRootId();
         _orderId = evnt.OrderId;
         _assignments = evnt.Assignments;
     }
 
     private void Handle(SeatAssigned evnt) {
-        Linq.Single(_assignments, x -> x.Position == evnt.Position).attendee = evnt.attendee;
+        Linq.single(_assignments, x -> x.Position == evnt.Position).attendee = evnt.attendee;
     }
 
     private void Handle(SeatUnassigned evnt) {
-        Linq.Single(_assignments, x -> x.Position == evnt.Position).attendee = null;
+        Linq.single(_assignments, x -> x.Position == evnt.Position).attendee = null;
     }
 
 }

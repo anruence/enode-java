@@ -45,7 +45,7 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(AbstractDomainEventListener.this, domainEventStreamMessage, queueMessage, context);
         ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
         if (logger.isDebugEnabled()) {
-            logger.debug("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.id(), domainEventStreamMessage.aggregateRootStringId(), domainEventStreamMessage.aggregateRootTypeName(), domainEventStreamMessage.version());
+            logger.debug("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.getId(), domainEventStreamMessage.getAggregateRootStringId(), domainEventStreamMessage.getAggregateRootTypeName(), domainEventStreamMessage.getVersion());
         }
         domainEventMessageProcessor.process(processingMessage);
     }
@@ -92,10 +92,9 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
             String commandResult = domainEventStreamMessage.getItems().get("CommandResult");
             DomainEventHandledMessage domainEventHandledMessage = new DomainEventHandledMessage();
             domainEventHandledMessage.setCommandId(domainEventStreamMessage.getCommandId());
-            domainEventHandledMessage.setAggregateRootId(domainEventStreamMessage.aggregateRootId());
+            domainEventHandledMessage.setAggregateRootId(domainEventStreamMessage.getAggregateRootId());
             domainEventHandledMessage.setCommandResult(commandResult);
             eventConsumer.getSendReplyService().sendReply(CommandReturnType.EventHandled.getValue(), domainEventHandledMessage, replyAddress);
         }
     }
-
 }

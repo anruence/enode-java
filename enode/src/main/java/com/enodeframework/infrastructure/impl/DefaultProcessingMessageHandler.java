@@ -50,21 +50,21 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
     private CompletableFuture<Void> handleMessageAsync(ProcessingDomainEventStreamMessage processingMessage, int retryTimes) {
         DomainEventStreamMessage message = processingMessage.getMessage();
         IOHelper.tryAsyncActionRecursively("GetPublishedVersionAsync",
-                () -> publishedVersionStore.getPublishedVersionAsync(getName(), message.aggregateRootTypeName(), message.aggregateRootStringId()),
+                () -> publishedVersionStore.getPublishedVersionAsync(getName(), message.getAggregateRootTypeName(), message.getAggregateRootStringId()),
                 currentRetryTimes -> handleMessageAsync(processingMessage, currentRetryTimes),
                 result ->
                 {
                     Integer publishedVersion = result.getData();
-                    if (publishedVersion + 1 == message.version()) {
+                    if (publishedVersion + 1 == message.getVersion()) {
                         doDispatchProcessingMessageAsync(processingMessage, 0);
-                    } else if (publishedVersion + 1 < message.version()) {
-                        logger.info("The sequence message cannot be process now as the version is not the next version, it will be handle later. contextInfo [aggregateRootId={},lastPublishedVersion={},messageVersion={}]", message.aggregateRootStringId(), publishedVersion, message.version());
+                    } else if (publishedVersion + 1 < message.getVersion()) {
+                        logger.info("The sequence message cannot be process now as the version is not the next version, it will be handle later. contextInfo [aggregateRootId={},lastPublishedVersion={},messageVersion={}]", message.getAggregateRootStringId(), publishedVersion, message.getVersion());
                         processingMessage.addToWaitingList();
                     } else {
                         processingMessage.complete();
                     }
                 },
-                () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", message.id(), message.getClass().getName(), message.aggregateRootStringId(), message.version()),
+                () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", message.getId(), message.getClass().getName(), message.getAggregateRootStringId(), message.getVersion()),
                 errorMessage ->
                         logger.error(String.format("Get published version has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true);
@@ -76,17 +76,17 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
                 () -> dispatchProcessingMessageAsync(processingMessage),
                 currentRetryTimes -> doDispatchProcessingMessageAsync(processingMessage, currentRetryTimes),
                 result -> updatePublishedVersionAsync(processingMessage, 0),
-                () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%d]", processingMessage.getMessage().id(), processingMessage.getMessage().getClass().getName(), processingMessage.getMessage().aggregateRootStringId(), processingMessage.getMessage().version()),
+                () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%d]", processingMessage.getMessage().getId(), processingMessage.getMessage().getClass().getName(), processingMessage.getMessage().getAggregateRootStringId(), processingMessage.getMessage().getVersion()),
                 errorMessage -> logger.error("Dispatching message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
                 retryTimes, true);
     }
 
     private void updatePublishedVersionAsync(ProcessingDomainEventStreamMessage processingMessage, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("UpdatePublishedVersionAsync",
-                () -> publishedVersionStore.updatePublishedVersionAsync(getName(), processingMessage.getMessage().aggregateRootTypeName(), processingMessage.getMessage().aggregateRootStringId(), processingMessage.getMessage().version()),
+                () -> publishedVersionStore.updatePublishedVersionAsync(getName(), processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootStringId(), processingMessage.getMessage().getVersion()),
                 currentRetryTimes -> updatePublishedVersionAsync(processingMessage, currentRetryTimes),
                 result -> processingMessage.complete(),
-                () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%d]", processingMessage.getMessage().id(), processingMessage.getMessage().getClass().getName(), processingMessage.getMessage().aggregateRootStringId(), processingMessage.getMessage().version()),
+                () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%d]", processingMessage.getMessage().getId(), processingMessage.getMessage().getClass().getName(), processingMessage.getMessage().getAggregateRootStringId(), processingMessage.getMessage().getVersion()),
                 errorMessage ->
                         logger.error(String.format("Update published version has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true);

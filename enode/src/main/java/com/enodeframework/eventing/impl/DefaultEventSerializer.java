@@ -42,7 +42,7 @@ public class DefaultEventSerializer implements IEventSerializer {
             TEvent evnt = (TEvent) JsonTool.deserialize(value, eventType);
             evnts.add(evnt);
         });
-        evnts.sort(Comparator.comparingInt(IMessage::sequence));
+        evnts.sort(Comparator.comparingInt(IMessage::getSequence));
         return evnts;
     }
 }

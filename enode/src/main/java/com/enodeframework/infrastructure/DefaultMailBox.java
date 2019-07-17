@@ -18,35 +18,35 @@ import static com.enodeframework.common.io.Task.await;
 
 public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessResult> implements IMailBox<TMessage, TMessageProcessResult> {
 
-    public Logger _logger = LoggerFactory.getLogger(this.getClass());
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public String RoutingKey;
-    public Date LastActiveTime;
-    public boolean IsRunning;
-    public boolean IsPauseRequested;
-    public boolean IsPaused;
-    public long ConsumingSequence;
-    public long ConsumedSequence;
-    private Object _lockObj = new Object();
-    private Object _asyncLock = new Object();
-    private ConcurrentHashMap<Long, TMessage> _messageDict;
-    private Map<Long, TMessageProcessResult> _requestToCompleteMessageDict;
-    private Func1<TMessage, CompletableFuture> _messageHandler;
-    private Func1<List<TMessage>, CompletableFuture> _messageListHandler;
-    private boolean _isBatchMessageProcess;
-    private int _batchSize;
-    private long _nextSequence;
+    private String routingKey;
+    private Date lastActiveTime;
+    private boolean isRunning;
+    private boolean isPauseRequested;
+    private boolean isPaused;
+    private long consumingSequence;
+    private long consumedSequence;
+    private Object lockObj = new Object();
+    private Object asyncLock = new Object();
+    private ConcurrentHashMap<Long, TMessage> messageDict;
+    private Map<Long, TMessageProcessResult> requestToCompleteMessageDict;
+    private Func1<TMessage, CompletableFuture> messageHandler;
+    private Func1<List<TMessage>, CompletableFuture> messageListHandler;
+    private boolean isBatchMessageProcess;
+    private int batchSize;
+    private long nextSequence;
 
     public DefaultMailBox(String routingKey, int batchSize, boolean isBatchMessageProcess, Func1<TMessage, CompletableFuture> messageHandler, Func1<List<TMessage>, CompletableFuture> messageListHandler) {
-        _messageDict = new ConcurrentHashMap<>();
-        _requestToCompleteMessageDict = new HashMap<>();
-        _batchSize = batchSize;
-        RoutingKey = routingKey;
-        _isBatchMessageProcess = isBatchMessageProcess;
-        _messageHandler = messageHandler;
-        _messageListHandler = messageListHandler;
-        ConsumedSequence = -1;
-        LastActiveTime = new Date();
+        messageDict = new ConcurrentHashMap<>();
+        requestToCompleteMessageDict = new HashMap<>();
+        this.batchSize = batchSize;
+        this.routingKey = routingKey;
+        this.isBatchMessageProcess = isBatchMessageProcess;
+        this.messageHandler = messageHandler;
+        this.messageListHandler = messageListHandler;
+        consumedSequence = -1;
+        lastActiveTime = new Date();
         if (isBatchMessageProcess && messageListHandler == null) {
             throw new NullPointerException("Parameter messageListHandler cannot be null");
         } else if (!isBatchMessageProcess && messageHandler == null) {
@@ -56,47 +56,47 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
 
     @Override
     public String getRoutingKey() {
-        return this.RoutingKey;
+        return this.routingKey;
     }
 
     @Override
     public Date getLastActiveTime() {
-        return this.LastActiveTime;
+        return this.lastActiveTime;
     }
 
     @Override
     public boolean isRunning() {
-        return IsRunning;
+        return isRunning;
     }
 
     @Override
     public boolean isPauseRequested() {
-        return IsPauseRequested;
+        return isPauseRequested;
     }
 
     @Override
     public boolean isPaused() {
-        return IsPaused;
+        return isPaused;
     }
 
     @Override
     public long getConsumingSequence() {
-        return ConsumingSequence;
+        return consumingSequence;
     }
 
     @Override
     public long getConsumedSequence() {
-        return ConsumedSequence;
+        return consumedSequence;
     }
 
     @Override
     public long getMaxMessageSequence() {
-        return _nextSequence - 1;
+        return nextSequence - 1;
     }
 
     @Override
     public long getTotalUnConsumedMessageCount() {
-        return _nextSequence - 1 - ConsumedSequence;
+        return nextSequence - 1 - consumedSequence;
     }
 
     /**
@@ -104,17 +104,17 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
      */
     @Override
     public void enqueueMessage(TMessage message) {
-        synchronized (_lockObj) {
-            message.setSequence(_nextSequence);
+        synchronized (lockObj) {
+            message.setSequence(nextSequence);
             message.setMailBox(this);
             // If the specified key is not already associated with a value (or is mapped to null) associates it with the given value and returns null, else returns the current value.
-            if (_messageDict.putIfAbsent(message.getSequence(), message) == null) {
-                _nextSequence++;
-                if (_logger.isDebugEnabled()) {
-                    _logger.debug("{} enqueued new message, routingKey: {}, messageSequence: {}", getClass().getName(), RoutingKey, message.getSequence());
+            if (messageDict.putIfAbsent(message.getSequence(), message) == null) {
+                nextSequence++;
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{} enqueued new message, routingKey: {}, messageSequence: {}", getClass().getName(), routingKey, message.getSequence());
 
                 }
-                LastActiveTime = new Date();
+                lastActiveTime = new Date();
                 tryRun();
             }
         }
@@ -125,15 +125,15 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
      */
     @Override
     public void tryRun() {
-        synchronized (_lockObj) {
-            if (IsRunning || IsPauseRequested || IsPaused) {
+        synchronized (lockObj) {
+            if (isRunning || isPauseRequested || isPaused) {
                 return;
             }
-            SetAsRunning();
-            if (_logger.isDebugEnabled()) {
-                _logger.debug("{} start run, routingKey: {}, consumingSequence: {}", getClass().getName(), RoutingKey, ConsumingSequence);
+            setAsRunning();
+            if (logger.isDebugEnabled()) {
+                logger.debug("{} start run, routingKey: {}, consumingSequence: {}", getClass().getName(), routingKey, consumingSequence);
             }
-            CompletableFuture.runAsync(() -> ProcessMessages());
+            CompletableFuture.runAsync(() -> processMessages());
         }
     }
 
@@ -142,9 +142,9 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
      */
     @Override
     public void completeRun() {
-        _logger.debug("{} complete run, routingKey: {}", getClass().getName(), RoutingKey);
-        SetAsNotRunning();
-        if (HasNextMessage()) {
+        logger.debug("{} complete run, routingKey: {}", getClass().getName(), routingKey);
+        setAsNotRunning();
+        if (hasNextMessage()) {
             tryRun();
         }
     }
@@ -154,17 +154,17 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
      */
     @Override
     public void pause() {
-        IsPauseRequested = true;
-        _logger.debug("{} pause requested, routingKey: {}", getClass().getName(), RoutingKey);
+        isPauseRequested = true;
+        logger.debug("{} pause requested, routingKey: {}", getClass().getName(), routingKey);
         long count = 0L;
-        while (IsRunning) {
+        while (isRunning) {
             com.enodeframework.common.io.Task.sleep(10);
             count++;
             if (count % 100 == 0) {
-                _logger.debug("{} pause requested, but wait for too long to stop the current mailbox, routingKey: {}, waitCount: {}", getClass().getName(), RoutingKey, count);
+                logger.debug("{} pause requested, but wait for too long to stop the current mailbox, routingKey: {}, waitCount: {}", getClass().getName(), routingKey, count);
             }
         }
-        IsPaused = true;
+        isPaused = true;
     }
 
     /**
@@ -172,47 +172,47 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
      */
     @Override
     public void resume() {
-        IsPauseRequested = false;
-        IsPaused = false;
-        _logger.debug("{} resume requested, routingKey: {}, consumingSequence: {}", getClass().getName(), RoutingKey, ConsumingSequence);
+        isPauseRequested = false;
+        isPaused = false;
+        logger.debug("{} resume requested, routingKey: {}, consumingSequence: {}", getClass().getName(), routingKey, consumingSequence);
     }
 
     @Override
     public void resetConsumingSequence(long consumingSequence) {
-        LastActiveTime = new Date();
-        ConsumingSequence = consumingSequence;
-        _requestToCompleteMessageDict.clear();
-        _logger.debug("{} reset consumingSequence, routingKey: {}, consumingSequence: {}", getClass().getName(), RoutingKey, consumingSequence);
+        lastActiveTime = new Date();
+        this.consumingSequence = consumingSequence;
+        requestToCompleteMessageDict.clear();
+        logger.debug("{} reset consumingSequence, routingKey: {}, consumingSequence: {}", getClass().getName(), routingKey, consumingSequence);
     }
 
     @Override
     public void clear() {
-        _messageDict.clear();
-        _requestToCompleteMessageDict.clear();
-        _nextSequence = 0;
-        ConsumingSequence = 0;
-        ConsumedSequence = -1;
-        LastActiveTime = new Date();
+        messageDict.clear();
+        requestToCompleteMessageDict.clear();
+        nextSequence = 0;
+        consumingSequence = 0;
+        consumedSequence = -1;
+        lastActiveTime = new Date();
     }
 
     @Override
     public CompletableFuture completeMessage(TMessage message, TMessageProcessResult result) {
-        synchronized (_asyncLock) {
-            LastActiveTime = new Date();
+        synchronized (asyncLock) {
+            lastActiveTime = new Date();
             try {
-                if (message.getSequence() == ConsumedSequence + 1) {
-                    _messageDict.remove(message.getSequence());
+                if (message.getSequence() == consumedSequence + 1) {
+                    messageDict.remove(message.getSequence());
                     await(completeMessageWithResult(message, result));
-                    ConsumedSequence = ProcessNextCompletedMessages(message.getSequence());
-                } else if (message.getSequence() > ConsumedSequence + 1) {
-                    _requestToCompleteMessageDict.put(message.getSequence(), result);
-                } else if (message.getSequence() < ConsumedSequence + 1) {
-                    _messageDict.remove(message.getSequence());
+                    consumedSequence = processNextCompletedMessages(message.getSequence());
+                } else if (message.getSequence() > consumedSequence + 1) {
+                    requestToCompleteMessageDict.put(message.getSequence(), result);
+                } else if (message.getSequence() < consumedSequence + 1) {
+                    messageDict.remove(message.getSequence());
                     await(completeMessageWithResult(message, result));
-                    _requestToCompleteMessageDict.remove(message.getSequence());
+                    requestToCompleteMessageDict.remove(message.getSequence());
                 }
             } catch (Exception ex) {
-                _logger.error("MailBox complete message with result failed, routingKey: {}, message: {}, result: {}", RoutingKey, message, result, ex);
+                logger.error("MailBox complete message with result failed, routingKey: {}, message: {}, result: {}", routingKey, message, result, ex);
             }
         }
         return Task.completedTask;
@@ -220,27 +220,27 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
 
     @Override
     public boolean isInactive(int timeoutSeconds) {
-        return (System.currentTimeMillis() - LastActiveTime.getTime()) >= timeoutSeconds;
+        return (System.currentTimeMillis() - lastActiveTime.getTime()) >= timeoutSeconds;
     }
 
     protected CompletableFuture<Void> completeMessageWithResult(TMessage message, TMessageProcessResult result) {
         return Task.completedTask;
     }
 
-    protected List<TMessage> FilterMessages(List<TMessage> messages) {
+    protected List<TMessage> filterMessages(List<TMessage> messages) {
         return messages;
     }
 
-    private void ProcessMessages() {
-        LastActiveTime = new Date();
+    private void processMessages() {
+        lastActiveTime = new Date();
         try {
-            if (_isBatchMessageProcess) {
-                long consumingSequence = ConsumingSequence;
+            if (isBatchMessageProcess) {
+                long consumingSequence = this.consumingSequence;
                 long scannedSequenceSize = 0;
                 List<TMessage> messageList = new ArrayList<>();
 
-                while (HasNextMessage(consumingSequence) && scannedSequenceSize < _batchSize && !IsPauseRequested) {
-                    TMessage message = GetMessage(consumingSequence);
+                while (hasNextMessage(consumingSequence) && scannedSequenceSize < batchSize && !isPauseRequested) {
+                    TMessage message = getMessage(consumingSequence);
                     if (message != null) {
                         messageList.add(message);
                     }
@@ -248,67 +248,67 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
                     consumingSequence++;
                 }
 
-                List<TMessage> filterMessages = FilterMessages(messageList);
+                List<TMessage> filterMessages = filterMessages(messageList);
                 if (filterMessages != null && filterMessages.size() > 0) {
-                    await(_messageListHandler.apply(filterMessages));
+                    await(messageListHandler.apply(filterMessages));
                 }
-                ConsumingSequence = consumingSequence;
+                this.consumingSequence = consumingSequence;
 
                 if (filterMessages == null || filterMessages.size() == 0) {
                     completeRun();
                 }
             } else {
                 long scannedSequenceSize = 0;
-                while (HasNextMessage() && scannedSequenceSize < _batchSize && !IsPauseRequested) {
-                    TMessage message = GetMessage(ConsumingSequence);
+                while (hasNextMessage() && scannedSequenceSize < batchSize && !isPauseRequested) {
+                    TMessage message = getMessage(consumingSequence);
                     if (message != null) {
-                        await(_messageHandler.apply(message));
+                        await(messageHandler.apply(message));
                     }
                     scannedSequenceSize++;
-                    ConsumingSequence++;
+                    consumingSequence++;
                 }
                 completeRun();
             }
         } catch (Exception ex) {
-            _logger.error("MailBox run has unknown exception, mailboxType: {}, routingKey: {}", getClass().getName(), RoutingKey, ex);
+            logger.error("MailBox run has unknown exception, mailboxType: {}, routingKey: {}", getClass().getName(), routingKey, ex);
             Task.sleep(1);
         }
     }
 
-    private long ProcessNextCompletedMessages(long baseSequence) {
+    private long processNextCompletedMessages(long baseSequence) {
         long returnSequence = baseSequence;
         long nextSequence = baseSequence + 1;
-        while (_requestToCompleteMessageDict.containsKey(nextSequence)) {
-            TMessage message = _messageDict.remove(nextSequence);
+        while (requestToCompleteMessageDict.containsKey(nextSequence)) {
+            TMessage message = messageDict.remove(nextSequence);
             if (message != null) {
-                TMessageProcessResult result = _requestToCompleteMessageDict.get(nextSequence);
+                TMessageProcessResult result = requestToCompleteMessageDict.get(nextSequence);
                 completeMessageWithResult(message, result);
             }
-            _requestToCompleteMessageDict.remove(nextSequence);
+            requestToCompleteMessageDict.remove(nextSequence);
             returnSequence = nextSequence;
             nextSequence++;
         }
         return returnSequence;
     }
 
-    private boolean HasNextMessage() {
-        return ConsumingSequence < _nextSequence;
+    private boolean hasNextMessage() {
+        return consumingSequence < nextSequence;
     }
 
-    private boolean HasNextMessage(long consumingSequence) {
-        return consumingSequence < _nextSequence;
+    private boolean hasNextMessage(long consumingSequence) {
+        return consumingSequence < nextSequence;
     }
 
-    private TMessage GetMessage(long sequence) {
-        return _messageDict.getOrDefault(sequence, null);
+    private TMessage getMessage(long sequence) {
+        return messageDict.getOrDefault(sequence, null);
     }
 
-    private void SetAsRunning() {
-        IsRunning = true;
+    private void setAsRunning() {
+        isRunning = true;
     }
 
-    private void SetAsNotRunning() {
-        IsRunning = false;
+    private void setAsNotRunning() {
+        isRunning = false;
     }
 
 }

@@ -3,8 +3,8 @@ package com.microsoft.conference.registration.domain.Orders.Models;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.common.utilities.ObjectId;
 import com.enodeframework.domain.AggregateRoot;
-import com.microsoft.conference.common.exception.ArgumentException;
-import com.microsoft.conference.common.exception.InvalidOperationException;
+import com.enodeframework.common.exception.ArgumentException;
+import com.enodeframework.common.exception.InvalidOperationException;
 import com.microsoft.conference.registration.domain.Orders.Events.OrderClosed;
 import com.microsoft.conference.registration.domain.Orders.Events.OrderExpired;
 import com.microsoft.conference.registration.domain.Orders.Events.OrderPaymentConfirmed;
@@ -94,7 +94,7 @@ public class Order extends AggregateRoot<String> {
     }
 
     private void Handle(OrderPlaced evnt) {
-        id = evnt.aggregateRootId();
+        id = evnt.getAggregateRootId();
         _conferenceId = evnt.ConferenceId;
         _total = evnt.OrderTotal;
         _accessCode = evnt.AccessCode;

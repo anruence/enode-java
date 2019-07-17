@@ -1,7 +1,7 @@
 package com.microsoft.conference.payments.domain.Models;
 
 import com.enodeframework.domain.AggregateRoot;
-import com.microsoft.conference.common.exception.InvalidOperationException;
+import com.enodeframework.common.exception.InvalidOperationException;
 import com.microsoft.conference.payments.domain.Events.PaymentCompleted;
 import com.microsoft.conference.payments.domain.Events.PaymentInitiated;
 import com.microsoft.conference.payments.domain.Events.PaymentRejected;
@@ -37,7 +37,7 @@ public class Payment extends AggregateRoot<String> {
     }
 
     private void Handle(PaymentInitiated evnt) {
-        id = evnt.aggregateRootId();
+        id = evnt.getAggregateRootId();
         _orderId = evnt.OrderId;
         _conferenceId = evnt.ConferenceId;
         _description = evnt.Description;

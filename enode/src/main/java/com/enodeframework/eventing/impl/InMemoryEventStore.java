@@ -88,20 +88,20 @@ public class InMemoryEventStore implements IEventStore {
     }
 
     private EventAppendResult appends(DomainEventStream eventStream) {
-        AggregateInfo aggregateInfo = aggregateInfoDict.computeIfAbsent(eventStream.aggregateRootId(), key -> new AggregateInfo());
+        AggregateInfo aggregateInfo = aggregateInfoDict.computeIfAbsent(eventStream.getAggregateRootId(), key -> new AggregateInfo());
 
         if (!aggregateInfo.tryEnterEditing()) {
             return EventAppendResult.DuplicateEvent;
         }
 
         try {
-            if (eventStream.version() == aggregateInfo.getCurrentVersion() + 1) {
-                if (aggregateInfo.getCommandDict().containsKey(eventStream.commandId())){
+            if (eventStream.getVersion() == aggregateInfo.getCurrentVersion() + 1) {
+                if (aggregateInfo.getCommandDict().containsKey(eventStream.getCommandId())){
                     return EventAppendResult.DuplicateCommand;
                 }
-                aggregateInfo.getEventDict().put(eventStream.version(), eventStream);
-                aggregateInfo.getCommandDict().put(eventStream.commandId(), eventStream);
-                aggregateInfo.setCurrentVersion(eventStream.version());
+                aggregateInfo.getEventDict().put(eventStream.getVersion(), eventStream);
+                aggregateInfo.getCommandDict().put(eventStream.getCommandId(), eventStream);
+                aggregateInfo.setCurrentVersion(eventStream.getVersion());
                 return EventAppendResult.Success;
             }
             return EventAppendResult.DuplicateEvent;

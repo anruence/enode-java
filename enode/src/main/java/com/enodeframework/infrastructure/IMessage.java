@@ -3,15 +3,15 @@ package com.enodeframework.infrastructure;
 import java.util.Date;
 
 public interface IMessage {
-    String id();
+    String getId();
 
     void setId(String id);
 
-    Date timestamp();
+    Date getTimestamp();
 
     void setTimestamp(Date timestamp);
 
-    int sequence();
+    int getSequence();
 
     void setSequence(int sequence);
 

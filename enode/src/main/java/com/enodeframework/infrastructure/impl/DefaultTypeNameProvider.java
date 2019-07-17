@@ -1,7 +1,7 @@
 package com.enodeframework.infrastructure.impl;
 
 import com.enodeframework.infrastructure.ITypeNameProvider;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 
 /**
  * @author anruence@gmail.com
@@ -18,7 +18,7 @@ public class DefaultTypeNameProvider implements ITypeNameProvider {
         try {
             return Class.forName(typeName);
         } catch (ClassNotFoundException e) {
-            throw new WrappedRuntimeException("ClassNotFound", e);
+            throw new EnodeRuntimeException("ClassNotFound", e);
         }
     }
 }

@@ -13,7 +13,7 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //                {
 //                    tasks.add(connection.InsertAsync(new
 //                    {
-//                        AssignmentsId = evnt.aggregateRootId(),
+//                        AssignmentsId = evnt.getAggregateRootId(),
 //                        OrderId = evnt.OrderId,
 //                        Position = assignment.Position,
 //                        SeatTypeId = assignment.Seat.SeatTypeId,
@@ -36,7 +36,7 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //                    AttendeeEmail = evnt.Attendee.Email
 //                }, new
 //                {
-//                    AssignmentsId = evnt.aggregateRootId(),
+//                    AssignmentsId = evnt.getAggregateRootId(),
 //                    Position = evnt.Position
 //                }, ConfigSettings.OrderSeatAssignmentsTable);
 //            });
@@ -53,7 +53,7 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //                    AttendeeEmail = String.Empty
 //                }, new
 //                {
-//                    AssignmentsId = evnt.aggregateRootId(),
+//                    AssignmentsId = evnt.getAggregateRootId(),
 //                    Position = evnt.Position
 //                }, ConfigSettings.OrderSeatAssignmentsTable);
 //            });

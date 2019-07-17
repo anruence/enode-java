@@ -37,7 +37,7 @@ public class ConferenceMessagePublisher {
     public AsyncTaskResult HandleAsync(SeatsReserved evnt) {
 
         SeatsReservedMessage message = new SeatsReservedMessage();
-        message.ConferenceId = evnt.aggregateRootId();
+        message.ConferenceId = evnt.getAggregateRootId();
         message.ReservationId = evnt.ReservationId;
         message.ReservationItems = evnt.ReservationItems.stream().map(x -> {
             SeatReservationItem item = new SeatReservationItem();
@@ -51,14 +51,14 @@ public class ConferenceMessagePublisher {
 
     public AsyncTaskResult HandleAsync(SeatsReservationCommitted evnt) {
         SeatsReservationCommittedMessage message = new SeatsReservationCommittedMessage();
-        message.ConferenceId = evnt.aggregateRootId();
+        message.ConferenceId = evnt.getAggregateRootId();
         message.ReservationId = evnt.ReservationId;
         return await(_messagePublisher.publishAsync(message));
     }
 
     public AsyncTaskResult HandleAsync(SeatsReservationCancelled evnt) {
         SeatsReservationCancelledMessage message = new SeatsReservationCancelledMessage();
-        message.ConferenceId = evnt.aggregateRootId();
+        message.ConferenceId = evnt.getAggregateRootId();
         message.ReservationId = evnt.ReservationId;
 
         return await(_messagePublisher.publishAsync(message));
