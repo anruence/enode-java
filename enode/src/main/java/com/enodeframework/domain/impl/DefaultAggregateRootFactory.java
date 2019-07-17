@@ -1,8 +1,8 @@
 package com.enodeframework.domain.impl;
 
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.domain.IAggregateRootFactory;
-import com.enodeframework.common.exception.EnodeRuntimeException;
 
 /**
  * @author anruence@gmail.com

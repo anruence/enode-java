@@ -1,10 +1,10 @@
 package com.microsoft.conference.registration.domain.Orders.Models;
 
+import com.enodeframework.common.exception.ArgumentException;
+import com.enodeframework.common.exception.InvalidOperationException;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.common.utilities.ObjectId;
 import com.enodeframework.domain.AggregateRoot;
-import com.enodeframework.common.exception.ArgumentException;
-import com.enodeframework.common.exception.InvalidOperationException;
 import com.microsoft.conference.registration.domain.Orders.Events.OrderClosed;
 import com.microsoft.conference.registration.domain.Orders.Events.OrderExpired;
 import com.microsoft.conference.registration.domain.Orders.Events.OrderPaymentConfirmed;

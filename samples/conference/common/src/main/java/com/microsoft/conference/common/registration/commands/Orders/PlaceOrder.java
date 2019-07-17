@@ -9,6 +9,7 @@ import java.util.List;
 public class PlaceOrder extends Command<String> {
     public String ConferenceId;
     public List<SeatInfo> Seats;
+
     public PlaceOrder() {
         super(ObjectId.generateNewStringId());
         Seats = new ArrayList<>();

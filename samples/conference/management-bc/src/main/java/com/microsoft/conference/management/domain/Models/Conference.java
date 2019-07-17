@@ -1,8 +1,8 @@
 package com.microsoft.conference.management.domain.Models;
 
-import com.enodeframework.domain.AggregateRoot;
 import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.enodeframework.common.utilities.Linq;
+import com.enodeframework.domain.AggregateRoot;
 import com.microsoft.conference.management.domain.Events.ConferenceCreated;
 import com.microsoft.conference.management.domain.Events.ConferencePublished;
 import com.microsoft.conference.management.domain.Events.ConferenceUnpublished;

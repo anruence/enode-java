@@ -6,6 +6,7 @@ public class PaymentItem {
     public String Id;
     public String Description;
     public BigDecimal Amount;
+
     public PaymentItem(String description, BigDecimal amount) {
         this.Id = "";
         this.Description = description;

@@ -1,10 +1,10 @@
 package com.enodeframework.domain;
 
 import com.enodeframework.common.container.SpringObjectContainer;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.enodeframework.common.function.Action2;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.IDomainEvent;
-import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;

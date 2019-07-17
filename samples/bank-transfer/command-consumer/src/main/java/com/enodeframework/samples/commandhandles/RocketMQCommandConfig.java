@@ -14,7 +14,6 @@ import java.util.Map;
 
 import static com.enodeframework.samples.QueueProperties.APPLICATION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
-import static com.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP;
 import static com.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP3;
 import static com.enodeframework.samples.QueueProperties.DEFAULT_PRODUCER_GROUP;
 import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
