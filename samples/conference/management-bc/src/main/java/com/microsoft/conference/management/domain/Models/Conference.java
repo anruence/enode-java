@@ -1,6 +1,6 @@
 package com.microsoft.conference.management.domain.Models;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.utilities.Linq;
 import com.enodeframework.domain.AggregateRoot;
 import com.microsoft.conference.management.domain.Events.ConferenceCreated;
@@ -57,7 +57,7 @@ public class Conference extends AggregateRoot<String> {
     public void UpdateSeat(String seatTypeId, SeatTypeInfo seatTypeInfo, int quantity) {
         SeatType seatType = Linq.single(_seatTypes, x -> x.Id.equals(seatTypeId));
         if (seatType == null) {
-            throw new EnodeRuntimeException("Seat type not exist.");
+            throw new ENodeRuntimeException("Seat type not exist.");
         }
         applyEvent(new SeatTypeUpdated(seatTypeId, seatTypeInfo));
 
@@ -98,7 +98,7 @@ public class Conference extends AggregateRoot<String> {
             }
             SeatType seatType = _seatTypes.stream().filter(x -> x.Id == reservationItem.SeatTypeId).findFirst().orElse(null);
             if (seatType == null) {
-                throw new EnodeRuntimeException(String.format("Seat type '{}' not exist.", reservationItem.SeatTypeId));
+                throw new ENodeRuntimeException(String.format("Seat type '{}' not exist.", reservationItem.SeatTypeId));
             }
             int availableQuantity = seatType.Quantity - GetTotalReservationQuantity(seatType.Id);
             if (availableQuantity < reservationItem.Quantity) {

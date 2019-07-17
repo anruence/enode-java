@@ -1,7 +1,6 @@
 package com.enodeframework.domain.impl;
 
 import com.enodeframework.domain.IAggregateRoot;
-import com.enodeframework.domain.IAggregateStorage;
 import com.enodeframework.domain.IMemoryCache;
 import com.enodeframework.domain.IRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +15,10 @@ public class DefaultRepository implements IRepository {
     @Autowired
     private IMemoryCache memoryCache;
 
-    @Autowired
-    private IAggregateStorage aggregateRootStorage;
+    public DefaultRepository setMemoryCache(IMemoryCache memoryCache) {
+        this.memoryCache = memoryCache;
+        return this;
+    }
 
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, Object aggregateRootId) {

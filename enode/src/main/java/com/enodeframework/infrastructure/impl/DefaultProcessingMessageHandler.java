@@ -23,13 +23,23 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingMessageHandler.class);
 
-    private final String domainEventStreamMessageHandlerName = "DefaultEventProcessor";
+    private String domainEventStreamMessageHandlerName = "DefaultEventProcessor";
 
     @Autowired
     private IMessageDispatcher dispatcher;
 
     @Autowired
     private IPublishedVersionStore publishedVersionStore;
+
+    public DefaultProcessingMessageHandler<X, Y> setDispatcher(IMessageDispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+        return this;
+    }
+
+    public DefaultProcessingMessageHandler<X, Y> setPublishedVersionStore(IPublishedVersionStore publishedVersionStore) {
+        this.publishedVersionStore = publishedVersionStore;
+        return this;
+    }
 
     @Override
     public CompletableFuture<Void> handleAsync(X processingMessage) {

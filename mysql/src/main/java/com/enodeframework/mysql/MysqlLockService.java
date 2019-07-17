@@ -1,6 +1,6 @@
 package com.enodeframework.mysql;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.function.Action;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.configurations.DefaultDBConfigurationSetting;
@@ -49,7 +49,7 @@ public class MysqlLockService implements ILockService {
                 queryRunner.update(String.format("INSERT INTO %s VALUES(?)", tableName), lockKey);
             }
         } catch (SQLException ex) {
-            throw new EnodeRuntimeException(ex);
+            throw new ENodeRuntimeException(ex);
         }
     }
 
@@ -66,7 +66,7 @@ public class MysqlLockService implements ILockService {
                 connection.rollback();
             }
         } catch (SQLException ex) {
-            throw new EnodeRuntimeException(ex);
+            throw new ENodeRuntimeException(ex);
         }
     }
 

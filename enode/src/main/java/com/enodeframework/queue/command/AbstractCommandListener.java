@@ -38,6 +38,31 @@ public abstract class AbstractCommandListener implements IMessageHandler {
     @Autowired
     protected IAggregateStorage aggregateRootStorage;
 
+    public AbstractCommandListener setSendReplyService(SendReplyService sendReplyService) {
+        this.sendReplyService = sendReplyService;
+        return this;
+    }
+
+    public AbstractCommandListener setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+        this.typeNameProvider = typeNameProvider;
+        return this;
+    }
+
+    public AbstractCommandListener setCommandProcessor(ICommandProcessor commandProcessor) {
+        this.commandProcessor = commandProcessor;
+        return this;
+    }
+
+    public AbstractCommandListener setRepository(IRepository repository) {
+        this.repository = repository;
+        return this;
+    }
+
+    public AbstractCommandListener setAggregateRootStorage(IAggregateStorage aggregateRootStorage) {
+        this.aggregateRootStorage = aggregateRootStorage;
+        return this;
+    }
+
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
         Map<String, String> commandItems = new HashMap<>();

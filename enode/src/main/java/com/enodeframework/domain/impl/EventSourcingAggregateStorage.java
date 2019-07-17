@@ -35,6 +35,26 @@ public class EventSourcingAggregateStorage implements IAggregateStorage {
     @Autowired
     private ITypeNameProvider typeNameProvider;
 
+    public EventSourcingAggregateStorage setAggregateRootFactory(IAggregateRootFactory aggregateRootFactory) {
+        this.aggregateRootFactory = aggregateRootFactory;
+        return this;
+    }
+
+    public EventSourcingAggregateStorage setEventStore(IEventStore eventStore) {
+        this.eventStore = eventStore;
+        return this;
+    }
+
+    public EventSourcingAggregateStorage setAggregateSnapshotter(IAggregateSnapshotter aggregateSnapshotter) {
+        this.aggregateSnapshotter = aggregateSnapshotter;
+        return this;
+    }
+
+    public EventSourcingAggregateStorage setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+        this.typeNameProvider = typeNameProvider;
+        return this;
+    }
+
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, String aggregateRootId) {
         if (aggregateRootType == null) {

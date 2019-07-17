@@ -52,4 +52,9 @@ public class DefaultMessageHandlerProvider extends AbstractHandlerProvider<Class
     protected IObjectContainer getObjectContainer() {
         return objectContainer;
     }
+
+    public DefaultMessageHandlerProvider setObjectContainer(IObjectContainer objectContainer) {
+        this.objectContainer = objectContainer;
+        return this;
+    }
 }

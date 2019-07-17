@@ -1,7 +1,7 @@
 package com.enodeframework.infrastructure.impl;
 
 import com.enodeframework.common.container.IObjectContainer;
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.infrastructure.IMessage;
@@ -19,14 +19,15 @@ public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
 
     @Autowired
     private IObjectContainer objectContainer;
-
     private Class handlerType;
-
     private Object handler;
-
     private MethodHandle methodHandle;
-
     private Method method;
+
+    public MessageHandlerProxy1 setObjectContainer(IObjectContainer objectContainer) {
+        this.objectContainer = objectContainer;
+        return this;
+    }
 
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message) {
@@ -37,7 +38,7 @@ public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
                 if (throwable instanceof IORuntimeException) {
                     throw new IORuntimeException(throwable);
                 }
-                throw new EnodeRuntimeException(throwable);
+                throw new ENodeRuntimeException(throwable);
             }
         });
     }

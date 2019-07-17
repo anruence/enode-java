@@ -1,6 +1,6 @@
 package com.enodeframework.tests.Mocks;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
@@ -48,7 +48,7 @@ public class MockEventStore implements IEventStore {
             _currentFailedCount++;
 
             if (_failedType == FailedType.UnKnownException) {
-                throw new EnodeRuntimeException("BatchAppendAsyncUnKnownException" + _currentFailedCount);
+                throw new ENodeRuntimeException("BatchAppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("BatchAppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
@@ -64,7 +64,7 @@ public class MockEventStore implements IEventStore {
             _currentFailedCount++;
 
             if (_failedType == FailedType.UnKnownException) {
-                throw new EnodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
+                throw new ENodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
@@ -80,7 +80,7 @@ public class MockEventStore implements IEventStore {
             _currentFailedCount++;
 
             if (_failedType == FailedType.UnKnownException) {
-                throw new EnodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
+                throw new ENodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {

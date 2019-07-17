@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
@@ -73,12 +72,10 @@ public class ClassPathScanHandler {
         this.excludeInner = excludeInner;
         this.checkInOrEx = checkInOrEx;
         this.classFilters = classFilters;
-
     }
 
     /**
      * get all the classes with annotation.
-     * ``
      *
      * @param annotation     the specific annotation.
      * @param honorInherited honorInherited
@@ -116,26 +113,21 @@ public class ClassPathScanHandler {
             packageName = packageName.substring(0, packageName.lastIndexOf('.'));
         }
         String package2Path = packageName.replace('.', '/');
-
-        Enumeration<URL> dirs;
         try {
-            dirs = Thread.currentThread().getContextClassLoader().getResources(package2Path);
+            Enumeration<URL> dirs = Thread.currentThread().getContextClassLoader().getResources(package2Path);
             while (dirs.hasMoreElements()) {
                 URL url = dirs.nextElement();
                 String protocol = url.getProtocol();
                 if ("file".equals(protocol)) {
-                    LOGGER.debug("扫描file类型的class文件....");
                     String filePath = URLDecoder.decode(url.getFile(), "UTF-8");
                     doScanPackageClassesByFile(classes, packageName, filePath, recursive);
                 } else if ("jar".equals(protocol)) {
-                    LOGGER.debug("扫描jar文件中的类....");
                     doScanPackageClassesByJar(packageName, url, recursive, classes);
                 }
             }
         } catch (IOException e) {
-            LOGGER.error("IOException error:", e);
+            LOGGER.error("ignore this IOException error:", e);
         }
-
         TreeSet<Class<?>> sortedClasses = new TreeSet<>(new ClassNameComparator());
         sortedClasses.addAll(classes);
         return sortedClasses;
@@ -167,7 +159,9 @@ public class ClassPathScanHandler {
                 }
                 // 判断是否过滤 inner class
                 if (this.excludeInner && name.indexOf('$') != -1) {
-                    LOGGER.debug("exclude inner class with name:" + name);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("exclude inner class with name:" + name);
+                    }
                     continue;
                 }
                 String classSimpleName = name.substring(name.lastIndexOf('/') + 1);
@@ -178,14 +172,14 @@ public class ClassPathScanHandler {
                     try {
                         classes.add(Thread.currentThread().getContextClassLoader().loadClass(className));
                     } catch (ClassNotFoundException e) {
-                        LOGGER.error("Class.forName error:URL is ===>" + url.getPath());
+                        LOGGER.error("Class.forName error:URL is {}", url.getPath());
                     }
                 }
             }
         } catch (IOException e) {
-            LOGGER.error("IOException error:URL is ===>" + url.getPath());
+            LOGGER.error("IOException error:URL is {}", url.getPath());
         } catch (Throwable e) {
-            LOGGER.error("ScanPackageClassesByJar error:URL is ===>" + url.getPath());
+            LOGGER.error("ScanPackageClassesByJar error:URL is {}", url.getPath());
         }
     }
 
@@ -203,12 +197,7 @@ public class ClassPathScanHandler {
         if (!dir.exists() || !dir.isDirectory()) {
             return;
         }
-        File[] files = dir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return filterClassFileByCustomization(pathname, recursive);
-            }
-        });
+        File[] files = dir.listFiles(pathname -> filterClassFileByCustomization(pathname, recursive));
 
         if (null == files || files.length == 0) {
             return;
@@ -241,7 +230,9 @@ public class ClassPathScanHandler {
         }
         String filename = file.getName();
         if (excludeInner && filename.indexOf('$') != -1) {
-            LOGGER.debug("exclude inner class with name:" + filename);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("exclude inner class with name:{}", filename);
+            }
             return false;
         }
         return filterClassName(filename);

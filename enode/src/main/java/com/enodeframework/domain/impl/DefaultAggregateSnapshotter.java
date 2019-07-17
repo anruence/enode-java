@@ -17,6 +17,11 @@ public class DefaultAggregateSnapshotter implements IAggregateSnapshotter {
     @Autowired
     private IAggregateRepositoryProvider aggregateRepositoryProvider;
 
+    public DefaultAggregateSnapshotter setAggregateRepositoryProvider(IAggregateRepositoryProvider aggregateRepositoryProvider) {
+        this.aggregateRepositoryProvider = aggregateRepositoryProvider;
+        return this;
+    }
+
     @Override
     public CompletableFuture<IAggregateRoot> restoreFromSnapshotAsync(Class aggregateRootType, String aggregateRootId) {
         IAggregateRepositoryProxy aggregateRepository = aggregateRepositoryProvider.getRepository(aggregateRootType);

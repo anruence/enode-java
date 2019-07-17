@@ -1,6 +1,6 @@
 package com.enodeframework.domain.impl;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.domain.IAggregateRootFactory;
 
@@ -14,7 +14,7 @@ public class DefaultAggregateRootFactory implements IAggregateRootFactory {
         try {
             return aggregateRootType.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new EnodeRuntimeException(e);
+            throw new ENodeRuntimeException(e);
         }
     }
 }

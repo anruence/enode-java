@@ -20,6 +20,16 @@ public abstract class AbstractCommandService implements ICommandService {
 
     private TopicData topicData;
 
+    public AbstractCommandService setCommandRouteKeyProvider(ICommandRoutingKeyProvider commandRouteKeyProvider) {
+        this.commandRouteKeyProvider = commandRouteKeyProvider;
+        return this;
+    }
+
+    public AbstractCommandService setCommandResultProcessor(CommandResultProcessor commandResultProcessor) {
+        this.commandResultProcessor = commandResultProcessor;
+        return this;
+    }
+
     public TopicData getTopicData() {
         return topicData;
     }

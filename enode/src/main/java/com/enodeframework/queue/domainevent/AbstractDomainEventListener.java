@@ -28,14 +28,35 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
 
     @Autowired
     protected IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> domainEventMessageProcessor;
+
     protected boolean sendEventHandledMessage = true;
+
+    public AbstractDomainEventListener setEventSerializer(IEventSerializer eventSerializer) {
+        this.eventSerializer = eventSerializer;
+        return this;
+    }
+
+    public AbstractDomainEventListener setDomainEventMessageProcessor(IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> domainEventMessageProcessor) {
+        this.domainEventMessageProcessor = domainEventMessageProcessor;
+        return this;
+    }
 
     public SendReplyService getSendReplyService() {
         return sendReplyService;
     }
 
+    public AbstractDomainEventListener setSendReplyService(SendReplyService sendReplyService) {
+        this.sendReplyService = sendReplyService;
+        return this;
+    }
+
     public boolean isSendEventHandledMessage() {
         return sendEventHandledMessage;
+    }
+
+    public AbstractDomainEventListener setSendEventHandledMessage(boolean sendEventHandledMessage) {
+        this.sendEventHandledMessage = sendEventHandledMessage;
+        return this;
     }
 
     @Override

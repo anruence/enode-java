@@ -1,6 +1,6 @@
 package com.enodeframework.domain.impl;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.function.Action2;
 import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.domain.IAggregateRootInternalHandlerProvider;
@@ -57,14 +57,11 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
     }
 
     private void register(Class aggregateRootType, Class type) {
-        Arrays.asList(type.getDeclaredMethods()).stream()
-                .filter(method ->
-                        method.getName().equalsIgnoreCase(AGGREGATE_ROOT_HANDLE_METHOD_NAME)
-                                && method.getParameterTypes().length == 1
-                                && IDomainEvent.class.isAssignableFrom(method.getParameterTypes()[0])
-                )
-                .forEach(method -> registerInternalHandler(aggregateRootType, method.getParameterTypes()[0], method)
-                );
+        Arrays.stream(type.getDeclaredMethods())
+                .filter(method -> method.getName().equalsIgnoreCase(AGGREGATE_ROOT_HANDLE_METHOD_NAME)
+                        && method.getParameterTypes().length == 1
+                        && IDomainEvent.class.isAssignableFrom(method.getParameterTypes()[0]))
+                .forEach(method -> registerInternalHandler(aggregateRootType, method.getParameterTypes()[0], method));
     }
 
     private void registerInternalHandler(Class aggregateRootType, Class eventType, Method method) {
@@ -76,11 +73,11 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
                 try {
                     methodHandle.invoke(aggregateRoot, domainEvent);
                 } catch (Throwable throwable) {
-                    throw new EnodeRuntimeException(throwable);
+                    throw new ENodeRuntimeException(throwable);
                 }
             });
         } catch (IllegalAccessException e) {
-            throw new EnodeRuntimeException(e);
+            throw new ENodeRuntimeException(e);
         }
     }
 

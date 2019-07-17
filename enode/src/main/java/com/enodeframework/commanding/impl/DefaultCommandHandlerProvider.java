@@ -57,4 +57,9 @@ public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class
     protected IObjectContainer getObjectContainer() {
         return objectContainer;
     }
+
+    public DefaultCommandHandlerProvider setObjectContainer(IObjectContainer objectContainer) {
+        this.objectContainer = objectContainer;
+        return this;
+    }
 }

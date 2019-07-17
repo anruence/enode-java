@@ -1,6 +1,5 @@
 package com.enodeframework.infrastructure;
 
-
 import com.enodeframework.common.function.Func1;
 import com.enodeframework.common.io.Task;
 import org.slf4j.Logger;
@@ -27,8 +26,8 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
     private boolean isPaused;
     private long consumingSequence;
     private long consumedSequence;
-    private Object lockObj = new Object();
-    private Object asyncLock = new Object();
+    private final Object lockObj = new Object();
+    private final Object asyncLock = new Object();
     private ConcurrentHashMap<Long, TMessage> messageDict;
     private Map<Long, TMessageProcessResult> requestToCompleteMessageDict;
     private Func1<TMessage, CompletableFuture> messageHandler;
@@ -133,7 +132,7 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
             if (logger.isDebugEnabled()) {
                 logger.debug("{} start run, routingKey: {}, consumingSequence: {}", getClass().getName(), routingKey, consumingSequence);
             }
-            CompletableFuture.runAsync(() -> processMessages());
+            CompletableFuture.runAsync(this::processMessages);
         }
     }
 
@@ -158,7 +157,7 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
         logger.debug("{} pause requested, routingKey: {}", getClass().getName(), routingKey);
         long count = 0L;
         while (isRunning) {
-            com.enodeframework.common.io.Task.sleep(10);
+            Task.sleep(10);
             count++;
             if (count % 100 == 0) {
                 logger.debug("{} pause requested, but wait for too long to stop the current mailbox, routingKey: {}, waitCount: {}", getClass().getName(), routingKey, count);
@@ -196,7 +195,7 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
     }
 
     @Override
-    public CompletableFuture completeMessage(TMessage message, TMessageProcessResult result) {
+    public CompletableFuture<Void> completeMessage(TMessage message, TMessageProcessResult result) {
         synchronized (asyncLock) {
             lastActiveTime = new Date();
             try {

@@ -33,6 +33,16 @@ public class EventAppConfig {
     }
 
     @Bean
+    public HikariDataSource dataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl("jdbc:mysql://db.p.anruence.com:13306/enode");
+        dataSource.setUsername("root");
+        dataSource.setPassword("root");
+        dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
+        return dataSource;
+    }
+
+    @Bean
     public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
         return new MysqlPublishedVersionStore(dataSource, null);
     }

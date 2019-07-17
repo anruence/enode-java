@@ -10,7 +10,7 @@ import com.enodeframework.commanding.ICommandHandlerProvider;
 import com.enodeframework.commanding.ICommandHandlerProxy;
 import com.enodeframework.commanding.IProcessingCommandHandler;
 import com.enodeframework.commanding.ProcessingCommand;
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
@@ -77,6 +77,46 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     @Autowired
     private IMessagePublisher<IPublishableException> exceptionPublisher;
+
+    public DefaultProcessingCommandHandler setEventStore(IEventStore eventStore) {
+        this.eventStore = eventStore;
+        return this;
+    }
+
+    public DefaultProcessingCommandHandler setCommandHandlerProvider(ICommandHandlerProvider commandHandlerProvider) {
+        this.commandHandlerProvider = commandHandlerProvider;
+        return this;
+    }
+
+    public DefaultProcessingCommandHandler setCommandAsyncHandlerProvider(ICommandAsyncHandlerProvider commandAsyncHandlerProvider) {
+        this.commandAsyncHandlerProvider = commandAsyncHandlerProvider;
+        return this;
+    }
+
+    public DefaultProcessingCommandHandler setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+        this.typeNameProvider = typeNameProvider;
+        return this;
+    }
+
+    public DefaultProcessingCommandHandler setEventService(IEventService eventService) {
+        this.eventService = eventService;
+        return this;
+    }
+
+    public DefaultProcessingCommandHandler setMemoryCache(IMemoryCache memoryCache) {
+        this.memoryCache = memoryCache;
+        return this;
+    }
+
+    public DefaultProcessingCommandHandler setApplicationMessagePublisher(IMessagePublisher<IApplicationMessage> applicationMessagePublisher) {
+        this.applicationMessagePublisher = applicationMessagePublisher;
+        return this;
+    }
+
+    public DefaultProcessingCommandHandler setExceptionPublisher(IMessagePublisher<IPublishableException> exceptionPublisher) {
+        this.exceptionPublisher = exceptionPublisher;
+        return this;
+    }
 
     @Override
     public CompletableFuture<Void> handle(ProcessingCommand processingCommand) {
@@ -261,8 +301,8 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         //然后，认为该command处理失败即可；
 
                         Throwable exp = exception.getCause();
-                        if (exp instanceof EnodeRuntimeException) {
-                            exp = ((EnodeRuntimeException) exp).getException();
+                        if (exp instanceof ENodeRuntimeException) {
+                            exp = ((ENodeRuntimeException) exp).getException();
                         }
 
                         if (exp instanceof IPublishableException) {

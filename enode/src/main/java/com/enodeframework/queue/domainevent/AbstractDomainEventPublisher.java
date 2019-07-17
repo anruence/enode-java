@@ -11,11 +11,11 @@ import com.enodeframework.queue.TopicData;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractDomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
-
+    @Autowired
     protected IEventSerializer eventSerializer;
+
     private TopicData topicData;
 
-    @Autowired
     public void setEventSerializer(IEventSerializer eventSerializer) {
         this.eventSerializer = eventSerializer;
     }

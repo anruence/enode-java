@@ -23,14 +23,19 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCommandProcessor.class);
 
     private final ConcurrentMap<String, ProcessingCommandMailbox> mailboxDict;
-    private final int timeoutSeconds;
-    private final String taskName;
-    private final int commandMailBoxPersistenceMaxBatchSize = 1000;
-    private final int scanExpiredAggregateIntervalMilliseconds = 5000;
-    private final int eventMailBoxPersistenceMaxBatchSize = 1000;
-    private final int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
+    private int timeoutSeconds;
+    private String taskName;
+    private int commandMailBoxPersistenceMaxBatchSize = 1000;
+
+    private int scanExpiredAggregateIntervalMilliseconds = 5000;
+
+    private int eventMailBoxPersistenceMaxBatchSize = 1000;
+
+    private int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
+
     @Autowired
     private IProcessingCommandHandler handler;
+
     @Autowired
     private IScheduleService scheduleService;
 
@@ -38,6 +43,16 @@ public class DefaultCommandProcessor implements ICommandProcessor {
         this.mailboxDict = new ConcurrentHashMap<>();
         this.timeoutSeconds = aggregateRootMaxInactiveSeconds;
         this.taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
+    }
+
+    public DefaultCommandProcessor setHandler(IProcessingCommandHandler handler) {
+        this.handler = handler;
+        return this;
+    }
+
+    public DefaultCommandProcessor setScheduleService(IScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
+        return this;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.enodeframework.domain.impl;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.common.scheduling.IScheduleService;
 import com.enodeframework.domain.AggregateCacheInfo;
@@ -27,9 +27,9 @@ public class DefaultMemoryCache implements IMemoryCache {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultMemoryCache.class);
     private final ConcurrentMap<String, AggregateCacheInfo> aggregateRootInfoDict;
-    private final int timeoutSeconds = 5000;
-    private final int scanExpiredAggregateIntervalMilliseconds = 5000;
-    private final String taskName;
+    private int timeoutSeconds = 5000;
+    private int scanExpiredAggregateIntervalMilliseconds = 5000;
+    private String taskName;
     private Object lockObj = new Object();
     @Autowired
     private IAggregateStorage aggregateStorage;
@@ -41,6 +41,21 @@ public class DefaultMemoryCache implements IMemoryCache {
     public DefaultMemoryCache() {
         aggregateRootInfoDict = new ConcurrentHashMap<>();
         taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
+    }
+
+    public DefaultMemoryCache setAggregateStorage(IAggregateStorage aggregateStorage) {
+        this.aggregateStorage = aggregateStorage;
+        return this;
+    }
+
+    public DefaultMemoryCache setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+        this.typeNameProvider = typeNameProvider;
+        return this;
+    }
+
+    public DefaultMemoryCache setScheduleService(IScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
+        return this;
     }
 
     @Override
@@ -57,7 +72,7 @@ public class DefaultMemoryCache implements IMemoryCache {
         }
         IAggregateRoot aggregateRoot = aggregateRootInfo.getAggregateRoot();
         if (aggregateRoot.getClass() != aggregateRootType) {
-            throw new EnodeRuntimeException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRoot.getClass(), aggregateRootType));
+            throw new ENodeRuntimeException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRoot.getClass(), aggregateRootType));
         }
         if (aggregateRoot.getChanges().size() > 0) {
             CompletableFuture<IAggregateRoot> lastestAggregateRootFuture = aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString());

@@ -63,4 +63,9 @@ public class DefaultThreeMessageHandlerProvider extends AbstractHandlerProvider<
     protected IObjectContainer getObjectContainer() {
         return objectContainer;
     }
+
+    public DefaultThreeMessageHandlerProvider setObjectContainer(IObjectContainer objectContainer) {
+        this.objectContainer = objectContainer;
+        return this;
+    }
 }

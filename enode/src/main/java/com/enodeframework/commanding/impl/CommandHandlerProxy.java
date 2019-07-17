@@ -4,7 +4,7 @@ import com.enodeframework.commanding.ICommand;
 import com.enodeframework.commanding.ICommandContext;
 import com.enodeframework.commanding.ICommandHandlerProxy;
 import com.enodeframework.common.container.IObjectContainer;
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,14 +19,15 @@ public class CommandHandlerProxy implements ICommandHandlerProxy {
 
     @Autowired
     private IObjectContainer objectContainer;
-
     private Class handlerType;
-
     private Object commandHandler;
-
     private MethodHandle methodHandle;
-
     private Method method;
+
+    public CommandHandlerProxy setObjectContainer(IObjectContainer objectContainer) {
+        this.objectContainer = objectContainer;
+        return this;
+    }
 
     @Override
     public CompletableFuture<Void> handleAsync(ICommandContext context, ICommand command) {
@@ -37,7 +38,7 @@ public class CommandHandlerProxy implements ICommandHandlerProxy {
                 if (throwable instanceof IORuntimeException) {
                     throw new IORuntimeException(throwable);
                 }
-                throw new EnodeRuntimeException(throwable);
+                throw new ENodeRuntimeException(throwable);
             }
         });
     }

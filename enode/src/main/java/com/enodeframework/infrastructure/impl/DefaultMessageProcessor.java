@@ -25,13 +25,11 @@ public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y exten
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultMessageProcessor.class);
 
-    // AggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
+    private int timeoutSeconds = 3600 * 24 * 3;
 
-    private final int timeoutSeconds = 3600 * 24 * 3;
+    private int scanExpiredAggregateIntervalMilliseconds = 5000;
 
-    private final int scanExpiredAggregateIntervalMilliseconds = 5000;
-
-    private final String taskName;
+    private String taskName;
 
     private ConcurrentMap<String, ProcessingMessageMailbox<X, Y>> mailboxDict;
 
@@ -47,6 +45,21 @@ public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y exten
     public DefaultMessageProcessor() {
         mailboxDict = new ConcurrentHashMap<>();
         taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
+    }
+
+    public DefaultMessageProcessor<X, Y> setScheduleService(IScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
+        return this;
+    }
+
+    public DefaultMessageProcessor<X, Y> setProcessingMessageScheduler(IProcessingMessageScheduler<X, Y> processingMessageScheduler) {
+        this.processingMessageScheduler = processingMessageScheduler;
+        return this;
+    }
+
+    public DefaultMessageProcessor<X, Y> setProcessingMessageHandler(IProcessingMessageHandler<X, Y> processingMessageHandler) {
+        this.processingMessageHandler = processingMessageHandler;
+        return this;
     }
 
     public String getMessageName() {

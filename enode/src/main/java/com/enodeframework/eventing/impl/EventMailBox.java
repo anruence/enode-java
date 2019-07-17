@@ -15,27 +15,26 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean> {
 
-    private ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> _aggregateDictDict;
+    private ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> aggregateDictDict;
 
     public EventMailBox(String routingKey, int batchSize, Action1<List<EventCommittingContext>> handleMessageAction) {
         super(routingKey, batchSize, true, null, (x -> {
             handleMessageAction.apply(x);
             return Task.completedTask;
         }));
-        _aggregateDictDict = new ConcurrentHashMap<>();
+        aggregateDictDict = new ConcurrentHashMap<>();
     }
 
     @Override
     public void enqueueMessage(EventCommittingContext message) {
-        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.computeIfAbsent(message.getEventStream().getAggregateRootId(), x -> new ConcurrentHashMap<>());
-        byte value = 1;
-        if (eventDict.putIfAbsent(message.getEventStream().getId(), value) == null) {
+        ConcurrentHashMap<String, Byte> eventDict = aggregateDictDict.computeIfAbsent(message.getEventStream().getAggregateRootId(), x -> new ConcurrentHashMap<>());
+        if (eventDict.putIfAbsent(message.getEventStream().getId(), (byte) 1) == null) {
             super.enqueueMessage(message);
         }
     }
 
     @Override
-    public CompletableFuture completeMessage(EventCommittingContext message, Boolean result) {
+    public CompletableFuture<Void> completeMessage(EventCommittingContext message, Boolean result) {
         return super.completeMessage(message, result).thenAccept(x -> {
             removeEventCommittingContext(message);
         });
@@ -55,7 +54,7 @@ public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean
     }
 
     public boolean containsEventCommittingContext(EventCommittingContext eventCommittingContext) {
-        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.get(eventCommittingContext.getEventStream().getAggregateRootId());
+        ConcurrentHashMap<String, Byte> eventDict = aggregateDictDict.get(eventCommittingContext.getEventStream().getAggregateRootId());
         if (eventDict == null) {
             return false;
         }
@@ -63,11 +62,11 @@ public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean
     }
 
     public void removeAggregateAllEventCommittingContexts(String aggregateRootId) {
-        _aggregateDictDict.remove(aggregateRootId);
+        aggregateDictDict.remove(aggregateRootId);
     }
 
     public void removeEventCommittingContext(EventCommittingContext eventCommittingContext) {
-        ConcurrentHashMap<String, Byte> eventDict = _aggregateDictDict.get(eventCommittingContext.getEventStream().getAggregateRootId());
+        ConcurrentHashMap<String, Byte> eventDict = aggregateDictDict.get(eventCommittingContext.getEventStream().getAggregateRootId());
         if (eventDict != null) {
             eventDict.remove(eventCommittingContext.getEventStream().getId());
         }

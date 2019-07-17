@@ -38,7 +38,7 @@ public interface IMailBox<TMessage extends IMailBoxMessage, TMessageProcessResul
 
     void clear();
 
-    CompletableFuture completeMessage(TMessage message, TMessageProcessResult result);
+    CompletableFuture<Void> completeMessage(TMessage message, TMessageProcessResult result);
 
     boolean isInactive(int timeoutSeconds);
 

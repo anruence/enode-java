@@ -22,6 +22,16 @@ public abstract class AbstractApplicationMessageListener implements IMessageHand
     @Autowired
     protected IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage> applicationMessageProcessor;
 
+    public AbstractApplicationMessageListener setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+        this.typeNameProvider = typeNameProvider;
+        return this;
+    }
+
+    public AbstractApplicationMessageListener setApplicationMessageProcessor(IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage> applicationMessageProcessor) {
+        this.applicationMessageProcessor = applicationMessageProcessor;
+        return this;
+    }
+
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
         String msg = queueMessage.getBody();

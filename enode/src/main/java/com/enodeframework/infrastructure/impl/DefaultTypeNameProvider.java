@@ -1,6 +1,6 @@
 package com.enodeframework.infrastructure.impl;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.infrastructure.ITypeNameProvider;
 
 /**
@@ -18,7 +18,7 @@ public class DefaultTypeNameProvider implements ITypeNameProvider {
         try {
             return Class.forName(typeName);
         } catch (ClassNotFoundException e) {
-            throw new EnodeRuntimeException("ClassNotFound", e);
+            throw new ENodeRuntimeException("ClassNotFound", e);
         }
     }
 }

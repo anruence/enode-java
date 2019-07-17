@@ -1,7 +1,7 @@
 package com.enodeframework.domain;
 
-import com.enodeframework.common.container.SpringObjectContainer;
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.ObjectContainer;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.function.Action2;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.IDomainEvent;
@@ -76,11 +76,11 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     private void handleEvent(IDomainEvent domainEvent) {
         if (eventHandlerProvider == null) {
-            eventHandlerProvider = SpringObjectContainer.resolveStatic(IAggregateRootInternalHandlerProvider.class);
+            eventHandlerProvider = ObjectContainer.resolve(IAggregateRootInternalHandlerProvider.class);
         }
         Action2<IAggregateRoot, IDomainEvent> handler = eventHandlerProvider.getInternalEventHandler(getClass(), domainEvent.getClass());
         if (handler == null) {
-            throw new RuntimeException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
+            throw new ENodeRuntimeException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
         }
         if (this.id == null && domainEvent.getVersion() == 1) {
             this.id = (TAggregateRootId) domainEvent.getAggregateRootId();
@@ -88,7 +88,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         try {
             handler.apply(this, domainEvent);
         } catch (Exception e) {
-            throw new EnodeRuntimeException(e);
+            throw new ENodeRuntimeException(e);
         }
     }
 

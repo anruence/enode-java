@@ -34,15 +34,17 @@ import static com.enodeframework.common.io.Task.await;
 public class DefaultEventService implements IEventService {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultEventService.class);
-    private final int batchSize;
-    private final int timeoutSeconds;
-    private final String taskName;
-    private final int commandMailBoxPersistenceMaxBatchSize = 1000;
-    private final int scanExpiredAggregateIntervalMilliseconds = 5000;
-    private final int eventMailBoxPersistenceMaxBatchSize = 1000;
-    private final int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
-    private int _eventMailboxCount = 4;
-    private List<EventMailBox> _eventMailboxList;
+
+    private int batchSize;
+    private int timeoutSeconds;
+    private String taskName;
+    private int commandMailBoxPersistenceMaxBatchSize = 1000;
+    private int scanExpiredAggregateIntervalMilliseconds = 5000;
+    private int eventMailBoxPersistenceMaxBatchSize = 1000;
+    private int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
+    private int eventMailBoxCount = 4;
+    private List<EventMailBox> eventMailBoxList;
+
     @Autowired
     private IScheduleService scheduleService;
 
@@ -56,14 +58,34 @@ public class DefaultEventService implements IEventService {
     private IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
 
     public DefaultEventService() {
-        this._eventMailboxList = new ArrayList<>();
+        this.eventMailBoxList = new ArrayList<>();
         this.batchSize = eventMailBoxPersistenceMaxBatchSize;
         this.timeoutSeconds = aggregateRootMaxInactiveSeconds;
         this.taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
-        for (int i = 0; i < _eventMailboxCount; i++) {
+        for (int i = 0; i < eventMailBoxCount; i++) {
             EventMailBox mailBox = new EventMailBox(String.valueOf(i), batchSize, this::batchPersistEventCommittingContexts);
-            _eventMailboxList.add(mailBox);
+            eventMailBoxList.add(mailBox);
         }
+    }
+
+    public DefaultEventService setScheduleService(IScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
+        return this;
+    }
+
+    public DefaultEventService setMemoryCache(IMemoryCache memoryCache) {
+        this.memoryCache = memoryCache;
+        return this;
+    }
+
+    public DefaultEventService setEventStore(IEventStore eventStore) {
+        this.eventStore = eventStore;
+        return this;
+    }
+
+    public DefaultEventService setDomainEventPublisher(IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
+        this.domainEventPublisher = domainEventPublisher;
+        return this;
     }
 
     private int getEventMailBoxIndex(String aggregateRootId) {
@@ -74,7 +96,7 @@ public class DefaultEventService implements IEventService {
         if (hash < 0) {
             hash = Math.abs(hash);
         }
-        return hash % _eventMailboxCount;
+        return hash % eventMailBoxCount;
     }
 
     private void batchPersistEventCommittingContexts(List<EventCommittingContext> committingContexts) {
@@ -91,7 +113,7 @@ public class DefaultEventService implements IEventService {
     @Override
     public void commitDomainEventAsync(EventCommittingContext eventCommittingContext) {
         int eventMailboxIndex = getEventMailBoxIndex(eventCommittingContext.getEventStream().getAggregateRootId());
-        EventMailBox eventMailbox = _eventMailboxList.get(eventMailboxIndex);
+        EventMailBox eventMailbox = eventMailBoxList.get(eventMailboxIndex);
         eventMailbox.enqueueMessage(eventCommittingContext);
     }
 
@@ -327,7 +349,7 @@ public class DefaultEventService implements IEventService {
     }
 
     private void cleanInactiveMailbox() {
-//        List<EventMailBox> inactiveList = _eventMailboxList.stream().filter(entry ->
+//        List<EventMailBox> inactiveList = eventMailBoxList.stream().filter(entry ->
 //                entry.isInactive(timeoutSeconds) && entry.isRunning()
 //        ).collect(Collectors.toList());
 //

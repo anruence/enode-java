@@ -1,6 +1,6 @@
 package com.enodeframework.common.io;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +31,7 @@ public class Task extends CompletableFuture {
         try {
             return future.get(5000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            throw new EnodeRuntimeException(e);
+            throw new ENodeRuntimeException(e);
         }
     }
 
@@ -39,7 +39,7 @@ public class Task extends CompletableFuture {
         try {
             Thread.sleep(sleepMilliseconds);
         } catch (InterruptedException e) {
-            throw new EnodeRuntimeException(e);
+            throw new ENodeRuntimeException(e);
         }
     }
 }

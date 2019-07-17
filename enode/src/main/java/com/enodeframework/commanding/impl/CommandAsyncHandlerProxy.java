@@ -3,7 +3,7 @@ package com.enodeframework.commanding.impl;
 import com.enodeframework.commanding.ICommand;
 import com.enodeframework.commanding.ICommandAsyncHandlerProxy;
 import com.enodeframework.common.container.IObjectContainer;
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.infrastructure.IApplicationMessage;
@@ -20,14 +20,15 @@ public class CommandAsyncHandlerProxy implements ICommandAsyncHandlerProxy {
 
     @Autowired
     private IObjectContainer objectContainer;
-
     private Class handlerType;
-
     private Object commandHandler;
-
     private MethodHandle methodHandle;
-
     private Method method;
+
+    public CommandAsyncHandlerProxy setObjectContainer(IObjectContainer objectContainer) {
+        this.objectContainer = objectContainer;
+        return this;
+    }
 
     @Override
     public CompletableFuture<AsyncTaskResult<IApplicationMessage>> handleAsync(ICommand command) {
@@ -38,7 +39,7 @@ public class CommandAsyncHandlerProxy implements ICommandAsyncHandlerProxy {
                 if (throwable instanceof IORuntimeException) {
                     throw new IORuntimeException(throwable);
                 }
-                throw new EnodeRuntimeException(throwable);
+                throw new ENodeRuntimeException(throwable);
             }
         });
     }

@@ -16,7 +16,7 @@
  */
 package com.enodeframework.common.utilities;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,7 @@ public class RemotingUtil {
             try {
                 localAddress = Inet4Address.getLocalHost();
             } catch (UnknownHostException e) {
-                throw new EnodeRuntimeException("No local address found", e);
+                throw new ENodeRuntimeException("No local address found", e);
             }
         }
         return String.format("%s:%d", localAddress.getHostAddress(), port);

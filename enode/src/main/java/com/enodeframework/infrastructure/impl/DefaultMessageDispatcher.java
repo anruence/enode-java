@@ -44,6 +44,25 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
     @Autowired
     private IThreeMessageHandlerProvider threeMessageHandlerProvider;
 
+    public DefaultMessageDispatcher setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+        this.typeNameProvider = typeNameProvider;
+        return this;
+    }
+
+    public DefaultMessageDispatcher setHandlerProvider(IMessageHandlerProvider handlerProvider) {
+        this.handlerProvider = handlerProvider;
+        return this;
+    }
+
+    public DefaultMessageDispatcher setTwoMessageHandlerProvider(ITwoMessageHandlerProvider twoMessageHandlerProvider) {
+        this.twoMessageHandlerProvider = twoMessageHandlerProvider;
+        return this;
+    }
+
+    public DefaultMessageDispatcher setThreeMessageHandlerProvider(IThreeMessageHandlerProvider threeMessageHandlerProvider) {
+        this.threeMessageHandlerProvider = threeMessageHandlerProvider;
+        return this;
+    }
 
     @Override
     public CompletableFuture<AsyncTaskResult> dispatchMessageAsync(IMessage message) {

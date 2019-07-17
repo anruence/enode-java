@@ -1,6 +1,6 @@
 package com.enodeframework.queue.publishableexceptions;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.infrastructure.IMessageProcessor;
 import com.enodeframework.infrastructure.IPublishableException;
@@ -25,6 +25,16 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
     @Autowired
     protected IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> publishableExceptionProcessor;
 
+    public AbstractPublishableExceptionListener setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+        this.typeNameProvider = typeNameProvider;
+        return this;
+    }
+
+    public AbstractPublishableExceptionListener setPublishableExceptionProcessor(IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> publishableExceptionProcessor) {
+        this.publishableExceptionProcessor = publishableExceptionProcessor;
+        return this;
+    }
+
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
         PublishableExceptionMessage exceptionMessage = JsonTool.deserialize(queueMessage.getBody(), PublishableExceptionMessage.class);
@@ -33,7 +43,7 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
         try {
             exception = (IPublishableException) exceptionType.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new EnodeRuntimeException(e);
+            throw new ENodeRuntimeException(e);
         }
         exception.setId(exceptionMessage.getUniqueId());
         exception.setTimestamp(exceptionMessage.getTimestamp());

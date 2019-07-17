@@ -1,6 +1,6 @@
 package com.enodeframework.common.utilities;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -38,9 +38,9 @@ public class Linq {
             return rets.get(0);
         }
         if (rets.size() == 0) {
-            throw new EnodeRuntimeException("not found");
+            throw new ENodeRuntimeException("not found");
         } else {
-            throw new EnodeRuntimeException("find more than one result");
+            throw new ENodeRuntimeException("find more than one result");
         }
     }
 
@@ -53,7 +53,7 @@ public class Linq {
         if (rets.size() == 0) {
             return null;
         } else {
-            throw new EnodeRuntimeException("find more than one result");
+            throw new ENodeRuntimeException("find more than one result");
         }
     }
 }

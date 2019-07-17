@@ -26,6 +26,11 @@ public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryP
     @Autowired
     private IObjectContainer objectContainer;
 
+    public DefaultAggregateRepositoryProvider setObjectContainer(IObjectContainer objectContainer) {
+        this.objectContainer = objectContainer;
+        return this;
+    }
+
     @Override
     public IAggregateRepositoryProxy getRepository(Class<? extends IAggregateRoot> aggregateRootType) {
         return repositoryDict.get(aggregateRootType);

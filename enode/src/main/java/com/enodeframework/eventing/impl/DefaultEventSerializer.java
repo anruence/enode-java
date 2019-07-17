@@ -21,6 +21,11 @@ public class DefaultEventSerializer implements IEventSerializer {
     @Autowired
     private ITypeNameProvider typeNameProvider;
 
+    public DefaultEventSerializer setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+        this.typeNameProvider = typeNameProvider;
+        return this;
+    }
+
     @Override
     public Map<String, String> serialize(List<IDomainEvent> evnts) {
         Map<String, String> dict = new HashMap<String, String>();

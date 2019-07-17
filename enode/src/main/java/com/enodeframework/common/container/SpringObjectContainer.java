@@ -4,23 +4,20 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-/**
- * Spring Ioc容器
- */
+import java.util.Map;
 
 /**
+ * Spring Ioc容器
+ *
  * @author anruence@gmail.com
  */
 public class SpringObjectContainer implements IObjectContainer, ApplicationContextAware {
 
     private static ApplicationContext applicationContext;
 
-    public static <T> T resolveStatic(Class<T> targetClz) {
-        return applicationContext.getBean(targetClz);
-    }
-
-    public static <T> T resolveStatic(String beanName, Class<T> targetClz) {
-        return applicationContext.getBean(beanName, targetClz);
+    @Override
+    public <T> Map<String, T> resolveAll(Class<T> targetClz) {
+        return applicationContext.getBeansOfType(targetClz);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.enodeframework.infrastructure;
 
-import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +22,10 @@ public class WrappedExceptionParser<T extends Throwable> {
     }
 
     public static <T extends Throwable> WrappedExceptionParser<T> create(T e) {
-        return new WrappedExceptionParser(e instanceof EnodeRuntimeException ? ((EnodeRuntimeException) e).getException() : e);
+        return new WrappedExceptionParser(e instanceof ENodeRuntimeException ? ((ENodeRuntimeException) e).getException() : e);
     }
 
-    public static WrappedExceptionParser<Exception> create(EnodeRuntimeException wrappedExp) {
+    public static WrappedExceptionParser<Exception> create(ENodeRuntimeException wrappedExp) {
         return new WrappedExceptionParser(wrappedExp.getException());
     }
 

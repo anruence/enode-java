@@ -15,6 +15,11 @@ public class SnapshotOnlyAggregateStorage implements IAggregateStorage {
     @Autowired
     private IAggregateSnapshotter aggregateSnapshotter;
 
+    public SnapshotOnlyAggregateStorage setAggregateSnapshotter(IAggregateSnapshotter aggregateSnapshotter) {
+        this.aggregateSnapshotter = aggregateSnapshotter;
+        return this;
+    }
+
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, String aggregateRootId) {
         if (aggregateRootType == null) {

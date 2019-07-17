@@ -59,4 +59,9 @@ public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<Ma
     protected IObjectContainer getObjectContainer() {
         return objectContainer;
     }
+
+    public DefaultTwoMessageHandlerProvider setObjectContainer(IObjectContainer objectContainer) {
+        this.objectContainer = objectContainer;
+        return this;
+    }
 }

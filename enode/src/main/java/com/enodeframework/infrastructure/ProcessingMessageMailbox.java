@@ -17,12 +17,11 @@ import static com.enodeframework.common.io.Task.await;
  */
 public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y extends IMessage> {
     private static final Logger logger = LoggerFactory.getLogger(ProcessingMessageMailbox.class);
-
-    private final String routingKey;
     private final ConcurrentLinkedQueue<X> messageQueue;
     private final IProcessingMessageScheduler<X, Y> scheduler;
     private final IProcessingMessageHandler<X, Y> messageHandler;
     private final Object lockObj = new Object();
+    private String routingKey;
     private ConcurrentMap<Integer, X> waitingMessageDict;
     private AtomicBoolean isRunning = new AtomicBoolean(false);
     private Date lastActiveTime;

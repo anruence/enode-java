@@ -17,6 +17,11 @@ public class DefaultProcessingMessageScheduler<X extends IProcessingMessage<X, Y
     @Autowired
     private IProcessingMessageHandler<X, Y> messageHandler;
 
+    public DefaultProcessingMessageScheduler<X, Y> setMessageHandler(IProcessingMessageHandler<X, Y> messageHandler) {
+        this.messageHandler = messageHandler;
+        return this;
+    }
+
     @Override
     public void scheduleMessage(X processingMessage) {
         messageHandler.handleAsync(processingMessage);
