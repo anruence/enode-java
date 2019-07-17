@@ -1,6 +1,8 @@
 package com.enodeframework.samples.controller;
 
 import com.enodeframework.ENodeBootstrap;
+import com.enodeframework.eventing.impl.InMemoryEventStore;
+import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
 import com.enodeframework.queue.command.CommandResultProcessor;
 import com.google.common.collect.Lists;
 import org.springframework.context.annotation.Bean;
@@ -23,4 +25,13 @@ public class AppConfigCommand {
         return bootstrap;
     }
 
+    @Bean
+    public InMemoryPublishedVersionStore versionStore() {
+        return new InMemoryPublishedVersionStore();
+    }
+
+    @Bean
+    public InMemoryEventStore eventStore() {
+        return new InMemoryEventStore();
+    }
 }

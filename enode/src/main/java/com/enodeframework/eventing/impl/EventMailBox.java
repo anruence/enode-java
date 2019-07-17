@@ -4,8 +4,6 @@ import com.enodeframework.common.function.Action1;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.eventing.EventCommittingContext;
 import com.enodeframework.infrastructure.DefaultMailBox;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author anruence@gmail.com
  */
 public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean> {
-
-    private static final Logger logger = LoggerFactory.getLogger(EventMailBox.class);
 
     private ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> _aggregateDictDict;
 

@@ -1,8 +1,6 @@
 package com.enodeframework.common.extensions;
 
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,8 +57,7 @@ public class ClassPathScanHandler {
      * @param packages packages.
      */
     public ClassPathScanHandler(String... packages) {
-        this.reflections = new Reflections(new ConfigurationBuilder().forPackages(packages)
-                .addScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
+        this.reflections = new Reflections(new ConfigurationBuilder().forPackages(packages));
     }
 
     /**

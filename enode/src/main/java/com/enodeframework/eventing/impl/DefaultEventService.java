@@ -34,7 +34,7 @@ public class DefaultEventService implements IEventService {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultEventService.class);
 
-    private int _eventMailboxCount;
+    private int _eventMailboxCount = 4;
 
     private List<EventMailBox> _eventMailboxList;
 
@@ -67,7 +67,6 @@ public class DefaultEventService implements IEventService {
     public DefaultEventService() {
         this._eventMailboxList = new ArrayList<>();
         this.batchSize = eventMailBoxPersistenceMaxBatchSize;
-        this._eventMailboxCount = eventMailBoxPersistenceMaxBatchSize;
         this.timeoutSeconds = aggregateRootMaxInactiveSeconds;
         this.taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
         for (int i = 0; i < _eventMailboxCount; i++) {
@@ -262,10 +261,9 @@ public class DefaultEventService implements IEventService {
     }
 
     private void handleFirstEventDuplicationAsync(EventCommittingContext context, int retryTimes) {
-        DomainEventStream eventStream = context.getEventStream();
 
         IOHelper.tryAsyncActionRecursively("FindFirstEventByVersion",
-                () -> eventStore.findAsync(eventStream.aggregateRootId(), 1),
+                () -> eventStore.findAsync(context.getEventStream().aggregateRootId(), 1),
                 currentRetryTimes -> handleFirstEventDuplicationAsync(context, currentRetryTimes),
                 result ->
                 {
@@ -286,22 +284,22 @@ public class DefaultEventService implements IEventService {
                                     firstEventStream.aggregateRootTypeName());
                             logger.error(errorMessage);
                             resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1);
-                            CommandResult commandResult = new CommandResult(CommandStatus.Failed, context.getProcessingCommand().getMessage().id(), eventStream.aggregateRootId(), "Duplicate aggregate creation.", String.class.getName());
+                            CommandResult commandResult = new CommandResult(CommandStatus.Failed, context.getProcessingCommand().getMessage().id(), context.getEventStream().aggregateRootId(), "Duplicate aggregate creation.", String.class.getName());
                             completeCommand(context.getProcessingCommand(), commandResult);
                         }
                     } else {
                         String errorMessage = String.format("Duplicate aggregate creation, but we cannot find the existing eventstream from eventstore. commandId:%s, aggregateRootId:%s, aggregateRootTypeName:%s",
-                                eventStream.commandId(),
-                                eventStream.aggregateRootId(),
-                                eventStream.aggregateRootTypeName());
+                                context.getEventStream().commandId(),
+                                context.getEventStream().aggregateRootId(),
+                                context.getEventStream().aggregateRootTypeName());
                         logger.error(errorMessage);
                         resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1);
-                        CommandResult commandResult = new CommandResult(CommandStatus.Failed, context.getProcessingCommand().getMessage().id(), eventStream.aggregateRootId(), "Duplicate aggregate creation, but we cannot find the existing eventstream from eventstore.", String.class.getName());
+                        CommandResult commandResult = new CommandResult(CommandStatus.Failed, context.getProcessingCommand().getMessage().id(), context.getEventStream().aggregateRootId(), "Duplicate aggregate creation, but we cannot find the existing eventstream from eventstore.", String.class.getName());
                         completeCommand(context.getProcessingCommand(), commandResult);
                     }
                 },
-                () -> String.format("[eventStream:%s]", eventStream),
-                errorMessage -> logger.error(String.format("Find the first version of event has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
+                () -> String.format("[eventStream:%s]", context.getEventStream()),
+                errorMessage -> logger.error("Find the first version of event has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
                 retryTimes, true);
     }
 

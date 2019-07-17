@@ -4,14 +4,21 @@ package com.enodeframework.infrastructure;
 import com.enodeframework.common.function.Func1;
 import com.enodeframework.common.io.Task;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.enodeframework.common.io.Task.await;
 
 public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessResult> implements IMailBox<TMessage, TMessageProcessResult> {
+
+    public Logger _logger = LoggerFactory.getLogger(this.getClass());
 
     public String RoutingKey;
     public Date LastActiveTime;
@@ -20,7 +27,6 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
     public boolean IsPaused;
     public long ConsumingSequence;
     public long ConsumedSequence;
-    protected Logger _logger;
     private Object _lockObj = new Object();
     private Object _asyncLock = new Object();
     private ConcurrentHashMap<Long, TMessage> _messageDict;
