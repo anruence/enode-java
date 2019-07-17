@@ -9,6 +9,7 @@ public class SeatInsufficientException extends PublishableException {
 
     public String ConferenceId;
     public String ReservationId;
+
     public SeatInsufficientException(String conferenceId, String reservationId) {
         super();
         ConferenceId = conferenceId;

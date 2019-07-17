@@ -34,25 +34,15 @@ import static com.enodeframework.common.io.Task.await;
 public class DefaultEventService implements IEventService {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultEventService.class);
-
-    private int _eventMailboxCount = 4;
-
-    private List<EventMailBox> _eventMailboxList;
-
     private final int batchSize;
-
     private final int timeoutSeconds;
-
     private final String taskName;
-
     private final int commandMailBoxPersistenceMaxBatchSize = 1000;
-
     private final int scanExpiredAggregateIntervalMilliseconds = 5000;
-
     private final int eventMailBoxPersistenceMaxBatchSize = 1000;
-
     private final int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
-
+    private int _eventMailboxCount = 4;
+    private List<EventMailBox> _eventMailboxList;
     @Autowired
     private IScheduleService scheduleService;
 

@@ -5,11 +5,11 @@ import com.enodeframework.annotation.Event;
 import com.enodeframework.annotation.Priority;
 import com.enodeframework.annotation.Subscribe;
 import com.enodeframework.common.container.IObjectContainer;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.enodeframework.infrastructure.IAssemblyInitializer;
 import com.enodeframework.infrastructure.IObjectProxy;
 import com.enodeframework.infrastructure.MessageHandlerData;
 import com.enodeframework.infrastructure.MethodInvocation;
-import com.enodeframework.common.exception.EnodeRuntimeException;
 import org.reflections.ReflectionUtils;
 
 import java.lang.invoke.MethodHandle;

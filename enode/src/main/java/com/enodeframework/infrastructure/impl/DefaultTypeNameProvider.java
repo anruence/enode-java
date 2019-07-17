@@ -1,7 +1,7 @@
 package com.enodeframework.infrastructure.impl;
 
-import com.enodeframework.infrastructure.ITypeNameProvider;
 import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.infrastructure.ITypeNameProvider;
 
 /**
  * @author anruence@gmail.com

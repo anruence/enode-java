@@ -3,10 +3,10 @@ package com.microsoft.conference.payments.messagepublishers;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.infrastructure.IMessagePublisher;
-import com.microsoft.conference.payments.domain.Events.PaymentCompleted;
-import com.microsoft.conference.payments.domain.Events.PaymentRejected;
 import com.microsoft.conference.common.payment.message.PaymentCompletedMessage;
 import com.microsoft.conference.common.payment.message.PaymentRejectedMessage;
+import com.microsoft.conference.payments.domain.Events.PaymentCompleted;
+import com.microsoft.conference.payments.domain.Events.PaymentRejected;
 
 import static com.enodeframework.common.io.Task.await;
 

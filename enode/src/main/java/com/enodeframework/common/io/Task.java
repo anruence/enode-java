@@ -29,7 +29,7 @@ public class Task extends CompletableFuture {
 
     public static <T> T get(CompletableFuture<T> future) {
         try {
-            return future.get(500000, TimeUnit.MILLISECONDS);
+            return future.get(5000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             throw new EnodeRuntimeException(e);
         }

@@ -12,14 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractDomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
 
+    protected IEventSerializer eventSerializer;
+    private TopicData topicData;
+
     @Autowired
     public void setEventSerializer(IEventSerializer eventSerializer) {
         this.eventSerializer = eventSerializer;
     }
-
-    protected IEventSerializer eventSerializer;
-
-    private TopicData topicData;
 
     public TopicData getTopicData() {
         return topicData;

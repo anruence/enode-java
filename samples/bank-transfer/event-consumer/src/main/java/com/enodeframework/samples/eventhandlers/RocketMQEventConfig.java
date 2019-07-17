@@ -3,13 +3,27 @@ package com.enodeframework.samples.eventhandlers;
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.enodeframework.queue.TopicData;
-import com.enodeframework.rocketmq.message.*;
+import com.enodeframework.rocketmq.message.RocketMQApplicationMessageListener;
+import com.enodeframework.rocketmq.message.RocketMQApplicationMessagePublisher;
+import com.enodeframework.rocketmq.message.RocketMQCommandService;
+import com.enodeframework.rocketmq.message.RocketMQDomainEventListener;
+import com.enodeframework.rocketmq.message.RocketMQDomainEventPublisher;
+import com.enodeframework.rocketmq.message.RocketMQPublishableExceptionListener;
+import com.enodeframework.rocketmq.message.RocketMQPublishableExceptionPublisher;
 import org.springframework.context.annotation.Bean;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.enodeframework.samples.QueueProperties.*;
+import static com.enodeframework.samples.QueueProperties.APPLICATION_TOPIC;
+import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
+import static com.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP;
+import static com.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP1;
+import static com.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP2;
+import static com.enodeframework.samples.QueueProperties.DEFAULT_PRODUCER_GROUP;
+import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
+import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
+import static com.enodeframework.samples.QueueProperties.NAMESRVADDR;
 
 public class RocketMQEventConfig {
 

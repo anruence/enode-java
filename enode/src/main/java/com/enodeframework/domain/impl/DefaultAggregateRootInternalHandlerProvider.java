@@ -1,12 +1,12 @@
 package com.enodeframework.domain.impl;
 
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.enodeframework.common.function.Action2;
 import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.domain.IAggregateRootInternalHandlerProvider;
 import com.enodeframework.eventing.IDomainEvent;
 import com.enodeframework.infrastructure.IAssemblyInitializer;
 import com.enodeframework.infrastructure.TypeUtils;
-import com.enodeframework.common.exception.EnodeRuntimeException;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

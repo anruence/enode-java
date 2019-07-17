@@ -10,10 +10,11 @@ import com.enodeframework.commanding.ICommandHandlerProvider;
 import com.enodeframework.commanding.ICommandHandlerProxy;
 import com.enodeframework.commanding.IProcessingCommandHandler;
 import com.enodeframework.commanding.ProcessingCommand;
+import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.IOHelper;
-import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.common.utilities.Linq;
@@ -30,7 +31,6 @@ import com.enodeframework.infrastructure.IObjectProxy;
 import com.enodeframework.infrastructure.IPublishableException;
 import com.enodeframework.infrastructure.ITypeNameProvider;
 import com.enodeframework.infrastructure.MessageHandlerData;
-import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,9 +187,8 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         //构造出一个事件流对象
 
         String commandResult = processingCommand.getCommandExecuteContext().getResult();
-        if (commandResult != null)
-        {
-            processingCommand.getItems().put("CommandResult",commandResult);
+        if (commandResult != null) {
+            processingCommand.getItems().put("CommandResult", commandResult);
         }
         DomainEventStream eventStream = new DomainEventStream(
                 processingCommand.getMessage().getId(),

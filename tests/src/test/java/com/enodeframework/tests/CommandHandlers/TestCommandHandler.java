@@ -23,7 +23,6 @@ import com.enodeframework.tests.Commands.NotCheckAsyncHandlerExistWithResultComm
 import com.enodeframework.tests.Commands.SetResultCommand;
 import com.enodeframework.tests.Commands.TestEventPriorityCommand;
 import com.enodeframework.tests.Commands.ThrowExceptionCommand;
-import com.enodeframework.tests.Commands.TwoAsyncHandlersCommand;
 import com.enodeframework.tests.Commands.TwoHandlersCommand;
 import com.enodeframework.tests.Domain.InheritTestAggregate;
 import com.enodeframework.tests.Domain.TestAggregate;
@@ -114,7 +113,6 @@ public class TestCommandHandler {
     public void HandleAsync(ICommandContext context, ChildCommand command) {
         context.setResult("ResultFromChildCommand");
     }
-
 
 
     @Subscribe

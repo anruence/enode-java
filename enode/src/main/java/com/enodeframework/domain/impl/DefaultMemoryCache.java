@@ -1,5 +1,6 @@
 package com.enodeframework.domain.impl;
 
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.common.scheduling.IScheduleService;
 import com.enodeframework.domain.AggregateCacheInfo;
@@ -7,7 +8,6 @@ import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.domain.IAggregateStorage;
 import com.enodeframework.domain.IMemoryCache;
 import com.enodeframework.infrastructure.ITypeNameProvider;
-import com.enodeframework.common.exception.EnodeRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +26,11 @@ import java.util.stream.Collectors;
 public class DefaultMemoryCache implements IMemoryCache {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultMemoryCache.class);
-    private Object lockObj = new Object();
     private final ConcurrentMap<String, AggregateCacheInfo> aggregateRootInfoDict;
     private final int timeoutSeconds = 5000;
     private final int scanExpiredAggregateIntervalMilliseconds = 5000;
     private final String taskName;
+    private Object lockObj = new Object();
     @Autowired
     private IAggregateStorage aggregateStorage;
     @Autowired

@@ -16,7 +16,7 @@ public class Future {
             return 2;
         });
 
-        future.thenAccept(r->{
+        future.thenAccept(r -> {
             int a = 1;
             return;
         }).exceptionally(e -> {
@@ -26,8 +26,8 @@ public class Future {
 
             }
             return null;
-        }).handleAsync((r,e)->{
-            if (e != null){
+        }).handleAsync((r, e) -> {
+            if (e != null) {
 
             }
             if (r != null) {
@@ -35,7 +35,7 @@ public class Future {
             }
             e.printStackTrace();
             return null;
-        }).thenAccept(r->{
+        }).thenAccept(r -> {
             int a = 1;
             return;
         });

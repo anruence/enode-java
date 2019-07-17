@@ -26,6 +26,7 @@ public class Conference {
     public String TwitterSearch;
     public Date StartDate;
     public boolean IsPublished;
+
     public Conference(String id, String code, String name, String description, String location, String tagline, String twitterSearch, Date startDate, List<SeatType> seats) {
         this.Id = id;
         this.Code = code;
