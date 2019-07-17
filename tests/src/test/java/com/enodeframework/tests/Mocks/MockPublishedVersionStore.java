@@ -2,10 +2,10 @@ package com.enodeframework.tests.Mocks;
 
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
-import com.enodeframework.common.io.IORuntimeException;
+import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.infrastructure.IPublishedVersionStore;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
 
 import java.util.concurrent.CompletableFuture;
@@ -38,7 +38,7 @@ public class MockPublishedVersionStore implements IPublishedVersionStore {
             _currentUpdateFailedCount++;
 
             if (_failedType == FailedType.UnKnownException) {
-                throw new WrappedRuntimeException("UpdatePublishedVersionAsyncUnKnownException" + _currentUpdateFailedCount);
+                throw new EnodeRuntimeException("UpdatePublishedVersionAsyncUnKnownException" + _currentUpdateFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("UpdatePublishedVersionAsyncIOException" + _currentUpdateFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
@@ -54,7 +54,7 @@ public class MockPublishedVersionStore implements IPublishedVersionStore {
             _currentGetFailedCount++;
 
             if (_failedType == FailedType.UnKnownException) {
-                throw new WrappedRuntimeException("GetPublishedVersionAsyncUnKnownException" + _currentGetFailedCount);
+                throw new EnodeRuntimeException("GetPublishedVersionAsyncUnKnownException" + _currentGetFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("GetPublishedVersionAsyncIOException" + _currentGetFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {

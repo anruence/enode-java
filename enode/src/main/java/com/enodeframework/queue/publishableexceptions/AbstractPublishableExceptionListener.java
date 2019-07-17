@@ -6,7 +6,7 @@ import com.enodeframework.infrastructure.IPublishableException;
 import com.enodeframework.infrastructure.ISequenceMessage;
 import com.enodeframework.infrastructure.ITypeNameProvider;
 import com.enodeframework.infrastructure.ProcessingPublishableExceptionMessage;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.enodeframework.infrastructure.impl.DefaultMessageProcessContext;
 import com.enodeframework.queue.IMessageContext;
 import com.enodeframework.queue.IMessageHandler;
@@ -33,7 +33,7 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
         try {
             exception = (IPublishableException) exceptionType.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new WrappedRuntimeException(e);
+            throw new EnodeRuntimeException(e);
         }
         exception.setId(exceptionMessage.getUniqueId());
         exception.setTimestamp(exceptionMessage.getTimestamp());

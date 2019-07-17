@@ -13,6 +13,6 @@ public class DefaultCommandRoutingKeyProvider implements ICommandRoutingKeyProvi
             return command.getAggregateRootId();
         }
 
-        return command.id();
+        return command.getId();
     }
 }

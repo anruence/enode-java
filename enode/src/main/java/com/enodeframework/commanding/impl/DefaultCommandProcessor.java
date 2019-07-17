@@ -44,7 +44,7 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     public void process(ProcessingCommand processingCommand) {
         String aggregateRootId = processingCommand.getMessage().getAggregateRootId();
         if (aggregateRootId == null || "".equals(aggregateRootId.trim())) {
-            throw new IllegalArgumentException("aggregateRootId of command cannot be null or empty, commandId:" + processingCommand.getMessage().id());
+            throw new IllegalArgumentException("aggregateRootId of command cannot be null or empty, commandId:" + processingCommand.getMessage().getId());
         }
 
         ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, handler));

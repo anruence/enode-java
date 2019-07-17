@@ -1,15 +1,15 @@
 package com.enodeframework.infrastructure;
 
 public interface ISequenceMessage extends IMessage {
-    String aggregateRootStringId();
+    String getAggregateRootStringId();
 
     void setAggregateRootStringId(String aggregateRootStringId);
 
-    String aggregateRootTypeName();
+    String getAggregateRootTypeName();
 
     void setAggregateRootTypeName(String aggregateRootTypeName);
 
-    int version();
+    int getVersion();
 
     void setVersion(int version);
 }

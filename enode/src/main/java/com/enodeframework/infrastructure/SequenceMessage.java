@@ -7,7 +7,7 @@ public abstract class SequenceMessage<TAggregateRootId> extends Message implemen
     private String aggregateRootTypeName;
     private int version;
 
-    public TAggregateRootId aggregateRootId() {
+    public TAggregateRootId getAggregateRootId() {
         return aggregateRootId;
     }
 
@@ -17,7 +17,7 @@ public abstract class SequenceMessage<TAggregateRootId> extends Message implemen
     }
 
     @Override
-    public String aggregateRootStringId() {
+    public String getAggregateRootStringId() {
         return aggregateRootStringId;
     }
 
@@ -27,7 +27,7 @@ public abstract class SequenceMessage<TAggregateRootId> extends Message implemen
     }
 
     @Override
-    public String aggregateRootTypeName() {
+    public String getAggregateRootTypeName() {
         return aggregateRootTypeName;
     }
 
@@ -37,7 +37,7 @@ public abstract class SequenceMessage<TAggregateRootId> extends Message implemen
     }
 
     @Override
-    public int version() {
+    public int getVersion() {
         return version;
     }
 

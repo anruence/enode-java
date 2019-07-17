@@ -49,11 +49,8 @@ public class MysqlEventStore implements IEventStore {
     private final int bulkCopyTimeout;
     private final QueryRunner queryRunner;
 
-
     @Autowired
     private IEventSerializer eventSerializer;
-
-
 
     private boolean supportBatchAppendEvent = true;
 
@@ -142,7 +139,7 @@ public class MysqlEventStore implements IEventStore {
             throw new IllegalArgumentException("Event streams cannot be empty.");
         }
 
-        List<String> aggregateRootIds = eventStreams.stream().map(x -> x.aggregateRootId()).distinct().collect(Collectors.toList());
+        List<String> aggregateRootIds = eventStreams.stream().map(x -> x.getAggregateRootId()).distinct().collect(Collectors.toList());
         if (aggregateRootIds.size() > 1) {
             throw new IllegalArgumentException("Batch append event only support for one aggregate.");
         }
@@ -153,7 +150,7 @@ public class MysqlEventStore implements IEventStore {
 
         for (int i = 0, len = eventStreams.size(); i < len; i++) {
             DomainEventStream eventStream = eventStreams.get(i);
-            params[i] = new Object[]{eventStream.aggregateRootId(), eventStream.aggregateRootTypeName(), eventStream.commandId(), eventStream.version(), eventStream.timestamp(),
+            params[i] = new Object[]{eventStream.getAggregateRootId(), eventStream.getAggregateRootTypeName(), eventStream.getCommandId(), eventStream.getVersion(), eventStream.getTimestamp(),
                     JsonTool.serialize(eventSerializer.serialize(eventStream.events()))};
         }
 
@@ -280,8 +277,8 @@ public class MysqlEventStore implements IEventStore {
     }
 
     private StreamRecord convertTo(DomainEventStream eventStream) {
-        return new StreamRecord(eventStream.commandId(), eventStream.aggregateRootId(), eventStream.aggregateRootTypeName(),
-                eventStream.version(), eventStream.timestamp(),
+        return new StreamRecord(eventStream.getCommandId(), eventStream.getAggregateRootId(), eventStream.getAggregateRootTypeName(),
+                eventStream.getVersion(), eventStream.getTimestamp(),
                 JsonTool.serialize(eventSerializer.serialize(eventStream.events())));
     }
 }

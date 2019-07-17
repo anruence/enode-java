@@ -5,7 +5,7 @@ import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.configurations.DefaultDBConfigurationSetting;
 import com.enodeframework.configurations.OptionSetting;
 import com.enodeframework.infrastructure.ILockService;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 
@@ -49,7 +49,7 @@ public class MysqlLockService implements ILockService {
                 queryRunner.update(String.format("INSERT INTO %s VALUES(?)", tableName), lockKey);
             }
         } catch (SQLException ex) {
-            throw new WrappedRuntimeException(ex);
+            throw new EnodeRuntimeException(ex);
         }
     }
 
@@ -66,7 +66,7 @@ public class MysqlLockService implements ILockService {
                 connection.rollback();
             }
         } catch (SQLException ex) {
-            throw new WrappedRuntimeException(ex);
+            throw new EnodeRuntimeException(ex);
         }
     }
 

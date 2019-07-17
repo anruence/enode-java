@@ -11,7 +11,7 @@ import java.util.List;
 public interface IAggregateRoot {
     String uniqueId();
 
-    int version();
+    int getVersion();
 
     List<IDomainEvent> getChanges();
 

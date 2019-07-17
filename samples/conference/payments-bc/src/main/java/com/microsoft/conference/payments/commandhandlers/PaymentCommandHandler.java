@@ -23,7 +23,7 @@ public class PaymentCommandHandler {
     public void HandleAsync(ICommandContext context, CreatePayment command) {
         List<PaymentItem> paymentItemList = command.Lines.stream().map(x -> new PaymentItem(x.Description, x.Amount)).collect(Collectors.toList());
         context.addAsync(new Payment(
-                command.aggregateRootId,
+                command.getAggregateRootId(),
                 command.OrderId,
                 command.ConferenceId,
                 command.Description,
@@ -32,12 +32,12 @@ public class PaymentCommandHandler {
     }
 
     public void HandleAsync(ICommandContext context, CompletePayment command) {
-        Payment payment = await(context.getAsync(command.aggregateRootId, Payment.class));
+        Payment payment = await(context.getAsync(command.getAggregateRootId(), Payment.class));
         payment.Complete();
     }
 
     public void HandleAsync(ICommandContext context, CancelPayment command) {
-        Payment payment = await(context.getAsync(command.aggregateRootId, Payment.class));
+        Payment payment = await(context.getAsync(command.getAggregateRootId(), Payment.class));
         payment.Cancel();
     }
 }

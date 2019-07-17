@@ -11,7 +11,12 @@ import com.enodeframework.queue.TopicData;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractDomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
+
     @Autowired
+    public void setEventSerializer(IEventSerializer eventSerializer) {
+        this.eventSerializer = eventSerializer;
+    }
+
     protected IEventSerializer eventSerializer;
 
     private TopicData topicData;
@@ -25,7 +30,7 @@ public abstract class AbstractDomainEventPublisher implements IMessagePublisher<
     }
 
     protected QueueMessage createDomainEventStreamMessage(DomainEventStreamMessage eventStream) {
-        Ensure.notNull(eventStream.aggregateRootId(), "aggregateRootId");
+        Ensure.notNull(eventStream.getAggregateRootId(), "aggregateRootId");
         Ensure.notNull(topicData, "topicData");
         EventStreamMessage eventMessage = createEventMessage(eventStream);
         String data = JsonTool.serialize(eventMessage);
@@ -35,20 +40,20 @@ public abstract class AbstractDomainEventPublisher implements IMessagePublisher<
         queueMessage.setTopic(topicData.getTopic());
         queueMessage.setTags(topicData.getTags());
         queueMessage.setBody(data);
-        queueMessage.setKey(eventStream.id());
+        queueMessage.setKey(eventStream.getId());
         queueMessage.setRouteKey(routeKey);
-        queueMessage.setVersion(eventStream.version());
+        queueMessage.setVersion(eventStream.getVersion());
         return queueMessage;
     }
 
     private EventStreamMessage createEventMessage(DomainEventStreamMessage eventStream) {
         EventStreamMessage message = new EventStreamMessage();
-        message.setId(eventStream.id());
+        message.setId(eventStream.getId());
         message.setCommandId(eventStream.getCommandId());
-        message.setAggregateRootTypeName(eventStream.aggregateRootTypeName());
-        message.setAggregateRootId(eventStream.aggregateRootId());
-        message.setTimestamp(eventStream.timestamp());
-        message.setVersion(eventStream.version());
+        message.setAggregateRootTypeName(eventStream.getAggregateRootTypeName());
+        message.setAggregateRootId(eventStream.getAggregateRootId());
+        message.setTimestamp(eventStream.getTimestamp());
+        message.setVersion(eventStream.getVersion());
         message.setEvents(eventSerializer.serialize(eventStream.getEvents()));
         message.setItems(eventStream.getItems());
         return message;

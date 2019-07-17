@@ -30,11 +30,11 @@ public class DomainEventStreamMessage extends SequenceMessage<String> {
     @Override
     public String toString() {
         return String.format("[MessageId=%s,CommandId=%s,AggregateRootId=%s,AggregateRootTypeName=%s,Version=%d,Events=%s,Items=%s]",
-                id(),
-                commandId,
-                aggregateRootId(),
-                aggregateRootTypeName(),
-                version(),
+                getId(),
+                getCommandId(),
+                getAggregateRootId(),
+                getAggregateRootTypeName(),
+                getVersion(),
                 String.join("|", events.stream().map(x -> x.getClass().getName()).collect(Collectors.toList())),
                 String.join("|", items.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.toList())));
     }

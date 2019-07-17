@@ -37,7 +37,7 @@ public class ConferenceViewModelGenerator {
 //                        var info = evnt.Info;
 //        return connection.InsertAsync(new
 //        {
-//            Id = evnt.aggregateRootId(),
+//            Id = evnt.getAggregateRootId(),
 //                    AccessCode = info.AccessCode,
 //                    OwnerName = info.Owner.Name,
 //                    OwnerEmail = info.Owner.Email,
@@ -75,7 +75,7 @@ public class ConferenceViewModelGenerator {
 //                    EventSequence = evnt.Sequence
 //        },new
 //        {
-//            Id = evnt.aggregateRootId(),
+//            Id = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.ConferenceTable);
 //            });
@@ -92,7 +92,7 @@ public class ConferenceViewModelGenerator {
 //                    EventSequence = evnt.Sequence
 //        },new
 //        {
-//            Id = evnt.aggregateRootId(),
+//            Id = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.ConferenceTable);
 //            });
@@ -109,7 +109,7 @@ public class ConferenceViewModelGenerator {
 //                    EventSequence = evnt.Sequence
 //        },new
 //        {
-//            Id = evnt.aggregateRootId(),
+//            Id = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.ConferenceTable);
 //            });
@@ -125,7 +125,7 @@ public class ConferenceViewModelGenerator {
 //                                EventSequence = evnt.Sequence
 //                        }, new
 //                        {
-//                                Id = evnt.aggregateRootId(),
+//                                Id = evnt.getAggregateRootId(),
 //                                Version = evnt.Version - 1
 //                        }, ConfigSettings.ConferenceTable, transaction);
 //        if (effectedRows == 1) {
@@ -137,7 +137,7 @@ public class ConferenceViewModelGenerator {
 //                        Quantity = evnt.Quantity,
 //                        AvailableQuantity = evnt.Quantity,
 //                        Price = evnt.SeatTypeInfo.Price,
-//                        ConferenceId = evnt.aggregateRootId(),
+//                        ConferenceId = evnt.getAggregateRootId(),
 //            },ConfigSettings.SeatTypeTable, transaction);
 //        }
 //            });
@@ -153,7 +153,7 @@ public class ConferenceViewModelGenerator {
 //                                EventSequence = evnt.Sequence
 //                        }, new
 //                        {
-//                                Id = evnt.aggregateRootId(),
+//                                Id = evnt.getAggregateRootId(),
 //                                Version = evnt.Version - 1
 //                        }, ConfigSettings.ConferenceTable, transaction);
 //
@@ -165,7 +165,7 @@ public class ConferenceViewModelGenerator {
 //                        Price = evnt.SeatTypeInfo.Price
 //            },new
 //            {
-//                ConferenceId = evnt.aggregateRootId(),
+//                ConferenceId = evnt.getAggregateRootId(),
 //                        Id = evnt.SeatTypeId
 //            },ConfigSettings.SeatTypeTable, transaction);
 //        }
@@ -182,7 +182,7 @@ public class ConferenceViewModelGenerator {
 //                                EventSequence = evnt.Sequence
 //                        }, new
 //                        {
-//                                Id = evnt.aggregateRootId(),
+//                                Id = evnt.getAggregateRootId(),
 //                                Version = evnt.Version,
 //                                EventSequence = evnt.Sequence - 1
 //                        }, ConfigSettings.ConferenceTable, transaction);
@@ -194,7 +194,7 @@ public class ConferenceViewModelGenerator {
 //                        AvailableQuantity = evnt.AvailableQuantity
 //            },new
 //            {
-//                ConferenceId = evnt.aggregateRootId(),
+//                ConferenceId = evnt.getAggregateRootId(),
 //                        Id = evnt.SeatTypeId
 //            },ConfigSettings.SeatTypeTable, transaction);
 //        }
@@ -211,13 +211,13 @@ public class ConferenceViewModelGenerator {
 //                                EventSequence = evnt.Sequence
 //                        }, new
 //                        {
-//                                Id = evnt.aggregateRootId(),
+//                                Id = evnt.getAggregateRootId(),
 //                                Version = evnt.Version - 1
 //                        }, ConfigSettings.ConferenceTable, transaction);
 //        if (effectedRows == 1) {
 //            await connection.DeleteAsync(new
 //            {
-//                ConferenceId = evnt.aggregateRootId(),
+//                ConferenceId = evnt.getAggregateRootId(),
 //                        Id = evnt.SeatTypeId
 //            },ConfigSettings.SeatTypeTable, transaction);
 //        }
@@ -234,7 +234,7 @@ public class ConferenceViewModelGenerator {
 //                                EventSequence = evnt.Sequence
 //                        }, new
 //                        {
-//                                Id = evnt.aggregateRootId(),
+//                                Id = evnt.getAggregateRootId(),
 //                                Version = evnt.Version - 1
 //                        }, ConfigSettings.ConferenceTable, transaction);
 //
@@ -246,7 +246,7 @@ public class ConferenceViewModelGenerator {
 //            {
 //                tasks.add(connection.InsertAsync(new
 //                {
-//                    ConferenceId = evnt.aggregateRootId(),
+//                    ConferenceId = evnt.getAggregateRootId(),
 //                            ReservationId = evnt.ReservationId,
 //                            SeatTypeId = reservationItem.SeatTypeId,
 //                            Quantity = reservationItem.Quantity
@@ -261,7 +261,7 @@ public class ConferenceViewModelGenerator {
 //                    AvailableQuantity = seatAvailableQuantity.AvailableQuantity
 //                },new
 //                {
-//                    ConferenceId = evnt.aggregateRootId(),
+//                    ConferenceId = evnt.getAggregateRootId(),
 //                            Id = seatAvailableQuantity.SeatTypeId
 //                },ConfigSettings.SeatTypeTable, transaction));
 //            }
@@ -282,7 +282,7 @@ public class ConferenceViewModelGenerator {
 //                                EventSequence = evnt.Sequence
 //                        }, new
 //                        {
-//                                Id = evnt.aggregateRootId(),
+//                                Id = evnt.getAggregateRootId(),
 //                                Version = evnt.Version - 1
 //                        }, ConfigSettings.ConferenceTable, transaction);
 //
@@ -292,7 +292,7 @@ public class ConferenceViewModelGenerator {
 //            //删除预定记录
 //            tasks.add(connection.DeleteAsync(new
 //            {
-//                ConferenceId = evnt.aggregateRootId(),
+//                ConferenceId = evnt.getAggregateRootId(),
 //                        ReservationId = evnt.ReservationId
 //            },ConfigSettings.ReservationItemsTable, transaction));
 //
@@ -304,7 +304,7 @@ public class ConferenceViewModelGenerator {
 //                    Quantity = seatQuantity.Quantity
 //                },new
 //                {
-//                    ConferenceId = evnt.aggregateRootId(),
+//                    ConferenceId = evnt.getAggregateRootId(),
 //                            Id = seatQuantity.SeatTypeId
 //                },ConfigSettings.SeatTypeTable, transaction));
 //            }
@@ -324,7 +324,7 @@ public class ConferenceViewModelGenerator {
 //                                EventSequence = evnt.Sequence
 //                        }, new
 //                        {
-//                                Id = evnt.aggregateRootId(),
+//                                Id = evnt.getAggregateRootId(),
 //                                Version = evnt.Version - 1
 //                        }, ConfigSettings.ConferenceTable, transaction);
 //
@@ -334,7 +334,7 @@ public class ConferenceViewModelGenerator {
 //            //删除预定记录
 //            tasks.add(connection.DeleteAsync(new
 //            {
-//                ConferenceId = evnt.aggregateRootId(),
+//                ConferenceId = evnt.getAggregateRootId(),
 //                        ReservationId = evnt.ReservationId
 //            },ConfigSettings.ReservationItemsTable, transaction));
 //
@@ -346,7 +346,7 @@ public class ConferenceViewModelGenerator {
 //                    AvailableQuantity = seatAvailableQuantity.AvailableQuantity
 //                },new
 //                {
-//                    ConferenceId = evnt.aggregateRootId(),
+//                    ConferenceId = evnt.getAggregateRootId(),
 //                            Id = seatAvailableQuantity.SeatTypeId
 //                },ConfigSettings.SeatTypeTable, transaction));
 //            }

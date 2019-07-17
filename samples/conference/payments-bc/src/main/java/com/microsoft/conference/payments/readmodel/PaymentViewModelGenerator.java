@@ -12,7 +12,7 @@ public class PaymentViewModelGenerator {
 //                var tasks = new List<Task>();
 //                tasks.add(connection.InsertAsync(new
 //                {
-//                    Id = evnt.aggregateRootId(),
+//                    Id = evnt.getAggregateRootId(),
 //                    OrderId = evnt.OrderId,
 //                    State = (int)PaymentState.Initiated,
 //                    Description = evnt.Description,
@@ -24,7 +24,7 @@ public class PaymentViewModelGenerator {
 //                    tasks.add(connection.InsertAsync(new
 //                    {
 //                        Id = item.Id,
-//                        PaymentId = evnt.aggregateRootId(),
+//                        PaymentId = evnt.getAggregateRootId(),
 //                        Description = item.Description,
 //                        Amount = item.Amount
 //                    }, ConfigSettings.PaymentItemTable, transaction));
@@ -43,7 +43,7 @@ public class PaymentViewModelGenerator {
 //                    Version = evnt.Version
 //                }, new
 //                {
-//                    Id = evnt.aggregateRootId(),
+//                    Id = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //                }, ConfigSettings.PaymentTable);
 //            });
@@ -60,7 +60,7 @@ public class PaymentViewModelGenerator {
 //                    Version = evnt.Version
 //                }, new
 //                {
-//                    Id = evnt.aggregateRootId(),
+//                    Id = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //                }, ConfigSettings.PaymentTable);
 //            });

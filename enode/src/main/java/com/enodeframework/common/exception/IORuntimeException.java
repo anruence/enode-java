@@ -1,4 +1,4 @@
-package com.enodeframework.common.io;
+package com.enodeframework.common.exception;
 
 /**
  * @author anruence@gmail.com

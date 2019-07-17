@@ -12,7 +12,7 @@ public class OrderViewModelGenerator {
 //            //插入订单主记录
 //            tasks.add(connection.InsertAsync(new
 //            {
-//                OrderId = evnt.aggregateRootId(),
+//                OrderId = evnt.getAggregateRootId(),
 //                        ConferenceId = evnt.ConferenceId,
 //                        Status = (int) OrderStatus.Placed,
 //                        AccessCode = evnt.AccessCode,
@@ -26,7 +26,7 @@ public class OrderViewModelGenerator {
 //            {
 //                tasks.add(connection.InsertAsync(new
 //                {
-//                    OrderId = evnt.aggregateRootId(),
+//                    OrderId = evnt.getAggregateRootId(),
 //                            SeatTypeId = line.SeatQuantity.Seat.SeatTypeId,
 //                            SeatTypeName = line.SeatQuantity.Seat.SeatTypeName,
 //                            Quantity = line.SeatQuantity.Quantity,
@@ -50,7 +50,7 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
@@ -65,7 +65,7 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
@@ -80,7 +80,7 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
@@ -95,7 +95,7 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
@@ -110,7 +110,7 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });
@@ -125,7 +125,7 @@ public class OrderViewModelGenerator {
 //                    Version = evnt.Version
 //        },new
 //        {
-//            OrderId = evnt.aggregateRootId(),
+//            OrderId = evnt.getAggregateRootId(),
 //                    Version = evnt.Version - 1
 //        },ConfigSettings.OrderTable);
 //            });

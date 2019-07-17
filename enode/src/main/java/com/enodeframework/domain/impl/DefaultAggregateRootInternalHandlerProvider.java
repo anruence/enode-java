@@ -6,7 +6,7 @@ import com.enodeframework.domain.IAggregateRootInternalHandlerProvider;
 import com.enodeframework.eventing.IDomainEvent;
 import com.enodeframework.infrastructure.IAssemblyInitializer;
 import com.enodeframework.infrastructure.TypeUtils;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -76,11 +76,11 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
                 try {
                     methodHandle.invoke(aggregateRoot, domainEvent);
                 } catch (Throwable throwable) {
-                    throw new WrappedRuntimeException(throwable);
+                    throw new EnodeRuntimeException(throwable);
                 }
             });
         } catch (IllegalAccessException e) {
-            throw new WrappedRuntimeException(e);
+            throw new EnodeRuntimeException(e);
         }
     }
 

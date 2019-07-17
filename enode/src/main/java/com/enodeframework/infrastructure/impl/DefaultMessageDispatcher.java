@@ -162,10 +162,10 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                         queueHandler.onHandlerFinished(handlerProxy);
                     }
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Message handled success, handlerType:{}, messageType:{}, messageId:{}", handlerTypeName, message.getClass().getName(), message.id());
+                        logger.debug("Message handled success, handlerType:{}, messageType:{}, messageId:{}", handlerTypeName, message.getClass().getName(), message.getId());
                     }
                 },
-                () -> String.format("[messageId:%s, messageType:%s, handlerType:%s]", message.id(), message.getClass().getName(), handlerProxy.getInnerObject().getClass().getName()),
+                () -> String.format("[messageId:%s, messageType:%s, handlerType:%s]", message.getId(), message.getClass().getName(), handlerProxy.getInnerObject().getClass().getName()),
                 errorMessage ->
                         logger.error(String.format("Handle single message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage))
                 ,
@@ -189,10 +189,10 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                         queueHandler.onHandlerFinished(handlerProxy);
                     }
                     if (logger.isDebugEnabled()) {
-                        logger.debug("TwoMessage handled success, [messages:{}], handlerType:{}]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
+                        logger.debug("TwoMessage handled success, [messages:{}], handlerType:{}]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
                     }
                 },
-                () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
+                () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
                 errorMessage ->
                         logger.error(String.format("Handle two message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage))
                 ,
@@ -219,10 +219,10 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                     }
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug("ThreeMessage handled success, [messages:{}, handlerType:{}]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
+                        logger.debug("ThreeMessage handled success, [messages:{}, handlerType:{}]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
                     }
                 },
-                () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.id(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
+                () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
                 errorMessage -> logger.error(String.format("Handle three message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true);
     }

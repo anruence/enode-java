@@ -1,6 +1,6 @@
 package com.enodeframework.common.function;
 
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.time.Duration;
@@ -28,7 +28,7 @@ public class DelayedTask {
             try {
                 action.apply();
             } catch (InterruptedException e) {
-                throw new WrappedRuntimeException(e);
+                throw new EnodeRuntimeException(e);
             }
         }, duration.toMillis(), TimeUnit.MILLISECONDS);
     }

@@ -34,11 +34,11 @@ public class DepositTransactionProcessManager {
     public AsyncTaskResult handleAsync(DepositTransactionStartedEvent evnt) {
         AddTransactionPreparationCommand command = new AddTransactionPreparationCommand(
                 evnt.AccountId,
-                evnt.aggregateRootId(),
+                evnt.getAggregateRootId(),
                 TransactionType.DepositTransaction,
                 PreparationType.CreditPreparation,
                 evnt.Amount);
-        command.setId(evnt.id());
+        command.setId(evnt.getId());
         return Task.get(_commandService.sendAsync(command));
     }
 
@@ -48,7 +48,7 @@ public class DepositTransactionProcessManager {
                 && evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
 
             ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.TransactionPreparation.TransactionId);
-            command.setId(evnt.id());
+            command.setId(evnt.getId());
             return Task.get(_commandService.sendAsync(command));
         }
         return AsyncTaskResult.Success;
@@ -56,8 +56,8 @@ public class DepositTransactionProcessManager {
 
     @Subscribe
     public AsyncTaskResult handleAsync(DepositTransactionPreparationCompletedEvent evnt) {
-        CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.AccountId, evnt.aggregateRootId());
-        command.setId(evnt.id());
+        CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.AccountId, evnt.getAggregateRootId());
+        command.setId(evnt.getId());
         return Task.get(_commandService.sendAsync(command));
     }
 
@@ -66,7 +66,7 @@ public class DepositTransactionProcessManager {
         if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction &&
                 evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
             ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.TransactionPreparation.TransactionId);
-            command.setId(evnt.id());
+            command.setId(evnt.getId());
             return Task.get(_commandService.sendAsync(command));
         }
         return AsyncTaskResult.Success;

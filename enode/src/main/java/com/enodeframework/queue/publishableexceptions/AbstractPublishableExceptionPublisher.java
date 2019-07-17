@@ -32,20 +32,20 @@ public abstract class AbstractPublishableExceptionPublisher implements IMessageP
             sequenceMessage = (ISequenceMessage) exception;
         }
         PublishableExceptionMessage exceptionMessage = new PublishableExceptionMessage();
-        exceptionMessage.setUniqueId(exception.id());
-        exceptionMessage.setAggregateRootTypeName(sequenceMessage != null ? sequenceMessage.aggregateRootTypeName() : null);
-        exceptionMessage.setAggregateRootId(sequenceMessage != null ? sequenceMessage.aggregateRootStringId() : null);
+        exceptionMessage.setUniqueId(exception.getId());
+        exceptionMessage.setAggregateRootTypeName(sequenceMessage != null ? sequenceMessage.getAggregateRootTypeName() : null);
+        exceptionMessage.setAggregateRootId(sequenceMessage != null ? sequenceMessage.getAggregateRootStringId() : null);
         exceptionMessage.setExceptionType(exception.getClass().getName());
-        exceptionMessage.setTimestamp(exception.timestamp());
+        exceptionMessage.setTimestamp(exception.getTimestamp());
         exceptionMessage.setSerializableInfo(serializableInfo);
         String data = JsonTool.serialize(exceptionMessage);
-        String routeKey = exception.getRoutingKey() == null ? exception.getRoutingKey() : exception.id();
+        String routeKey = exception.getRoutingKey() == null ? exception.getRoutingKey() : exception.getId();
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setCode(QueueMessageTypeCode.ExceptionMessage.getValue());
         queueMessage.setTopic(topicData.getTopic());
         queueMessage.setTags(topicData.getTags());
         queueMessage.setBody(data);
-        queueMessage.setKey(exception.id());
+        queueMessage.setKey(exception.getId());
         queueMessage.setRouteKey(routeKey);
         return queueMessage;
     }

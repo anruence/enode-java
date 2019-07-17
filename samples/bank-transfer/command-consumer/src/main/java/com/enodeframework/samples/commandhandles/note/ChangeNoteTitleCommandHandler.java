@@ -23,7 +23,7 @@ public class ChangeNoteTitleCommandHandler {
         if (note == null) {
             return;
         }
-        logger.info("note:{}", note.id());
+        logger.info("note:{}", note.getId());
         note.changeTitle(command.getTitle());
     }
 }

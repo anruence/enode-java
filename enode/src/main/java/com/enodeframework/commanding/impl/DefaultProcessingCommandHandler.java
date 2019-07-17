@@ -13,9 +13,10 @@ import com.enodeframework.commanding.ProcessingCommand;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.IOHelper;
-import com.enodeframework.common.io.IORuntimeException;
+import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.common.serializing.JsonTool;
+import com.enodeframework.common.utilities.Linq;
 import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.domain.IMemoryCache;
 import com.enodeframework.eventing.DomainEventStream;
@@ -29,7 +30,7 @@ import com.enodeframework.infrastructure.IObjectProxy;
 import com.enodeframework.infrastructure.IPublishableException;
 import com.enodeframework.infrastructure.ITypeNameProvider;
 import com.enodeframework.infrastructure.MessageHandlerData;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     public CompletableFuture<Void> handle(ProcessingCommand processingCommand) {
         ICommand command = processingCommand.getMessage();
         if (Strings.isNullOrEmpty(command.getAggregateRootId())) {
-            String errorMessage = String.format("The aggregateRootId of command cannot be null or empty. commandType:%s, commandId:%s", command.getClass().getName(), command.id());
+            String errorMessage = String.format("The aggregateRootId of command cannot be null or empty. commandType:%s, commandId:%s", command.getClass().getName(), command.getId());
             logger.error(errorMessage);
             return completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), errorMessage);
         }
@@ -89,10 +90,10 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         if (findResult.getFindStatus() == HandlerFindStatus.Found) {
             return handleCommand(processingCommand, findResult.getFindHandler());
         } else if (findResult.getFindStatus() == HandlerFindStatus.TooManyHandlerData) {
-            logger.error("Found more than one command handler data, commandType:{}, commandId:{}", command.getClass().getName(), command.id());
+            logger.error("Found more than one command handler data, commandType:{}, commandId:{}", command.getClass().getName(), command.getId());
             return completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), "More than one command handler data found.");
         } else if (findResult.getFindStatus() == HandlerFindStatus.TooManyHandler) {
-            logger.error("Found more than one command handler, commandType:{}, commandId:{}", command.getClass().getName(), command.id());
+            logger.error("Found more than one command handler, commandType:{}, commandId:{}", command.getClass().getName(), command.getId());
             return completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), "More than one command handler found.");
         } else if (findResult.getFindStatus() == HandlerFindStatus.NotFound) {
             HandlerFindResult<ICommandAsyncHandlerProxy> asyncFindResult = getCommandHandler(processingCommand, commandType -> commandAsyncHandlerProvider.getHandlers(commandType));
@@ -100,13 +101,13 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
             if (asyncFindResult.getFindStatus() == HandlerFindStatus.Found) {
                 return handleCommand(processingCommand, commandAsyncHandler);
             } else if (asyncFindResult.getFindStatus() == HandlerFindStatus.TooManyHandlerData) {
-                logger.error("Found more than one command async handler data, commandType:{}, commandId:{}", command.getClass().getName(), command.id());
+                logger.error("Found more than one command async handler data, commandType:{}, commandId:{}", command.getClass().getName(), command.getId());
                 return completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), "More than one command async handler data found.");
             } else if (asyncFindResult.getFindStatus() == HandlerFindStatus.TooManyHandler) {
-                logger.error("Found more than one command async handler, commandType:{}, commandId:{}", command.getClass().getName(), command.id());
+                logger.error("Found more than one command async handler, commandType:{}, commandId:{}", command.getClass().getName(), command.getId());
                 return completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), "More than one command async handler found.");
             } else if (asyncFindResult.getFindStatus() == HandlerFindStatus.NotFound) {
-                String errorMessage = String.format("No command handler found of command. commandType:%s, commandId:%s", command.getClass().getName(), command.id());
+                String errorMessage = String.format("No command handler found of command. commandType:%s, commandId:%s", command.getClass().getName(), command.getId());
                 logger.error(errorMessage);
                 return completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), errorMessage);
             }
@@ -125,7 +126,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                         commandHandler.getInnerObject().getClass().getName(),
                         command.getClass().getName(),
-                        command.id(),
+                        command.getId(),
                         command.getAggregateRootId());
             }
             try {
@@ -156,7 +157,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 if (dirtyAggregateRootCount > 1) {
                     String errorMessage = String.format("Detected more than one aggregate created or modified by command. commandType:%s, commandId:%s",
                             command.getClass().getName(),
-                            command.id());
+                            command.getId());
                     logger.error(errorMessage);
                     completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), errorMessage);
                     return;
@@ -191,10 +192,10 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
             processingCommand.getItems().put("CommandResult",commandResult);
         }
         DomainEventStream eventStream = new DomainEventStream(
-                processingCommand.getMessage().id(),
+                processingCommand.getMessage().getId(),
                 dirtyAggregateRoot.uniqueId(),
                 typeNameProvider.getTypeName(dirtyAggregateRoot.getClass()),
-                changedEvents.get(0).version(),
+                Linq.first(changedEvents).getVersion(),
                 new Date(),
                 changedEvents,
                 processingCommand.getItems());
@@ -207,7 +208,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         ICommand command = processingCommand.getMessage();
 
         IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
-                () -> eventStore.findAsync(command.getAggregateRootId(), command.id()),
+                () -> eventStore.findAsync(command.getAggregateRootId(), command.getId()),
                 currentRetryTimes -> processIfNoEventsOfCommand(processingCommand, currentRetryTimes),
 
                 result ->
@@ -219,7 +220,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         completeCommand(processingCommand, CommandStatus.NothingChanged, String.class.getName(), processingCommand.getCommandExecuteContext().getResult());
                     }
                 },
-                () -> String.format("[commandId:%s]", command.id()),
+                () -> String.format("[commandId:%s]", command.getId()),
                 errorMessage -> logger.error("Find event by commandId has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
                 retryTimes, true);
     }
@@ -230,10 +231,10 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
             processingCommand.getItems().put("CommandResult", commandResult);
         }
         return new DomainEventStream(
-                processingCommand.getMessage().id(),
+                processingCommand.getMessage().getId(),
                 aggregateRoot.uniqueId(),
                 typeNameProvider.getTypeName(aggregateRoot.getClass()),
-                aggregateRoot.version() + 1,
+                aggregateRoot.getVersion() + 1,
                 new Date(),
                 changedEvents,
                 processingCommand.getItems());
@@ -243,7 +244,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         ICommand command = processingCommand.getMessage();
 
         IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
-                () -> eventStore.findAsync(command.getAggregateRootId(), command.id()),
+                () -> eventStore.findAsync(command.getAggregateRootId(), command.getId()),
                 currentRetryTimes -> handleExceptionAsync(processingCommand, commandHandler, exception, currentRetryTimes),
 
                 result -> {
@@ -261,8 +262,8 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         //然后，认为该command处理失败即可；
 
                         Throwable exp = exception.getCause();
-                        if (exp instanceof WrappedRuntimeException) {
-                            exp = ((WrappedRuntimeException) exp).getException();
+                        if (exp instanceof EnodeRuntimeException) {
+                            exp = ((EnodeRuntimeException) exp).getException();
                         }
 
                         if (exp instanceof IPublishableException) {
@@ -274,7 +275,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         }
                     }
                 },
-                () -> String.format("[commandId:%s]", command.id()),
+                () -> String.format("[commandId:%s]", command.getId()),
                 errorMessage -> logger.error(String.format("Find event by commandId has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true
         );
@@ -290,7 +291,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                     Map<String, String> serializableInfo = new HashMap<>();
                     exception.serializeTo(serializableInfo);
                     String exceptionInfo = String.join(",", serializableInfo.entrySet().stream().map(x -> String.format("%s:%s", x.getKey(), x.getValue())).collect(Collectors.toList()));
-                    return String.format("[commandId:%s, exceptionInfo:%s]", processingCommand.getMessage().id(), exceptionInfo);
+                    return String.format("[commandId:%s, exceptionInfo:%s]", processingCommand.getMessage().getId(), exceptionInfo);
                 },
                 errorMessage -> logger.error(String.format("Publish event has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true);
@@ -302,7 +303,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 exception.getClass().getName(),
                 commandHandler.getInnerObject().getClass().getName(),
                 command.getClass().getName(),
-                command.id(),
+                command.getId(),
                 command.getAggregateRootId());
         logger.error(errorMessage, exception);
     }
@@ -319,7 +320,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         logger.debug("Handle command async success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                 commandHandler.getInnerObject().getClass().getName(),
                                 command.getClass().getName(),
-                                command.id(),
+                                command.getId(),
                                 command.getAggregateRootId());
                     }
                     return asyncResult.exceptionally(ex -> {
@@ -327,21 +328,21 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                             logger.error(String.format("Handle command async has io exception. handlerType:%s, commandType:%s, commandId:%s, aggregateRootId:%s",
                                     commandHandler.getInnerObject().getClass().getName(),
                                     command.getClass().getName(),
-                                    command.id(),
+                                    command.getId(),
                                     command.getAggregateRootId()), ex);
                             return new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage());
                         }
                         logger.error(String.format("Handle command async has unknown exception. handlerType:%s, commandType:%s, commandId:%s, aggregateRootId:%s",
                                 commandHandler.getInnerObject().getClass().getName(),
                                 command.getClass().getName(),
-                                command.id(),
+                                command.getId(),
                                 command.getAggregateRootId()), ex);
                         return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage());
                     });
                 },
                 currentRetryTimes -> handleCommandAsync(processingCommand, commandHandler, currentRetryTimes),
                 result -> commitChangesAsync(processingCommand, true, result.getData(), null),
-                () -> String.format("[command:[id:%s,type:%s],handlerType:%s]", command.id(), command.getClass().getName(), commandHandler.getInnerObject().getClass().getName()),
+                () -> String.format("[command:[id:%s,type:%s],handlerType:%s]", command.getId(), command.getClass().getName(), commandHandler.getInnerObject().getClass().getName()),
                 errorMessage -> commitChangesAsync(processingCommand, false, null, errorMessage),
                 retryTimes, false);
         return Task.completedTask;
@@ -366,7 +367,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 () -> applicationMessagePublisher.publishAsync(message),
                 currentRetryTimes -> publishMessageAsync(processingCommand, message, currentRetryTimes),
                 result -> completeCommand(processingCommand, CommandStatus.Success, message.getTypeName(), JsonTool.serialize(message)),
-                () -> String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.id(), message.getClass().getName(), command.id(), command.getClass().getName()),
+                () -> String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.getId(), message.getClass().getName(), command.getId(), command.getClass().getName()),
                 errorMessage -> logger.error(String.format("Publish application message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true);
     }
@@ -381,7 +382,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
             return HandlerFindResult.TooManyHandlerData;
         }
 
-        MessageHandlerData<T> handlerData = handlerDataList.get(0);
+        MessageHandlerData<T> handlerData = Linq.first(handlerDataList);
 
         if (handlerData.ListHandlers == null || handlerData.ListHandlers.size() == 0) {
             return HandlerFindResult.NotFound;
@@ -389,13 +390,13 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
             return HandlerFindResult.TooManyHandler;
         }
 
-        T handlerProxy = handlerData.ListHandlers.get(0);
+        T handlerProxy = Linq.first(handlerData.ListHandlers);
 
         return new HandlerFindResult<>(HandlerFindStatus.Found, handlerProxy);
     }
 
     private CompletableFuture<Void> completeCommand(ProcessingCommand processingCommand, CommandStatus commandStatus, String resultType, String result) {
-        CommandResult commandResult = new CommandResult(commandStatus, processingCommand.getMessage().id(), processingCommand.getMessage().getAggregateRootId(), result, resultType);
+        CommandResult commandResult = new CommandResult(commandStatus, processingCommand.getMessage().getId(), processingCommand.getMessage().getAggregateRootId(), result, resultType);
         return processingCommand.getMailBox().completeMessage(processingCommand, commandResult);
     }
 

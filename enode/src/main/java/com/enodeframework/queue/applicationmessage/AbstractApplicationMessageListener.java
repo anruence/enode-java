@@ -31,7 +31,7 @@ public abstract class AbstractApplicationMessageListener implements IMessageHand
         DefaultMessageProcessContext processContext = new DefaultMessageProcessContext(queueMessage, context);
         ProcessingApplicationMessage processingMessage = new ProcessingApplicationMessage(message, processContext);
         if (logger.isDebugEnabled()) {
-            logger.debug("ENode application message received, messageId: {}, routingKey: {}", message.id(), message.getRoutingKey());
+            logger.debug("ENode application message received, messageId: {}, routingKey: {}", message.getId(), message.getRoutingKey());
         }
         applicationMessageProcessor.process(processingMessage);
     }

@@ -19,7 +19,7 @@ public class ProcessingCommandMailbox extends DefaultMailBox<ProcessingCommand, 
     @Override
     protected CompletableFuture<Void> completeMessageWithResult(ProcessingCommand processingCommand, CommandResult commandResult) {
         return processingCommand.completeAsync(commandResult).exceptionally(ex -> {
-            _logger.error("Failed to complete command, commandId: {}, aggregateRootId: {}", processingCommand.getMessage().id(), processingCommand.getMessage().getAggregateRootId(), ex);
+            logger.error("Failed to complete command, commandId: {}, aggregateRootId: {}", processingCommand.getMessage().getId(), processingCommand.getMessage().getAggregateRootId(), ex);
             return null;
         });
     }

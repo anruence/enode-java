@@ -2,11 +2,11 @@ package com.enodeframework.tests.Mocks;
 
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
-import com.enodeframework.common.io.IORuntimeException;
+import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.infrastructure.IMessagePublisher;
 import com.enodeframework.infrastructure.IPublishableException;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -33,7 +33,7 @@ public class MockPublishableExceptionPublisher implements IMessagePublisher<IPub
             _currentFailedCount++;
 
             if (_failedType == FailedType.UnKnownException) {
-                throw new WrappedRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("PublishPublishableExceptionAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {

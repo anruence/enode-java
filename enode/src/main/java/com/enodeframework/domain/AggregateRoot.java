@@ -4,7 +4,7 @@ import com.enodeframework.common.container.SpringObjectContainer;
 import com.enodeframework.common.function.Action2;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.IDomainEvent;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
+import com.enodeframework.common.exception.EnodeRuntimeException;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         this.version = version;
     }
 
-    public TAggregateRootId id() {
+    public TAggregateRootId getId() {
         return this.id;
     }
 
@@ -82,13 +82,13 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         if (handler == null) {
             throw new RuntimeException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
         }
-        if (this.id == null && domainEvent.version() == 1) {
-            this.id = (TAggregateRootId) domainEvent.aggregateRootId();
+        if (this.id == null && domainEvent.getVersion() == 1) {
+            this.id = (TAggregateRootId) domainEvent.getAggregateRootId();
         }
         try {
             handler.apply(this, domainEvent);
         } catch (Exception e) {
-            throw new WrappedRuntimeException(e);
+            throw new EnodeRuntimeException(e);
         }
     }
 
@@ -103,11 +103,11 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     }
 
     private void verifyEvent(DomainEventStream eventStream) {
-        if (eventStream.version() > 1 && !eventStream.aggregateRootId().equals(this.uniqueId())) {
-            throw new UnsupportedOperationException(String.format("Invalid domain event stream, aggregateRootId:%s, expected aggregateRootId:%s, type:%s", eventStream.aggregateRootId(), this.uniqueId(), this.getClass().getName()));
+        if (eventStream.getVersion() > 1 && !eventStream.getAggregateRootId().equals(this.uniqueId())) {
+            throw new UnsupportedOperationException(String.format("Invalid domain event stream, aggregateRootId:%s, expected aggregateRootId:%s, type:%s", eventStream.getAggregateRootId(), this.uniqueId(), this.getClass().getName()));
         }
-        if (eventStream.version() != this.version() + 1) {
-            throw new UnsupportedOperationException(String.format("Invalid domain event stream, version:%d, expected version:%d, current aggregateRoot type:%s, id:%s", eventStream.version(), this.version(), this.getClass().getName(), this.uniqueId()));
+        if (eventStream.getVersion() != this.getVersion() + 1) {
+            throw new UnsupportedOperationException(String.format("Invalid domain event stream, version:%d, expected version:%d, current aggregateRoot type:%s, id:%s", eventStream.getVersion(), this.getVersion(), this.getClass().getName(), this.uniqueId()));
         }
     }
 
@@ -116,12 +116,11 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         if (id != null) {
             return id.toString();
         }
-
         return null;
     }
 
     @Override
-    public int version() {
+    public int getVersion() {
         return version;
     }
 
@@ -137,7 +136,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     @Override
     public void acceptChanges() {
         if (uncommittedEvents != null && !uncommittedEvents.isEmpty()) {
-            version = uncommittedEvents.peek().version();
+            version = uncommittedEvents.peek().getVersion();
             uncommittedEvents.clear();
         }
     }
@@ -151,7 +150,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         eventStreams.forEach(eventStream -> {
             verifyEvent(eventStream);
             eventStream.events().forEach(this::handleEvent);
-            this.version = eventStream.version();
+            this.version = eventStream.getVersion();
         });
     }
 }

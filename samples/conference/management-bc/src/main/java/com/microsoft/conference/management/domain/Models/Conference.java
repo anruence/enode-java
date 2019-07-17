@@ -1,8 +1,8 @@
 package com.microsoft.conference.management.domain.Models;
 
 import com.enodeframework.domain.AggregateRoot;
-import com.enodeframework.infrastructure.WrappedRuntimeException;
-import com.microsoft.conference.Linq;
+import com.enodeframework.common.exception.EnodeRuntimeException;
+import com.enodeframework.common.utilities.Linq;
 import com.microsoft.conference.management.domain.Events.ConferenceCreated;
 import com.microsoft.conference.management.domain.Events.ConferencePublished;
 import com.microsoft.conference.management.domain.Events.ConferenceUnpublished;
@@ -55,9 +55,9 @@ public class Conference extends AggregateRoot<String> {
     }
 
     public void UpdateSeat(String seatTypeId, SeatTypeInfo seatTypeInfo, int quantity) {
-        SeatType seatType = Linq.Single(_seatTypes, x -> x.Id.equals(seatTypeId));
+        SeatType seatType = Linq.single(_seatTypes, x -> x.Id.equals(seatTypeId));
         if (seatType == null) {
-            throw new WrappedRuntimeException("Seat type not exist.");
+            throw new EnodeRuntimeException("Seat type not exist.");
         }
         applyEvent(new SeatTypeUpdated(seatTypeId, seatTypeInfo));
 
@@ -98,7 +98,7 @@ public class Conference extends AggregateRoot<String> {
             }
             SeatType seatType = _seatTypes.stream().filter(x -> x.Id == reservationItem.SeatTypeId).findFirst().orElse(null);
             if (seatType == null) {
-                throw new WrappedRuntimeException(String.format("Seat type '{}' not exist.", reservationItem.SeatTypeId));
+                throw new EnodeRuntimeException(String.format("Seat type '{}' not exist.", reservationItem.SeatTypeId));
             }
             int availableQuantity = seatType.Quantity - GetTotalReservationQuantity(seatType.Id);
             if (availableQuantity < reservationItem.Quantity) {
@@ -115,7 +115,7 @@ public class Conference extends AggregateRoot<String> {
             List<ReservationItem> reservationItems = _reservations.get(reservationId);
             List<SeatQuantity> seatQuantities = new ArrayList<>();
             for (ReservationItem reservationItem : reservationItems) {
-                SeatType seatType = Linq.Single(_seatTypes, (x -> x.Id == reservationItem.SeatTypeId));
+                SeatType seatType = Linq.single(_seatTypes, (x -> x.Id == reservationItem.SeatTypeId));
                 seatQuantities.add(new SeatQuantity(seatType.Id, seatType.Quantity - reservationItem.Quantity));
             }
             applyEvent(new SeatsReservationCommitted(reservationId, seatQuantities));
@@ -129,7 +129,7 @@ public class Conference extends AggregateRoot<String> {
             List<ReservationItem> reservationItems = _reservations.get(reservationId);
             List<SeatAvailableQuantity> seatAvailableQuantities = new ArrayList<>();
             for (ReservationItem reservationItem : reservationItems) {
-                SeatType seatType = Linq.Single(_seatTypes, (x -> x.Id == reservationItem.SeatTypeId));
+                SeatType seatType = Linq.single(_seatTypes, (x -> x.Id == reservationItem.SeatTypeId));
                 int availableQuantity = seatType.Quantity - GetTotalReservationQuantity(seatType.Id);
                 seatAvailableQuantities.add(new SeatAvailableQuantity(seatType.Id, availableQuantity + reservationItem.Quantity));
             }
@@ -144,7 +144,7 @@ public class Conference extends AggregateRoot<String> {
     private int GetTotalReservationQuantity(String seatTypeId) {
         int totalReservationQuantity = 0;
         for (List<ReservationItem> reservation : _reservations.values()) {
-            ReservationItem reservationItem = Linq.SingleOrDefault(reservation, x -> x.SeatTypeId == seatTypeId);
+            ReservationItem reservationItem = Linq.singleOrDefault(reservation, x -> x.SeatTypeId == seatTypeId);
             if (reservationItem != null) {
                 totalReservationQuantity += reservationItem.Quantity;
             }
@@ -154,7 +154,7 @@ public class Conference extends AggregateRoot<String> {
 
 
     private void Handle(ConferenceCreated evnt) {
-        id = evnt.aggregateRootId();
+        id = evnt.getAggregateRootId();
         _info = evnt.Info;
         _seatTypes = new ArrayList<>();
         _reservations = new HashMap<>();
@@ -191,16 +191,16 @@ public class Conference extends AggregateRoot<String> {
     }
 
     private void Handle(SeatTypeUpdated evnt) {
-        Linq.Single(_seatTypes, x -> x.Id == evnt.SeatTypeId).Info = evnt.SeatTypeInfo;
+        Linq.single(_seatTypes, x -> x.Id == evnt.SeatTypeId).Info = evnt.SeatTypeInfo;
     }
 
     private void Handle(SeatTypeQuantityChanged evnt) {
-        Linq.Single(_seatTypes, x -> x.Id == evnt.SeatTypeId).Quantity = evnt.Quantity;
+        Linq.single(_seatTypes, x -> x.Id == evnt.SeatTypeId).Quantity = evnt.Quantity;
     }
 
     private void Handle(SeatTypeRemoved evnt) {
         // remove 指定的seatTypeId
-        _seatTypes.remove(Linq.Single(_seatTypes, x -> x.Id.equals(evnt.SeatTypeId)));
+        _seatTypes.remove(Linq.single(_seatTypes, x -> x.Id.equals(evnt.SeatTypeId)));
     }
 
     private void Handle(SeatsReserved evnt) {
@@ -210,7 +210,7 @@ public class Conference extends AggregateRoot<String> {
     private void Handle(SeatsReservationCommitted evnt) {
         _reservations.remove(evnt.ReservationId);
         for (SeatQuantity seatQuantity : evnt.SeatQuantities) {
-            Linq.Single(_seatTypes, (x -> x.Id == seatQuantity.SeatTypeId)).Quantity = seatQuantity.Quantity;
+            Linq.single(_seatTypes, (x -> x.Id == seatQuantity.SeatTypeId)).Quantity = seatQuantity.Quantity;
         }
     }
 

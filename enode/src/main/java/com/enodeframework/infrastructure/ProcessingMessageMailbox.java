@@ -1,5 +1,6 @@
 package com.enodeframework.infrastructure;
 
+import com.enodeframework.common.io.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +57,7 @@ public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y exte
             }
         }
 
-        waitingMessageDict.putIfAbsent(sequenceMessage.version(), waitingMessage);
+        waitingMessageDict.putIfAbsent(sequenceMessage.getVersion(), waitingMessage);
 
         lastActiveTime = new Date();
         exit();
@@ -81,12 +82,8 @@ public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y exte
                 await(messageHandler.handleAsync(processingMessage));
             }
         } catch (Exception ex) {
-            logger.error(String.format("Message mailbox run has unknown exception, routingKey: %s, commandId: %s", routingKey, processingMessage != null ? processingMessage.getMessage().id() : ""), ex);
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                // ignore e
-            }
+            logger.error(String.format("Message mailbox run has unknown exception, routingKey: %s, commandId: %s", routingKey, processingMessage != null ? processingMessage.getMessage().getId() : ""), ex);
+            Task.sleep(1);
         } finally {
             if (processingMessage == null) {
                 exit();
@@ -115,7 +112,7 @@ public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y exte
             return false;
         }
 
-        X nextMessage = waitingMessageDict.remove(sequenceMessage.version() + 1);
+        X nextMessage = waitingMessageDict.remove(sequenceMessage.getVersion() + 1);
 
         if (nextMessage != null) {
             scheduler.scheduleMessage(nextMessage);

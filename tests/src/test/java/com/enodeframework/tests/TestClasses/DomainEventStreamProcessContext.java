@@ -19,8 +19,8 @@ public class DomainEventStreamProcessContext implements IMessageProcessContext {
 
     @Override
     public void notifyMessageProcessed() {
-        _versionList.add(_domainEventStreamMessage.version());
-        if (_domainEventStreamMessage.version() == 3) {
+        _versionList.add(_domainEventStreamMessage.getVersion());
+        if (_domainEventStreamMessage.getVersion() == 3) {
             _waitHandle.set();
         }
     }

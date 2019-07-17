@@ -5,9 +5,9 @@ import com.enodeframework.common.utilities.ObjectId;
 import java.util.Date;
 
 public abstract class Message implements IMessage {
-    public String id;
-    public Date timestamp;
-    public int sequence;
+    private String id;
+    private Date timestamp;
+    private int sequence;
 
     public Message() {
         id = ObjectId.generateNewStringId();
@@ -16,7 +16,7 @@ public abstract class Message implements IMessage {
     }
 
     @Override
-    public String id() {
+    public String getId() {
         return id;
     }
 
@@ -26,7 +26,7 @@ public abstract class Message implements IMessage {
     }
 
     @Override
-    public Date timestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
@@ -36,7 +36,7 @@ public abstract class Message implements IMessage {
     }
 
     @Override
-    public int sequence() {
+    public int getSequence() {
         return sequence;
     }
 

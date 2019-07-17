@@ -26,7 +26,7 @@ public class AccountEventHandler {
 
     @Subscribe
     public AsyncTaskResult handleAsync(AccountCreatedEvent evnt) {
-        logger.info("账户已创建，账户：{}，所有者：{}", evnt.aggregateRootId(), evnt.Owner);
+        logger.info("账户已创建，账户：{}，所有者：{}", evnt.getAggregateRootId(), evnt.Owner);
         return AsyncTaskResult.Success;
     }
 
@@ -74,25 +74,25 @@ public class AccountEventHandler {
 
     @Subscribe
     public AsyncTaskResult handleAsync(TransferTransactionStartedEvent evnt) {
-        logger.info("转账交易已开始，交易ID：{}，源账户：{}，目标账户：{}，转账金额：{}", evnt.aggregateRootId(), evnt.TransactionInfo.SourceAccountId, evnt.TransactionInfo.TargetAccountId, evnt.TransactionInfo.Amount);
+        logger.info("转账交易已开始，交易ID：{}，源账户：{}，目标账户：{}，转账金额：{}", evnt.getAggregateRootId(), evnt.TransactionInfo.SourceAccountId, evnt.TransactionInfo.TargetAccountId, evnt.TransactionInfo.Amount);
         return AsyncTaskResult.Success;
     }
 
     @Subscribe
     public AsyncTaskResult handleAsync(TransferOutPreparationConfirmedEvent evnt) {
-        logger.info("预转出确认成功，交易ID：{}，账户：{}", evnt.aggregateRootId(), evnt.TransactionInfo.SourceAccountId);
+        logger.info("预转出确认成功，交易ID：{}，账户：{}", evnt.getAggregateRootId(), evnt.TransactionInfo.SourceAccountId);
         return AsyncTaskResult.Success;
     }
 
     @Subscribe
     public AsyncTaskResult handleAsync(TransferInPreparationConfirmedEvent evnt) {
-        logger.info("预转入确认成功，交易ID：{}，账户：{}", evnt.aggregateRootId(), evnt.TransactionInfo.TargetAccountId);
+        logger.info("预转入确认成功，交易ID：{}，账户：{}", evnt.getAggregateRootId(), evnt.TransactionInfo.TargetAccountId);
         return AsyncTaskResult.Success;
     }
 
     @Subscribe
     public AsyncTaskResult handleAsync(TransferTransactionCompletedEvent evnt) {
-        logger.info("转账交易已完成，交易ID：{}", evnt.aggregateRootId());
+        logger.info("转账交易已完成，交易ID：{}", evnt.getAggregateRootId());
         return AsyncTaskResult.Success;
     }
 
@@ -104,7 +104,7 @@ public class AccountEventHandler {
 
     @Subscribe
     public AsyncTaskResult handleAsync(TransferTransactionCanceledEvent evnt) {
-        logger.info("转账交易已取消，交易ID：{}", evnt.aggregateRootId());
+        logger.info("转账交易已取消，交易ID：{}", evnt.getAggregateRootId());
         return AsyncTaskResult.Success;
     }
 }
