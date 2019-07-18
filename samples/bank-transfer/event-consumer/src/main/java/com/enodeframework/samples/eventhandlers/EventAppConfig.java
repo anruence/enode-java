@@ -9,6 +9,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static com.enodeframework.samples.QueueProperties.JDBC_URL;
+
 @Configuration
 public class EventAppConfig {
 
@@ -35,7 +37,7 @@ public class EventAppConfig {
     @Bean
     public HikariDataSource dataSource() {
         HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl("jdbc:mysql://db.p.anruence.com:13306/enode");
+        dataSource.setJdbcUrl(JDBC_URL);
         dataSource.setUsername("root");
         dataSource.setPassword("root");
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());

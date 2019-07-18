@@ -15,38 +15,12 @@ import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.EventAppendResult;
 import com.enodeframework.eventing.impl.InMemoryEventStore;
 import com.enodeframework.infrastructure.ProcessingDomainEventStreamMessage;
-import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
-import com.enodeframework.tests.Commands.AsyncHandlerBaseCommand;
-import com.enodeframework.tests.Commands.AsyncHandlerChildCommand;
-import com.enodeframework.tests.Commands.AsyncHandlerCommand;
-import com.enodeframework.tests.Commands.BaseCommand;
-import com.enodeframework.tests.Commands.ChangeInheritTestAggregateTitleCommand;
-import com.enodeframework.tests.Commands.ChangeMultipleAggregatesCommand;
-import com.enodeframework.tests.Commands.ChangeNothingCommand;
-import com.enodeframework.tests.Commands.ChangeTestAggregateTitleCommand;
-import com.enodeframework.tests.Commands.ChildCommand;
-import com.enodeframework.tests.Commands.CreateInheritTestAggregateCommand;
-import com.enodeframework.tests.Commands.CreateTestAggregateCommand;
-import com.enodeframework.tests.Commands.NoHandlerCommand;
-import com.enodeframework.tests.Commands.NotCheckAsyncHandlerExistWithResultCommand;
-import com.enodeframework.tests.Commands.SetResultCommand;
-import com.enodeframework.tests.Commands.TestEventPriorityCommand;
-import com.enodeframework.tests.Commands.ThrowExceptionCommand;
-import com.enodeframework.tests.Commands.TwoAsyncHandlersCommand;
-import com.enodeframework.tests.Commands.TwoHandlersCommand;
+import com.enodeframework.tests.Commands.*;
 import com.enodeframework.tests.Domain.InheritTestAggregate;
 import com.enodeframework.tests.Domain.TestAggregate;
 import com.enodeframework.tests.Domain.TestAggregateCreated;
 import com.enodeframework.tests.Domain.TestAggregateTitleChanged;
-import com.enodeframework.tests.EventHandlers.Handler1;
-import com.enodeframework.tests.EventHandlers.Handler121;
-import com.enodeframework.tests.EventHandlers.Handler122;
-import com.enodeframework.tests.EventHandlers.Handler123;
-import com.enodeframework.tests.EventHandlers.Handler1231;
-import com.enodeframework.tests.EventHandlers.Handler1232;
-import com.enodeframework.tests.EventHandlers.Handler1233;
-import com.enodeframework.tests.EventHandlers.Handler2;
-import com.enodeframework.tests.EventHandlers.Handler3;
+import com.enodeframework.tests.EventHandlers.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.junit.Assert;
@@ -60,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -257,7 +232,6 @@ public class CommandAndEventServiceTest extends AbstractTest {
     }
 
     @Test
-
     public void create_and_concurrent_update_aggregate_test() {
         String aggregateId = ObjectId.generateNewStringId();
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
@@ -302,6 +276,33 @@ public class CommandAndEventServiceTest extends AbstractTest {
             });
         }
         waitHandle.waitOne();
+    }
+
+    @Test
+    public void perf_create_and_concurrent_update_aggregate_test() throws InterruptedException {
+        //并发执行创建聚合根的命令
+        int totalCount = 2020;
+        AtomicLong finishedCount = new AtomicLong(0);
+        ManualResetEvent waitHandle = new ManualResetEvent(false);
+        long start = System.currentTimeMillis();
+
+        CountDownLatch latch = new CountDownLatch(totalCount);
+        for (int i = 0; i < totalCount; i++) {
+            CreateTestAggregateCommand command = new CreateTestAggregateCommand();
+            command.aggregateRootId = ObjectId.generateNewStringId();
+            command.setTitle("Sample Note" + ObjectId.generateNewStringId());
+            try {
+                _commandService.executeAsync(command).thenAccept(result -> {
+                    _logger.info("{}", result);
+                    latch.countDown();
+                });
+            } catch (Exception e) {
+                latch.countDown();
+            }
+        }
+        latch.await();
+        long end = System.currentTimeMillis();
+        System.out.println("run tin " + (end - start));
     }
 
     @Test

@@ -13,7 +13,6 @@ import com.enodeframework.eventing.IDomainEvent;
 import com.enodeframework.eventing.IEventSerializer;
 import com.enodeframework.eventing.IEventStore;
 import com.enodeframework.eventing.impl.StreamRecord;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -26,10 +25,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -54,8 +49,6 @@ public class MysqlEventStore implements IEventStore {
 
     private boolean supportBatchAppendEvent = true;
 
-    private Executor executor;
-
     public MysqlEventStore(DataSource ds, OptionSetting optionSetting) {
         Ensure.notNull(ds, "ds");
         if (optionSetting != null) {
@@ -65,7 +58,6 @@ public class MysqlEventStore implements IEventStore {
             commandIndexName = optionSetting.getOptionValue("CommandIndexName");
             bulkCopyBatchSize = optionSetting.getOptionValue("BulkCopyBatchSize") == null ? 0 : Integer.valueOf(optionSetting.getOptionValue("BulkCopyBatchSize"));
             bulkCopyTimeout = optionSetting.getOptionValue("BulkCopyTimeout") == null ? 0 : Integer.valueOf(optionSetting.getOptionValue("BulkCopyTimeout"));
-
         } else {
             DefaultDBConfigurationSetting setting = new DefaultDBConfigurationSetting();
             tableName = setting.getEventTableName();
@@ -81,12 +73,7 @@ public class MysqlEventStore implements IEventStore {
         Ensure.notNull(commandIndexName, "commandIndexName");
         Ensure.positive(bulkCopyBatchSize, "bulkCopyBatchSize");
         Ensure.positive(bulkCopyTimeout, "bulkCopyTimeout");
-
         queryRunner = new QueryRunner(ds);
-        executor = new ThreadPoolExecutor(4, 4,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(),
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MysqlEventStoreExecutor-%d").build());
     }
 
     @Override
@@ -131,7 +118,7 @@ public class MysqlEventStore implements IEventStore {
                         logger.error(errorMessage, ex);
                         return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage());
                     }
-                }, executor), "QueryAggregateEventsAsync");
+                }), "QueryAggregateEventsAsync");
     }
 
     public AsyncTaskResult<EventAppendResult> batchAppend(List<DomainEventStream> eventStreams) {
@@ -139,36 +126,34 @@ public class MysqlEventStore implements IEventStore {
             throw new IllegalArgumentException("Event streams cannot be empty.");
         }
 
-        List<String> aggregateRootIds = eventStreams.stream().map(x -> x.getAggregateRootId()).distinct().collect(Collectors.toList());
-        if (aggregateRootIds.size() > 1) {
-            throw new IllegalArgumentException("Batch append event only support for one aggregate.");
-        }
-
-        String aggregateRootId = aggregateRootIds.get(0);
-
-        Object[][] params = new Object[eventStreams.size()][];
-
-        for (int i = 0, len = eventStreams.size(); i < len; i++) {
-            DomainEventStream eventStream = eventStreams.get(i);
-            params[i] = new Object[]{eventStream.getAggregateRootId(), eventStream.getAggregateRootTypeName(), eventStream.getCommandId(), eventStream.getVersion(), eventStream.getTimestamp(),
-                    JsonTool.serialize(eventSerializer.serialize(eventStream.events()))};
-        }
-
-        try {
-            queryRunner.batch(String.format("INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)", getTableName(aggregateRootId)), params);
-            return new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.Success);
-        } catch (SQLException ex) {
-            if (ex.getErrorCode() == 1062 && ex.getMessage().contains(versionIndexName)) {
-                return new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.DuplicateEvent);
-            } else if (ex.getErrorCode() == 1062 && ex.getMessage().contains(commandIndexName)) {
-                return new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.DuplicateCommand);
+        Map<String, List<DomainEventStream>> eventStreamMap = eventStreams.stream().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
+        for (List<DomainEventStream> x : eventStreamMap.values()) {
+            if (x.size() > 1) {
+                throw new IllegalArgumentException("Batch append event only support for one aggregate.");
             }
-            logger.error("Batch append event has sql exception.", ex);
-            return new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage(), EventAppendResult.Failed);
-        } catch (Exception ex) {
-            logger.error("Batch append event has unknown exception.", ex);
-            return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage(), EventAppendResult.Failed);
+            try {
+                Object[][] params = new Object[x.size()][];
+                for (int i = 0, len = x.size(); i < len; i++) {
+                    DomainEventStream eventStream = x.get(i);
+                    params[i] = new Object[]{eventStream.getAggregateRootId(), eventStream.getAggregateRootTypeName(), eventStream.getCommandId(), eventStream.getVersion(), eventStream.getTimestamp(),
+                            JsonTool.serialize(eventSerializer.serialize(eventStream.events()))};
+                }
+                String aggregateRootId = x.get(0).getAggregateRootId();
+                queryRunner.batch(String.format("INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)", getTableName(aggregateRootId)), params);
+            } catch (SQLException ex) {
+                if (ex.getErrorCode() == 1062 && ex.getMessage().contains(versionIndexName)) {
+                    return new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.DuplicateEvent);
+                } else if (ex.getErrorCode() == 1062 && ex.getMessage().contains(commandIndexName)) {
+                    return new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.DuplicateCommand);
+                }
+                logger.error("Batch append event has sql exception.", ex);
+                return new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage(), EventAppendResult.Failed);
+            } catch (Exception ex) {
+                logger.error("Batch append event has unknown exception.", ex);
+                return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage(), EventAppendResult.Failed);
+            }
         }
+        return new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.Success);
     }
 
     public AsyncTaskResult<EventAppendResult> append(DomainEventStream eventStream) {
@@ -221,7 +206,7 @@ public class MysqlEventStore implements IEventStore {
                         logger.error(String.format("Find event by version has unknown exception, aggregateRootId: %s, version: %d", aggregateRootId, version), ex);
                         return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage());
                     }
-                }, executor), "FindEventByVersionAsync");
+                }), "FindEventByVersionAsync");
     }
 
     @Override
@@ -244,7 +229,7 @@ public class MysqlEventStore implements IEventStore {
                         logger.error(String.format("Find event by commandId has unknown exception, aggregateRootId: %s, commandId: %s", aggregateRootId, commandId), ex);
                         return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage());
                     }
-                }, executor), "FindEventByCommandIdAsync");
+                }), "FindEventByCommandIdAsync");
     }
 
     private int getTableIndex(String aggregateRootId) {
