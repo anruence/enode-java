@@ -1,10 +1,12 @@
 package com.enodeframework;
 
+import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.extensions.ClassNameComparator;
 import com.enodeframework.common.extensions.ClassPathScanHandler;
 import com.enodeframework.infrastructure.IAssemblyInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Set;
@@ -22,6 +24,9 @@ public class ENodeBootstrap {
 
     private List<String> packages;
 
+    @Autowired
+    private IObjectContainer objectContainer;
+
     public void init() {
         Set<Class<?>> classSet = scanConfiguredPackages();
         registerBeans(classSet);
@@ -31,7 +36,7 @@ public class ENodeBootstrap {
      * @param classSet
      */
     private void registerBeans(Set<Class<?>> classSet) {
-        ObjectContainer.resolveAll(IAssemblyInitializer.class).values().forEach(provider -> {
+        objectContainer.resolveAll(IAssemblyInitializer.class).values().forEach(provider -> {
             provider.initialize(classSet);
             if (logger.isDebugEnabled()) {
                 logger.debug("{} initial success", provider.getClass().getName());
