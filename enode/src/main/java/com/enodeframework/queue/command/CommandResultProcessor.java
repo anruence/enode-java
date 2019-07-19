@@ -4,6 +4,7 @@ import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.commanding.CommandReturnType;
 import com.enodeframework.commanding.CommandStatus;
 import com.enodeframework.commanding.ICommand;
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.scheduling.Worker;
@@ -51,7 +52,7 @@ public class CommandResultProcessor {
         netServer = vertx.createNetServer();
         netServer.connectHandler(sock -> {
             sock.endHandler(v -> sock.close()).exceptionHandler(t -> {
-                logger.error("Failed to start Net Server", t);
+                logger.error("Failed to start NetServer", t);
                 sock.close();
             }).handler(buffer -> {
                 RemoteReply name = buffer.toJsonObject().mapTo(RemoteReply.class);
@@ -69,9 +70,9 @@ public class CommandResultProcessor {
         });
     }
 
-    public void registerProcessingCommand(ICommand command, com.enodeframework.commanding.CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
+    public void registerProcessingCommand(ICommand command, CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
         if (commandTaskDict.containsKey(command.getId())) {
-            throw new RuntimeException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.getId()));
+            throw new ENodeRuntimeException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.getId()));
         }
         commandTaskDict.put(command.getId(), new CommandTaskCompletionSource(commandReturnType, taskCompletionSource));
     }
@@ -109,15 +110,15 @@ public class CommandResultProcessor {
         return bindAddress;
     }
 
-    public void processRequestInternal(RemoteReply request) {
-        if (request.getCode() == CommandReturnType.CommandExecuted.getValue()) {
-            CommandResult result = request.getCommandResult();
+    public void processRequestInternal(RemoteReply reply) {
+        if (reply.getCode() == CommandReturnType.CommandExecuted.getValue()) {
+            CommandResult result = reply.getCommandResult();
             commandExecutedMessageLocalQueue.add(result);
-        } else if (request.getCode() == CommandReturnType.EventHandled.getValue()) {
-            DomainEventHandledMessage message = request.getEventHandledMessage();
+        } else if (reply.getCode() == CommandReturnType.EventHandled.getValue()) {
+            DomainEventHandledMessage message = reply.getEventHandledMessage();
             domainEventHandledMessageLocalQueue.add(message);
         } else {
-            logger.error("Invalid remoting request: {}", request);
+            logger.error("Invalid remoting reply: {}", reply);
         }
     }
 
@@ -125,7 +126,7 @@ public class CommandResultProcessor {
         CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.get(commandResult.getCommandId());
 
         if (commandTaskCompletionSource != null) {
-            if (commandTaskCompletionSource.getCommandReturnType().equals(com.enodeframework.commanding.CommandReturnType.CommandExecuted)) {
+            if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.CommandExecuted)) {
                 commandTaskDict.remove(commandResult.getCommandId());
 
                 if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
@@ -133,7 +134,7 @@ public class CommandResultProcessor {
                         logger.debug("Command result return, {}", commandResult);
                     }
                 }
-            } else if (commandTaskCompletionSource.getCommandReturnType().equals(com.enodeframework.commanding.CommandReturnType.EventHandled)) {
+            } else if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.EventHandled)) {
                 if (commandResult.getStatus().equals(CommandStatus.Failed) || commandResult.getStatus().equals(CommandStatus.NothingChanged)) {
                     commandTaskDict.remove(commandResult.getCommandId());
                     if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
@@ -168,19 +169,19 @@ public class CommandResultProcessor {
     }
 
     class CommandTaskCompletionSource {
-        private com.enodeframework.commanding.CommandReturnType commandReturnType;
+        private CommandReturnType commandReturnType;
         private CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource;
 
-        public CommandTaskCompletionSource(com.enodeframework.commanding.CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
+        public CommandTaskCompletionSource(CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
             this.commandReturnType = commandReturnType;
             this.taskCompletionSource = taskCompletionSource;
         }
 
-        public com.enodeframework.commanding.CommandReturnType getCommandReturnType() {
+        public CommandReturnType getCommandReturnType() {
             return commandReturnType;
         }
 
-        public void setCommandReturnType(com.enodeframework.commanding.CommandReturnType commandReturnType) {
+        public void setCommandReturnType(CommandReturnType commandReturnType) {
             this.commandReturnType = commandReturnType;
         }
 

@@ -23,8 +23,11 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCommandProcessor.class);
 
     private final ConcurrentMap<String, ProcessingCommandMailbox> mailboxDict;
+
     private int timeoutSeconds;
+
     private String taskName;
+
     private int commandMailBoxPersistenceMaxBatchSize = 1000;
 
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
@@ -34,7 +37,7 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     private int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
 
     @Autowired
-    private IProcessingCommandHandler handler;
+    private IProcessingCommandHandler processingCommandHandler;
 
     @Autowired
     private IScheduleService scheduleService;
@@ -45,8 +48,8 @@ public class DefaultCommandProcessor implements ICommandProcessor {
         this.taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
     }
 
-    public DefaultCommandProcessor setHandler(IProcessingCommandHandler handler) {
-        this.handler = handler;
+    public DefaultCommandProcessor setProcessingCommandHandler(IProcessingCommandHandler processingCommandHandler) {
+        this.processingCommandHandler = processingCommandHandler;
         return this;
     }
 
@@ -62,7 +65,7 @@ public class DefaultCommandProcessor implements ICommandProcessor {
             throw new IllegalArgumentException("aggregateRootId of command cannot be null or empty, commandId:" + processingCommand.getMessage().getId());
         }
 
-        ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, handler));
+        ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, processingCommandHandler));
         mailbox.enqueueMessage(processingCommand);
     }
 
@@ -79,9 +82,9 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     }
 
     private void cleanInactiveMailbox() {
-        List<Map.Entry<String, ProcessingCommandMailbox>> inactiveList = mailboxDict.entrySet().stream().filter(entry ->
-                entry.getValue().isInactive(timeoutSeconds) && !entry.getValue().isRunning()
-        ).collect(Collectors.toList());
+        List<Map.Entry<String, ProcessingCommandMailbox>> inactiveList = mailboxDict.entrySet().stream()
+                .filter(entry -> entry.getValue().isInactive(timeoutSeconds) && !entry.getValue().isRunning())
+                .collect(Collectors.toList());
 
         inactiveList.forEach(entry -> {
             if (mailboxDict.remove(entry.getKey()) != null) {

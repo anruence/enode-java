@@ -9,6 +9,7 @@ import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import org.slf4j.Logger;
@@ -17,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author anruence@gmail.com
@@ -25,22 +25,26 @@ import java.util.concurrent.ConcurrentMap;
 public class SendReplyService {
 
     private static final Logger logger = LoggerFactory.getLogger(SendReplyService.class);
-    private final ConcurrentMap<String, NetClient> clientTables = new ConcurrentHashMap<>();
+
     private boolean started;
+
     private boolean stoped;
-    private Vertx vertx;
+
+    private NetClient netClient;
+
+    private ConcurrentHashMap<String, NetSocket> socketMap = new ConcurrentHashMap<>();
 
     public void start() {
         if (!started) {
             VertxOptions options = new VertxOptions();
-            vertx = Vertx.vertx(options);
+            netClient = Vertx.vertx(options).createNetClient(new NetClientOptions());
             started = true;
         }
     }
 
     public void stop() {
         if (!stoped) {
-            clientTables.values().parallelStream().forEach(NetClient::close);
+            netClient.close();
             stoped = true;
         }
     }
@@ -49,32 +53,40 @@ public class SendReplyService {
         return CompletableFuture.runAsync(() -> {
             SendReplyContext context = new SendReplyContext(replyType, replyData, replyAddress);
             try {
-                RemoteReply remotingReply = new RemoteReply();
-                remotingReply.setCode(context.getReplyType());
+                RemoteReply remoteReply = new RemoteReply();
+                remoteReply.setCode(context.getReplyType());
                 if (context.getReplyType() == CommandReturnType.CommandExecuted.getValue()) {
-                    remotingReply.setCommandResult((CommandResult) context.getReplyData());
+                    remoteReply.setCommandResult((CommandResult) context.getReplyData());
                 } else if (context.getReplyType() == CommandReturnType.EventHandled.getValue()) {
-                    remotingReply.setEventHandledMessage((DomainEventHandledMessage) context.getReplyData());
+                    remoteReply.setEventHandledMessage((DomainEventHandledMessage) context.getReplyData());
                 }
-                String message = JsonTool.serialize(remotingReply);
+                String message = JsonTool.serialize(remoteReply);
                 InetSocketAddress inetSocketAddress = RemotingUtil.string2SocketAddress(replyAddress);
                 SocketAddress address = SocketAddress.inetSocketAddress(inetSocketAddress.getPort(), inetSocketAddress.getHostName());
-                clientTables.putIfAbsent(replyAddress, vertx.createNetClient().connect(address, res -> {
-                    if (res.succeeded()) {
+                if (!socketMap.containsKey(replyAddress)) {
+                    netClient.connect(address, res -> {
+                        if (!res.succeeded()) {
+                            logger.error("Failed to connect NetServer", res.cause());
+                            return;
+                        }
                         NetSocket socket = res.result();
+                        socketMap.put(replyAddress, socket);
                         socket.endHandler(v -> socket.close()).exceptionHandler(t -> {
-                            logger.error("Socket error", t);
+                            logger.error("NetSocket occurs unexpected error", t);
+                            socketMap.remove(replyAddress);
                             socket.close();
                         }).handler(buffer -> {
                             String greeting = buffer.toString("UTF-8");
-                            logger.info("Net client receiving: {}", greeting);
-                        }).closeHandler(v -> clientTables.remove(replyAddress));
+                            logger.info("NetClient receiving: {}", greeting);
+                        }).closeHandler(v -> {
+                            logger.info("NetClient socket closed: {}", replyAddress);
+                            socketMap.remove(replyAddress);
+                        });
                         socket.write(message);
-                    } else {
-                        logger.error("Failed to connect Net server", res.cause());
-                        clientTables.remove(replyAddress);
-                    }
-                }));
+                    });
+                } else {
+                    socketMap.get(replyAddress).write(message);
+                }
             } catch (Exception ex) {
                 logger.error("Send command reply has exception, replyAddress: {}", context.getReplyAddress(), ex);
             }

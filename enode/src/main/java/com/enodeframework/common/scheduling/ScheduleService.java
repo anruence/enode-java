@@ -19,7 +19,7 @@ public class ScheduleService implements IScheduleService {
 
     private static final Logger logger = LoggerFactory.getLogger(ScheduleService.class);
 
-    private Object lockObject = new Object();
+    private final Object lockObject = new Object();
 
     private Map<String, TimerBasedTask> taskDict = new HashMap<>();
 

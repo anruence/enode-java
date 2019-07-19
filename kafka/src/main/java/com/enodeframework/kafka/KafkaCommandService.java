@@ -56,6 +56,9 @@ public class KafkaCommandService extends AbstractCommandService {
                     taskCompletionSource.complete(new AsyncTaskResult<>(sendResult.getStatus(), sendResult.getErrorMessage()));
                     commandResultProcessor.processFailedSendingCommand(command);
                 }
+            }).exceptionally(ex -> {
+                taskCompletionSource.complete(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
+                return null;
             });
         } catch (Exception ex) {
             taskCompletionSource.complete(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
