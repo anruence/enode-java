@@ -24,12 +24,7 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.enodeframework.samples.QueueProperties.APPLICATION_TOPIC;
-import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
-import static com.enodeframework.samples.QueueProperties.DEFAULT_PRODUCER_GROUP;
-import static com.enodeframework.samples.QueueProperties.EVENT_TOPIC;
-import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
-import static com.enodeframework.samples.QueueProperties.KAFKA_SERVER;
+import static com.enodeframework.samples.QueueProperties.*;
 
 public class KafkaEventConfig {
 
@@ -48,19 +43,11 @@ public class KafkaEventConfig {
     @Bean
     public ConsumerFactory consumerFactory() {
         Map<String, Object> props = new HashMap<>();
-        //连接地址
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
-        //GroupID
         props.put(ConsumerConfig.GROUP_ID_CONFIG, DEFAULT_PRODUCER_GROUP);
-        //是否自动提交
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        //自动提交的频率
-//        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
-        //Session超时设置
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "15000");
-        //键的反序列化方式
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        //值的反序列化方式
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(props);
     }
@@ -96,7 +83,6 @@ public class KafkaEventConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-
     @Bean
     public KafkaPublishableExceptionListener publishableExceptionListener() {
         return new KafkaPublishableExceptionListener();
@@ -112,13 +98,12 @@ public class KafkaEventConfig {
         return new KafkaDomainEventListener();
     }
 
-
     @Bean
     public KafkaMessageListenerContainer domainEventListenerContainer(KafkaDomainEventListener domainEventListener) {
         ContainerProperties properties = new ContainerProperties(EVENT_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(domainEventListener);
-        properties.setAckMode(ContainerProperties.AckMode.RECORD);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -127,7 +112,7 @@ public class KafkaEventConfig {
         ContainerProperties properties = new ContainerProperties(APPLICATION_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(applicationMessageListener);
-        properties.setAckMode(ContainerProperties.AckMode.RECORD);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -136,7 +121,7 @@ public class KafkaEventConfig {
         ContainerProperties properties = new ContainerProperties(EXCEPTION_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(publishableExceptionListener);
-        properties.setAckMode(ContainerProperties.AckMode.RECORD);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 

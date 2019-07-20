@@ -10,6 +10,10 @@ import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.scheduling.Worker;
 import com.enodeframework.common.utilities.RemoteReply;
 import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalCause;
+import com.google.common.cache.RemovalListener;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetServer;
 import org.slf4j.Logger;
@@ -18,9 +22,8 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author anruence@gmail.com
@@ -35,7 +38,7 @@ public class CommandResultProcessor {
 
     private int port = 2019;
 
-    private ConcurrentMap<String, CommandTaskCompletionSource> commandTaskDict;
+    private Cache<String, CommandTaskCompletionSource> commandTaskDict;
 
     private BlockingQueue<CommandResult> commandExecutedMessageLocalQueue;
 
@@ -59,7 +62,14 @@ public class CommandResultProcessor {
                 processRequestInternal(name);
             });
         });
-        commandTaskDict = new ConcurrentHashMap<>();
+        commandTaskDict = CacheBuilder.newBuilder()
+                .expireAfterWrite(500, TimeUnit.MILLISECONDS)
+                .removalListener((RemovalListener<String, CommandTaskCompletionSource>) notification -> {
+                    if (notification.getCause().equals(RemovalCause.EXPIRED)) {
+                        processTimeoutCommand(notification.getKey(), notification.getValue());
+                    }
+                })
+                .build();
         commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
         domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
         commandExecutedMessageWorker = new Worker("ProcessExecutedCommandMessage", () -> {
@@ -71,15 +81,21 @@ public class CommandResultProcessor {
     }
 
     public void registerProcessingCommand(ICommand command, CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
-        if (commandTaskDict.containsKey(command.getId())) {
+        if (commandTaskDict.asMap().containsKey(command.getId())) {
             throw new ENodeRuntimeException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.getId()));
         }
-        commandTaskDict.put(command.getId(), new CommandTaskCompletionSource(commandReturnType, taskCompletionSource));
+        commandTaskDict.asMap().put(command.getId(), new CommandTaskCompletionSource(commandReturnType, taskCompletionSource));
+    }
+
+    private void processTimeoutCommand(String commandId, CommandTaskCompletionSource commandTaskCompletionSource) {
+        if (commandTaskCompletionSource != null) {
+            CommandResult commandResult = new CommandResult(CommandStatus.Failed, commandId, null, "Wait command notify timeout.", String.class.getName());
+            commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult));
+        }
     }
 
     public void processFailedSendingCommand(ICommand command) {
-        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.remove(command.getId());
-
+        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().remove(command.getId());
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Failed, command.getId(), command.getAggregateRootId(), "Failed to send the command.", String.class.getName());
             commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult));
@@ -123,11 +139,11 @@ public class CommandResultProcessor {
     }
 
     private void processExecutedCommandMessage(CommandResult commandResult) {
-        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.get(commandResult.getCommandId());
+        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().get(commandResult.getCommandId());
 
         if (commandTaskCompletionSource != null) {
             if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.CommandExecuted)) {
-                commandTaskDict.remove(commandResult.getCommandId());
+                commandTaskDict.asMap().remove(commandResult.getCommandId());
 
                 if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                     if (logger.isDebugEnabled()) {
@@ -136,7 +152,7 @@ public class CommandResultProcessor {
                 }
             } else if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.EventHandled)) {
                 if (commandResult.getStatus().equals(CommandStatus.Failed) || commandResult.getStatus().equals(CommandStatus.NothingChanged)) {
-                    commandTaskDict.remove(commandResult.getCommandId());
+                    commandTaskDict.asMap().remove(commandResult.getCommandId());
                     if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Command result return, {}", commandResult);
@@ -148,7 +164,7 @@ public class CommandResultProcessor {
     }
 
     private void processDomainEventHandledMessage(DomainEventHandledMessage message) {
-        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.remove(message.getCommandId());
+        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().remove(message.getCommandId());
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Success, message.getCommandId(), message.getAggregateRootId(), message.getCommandResult(), message.getCommandResult() != null ? String.class.getName() : null);
 

@@ -40,6 +40,7 @@ public class KafkaCommandConfig {
         ContainerProperties properties = new ContainerProperties(COMMAND_TOPIC);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP);
         properties.setMessageListener(commandListener);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -87,7 +88,7 @@ public class KafkaCommandConfig {
         //GroupID
         props.put(ConsumerConfig.GROUP_ID_CONFIG, DEFAULT_CONSUMER_GROUP);
         //是否自动提交
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         //自动提交的频率
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
         //Session超时设置
