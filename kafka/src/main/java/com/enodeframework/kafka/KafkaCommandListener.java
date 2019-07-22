@@ -20,11 +20,11 @@ public class KafkaCommandListener extends AbstractCommandListener implements Ack
     public void onMessage(ConsumerRecord data, Acknowledgment acknowledgment) {
         QueueMessage queueMessage = KafkaTool.covertToQueueMessage(data);
         handle(queueMessage, context -> {
+            //TODO retry when execute failed
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
         });
-        //TODO retry when execute failed
-        if (acknowledgment != null) {
-            acknowledgment.acknowledge();
-        }
     }
 
     /**
