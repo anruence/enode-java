@@ -63,7 +63,7 @@ public class CommandResultProcessor {
             });
         });
         commandTaskDict = CacheBuilder.newBuilder()
-                .expireAfterWrite(500, TimeUnit.MILLISECONDS)
+                .expireAfterWrite(5000, TimeUnit.MILLISECONDS)
                 .removalListener((RemovalListener<String, CommandTaskCompletionSource>) notification -> {
                     if (notification.getCause().equals(RemovalCause.EXPIRED)) {
                         processTimeoutCommand(notification.getKey(), notification.getValue());

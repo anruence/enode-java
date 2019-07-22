@@ -21,10 +21,10 @@ public class KafkaPublishableExceptionListener extends AbstractPublishableExcept
     public void onMessage(ConsumerRecord data, Acknowledgment acknowledgment) {
         QueueMessage queueMessage = KafkaTool.covertToQueueMessage(data);
         handle(queueMessage, context -> {
+            if (acknowledgment != null) {
+                acknowledgment.acknowledge();
+            }
         });
-        if (acknowledgment != null) {
-            acknowledgment.acknowledge();
-        }
     }
 
     /**
