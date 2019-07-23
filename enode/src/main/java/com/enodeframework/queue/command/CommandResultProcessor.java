@@ -38,6 +38,8 @@ public class CommandResultProcessor {
 
     private int port = 2019;
 
+    private int completionSourceTimeout = 5000;
+
     private Cache<String, CommandTaskCompletionSource> commandTaskDict;
 
     private BlockingQueue<CommandResult> commandExecutedMessageLocalQueue;
@@ -62,14 +64,7 @@ public class CommandResultProcessor {
                 processRequestInternal(name);
             });
         });
-        commandTaskDict = CacheBuilder.newBuilder()
-                .expireAfterWrite(5000, TimeUnit.MILLISECONDS)
-                .removalListener((RemovalListener<String, CommandTaskCompletionSource>) notification -> {
-                    if (notification.getCause().equals(RemovalCause.EXPIRED)) {
-                        processTimeoutCommand(notification.getKey(), notification.getValue());
-                    }
-                })
-                .build();
+
         commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
         domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
         commandExecutedMessageWorker = new Worker("ProcessExecutedCommandMessage", () -> {
@@ -84,12 +79,12 @@ public class CommandResultProcessor {
         if (commandTaskDict.asMap().containsKey(command.getId())) {
             throw new ENodeRuntimeException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.getId()));
         }
-        commandTaskDict.asMap().put(command.getId(), new CommandTaskCompletionSource(commandReturnType, taskCompletionSource));
+        commandTaskDict.asMap().put(command.getId(), new CommandTaskCompletionSource(command.getAggregateRootId(), commandReturnType, taskCompletionSource));
     }
 
     private void processTimeoutCommand(String commandId, CommandTaskCompletionSource commandTaskCompletionSource) {
         if (commandTaskCompletionSource != null) {
-            CommandResult commandResult = new CommandResult(CommandStatus.Failed, commandId, null, "Wait command notify timeout.", String.class.getName());
+            CommandResult commandResult = new CommandResult(CommandStatus.Failed, commandId, commandTaskCompletionSource.getAggregateRootId(), "Wait command notify timeout.", String.class.getName());
             commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult));
         }
     }
@@ -103,15 +98,22 @@ public class CommandResultProcessor {
     }
 
     public CommandResultProcessor start() {
-        bindAddress = new InetSocketAddress(port);
         if (started) {
             return this;
         }
+        commandTaskDict = CacheBuilder.newBuilder()
+                .expireAfterWrite(completionSourceTimeout, TimeUnit.MILLISECONDS)
+                .removalListener((RemovalListener<String, CommandTaskCompletionSource>) notification -> {
+                    if (notification.getCause().equals(RemovalCause.EXPIRED)) {
+                        processTimeoutCommand(notification.getKey(), notification.getValue());
+                    }
+                }).build();
+        bindAddress = new InetSocketAddress(port);
         netServer.listen(port);
         commandExecutedMessageWorker.start();
         domainEventHandledMessageWorker.start();
         started = true;
-        logger.info("Command result processor started, bindAddress: {}", bindAddress);
+        logger.info("CommandResultProcessor started, bindAddress:{}", bindAddress);
         return this;
     }
 
@@ -140,27 +142,29 @@ public class CommandResultProcessor {
 
     private void processExecutedCommandMessage(CommandResult commandResult) {
         CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().get(commandResult.getCommandId());
+        if (commandTaskCompletionSource == null) {
+            logger.error("CommandReturnResult failed, CommandTaskCompletionSource not found, maybe expired, commandResult:{}", commandResult);
+            return;
+        }
+        if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.CommandExecuted)) {
+            commandTaskDict.asMap().remove(commandResult.getCommandId());
 
-        if (commandTaskCompletionSource != null) {
-            if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.CommandExecuted)) {
+            if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Command result return, {}", commandResult);
+                }
+            }
+        } else if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.EventHandled)) {
+            if (commandResult.getStatus().equals(CommandStatus.Failed) || commandResult.getStatus().equals(CommandStatus.NothingChanged)) {
                 commandTaskDict.asMap().remove(commandResult.getCommandId());
-
                 if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Command result return, {}", commandResult);
                     }
                 }
-            } else if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.EventHandled)) {
-                if (commandResult.getStatus().equals(CommandStatus.Failed) || commandResult.getStatus().equals(CommandStatus.NothingChanged)) {
-                    commandTaskDict.asMap().remove(commandResult.getCommandId());
-                    if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Command result return, {}", commandResult);
-                        }
-                    }
-                }
             }
         }
+
     }
 
     private void processDomainEventHandledMessage(DomainEventHandledMessage message) {
@@ -176,19 +180,22 @@ public class CommandResultProcessor {
         }
     }
 
-    public int getPort() {
-        return port;
-    }
-
     public void setPort(int port) {
         this.port = port;
     }
 
+    public CommandResultProcessor setCompletionSourceTimeout(int completionSourceTimeout) {
+        this.completionSourceTimeout = completionSourceTimeout;
+        return this;
+    }
+
     class CommandTaskCompletionSource {
+        private String aggregateRootId;
         private CommandReturnType commandReturnType;
         private CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource;
 
-        public CommandTaskCompletionSource(CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
+        public CommandTaskCompletionSource(String aggregateRootId, CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
+            this.aggregateRootId = aggregateRootId;
             this.commandReturnType = commandReturnType;
             this.taskCompletionSource = taskCompletionSource;
         }
@@ -207,6 +214,15 @@ public class CommandResultProcessor {
 
         public void setTaskCompletionSource(CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
             this.taskCompletionSource = taskCompletionSource;
+        }
+
+        public String getAggregateRootId() {
+            return aggregateRootId;
+        }
+
+        public CommandTaskCompletionSource setAggregateRootId(String aggregateRootId) {
+            this.aggregateRootId = aggregateRootId;
+            return this;
         }
     }
 }

@@ -58,7 +58,7 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
         DefaultMessageProcessContext processContext = new DefaultMessageProcessContext(queueMessage, context);
         ProcessingPublishableExceptionMessage processingMessage = new ProcessingPublishableExceptionMessage(exception, processContext);
         if (logger.isDebugEnabled()) {
-            logger.info("ENode exception message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}", exceptionMessage.getUniqueId(), exceptionMessage.getAggregateRootId(), exceptionMessage.getAggregateRootTypeName());
+            logger.debug("ENode exception message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}", exceptionMessage.getUniqueId(), exceptionMessage.getAggregateRootId(), exceptionMessage.getAggregateRootTypeName());
         }
         publishableExceptionProcessor.process(processingMessage);
     }

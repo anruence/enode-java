@@ -943,16 +943,15 @@ public class CommandAndEventServiceTest extends AbstractTest {
 
     public void sequence_domain_event_process_test() {
         TestAggregate note = new TestAggregate(ObjectId.generateNewStringId(), "initial title");
-        IAggregateRoot aggregate = note;
-        DomainEventStreamMessage message1 = CreateMessage(aggregate);
+        DomainEventStreamMessage message1 = CreateMessage(note);
 
-        aggregate.acceptChanges();
+        ((IAggregateRoot) note).acceptChanges();
         note.ChangeTitle("title1");
-        DomainEventStreamMessage message2 = CreateMessage(aggregate);
+        DomainEventStreamMessage message2 = CreateMessage(note);
 
-        aggregate.acceptChanges();
+        ((IAggregateRoot) note).acceptChanges();
         note.ChangeTitle("title2");
-        DomainEventStreamMessage message3 = CreateMessage(aggregate);
+        DomainEventStreamMessage message3 = CreateMessage(note);
 
         ManualResetEvent waitHandle = new ManualResetEvent(false);
         List<Integer> versionList = new ArrayList<>();

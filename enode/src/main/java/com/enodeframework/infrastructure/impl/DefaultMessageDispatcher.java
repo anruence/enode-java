@@ -280,11 +280,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         public QueueMessageDispatching(DefaultMessageDispatcher dispatcher, RootDispatching rootDispatching, List<? extends IMessage> messages) {
             this.dispatcher = dispatcher;
             messageQueue = new ConcurrentLinkedQueue<>();
-
-            //TODO messageQueue
-            messages.forEach(message ->
-                    messageQueue.add(message)
-            );
+            messageQueue.addAll(messages);
             this.rootDispatching = rootDispatching;
             this.rootDispatching.addChildDispatching(this);
         }

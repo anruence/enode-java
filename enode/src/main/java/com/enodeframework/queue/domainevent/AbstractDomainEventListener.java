@@ -63,7 +63,7 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
     public void handle(QueueMessage queueMessage, IMessageContext context) {
         EventStreamMessage message = JsonTool.deserialize(queueMessage.getBody(), EventStreamMessage.class);
         DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
-        DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(AbstractDomainEventListener.this, domainEventStreamMessage, queueMessage, context);
+        DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(this, domainEventStreamMessage, queueMessage, context);
         ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
         if (logger.isDebugEnabled()) {
             logger.debug("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.getId(), domainEventStreamMessage.getAggregateRootStringId(), domainEventStreamMessage.getAggregateRootTypeName(), domainEventStreamMessage.getVersion());

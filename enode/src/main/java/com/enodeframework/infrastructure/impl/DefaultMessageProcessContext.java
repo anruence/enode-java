@@ -19,5 +19,6 @@ public class DefaultMessageProcessContext implements IMessageProcessContext {
 
     @Override
     public void notifyMessageProcessed() {
+        messageContext.onMessageHandled(queueMessage);
     }
 }

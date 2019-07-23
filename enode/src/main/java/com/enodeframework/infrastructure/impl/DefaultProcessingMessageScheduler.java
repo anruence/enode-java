@@ -24,7 +24,7 @@ public class DefaultProcessingMessageScheduler<X extends IProcessingMessage<X, Y
 
     @Override
     public void scheduleMessage(X processingMessage) {
-        messageHandler.handleAsync(processingMessage);
+        CompletableFuture.runAsync(() -> messageHandler.handleAsync(processingMessage));
     }
 
     @Override

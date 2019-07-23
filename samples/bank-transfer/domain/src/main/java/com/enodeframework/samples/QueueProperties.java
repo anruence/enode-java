@@ -14,12 +14,12 @@ public class QueueProperties {
 
     public static String EXCEPTION_TOPIC = "ExceptionSample";
 
-    public static String DEFAULT_PRODUCER_GROUP = "DefaultProducerGroup";
+    public static String DEFAULT_PRODUCER_GROUP = "DefaultProducerGroup0";
     public static String DEFAULT_PRODUCER_GROUP1 = "DefaultProducerGroup1";
     public static String DEFAULT_PRODUCER_GROUP2 = "DefaultProducerGroup2";
     public static String DEFAULT_PRODUCER_GROUP3 = "DefaultProducerGroup3";
 
-    public static String DEFAULT_CONSUMER_GROUP = "DefaultConsumerGroup";
+    public static String DEFAULT_CONSUMER_GROUP = "DefaultConsumerGroup0";
     public static String DEFAULT_CONSUMER_GROUP1 = "DefaultConsumerGroup1";
     public static String DEFAULT_CONSUMER_GROUP2 = "DefaultConsumerGroup2";
     public static String DEFAULT_CONSUMER_GROUP3 = "DefaultConsumerGroup3";
