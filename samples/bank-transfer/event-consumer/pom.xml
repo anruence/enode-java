@@ -13,7 +13,7 @@
     <dependencies>
         <dependency>
             <groupId>com.enodeframework</groupId>
-            <artifactId>domain</artifactId>
+            <artifactId>samples-domain</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

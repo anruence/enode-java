@@ -11,7 +11,7 @@
         <module>command-consumer</module>
         <module>event-consumer</module>
         <module>command-web</module>
-        <module>domain</module>
+        <module>samples-domain</module>
     </modules>
     <dependencyManagement>
         <dependencies>

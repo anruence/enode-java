@@ -1,9 +1,9 @@
 package com.enodeframework.rocketmq.message;
 
-import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.common.message.MessageExt;
 import com.enodeframework.common.utilities.BitConverter;
 import com.enodeframework.queue.QueueMessage;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageExt;
 
 import java.util.List;
 

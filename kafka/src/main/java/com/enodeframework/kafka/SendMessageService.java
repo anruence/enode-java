@@ -20,21 +20,26 @@ public class SendMessageService {
 
     public static CompletableFuture<AsyncTaskResult> sendMessageAsync(KafkaTemplate<String, String> producer, ProducerRecord<String, String> message) {
         CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
-        producer.send(message).addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-            @Override
-            public void onFailure(Throwable throwable) {
-                future.complete(new AsyncTaskResult(AsyncTaskStatus.IOException));
-                logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, throwable);
-            }
-
-            @Override
-            public void onSuccess(SendResult<String, String> result) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("ENode message async send success, sendResult: {}, message: {}", result, message);
+        try {
+            producer.send(message).addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+                @Override
+                public void onFailure(Throwable throwable) {
+                    future.complete(new AsyncTaskResult(AsyncTaskStatus.IOException));
+                    logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, throwable);
                 }
-                future.complete(AsyncTaskResult.Success);
-            }
-        });
+
+                @Override
+                public void onSuccess(SendResult<String, String> result) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("ENode message async send success, sendResult: {}, message: {}", result, message);
+                    }
+                    future.complete(AsyncTaskResult.Success);
+                }
+            });
+        } catch (Exception ex) {
+            future.complete(new AsyncTaskResult(AsyncTaskStatus.IOException));
+            logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, ex);
+        }
         return future;
     }
 }

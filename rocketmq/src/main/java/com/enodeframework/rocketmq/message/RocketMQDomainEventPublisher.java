@@ -1,11 +1,11 @@
 package com.enodeframework.rocketmq.message;
 
-import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.alibaba.rocketmq.common.message.Message;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.queue.QueueMessage;
 import com.enodeframework.queue.domainevent.AbstractDomainEventPublisher;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.common.message.Message;
 
 import java.util.concurrent.CompletableFuture;
 

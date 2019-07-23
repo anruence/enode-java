@@ -1,12 +1,12 @@
 package com.enodeframework.samples.commandhandles;
 
-import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
-import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.enodeframework.queue.TopicData;
 import com.enodeframework.rocketmq.message.RocketMQApplicationMessagePublisher;
 import com.enodeframework.rocketmq.message.RocketMQCommandListener;
 import com.enodeframework.rocketmq.message.RocketMQDomainEventPublisher;
 import com.enodeframework.rocketmq.message.RocketMQPublishableExceptionPublisher;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.springframework.context.annotation.Bean;
 
 import java.util.HashMap;

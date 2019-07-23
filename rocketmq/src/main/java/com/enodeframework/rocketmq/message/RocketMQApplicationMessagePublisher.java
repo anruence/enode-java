@@ -1,11 +1,11 @@
 package com.enodeframework.rocketmq.message;
 
-import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.alibaba.rocketmq.common.message.Message;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.queue.QueueMessage;
 import com.enodeframework.queue.applicationmessage.AbstractApplicationMessagePublisher;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.common.message.Message;
 
 import java.util.concurrent.CompletableFuture;
 

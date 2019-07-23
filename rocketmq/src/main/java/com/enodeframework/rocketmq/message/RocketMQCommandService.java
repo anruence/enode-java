@@ -1,7 +1,5 @@
 package com.enodeframework.rocketmq.message;
 
-import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.alibaba.rocketmq.common.message.Message;
 import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.commanding.CommandReturnType;
 import com.enodeframework.commanding.ICommand;
@@ -10,6 +8,8 @@ import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.queue.QueueMessage;
 import com.enodeframework.queue.command.AbstractCommandService;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.common.message.Message;
 
 import java.util.concurrent.CompletableFuture;
 

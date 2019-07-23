@@ -1,8 +1,6 @@
 package com.enodeframework.eventing;
 
-import com.enodeframework.common.IEnum;
-
-public enum EventAppendResult implements IEnum {
+public enum EventAppendResult {
     Success(1),
     Failed(2),
     DuplicateEvent(3),
@@ -14,7 +12,6 @@ public enum EventAppendResult implements IEnum {
         this.status = status;
     }
 
-    @Override
     public int status() {
         return status;
     }
