@@ -128,9 +128,6 @@ public class MysqlEventStore implements IEventStore {
 
         Map<String, List<DomainEventStream>> eventStreamMap = eventStreams.stream().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
         for (List<DomainEventStream> x : eventStreamMap.values()) {
-            if (x.size() > 1) {
-                throw new IllegalArgumentException("Batch append event only support for one aggregate.");
-            }
             try {
                 Object[][] params = new Object[x.size()][];
                 for (int i = 0, len = x.size(); i < len; i++) {

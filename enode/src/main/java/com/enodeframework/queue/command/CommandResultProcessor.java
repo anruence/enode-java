@@ -38,7 +38,7 @@ public class CommandResultProcessor {
 
     private int port = 2019;
 
-    private int completionSourceTimeout = 5000;
+    private int completionSourceTimeout = 60000;
 
     private Cache<String, CommandTaskCompletionSource> commandTaskDict;
 

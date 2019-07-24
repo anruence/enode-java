@@ -15,6 +15,7 @@ import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.EventAppendResult;
 import com.enodeframework.eventing.impl.InMemoryEventStore;
 import com.enodeframework.infrastructure.ProcessingDomainEventStreamMessage;
+import com.enodeframework.mysql.MysqlEventStore;
 import com.enodeframework.tests.Commands.*;
 import com.enodeframework.tests.Domain.InheritTestAggregate;
 import com.enodeframework.tests.Domain.TestAggregate;
@@ -47,7 +48,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
     private static Logger _logger = LoggerFactory.getLogger(CommandAndEventServiceTest.class);
 
     @Autowired
-    private InMemoryEventStore _eventStore;
+    private MysqlEventStore _eventStore;
 
     @Test
     public void create_and_update_aggregate_test() {
@@ -278,10 +279,10 @@ public class CommandAndEventServiceTest extends AbstractTest {
         waitHandle.waitOne();
     }
 
-    @Test
+//    @Test
     public void perf_create_and_concurrent_update_aggregate_test() throws InterruptedException {
         //并发执行创建聚合根的命令
-        int totalCount = 2020;
+        int totalCount = 100;
         AtomicLong finishedCount = new AtomicLong(0);
         ManualResetEvent waitHandle = new ManualResetEvent(false);
         long start = System.currentTimeMillis();

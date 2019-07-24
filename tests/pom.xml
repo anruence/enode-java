@@ -47,5 +47,10 @@
             <version>1.2.3</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

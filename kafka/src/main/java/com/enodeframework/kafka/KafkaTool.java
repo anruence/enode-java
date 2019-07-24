@@ -16,8 +16,8 @@ public class KafkaTool {
 
     public static QueueMessage covertToQueueMessage(ConsumerRecord record) {
         QueueMessage queueMessage = new QueueMessage();
-        queueMessage.setBody(record.value().toString());
-        queueMessage.setKey(record.key().toString());
+        queueMessage.setBody(String.valueOf(record.value()));
+        queueMessage.setKey(String.valueOf(record.key()));
         queueMessage.setTopic(record.topic());
         return queueMessage;
     }

@@ -11,6 +11,9 @@ public class TestPublishableException extends PublishableException {
     public TestPublishableException(String aggregateRootId) {
     }
 
+    public TestPublishableException() {
+    }
+
     @Override
     public void serializeTo(Map<String, String> serializableInfo) {
         serializableInfo.put("AggregateRootId", AggregateRootId);
