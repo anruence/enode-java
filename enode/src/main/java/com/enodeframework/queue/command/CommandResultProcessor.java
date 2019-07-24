@@ -85,7 +85,8 @@ public class CommandResultProcessor {
     private void processTimeoutCommand(String commandId, CommandTaskCompletionSource commandTaskCompletionSource) {
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Failed, commandId, commandTaskCompletionSource.getAggregateRootId(), "Wait command notify timeout.", String.class.getName());
-            commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult));
+            // 任务超时失败
+            commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Failed, commandResult));
         }
     }
 
@@ -93,6 +94,7 @@ public class CommandResultProcessor {
         CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().remove(command.getId());
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Failed, command.getId(), command.getAggregateRootId(), "Failed to send the command.", String.class.getName());
+            // 消息发送失败
             commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult));
         }
     }
@@ -143,7 +145,9 @@ public class CommandResultProcessor {
     private void processExecutedCommandMessage(CommandResult commandResult) {
         CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().get(commandResult.getCommandId());
         if (commandTaskCompletionSource == null) {
-            logger.error("CommandReturnResult failed, CommandTaskCompletionSource not found, maybe expired, commandResult:{}", commandResult);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Command result return timeout, {}, but commandTaskCompletionSource maybe timeout expired.", commandResult);
+            }
             return;
         }
         if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.CommandExecuted)) {
@@ -164,7 +168,6 @@ public class CommandResultProcessor {
                 }
             }
         }
-
     }
 
     private void processDomainEventHandledMessage(DomainEventHandledMessage message) {

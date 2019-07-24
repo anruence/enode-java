@@ -30,7 +30,7 @@ public class DefaultMemoryCache implements IMemoryCache {
     private int timeoutSeconds = 5000;
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
     private String taskName;
-    private Object lockObj = new Object();
+    private final Object lockObj = new Object();
     @Autowired
     private IAggregateStorage aggregateStorage;
     @Autowired
