@@ -29,9 +29,7 @@ import java.net.UnknownHostException;
  * @author anruence@gmail.com
  */
 public class RemotingUtil {
-
     public static final String OS_NAME = System.getProperty("os.name");
-
     private static final Logger log = LoggerFactory.getLogger(RemotingUtil.class);
     private static boolean isLinuxPlatform = false;
     private static boolean isWindowsPlatform = false;
@@ -40,7 +38,6 @@ public class RemotingUtil {
         if (OS_NAME != null && OS_NAME.toLowerCase().contains("linux")) {
             isLinuxPlatform = true;
         }
-
         if (OS_NAME != null && OS_NAME.toLowerCase().contains("windows")) {
             isWindowsPlatform = true;
         }
@@ -72,5 +69,4 @@ public class RemotingUtil {
     public static boolean isSiteLocalAddress(InetAddress address) {
         return address.isSiteLocalAddress() && !address.isLoopbackAddress() && !address.getHostAddress().contains(":");
     }
-
 }

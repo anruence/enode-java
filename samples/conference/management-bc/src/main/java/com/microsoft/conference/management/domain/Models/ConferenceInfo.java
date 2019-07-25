@@ -1,6 +1,5 @@
 package com.microsoft.conference.management.domain.Models;
 
-
 import java.util.Date;
 
 public class ConferenceInfo {

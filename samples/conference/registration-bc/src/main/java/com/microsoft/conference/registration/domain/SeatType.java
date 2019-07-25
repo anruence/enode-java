@@ -14,6 +14,5 @@ public class SeatType {
         SeatTypeId = seatTypeId;
         SeatTypeName = seatTypeName;
         UnitPrice = unitPrice;
-
     }
 }

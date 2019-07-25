@@ -13,5 +13,4 @@ public class PaymentRejected extends DomainEvent<String> {
         OrderId = orderId;
         ConferenceId = conferenceId;
     }
-
 }

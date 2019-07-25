@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Worker {
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
-
     private Object lockObject = new Object();
     private String actionName;
     private Action action;
@@ -31,15 +30,10 @@ public class Worker {
             if (status.equals(Status.Running)) {
                 return this;
             }
-
             status = Status.Running;
-
             thread = new Thread(this::loop, String.format("%s.Worker", actionName));
-
             thread.setDaemon(true);
-
             thread.start();
-
             return this;
         }
     }
@@ -49,13 +43,9 @@ public class Worker {
             if (status.equals(Status.StopRequested)) {
                 return this;
             }
-
             status = Status.StopRequested;
-
             thread.interrupt();
-
             logger.info("Worker thread shutdown,thread id:{}", thread.getName());
-
             return this;
         }
     }

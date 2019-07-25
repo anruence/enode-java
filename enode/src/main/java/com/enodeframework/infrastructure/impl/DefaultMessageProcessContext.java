@@ -8,7 +8,6 @@ import com.enodeframework.queue.QueueMessage;
  * @author anruence@gmail.com
  */
 public class DefaultMessageProcessContext implements IMessageProcessContext {
-
     protected final QueueMessage queueMessage;
     protected final IMessageContext messageContext;
 

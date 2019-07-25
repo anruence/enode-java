@@ -12,7 +12,6 @@ import java.util.Map;
  * @author anruence@gmail.com
  */
 public class SpringObjectContainer implements IObjectContainer, ApplicationContextAware {
-
     private static ApplicationContext applicationContext;
 
     @Override

@@ -14,12 +14,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractApplicationMessageListener implements IMessageHandler {
-
     private static final Logger logger = LoggerFactory.getLogger(AbstractApplicationMessageListener.class);
-
     @Autowired
     protected ITypeNameProvider typeNameProvider;
-
     @Autowired
     protected IMessageProcessor<ProcessingApplicationMessage, IApplicationMessage> applicationMessageProcessor;
 

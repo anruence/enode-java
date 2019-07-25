@@ -1,12 +1,10 @@
 package com.microsoft.conference.management.domain.PublishableExceptions;
 
-
 import com.enodeframework.infrastructure.PublishableException;
 
 import java.util.Map;
 
 public class SeatInsufficientException extends PublishableException {
-
     public String ConferenceId;
     public String ReservationId;
 
@@ -28,5 +26,3 @@ public class SeatInsufficientException extends PublishableException {
         serializableInfo.put("ReservationId", ReservationId);
     }
 }
-
-

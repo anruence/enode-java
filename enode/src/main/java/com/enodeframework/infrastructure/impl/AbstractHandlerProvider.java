@@ -27,9 +27,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface extends IObjectProxy & MethodInvocation, THandlerSource> implements IAssemblyInitializer {
     private Map<TKey, List<THandlerProxyInterface>> handlerDict = new HashMap<>();
-
     private Map<TKey, MessageHandlerData<THandlerProxyInterface>> messageHandlerDict = new HashMap<>();
-
     private MethodHandles.Lookup lookup = MethodHandles.lookup();
 
     protected abstract TKey getKey(Method method);
@@ -50,35 +48,28 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
 
     public List<MessageHandlerData<THandlerProxyInterface>> getHandlers(THandlerSource source) {
         List<MessageHandlerData<THandlerProxyInterface>> handlerDataList = new ArrayList<>();
-
         messageHandlerDict.keySet().stream()
                 .filter(key -> isHandlerSourceMatchKey(source, key))
                 .forEach(key -> handlerDataList.add(messageHandlerDict.get(key)));
-
         return handlerDataList;
     }
 
     private void initializeHandlerPriority() {
         handlerDict.forEach((key, handlers) -> {
-
             MessageHandlerData<THandlerProxyInterface> handlerData = new MessageHandlerData<>();
             List<THandlerProxyInterface> listHandlers = new ArrayList<>();
             Map<THandlerProxyInterface, Integer> queueHandlerDict = new HashMap<>();
-
             handlers.forEach(handler -> {
                 int priority = getHandleMethodPriority(handler);
-
                 if (priority == 0) {
                     listHandlers.add(handler);
                 } else {
                     queueHandlerDict.put(handler, priority);
                 }
             });
-
             handlerData.AllHandlers = handlers;
             handlerData.ListHandlers = listHandlers;
             handlerData.QueuedHandlers = queueHandlerDict.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).map(x -> x.getKey()).collect(Collectors.toList());
-
             messageHandlerDict.put(key, handlerData);
         });
     }
@@ -90,14 +81,12 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
         if (methodPriority != null) {
             priority = methodPriority.value();
         }
-
         if (priority == 0) {
             Priority classPriority = handler.getInnerObject().getClass().getAnnotation(Priority.class);
             if (classPriority != null) {
                 priority = classPriority.value();
             }
         }
-
         return priority;
     }
 
@@ -130,9 +119,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
     }
 
     private void registerHandler(Class handlerType) {
-
         Set<Method> handleMethods = ReflectionUtils.getMethods(handlerType, this::isHandleMethodMatch);
-
         handleMethods.forEach(method -> {
             try {
                 //反射Method转换为MethodHandle,提高效率

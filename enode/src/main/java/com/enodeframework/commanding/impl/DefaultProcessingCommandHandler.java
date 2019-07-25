@@ -51,30 +51,21 @@ import static com.enodeframework.common.io.Task.await;
  * @author anruence@gmail.com
  */
 public class DefaultProcessingCommandHandler implements IProcessingCommandHandler {
-
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingCommandHandler.class);
-
     @Autowired
     private IEventStore eventStore;
-
     @Autowired
     private ICommandHandlerProvider commandHandlerProvider;
-
     @Autowired
     private ICommandAsyncHandlerProvider commandAsyncHandlerProvider;
-
     @Autowired
     private ITypeNameProvider typeNameProvider;
-
     @Autowired
     private IEventService eventService;
-
     @Autowired
     private IMemoryCache memoryCache;
-
     @Autowired
     private IMessagePublisher<IApplicationMessage> applicationMessagePublisher;
-
     @Autowired
     private IMessagePublisher<IPublishableException> exceptionPublisher;
 
@@ -191,7 +182,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         List<IDomainEvent> changedEvents = new ArrayList<>();
         for (IAggregateRoot aggregateRoot : trackedAggregateRoots) {
             List<IDomainEvent> events = aggregateRoot.getChanges();
-
             if (events.size() > 0) {
                 dirtyAggregateRootCount++;
                 if (dirtyAggregateRootCount > 1) {
@@ -206,7 +196,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 changedEvents = events;
             }
         }
-
         //如果当前command没有对任何聚合根做修改，框架仍然需要尝试获取该command之前是否有产生事件，
         //如果有，则需要将事件再次发布到MQ；如果没有，则完成命令，返回command的结果为NothingChanged。
         //之所以要这样做是因为有可能当前command上次执行的结果可能是事件持久化完成，但是发布到MQ未完成，然后那时正好机器断电宕机了；
@@ -218,14 +207,11 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
             processIfNoEventsOfCommand(processingCommand, 0);
             return;
         }
-
         //接受聚合根的最新修改
         dirtyAggregateRoot.acceptChanges();
-
         //刷新聚合根的内存缓存
         memoryCache.updateAggregateRootCache(dirtyAggregateRoot);
         //构造出一个事件流对象
-
         String commandResult = processingCommand.getCommandExecuteContext().getResult();
         if (commandResult != null) {
             processingCommand.getItems().put("CommandResult", commandResult);
@@ -238,18 +224,15 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 new Date(),
                 changedEvents,
                 processingCommand.getItems());
-
         //异步将事件流提交到EventStore
         eventService.commitDomainEventAsync(new EventCommittingContext(dirtyAggregateRoot, eventStream, processingCommand));
     }
 
     private void processIfNoEventsOfCommand(ProcessingCommand processingCommand, int retryTimes) {
         ICommand command = processingCommand.getMessage();
-
         IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
                 () -> eventStore.findAsync(command.getAggregateRootId(), command.getId()),
                 currentRetryTimes -> processIfNoEventsOfCommand(processingCommand, currentRetryTimes),
-
                 result ->
                 {
                     DomainEventStream existingEventStream = result.getData();
@@ -281,14 +264,11 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     private void handleExceptionAsync(ProcessingCommand processingCommand, ICommandHandlerProxy commandHandler, Exception exception, int retryTimes) {
         ICommand command = processingCommand.getMessage();
-
         IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
                 () -> eventStore.findAsync(command.getAggregateRootId(), command.getId()),
                 currentRetryTimes -> handleExceptionAsync(processingCommand, commandHandler, exception, currentRetryTimes),
-
                 result -> {
                     DomainEventStream existingEventStream = result.getData();
-
                     if (existingEventStream != null) {
                         //这里，我们需要再重新做一遍发布事件这个操作；
                         //之所以要这样做是因为虽然该command产生的事件已经持久化成功，但并不表示事件已经发布出去了；
@@ -299,12 +279,10 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         //到这里，说明当前command执行遇到异常，然后当前command之前也没执行过，是第一次被执行。
                         //那就判断当前异常是否是需要被发布出去的异常，如果是，则发布该异常给所有消费者；否则，就记录错误日志；
                         //然后，认为该command处理失败即可；
-
                         Throwable exp = exception.getCause();
                         if (exp instanceof ENodeRuntimeException) {
                             exp = ((ENodeRuntimeException) exp).getException();
                         }
-
                         if (exp instanceof IPublishableException) {
                             IPublishableException publishableException = (IPublishableException) exp;
                             publishExceptionAsync(processingCommand, publishableException, 0);
@@ -318,7 +296,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 errorMessage -> logger.error(String.format("Find event by commandId has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true
         );
-
     }
 
     private void publishExceptionAsync(ProcessingCommand processingCommand, IPublishableException exception, int retryTimes) {
@@ -401,7 +378,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
     private void publishMessageAsync(ProcessingCommand processingCommand, IApplicationMessage message, int retryTimes) {
         ICommand command = processingCommand.getMessage();
-
         IOHelper.tryAsyncActionRecursively("PublishApplicationMessageAsync",
                 () -> applicationMessagePublisher.publishAsync(message),
                 currentRetryTimes -> publishMessageAsync(processingCommand, message, currentRetryTimes),
@@ -414,23 +390,18 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     private <T extends IObjectProxy> HandlerFindResult<T> getCommandHandler(ProcessingCommand processingCommand, Function<Class, List<MessageHandlerData<T>>> getHandlersFunc) {
         ICommand command = processingCommand.getMessage();
         List<MessageHandlerData<T>> handlerDataList = getHandlersFunc.apply(command.getClass());
-
         if (handlerDataList == null || handlerDataList.size() == 0) {
             return HandlerFindResult.NotFound;
         } else if (handlerDataList.size() > 1) {
             return HandlerFindResult.TooManyHandlerData;
         }
-
         MessageHandlerData<T> handlerData = Linq.first(handlerDataList);
-
         if (handlerData.ListHandlers == null || handlerData.ListHandlers.size() == 0) {
             return HandlerFindResult.NotFound;
         } else if (handlerData.ListHandlers.size() > 1) {
             return HandlerFindResult.TooManyHandler;
         }
-
         T handlerProxy = Linq.first(handlerData.ListHandlers);
-
         return new HandlerFindResult<>(HandlerFindStatus.Found, handlerProxy);
     }
 
@@ -450,11 +421,9 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     }
 
     static class HandlerFindResult<T extends IObjectProxy> {
-
         static HandlerFindResult NotFound = new HandlerFindResult<>(HandlerFindStatus.NotFound);
         static HandlerFindResult TooManyHandlerData = new HandlerFindResult<>(HandlerFindStatus.TooManyHandlerData);
         static HandlerFindResult TooManyHandler = new HandlerFindResult<>(HandlerFindStatus.TooManyHandler);
-
         private HandlerFindStatus findStatus;
         private T findHandler;
 

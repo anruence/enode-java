@@ -5,4 +5,3 @@ public class PersonalInfo {
     public String LastName;
     public String Email;
 }
-

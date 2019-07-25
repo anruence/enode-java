@@ -11,7 +11,6 @@ import org.apache.kafka.common.header.internals.RecordHeaders;
  * @author anruence@gmail.com
  */
 public class KafkaTool {
-
     public static String HEADERCODE = "CODE";
 
     public static QueueMessage covertToQueueMessage(ConsumerRecord record) {

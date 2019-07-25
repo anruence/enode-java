@@ -8,4 +8,3 @@ import java.util.List;
 public interface IPricingService {
     OrderTotal CalculateTotal(String conferenceId, List<SeatQuantity> seats);
 }
-

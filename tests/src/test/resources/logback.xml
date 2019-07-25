@@ -5,7 +5,6 @@
         </layout>
     </appender>
     <logger name="com.enodeframework" level="debug">
-
     </logger>
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

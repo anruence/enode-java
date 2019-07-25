@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class RocketMQPublishableExceptionPublisher extends AbstractPublishableExceptionPublisher {
-
     private DefaultMQProducer producer;
 
     public DefaultMQProducer getProducer() {

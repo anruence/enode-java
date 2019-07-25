@@ -10,7 +10,6 @@ import com.enodeframework.infrastructure.IMessagePublisher;
 import java.util.concurrent.CompletableFuture;
 
 public class MockApplicationMessagePublisher implements IMessagePublisher<IApplicationMessage> {
-
     private static CompletableFuture<AsyncTaskResult> _successResultTask = CompletableFuture.completedFuture(AsyncTaskResult.Success);
     private int _expectFailedCount = 0;
     private int _currentFailedCount = 0;
@@ -29,7 +28,6 @@ public class MockApplicationMessagePublisher implements IMessagePublisher<IAppli
 
     @Override
     public CompletableFuture<AsyncTaskResult> publishAsync(IApplicationMessage message) {
-
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
             if (_failedType == FailedType.UnKnownException) {

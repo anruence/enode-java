@@ -25,18 +25,14 @@ public class MysqlLockService implements ILockService {
 
     public MysqlLockService(DataSource ds, OptionSetting optionSetting) {
         Ensure.notNull(ds, "ds");
-
         if (optionSetting != null) {
             tableName = optionSetting.getOptionValue("TableName");
         } else {
             DefaultDBConfigurationSetting setting = new DefaultDBConfigurationSetting();
             tableName = setting.getLockKeyTableName();
         }
-
         Ensure.notNull(tableName, "tableName");
-
         lockKeySqlFormat = "SELECT * FROM `" + tableName + "` WHERE `Name` = ? FOR UPDATE";
-
         this.ds = ds;
         queryRunner = new QueryRunner(ds);
     }
@@ -55,7 +51,6 @@ public class MysqlLockService implements ILockService {
 
     @Override
     public void executeInLock(String lockKey, Action action) {
-
         try (Connection connection = getConnection()) {
             try {
                 connection.setAutoCommit(false);

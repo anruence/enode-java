@@ -9,9 +9,7 @@ public class ConfirmPayment extends Command<String> {
     }
 
     public ConfirmPayment(String orderId, boolean isPaymentSuccess) {
-
         super(orderId);
         IsPaymentSuccess = isPaymentSuccess;
     }
 }
-

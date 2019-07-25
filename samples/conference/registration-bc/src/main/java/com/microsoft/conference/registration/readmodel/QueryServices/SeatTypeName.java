@@ -4,4 +4,3 @@ public class SeatTypeName {
     public String Id;
     public String Name;
 }
-

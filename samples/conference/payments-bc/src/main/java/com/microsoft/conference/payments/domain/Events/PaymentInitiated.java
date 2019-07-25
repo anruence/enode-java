@@ -24,4 +24,3 @@ public class PaymentInitiated extends DomainEvent<String> {
         Items = items;
     }
 }
-

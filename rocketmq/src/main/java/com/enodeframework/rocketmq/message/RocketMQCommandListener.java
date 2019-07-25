@@ -17,14 +17,12 @@ import java.util.concurrent.CountDownLatch;
  * @author anruence@gmail.com
  */
 public class RocketMQCommandListener extends AbstractCommandListener implements MessageListenerConcurrently {
-
     private static Logger logger = LoggerFactory.getLogger(RocketMQCommandListener.class);
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
         try {
             final CountDownLatch latch = new CountDownLatch(1);
-
             QueueMessage queueMessage = RocketMQTool.covertToQueueMessage(msgs);
             handle(queueMessage, message -> {
                 latch.countDown();

@@ -94,5 +94,4 @@ public class ConferenceQueryService implements IConferenceQueryService {
 //    private IDbConnection GetConnection() {
 //        return new SqlConnection(ConfigSettings.ConferenceConnectionString);
 //    }
-
 }

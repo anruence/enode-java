@@ -8,7 +8,6 @@ import com.enodeframework.infrastructure.MethodInvocation;
 import java.util.concurrent.CompletableFuture;
 
 public interface ICommandAsyncHandlerProxy extends IObjectProxy, MethodInvocation {
-
     /**
      * Handle the given application command async.
      *
@@ -16,5 +15,4 @@ public interface ICommandAsyncHandlerProxy extends IObjectProxy, MethodInvocatio
      * @return
      */
     CompletableFuture<AsyncTaskResult<IApplicationMessage>> handleAsync(ICommand command);
-
 }

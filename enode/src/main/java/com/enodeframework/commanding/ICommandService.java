@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
  * Represents a command service.
  */
 public interface ICommandService {
-
     /**
      * Send a command asynchronously.
      *

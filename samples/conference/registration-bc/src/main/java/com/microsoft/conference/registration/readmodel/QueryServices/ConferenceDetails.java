@@ -11,5 +11,4 @@ public class ConferenceDetails {
     public String Tagline;
     public String TwitterSearch;
     public Date StartDate;
-
 }

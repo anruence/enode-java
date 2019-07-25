@@ -64,11 +64,9 @@ public class CommandExecuteContext implements ICommandExecuteContext {
         if (aggregateRoot == null) {
             throw new NullPointerException("aggregateRoot");
         }
-
         if (trackingAggregateRootDict.containsKey(aggregateRoot.uniqueId())) {
             throw new AggregateRootAlreadyExistException(aggregateRoot.uniqueId(), aggregateRoot.getClass());
         }
-
         trackingAggregateRootDict.put(aggregateRoot.uniqueId(), aggregateRoot);
     }
 

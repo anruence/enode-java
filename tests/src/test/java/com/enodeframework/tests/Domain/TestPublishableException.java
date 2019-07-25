@@ -5,7 +5,6 @@ import com.enodeframework.infrastructure.PublishableException;
 import java.util.Map;
 
 public class TestPublishableException extends PublishableException {
-
     public String AggregateRootId;
 
     public TestPublishableException(String aggregateRootId) {

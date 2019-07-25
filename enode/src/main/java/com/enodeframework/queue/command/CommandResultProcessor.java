@@ -29,27 +29,16 @@ import java.util.concurrent.TimeUnit;
  * @author anruence@gmail.com
  */
 public class CommandResultProcessor {
-
     private static final Logger logger = LoggerFactory.getLogger(CommandResultProcessor.class);
-
     private InetSocketAddress bindAddress;
-
     private NetServer netServer;
-
     private int port = 2019;
-
-    private int completionSourceTimeout = 60000;
-
+    private int completionSourceTimeout = 30000;
     private Cache<String, CommandTaskCompletionSource> commandTaskDict;
-
     private BlockingQueue<CommandResult> commandExecutedMessageLocalQueue;
-
     private BlockingQueue<DomainEventHandledMessage> domainEventHandledMessageLocalQueue;
-
     private Worker commandExecutedMessageWorker;
-
     private Worker domainEventHandledMessageWorker;
-
     private boolean started;
 
     public CommandResultProcessor() {
@@ -64,7 +53,6 @@ public class CommandResultProcessor {
                 processRequestInternal(name);
             });
         });
-
         commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
         domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
         commandExecutedMessageWorker = new Worker("ProcessExecutedCommandMessage", () -> {
@@ -152,7 +140,6 @@ public class CommandResultProcessor {
         }
         if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.CommandExecuted)) {
             commandTaskDict.asMap().remove(commandResult.getCommandId());
-
             if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Command result return, {}", commandResult);
@@ -174,7 +161,6 @@ public class CommandResultProcessor {
         CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().remove(message.getCommandId());
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Success, message.getCommandId(), message.getAggregateRootId(), message.getCommandResult(), message.getCommandResult() != null ? String.class.getName() : null);
-
             if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Command result return, {}", commandResult);

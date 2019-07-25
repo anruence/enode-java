@@ -19,11 +19,8 @@ import java.util.TreeSet;
  * @author anruence@gmail.com
  */
 public class ENodeBootstrap {
-
     private static Logger logger = LoggerFactory.getLogger(ENodeBootstrap.class);
-
     private List<String> packages;
-
     @Autowired
     private IObjectContainer objectContainer;
 

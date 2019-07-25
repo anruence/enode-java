@@ -12,7 +12,6 @@ import java.lang.reflect.Method;
  * @author anruence@gmail.com
  */
 public class DefaultMessageHandlerProvider extends AbstractHandlerProvider<Class, IMessageHandlerProxy1, Class> implements IMessageHandlerProvider {
-
     @Autowired
     private IObjectContainer objectContainer;
 

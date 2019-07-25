@@ -27,10 +27,8 @@ import com.microsoft.conference.management.domain.Events.SeatsReserved;
  * IMessageHandler<SeatsReservationCommitted>,
  * IMessageHandler<SeatsReservationCancelled>
  */
-
 @Event
 public class ConferenceViewModelGenerator {
-
     public AsyncTaskResult HandleAsync(ConferenceCreated evnt) {
 //        return TryInsertRecordAsync(connection = >
 //                {
@@ -170,7 +168,6 @@ public class ConferenceViewModelGenerator {
 //            },ConfigSettings.SeatTypeTable, transaction);
 //        }
 //            });
-
         return null;
     }
 
@@ -269,7 +266,6 @@ public class ConferenceViewModelGenerator {
 //            await Task.WhenAll(tasks);
 //        }
 //            });
-
         return null;
     }
 
@@ -356,7 +352,6 @@ public class ConferenceViewModelGenerator {
 //            });
         return null;
     }
-
 //    private  AsyncTaskResult TryInsertRecordAsync(Func<IDbConnection, Task<long>> action) {
 //        try {
 //            using(var connection = GetConnection())
@@ -372,7 +367,6 @@ public class ConferenceViewModelGenerator {
 //            throw ;
 //        }
 //    }
-
 //    private async AsyncTaskResult TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action) {
 //        using(var connection = GetConnection())
 //        {
@@ -380,7 +374,6 @@ public class ConferenceViewModelGenerator {
 //            return AsyncTaskResult.Success;
 //        }
 //    }
-
 //    private async AsyncTaskResult TryTransactionAsync(Func<IDbConnection, IDbTransaction, Task> action) {
 //        using(var connection = GetConnection())
 //        {
@@ -420,5 +413,4 @@ public class ConferenceViewModelGenerator {
 //    private SqlConnection GetConnection() {
 //        return new SqlConnection(ConfigSettings.ConferenceConnectionString);
 //    }
-
 }

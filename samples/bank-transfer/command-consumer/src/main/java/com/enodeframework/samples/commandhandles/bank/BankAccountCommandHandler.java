@@ -44,7 +44,6 @@ public class BankAccountCommandHandler {
         account.AddTransactionPreparation(command.TransactionId, command.TransactionType, command.PreparationType, command.Amount);
     }
 
-
     /**
      * 验证账户是否合法
      *

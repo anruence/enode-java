@@ -5,9 +5,7 @@ package com.enodeframework.infrastructure;
  */
 public class ProcessingPublishableExceptionMessage implements IProcessingMessage<ProcessingPublishableExceptionMessage, IPublishableException> {
     private ProcessingMessageMailbox<ProcessingPublishableExceptionMessage, IPublishableException> mailbox;
-
     private IMessageProcessContext processContext;
-
     private IPublishableException message;
 
     public ProcessingPublishableExceptionMessage(IPublishableException message, IMessageProcessContext processContext) {

@@ -1,7 +1,6 @@
 package com.enodeframework.infrastructure;
 
 public abstract class SequenceMessage<TAggregateRootId> extends Message implements ISequenceMessage {
-
     private TAggregateRootId aggregateRootId;
     private String aggregateRootStringId;
     private String aggregateRootTypeName;

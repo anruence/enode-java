@@ -164,5 +164,4 @@ public class OrderViewModelGenerator {
 //    private SqlConnection GetConnection() {
 //        return new SqlConnection(ConfigSettings.ConferenceConnectionString);
 //    }
-
 }

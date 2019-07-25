@@ -10,7 +10,6 @@ import java.util.function.Consumer;
  * @author anruence@gmail.com
  */
 public class WrappedExceptionParser<T extends Throwable> {
-
     private T exception;
     private List<Class<? extends Throwable>> expectExceptionTypes;
     private boolean disrupt;
@@ -33,7 +32,6 @@ public class WrappedExceptionParser<T extends Throwable> {
         if (!disrupt) {
             return new WhenImpl<>(expectTypes, this);
         }
-
         return UNDO;
     }
 
@@ -46,7 +44,6 @@ public class WrappedExceptionParser<T extends Throwable> {
     }
 
     static class WhenImpl<ExpectType extends Throwable, OrigType extends Throwable> implements When<ExpectType, OrigType> {
-
         private Class<ExpectType> expectExceptionType;
         private WrappedExceptionParser<OrigType> parser;
 
@@ -61,7 +58,6 @@ public class WrappedExceptionParser<T extends Throwable> {
                 parser.disrupt = true;
                 consumer.accept((ExpectType) parser.exception);
             }
-
             return parser;
         }
     }

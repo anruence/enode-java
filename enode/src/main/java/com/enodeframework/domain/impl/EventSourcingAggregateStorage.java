@@ -18,20 +18,14 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class EventSourcingAggregateStorage implements IAggregateStorage {
-
     private static final int MINVERSION = 1;
-
     private static final int MAXVERSION = Integer.MAX_VALUE;
-
     @Autowired
     private IAggregateRootFactory aggregateRootFactory;
-
     @Autowired
     private IEventStore eventStore;
-
     @Autowired
     private IAggregateSnapshotter aggregateSnapshotter;
-
     @Autowired
     private ITypeNameProvider typeNameProvider;
 

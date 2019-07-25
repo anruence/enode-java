@@ -6,11 +6,9 @@ import com.enodeframework.samples.domain.bank.TransactionStatus;
 /// <summary>聚合根，表示一笔银行存款交易
 /// </summary>
 public class DepositTransaction extends AggregateRoot<String> {
-
     private String _accountId;
     private double _amount;
     private int _status;
-
 
     /// <summary>构造函数
     /// </summary>
@@ -18,7 +16,6 @@ public class DepositTransaction extends AggregateRoot<String> {
         super(transactionId);
         applyEvent(new DepositTransactionStartedEvent(accountId, amount));
     }
-
 
     /// <summary>确认预存款
     /// </summary>
@@ -35,7 +32,6 @@ public class DepositTransaction extends AggregateRoot<String> {
             applyEvent(new DepositTransactionCompletedEvent(_accountId));
         }
     }
-
 
     private void Handle(DepositTransactionStartedEvent evnt) {
         _accountId = evnt.AccountId;

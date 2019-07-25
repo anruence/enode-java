@@ -18,7 +18,6 @@ public class Attendee {
         LastName = lastName;
         Email = email;
     }
-
 //        public override List<object> GetAtomicValues()
 //        {
 //            yield return FirstName;

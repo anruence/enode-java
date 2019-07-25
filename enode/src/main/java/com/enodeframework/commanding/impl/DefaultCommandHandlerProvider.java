@@ -14,7 +14,6 @@ import java.lang.reflect.Method;
  * @author anruence@gmail.com
  */
 public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class, ICommandHandlerProxy, Class> implements ICommandHandlerProvider {
-
     @Autowired
     private IObjectContainer objectContainer;
 

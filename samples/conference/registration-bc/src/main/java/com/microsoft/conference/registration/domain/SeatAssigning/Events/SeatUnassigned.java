@@ -12,4 +12,3 @@ public class SeatUnassigned extends DomainEvent<String> {
         Position = position;
     }
 }
-

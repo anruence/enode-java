@@ -4,4 +4,3 @@ public class SeatReservationItemInfo {
     public String SeatType;
     public int Quantity;
 }
-

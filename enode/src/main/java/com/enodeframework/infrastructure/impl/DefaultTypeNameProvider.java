@@ -7,7 +7,6 @@ import com.enodeframework.infrastructure.ITypeNameProvider;
  * @author anruence@gmail.com
  */
 public class DefaultTypeNameProvider implements ITypeNameProvider {
-
     @Override
     public String getTypeName(Class type) {
         return type.getName();

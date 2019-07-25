@@ -7,4 +7,3 @@ public abstract class PaymentMessage extends ApplicationMessage {
     public String OrderId;
     public String ConferenceId;
 }
-

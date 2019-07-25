@@ -12,7 +12,6 @@ CREATE TABLE `EventStream`
     UNIQUE KEY `IX_EventStream_AggId_CommandId` (`AggregateRootId`, `CommandId`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
-
 CREATE TABLE `PublishedVersion`
 (
     `Sequence`              BIGINT AUTO_INCREMENT NOT NULL,

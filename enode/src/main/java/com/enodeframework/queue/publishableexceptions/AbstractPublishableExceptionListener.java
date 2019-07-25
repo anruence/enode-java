@@ -16,12 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractPublishableExceptionListener implements IMessageHandler {
-
     private static final Logger logger = LoggerFactory.getLogger(AbstractPublishableExceptionListener.class);
-
     @Autowired
     protected ITypeNameProvider typeNameProvider;
-
     @Autowired
     protected IMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> publishableExceptionProcessor;
 
@@ -48,13 +45,11 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
         exception.setId(exceptionMessage.getUniqueId());
         exception.setTimestamp(exceptionMessage.getTimestamp());
         exception.restoreFrom(exceptionMessage.getSerializableInfo());
-
         if (exception instanceof ISequenceMessage) {
             ISequenceMessage sequenceMessage = (ISequenceMessage) exception;
             sequenceMessage.setAggregateRootTypeName(exceptionMessage.getAggregateRootTypeName());
             sequenceMessage.setAggregateRootStringId(exceptionMessage.getAggregateRootId());
         }
-
         DefaultMessageProcessContext processContext = new DefaultMessageProcessContext(queueMessage, context);
         ProcessingPublishableExceptionMessage processingMessage = new ProcessingPublishableExceptionMessage(exception, processContext);
         if (logger.isDebugEnabled()) {

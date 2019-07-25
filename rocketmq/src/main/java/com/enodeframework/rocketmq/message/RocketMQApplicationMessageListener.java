@@ -17,7 +17,6 @@ import java.util.concurrent.CountDownLatch;
  * @author anruence@gmail.com
  */
 public class RocketMQApplicationMessageListener extends AbstractApplicationMessageListener implements MessageListenerConcurrently {
-
     private final Logger logger = LoggerFactory.getLogger(RocketMQApplicationMessageListener.class);
 
     @Override

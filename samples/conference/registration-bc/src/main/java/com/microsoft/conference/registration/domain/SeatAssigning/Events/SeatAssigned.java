@@ -17,5 +17,4 @@ public class SeatAssigned extends DomainEvent<String> {
         Seat = seat;
         this.attendee = attendee;
     }
-
 }

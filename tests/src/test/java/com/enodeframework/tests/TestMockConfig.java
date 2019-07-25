@@ -8,7 +8,6 @@ import com.enodeframework.tests.Mocks.MockPublishedVersionStore;
 import org.springframework.context.annotation.Bean;
 
 public class TestMockConfig {
-
     @Bean
     public MockPublishableExceptionPublisher mockPublishableExceptionPublisher() {
         return new MockPublishableExceptionPublisher();
@@ -33,5 +32,4 @@ public class TestMockConfig {
     public MockApplicationMessagePublisher mockApplicationMessagePublisher() {
         return new MockApplicationMessagePublisher();
     }
-
 }

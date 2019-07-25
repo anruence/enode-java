@@ -60,7 +60,6 @@ public class Conference extends AggregateRoot<String> {
             throw new ENodeRuntimeException("Seat type not exist.");
         }
         applyEvent(new SeatTypeUpdated(seatTypeId, seatTypeInfo));
-
         if (seatType.Quantity != quantity) {
             int totalReservationQuantity = GetTotalReservationQuantity(seatType.Id);
             if (quantity < totalReservationQuantity) {
@@ -90,7 +89,6 @@ public class Conference extends AggregateRoot<String> {
         if (reservationItems == null || reservationItems.size() == 0) {
             throw new RuntimeException(String.format("Reservation items can't be null or empty, reservationId:{}", reservationId));
         }
-
         List<SeatAvailableQuantity> seatAvailableQuantities = new ArrayList<>();
         for (ReservationItem reservationItem : reservationItems) {
             if (reservationItem.Quantity <= 0) {
@@ -111,7 +109,6 @@ public class Conference extends AggregateRoot<String> {
 
     public void CommitReservation(String reservationId) {
         if (_reservations.containsKey(reservationId)) {
-
             List<ReservationItem> reservationItems = _reservations.get(reservationId);
             List<SeatQuantity> seatQuantities = new ArrayList<>();
             for (ReservationItem reservationItem : reservationItems) {
@@ -123,9 +120,7 @@ public class Conference extends AggregateRoot<String> {
     }
 
     public void CancelReservation(String reservationId) {
-
         if (_reservations.containsKey(reservationId)) {
-
             List<ReservationItem> reservationItems = _reservations.get(reservationId);
             List<SeatAvailableQuantity> seatAvailableQuantities = new ArrayList<>();
             for (ReservationItem reservationItem : reservationItems) {
@@ -151,7 +146,6 @@ public class Conference extends AggregateRoot<String> {
         }
         return totalReservationQuantity;
     }
-
 
     private void Handle(ConferenceCreated evnt) {
         id = evnt.getAggregateRootId();
@@ -217,5 +211,4 @@ public class Conference extends AggregateRoot<String> {
     private void Handle(SeatsReservationCancelled evnt) {
         _reservations.remove(evnt.ReservationId);
     }
-
 }

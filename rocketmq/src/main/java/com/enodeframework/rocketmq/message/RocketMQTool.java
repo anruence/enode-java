@@ -11,7 +11,6 @@ import java.util.List;
  * @author anruence@gmail.com
  */
 public class RocketMQTool {
-
     public static QueueMessage covertToQueueMessage(List<MessageExt> msg) {
         MessageExt messageExt = msg.get(0);
         QueueMessage queueMessage = new QueueMessage();

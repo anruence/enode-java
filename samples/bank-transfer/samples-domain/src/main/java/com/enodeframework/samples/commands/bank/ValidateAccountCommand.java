@@ -1,5 +1,4 @@
 package com.enodeframework.samples.commands.bank;
-
 /// <summary>开户（创建一个账户）
 /// </summary>
 

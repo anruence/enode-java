@@ -4,7 +4,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 
 public interface MethodInvocation {
-
     Method getMethod();
 
     void setMethod(Method method);

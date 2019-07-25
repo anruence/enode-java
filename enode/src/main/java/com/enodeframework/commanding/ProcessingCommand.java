@@ -58,5 +58,4 @@ public class ProcessingCommand implements IMailBoxMessage<ProcessingCommand, Com
     public Map<String, String> getItems() {
         return items;
     }
-
 }

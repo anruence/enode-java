@@ -7,7 +7,6 @@ import java.util.Map;
  * @author anruence@gmail.com
  */
 public class OptionSetting {
-
     private Map<String, String> options;
 
     public OptionSetting(StringKeyValuePair... pairs) {

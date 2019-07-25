@@ -14,5 +14,4 @@ public class SeatAssignment {
         Position = position;
         Seat = seat;
     }
-
 }

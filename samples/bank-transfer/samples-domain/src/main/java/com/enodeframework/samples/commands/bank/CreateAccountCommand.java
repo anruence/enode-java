@@ -9,7 +9,6 @@ public class CreateAccountCommand extends Command {
     }
 
     public CreateAccountCommand(String accountId, String owner) {
-
         super(accountId);
         Owner = owner;
     }

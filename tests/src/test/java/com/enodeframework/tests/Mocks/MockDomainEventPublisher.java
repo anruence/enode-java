@@ -11,7 +11,6 @@ import com.enodeframework.infrastructure.IMessagePublisher;
 import java.util.concurrent.CompletableFuture;
 
 public class MockDomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
-
     private int _expectFailedCount = 0;
     private int _currentFailedCount = 0;
     private FailedType _failedType;
@@ -31,7 +30,6 @@ public class MockDomainEventPublisher implements IMessagePublisher<DomainEventSt
     public CompletableFuture<AsyncTaskResult> publishAsync(DomainEventStreamMessage message) {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
-
             if (_failedType == FailedType.UnKnownException) {
                 throw new ENodeRuntimeException("PublishDomainEventStreamMessageAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {

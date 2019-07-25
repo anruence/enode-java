@@ -11,7 +11,6 @@ import com.microsoft.conference.registration.domain.SeatAssigning.Models.OrderSe
 import static com.enodeframework.common.io.Task.await;
 
 public class OrderSeatAssignmentsCommandHandler {
-
     public void HandleAsync(ICommandContext context, CreateSeatAssignments command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
         OrderSeatAssignments orderSeatAssignments = order.CreateSeatAssignments();
@@ -30,5 +29,4 @@ public class OrderSeatAssignmentsCommandHandler {
         OrderSeatAssignments orderSeatAssignments = await(context.getAsync(command.aggregateRootId, OrderSeatAssignments.class));
         orderSeatAssignments.UnassignSeat(command.Position);
     }
-
 }

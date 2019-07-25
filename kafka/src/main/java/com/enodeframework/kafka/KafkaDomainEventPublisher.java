@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class KafkaDomainEventPublisher extends AbstractDomainEventPublisher {
-
     private KafkaTemplate<String, String> producer;
 
     public KafkaTemplate<String, String> getProducer() {
@@ -33,5 +32,4 @@ public class KafkaDomainEventPublisher extends AbstractDomainEventPublisher {
         QueueMessage queueMessage = createDomainEventStreamMessage(eventStream);
         return KafkaTool.covertToProducerRecord(queueMessage);
     }
-
 }

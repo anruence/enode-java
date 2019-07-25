@@ -13,16 +13,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 //import com.enodeframework.TestClasses.AbstractTest;
-
 public class EventStoreFailedTest extends AbstractTest {
-
     @Test
     public void event_store_failed_test() {
         MockEventStore mockEventStore = (MockEventStore) _eventStore;
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
-
         mockEventStore.SetExpectFailedCount(FailedType.UnKnownException, 5);
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
@@ -31,7 +28,6 @@ public class EventStoreFailedTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         mockEventStore.Reset();
-
         command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
@@ -43,7 +39,6 @@ public class EventStoreFailedTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         mockEventStore.Reset();
-
         command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");

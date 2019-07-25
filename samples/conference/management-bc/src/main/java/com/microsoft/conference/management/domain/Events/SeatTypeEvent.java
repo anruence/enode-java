@@ -5,7 +5,6 @@ import com.microsoft.conference.management.domain.Models.SeatTypeInfo;
 
 public abstract class SeatTypeEvent extends DomainEvent<String> {
     public String SeatTypeId;
-
     public SeatTypeInfo SeatTypeInfo;
 
     public SeatTypeEvent() {

@@ -42,15 +42,12 @@ public class InMemoryEventStore implements IEventStore {
 
     public List<DomainEventStream> queryAggregateEvents(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
         List<DomainEventStream> eventStreams = new ArrayList<>();
-
         AggregateInfo aggregateInfo = aggregateInfoDict.get(aggregateRootId);
         if (aggregateInfo == null) {
             return eventStreams;
         }
-
         int min = minVersion > 1 ? minVersion : 1;
         int max = maxVersion < aggregateInfo.getCurrentVersion() ? maxVersion : aggregateInfo.getCurrentVersion();
-
         return aggregateInfo.getEventDict().entrySet()
                 .stream()
                 .filter(x -> x.getKey() >= min && x.getKey() <= max)
@@ -61,9 +58,7 @@ public class InMemoryEventStore implements IEventStore {
     @Override
     public CompletableFuture<AsyncTaskResult<EventAppendResult>> batchAppendAsync(List<DomainEventStream> eventStreams) {
         BatchAppendFuture batchAppendFuture = new BatchAppendFuture();
-
         eventStreams.stream().map(this::appendAsync).forEach(batchAppendFuture::addTask);
-
         return batchAppendFuture.result();
     }
 
@@ -89,11 +84,9 @@ public class InMemoryEventStore implements IEventStore {
 
     private EventAppendResult appends(DomainEventStream eventStream) {
         AggregateInfo aggregateInfo = aggregateInfoDict.computeIfAbsent(eventStream.getAggregateRootId(), key -> new AggregateInfo());
-
         if (!aggregateInfo.tryEnterEditing()) {
             return EventAppendResult.DuplicateEvent;
         }
-
         try {
             if (eventStream.getVersion() == aggregateInfo.getCurrentVersion() + 1) {
                 if (aggregateInfo.getCommandDict().containsKey(eventStream.getCommandId())) {
@@ -115,7 +108,6 @@ public class InMemoryEventStore implements IEventStore {
         if (aggregateInfo == null) {
             return null;
         }
-
         return aggregateInfo.getEventDict().get(version);
     }
 
@@ -124,12 +116,10 @@ public class InMemoryEventStore implements IEventStore {
         if (aggregateInfo == null) {
             return null;
         }
-
         return aggregateInfo.getCommandDict().get(commandId);
     }
 
     class BatchAppendFuture {
-
         private AtomicInteger index;
         private ConcurrentMap<Integer, CompletableFuture<AsyncTaskResult<EventAppendResult>>> taskDict = Maps.newConcurrentMap();
         private CompletableFuture<AsyncTaskResult<EventAppendResult>> result;
@@ -141,7 +131,6 @@ public class InMemoryEventStore implements IEventStore {
 
         public void addTask(CompletableFuture<AsyncTaskResult<EventAppendResult>> task) {
             int i = index.get();
-
             taskDict.put(index.getAndIncrement(), task);
             task.thenAccept(t -> {
                 if (t.getData() != EventAppendResult.Success) {
@@ -149,10 +138,8 @@ public class InMemoryEventStore implements IEventStore {
                     taskDict.clear();
                     return;
                 }
-
                 if (!result.isDone()) {
                     taskDict.remove(i);
-
                     if (taskDict.isEmpty()) {
                         result.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.Success));
                     }

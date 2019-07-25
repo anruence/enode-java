@@ -62,5 +62,4 @@ public class OrderQueryService implements IOrderQueryService {
 //    private IDbConnection GetConnection() {
 //        return new SqlConnection(ConfigSettings.ConferenceConnectionString);
 //    }
-
 }

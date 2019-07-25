@@ -16,9 +16,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.enodeframework.common.io.Task.await;
 
 public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessResult> implements IMailBox<TMessage, TMessageProcessResult> {
-
+    private final Object lockObj = new Object();
+    private final Object asyncLock = new Object();
     public Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private String routingKey;
     private Date lastActiveTime;
     private boolean isRunning;
@@ -26,8 +26,6 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
     private boolean isPaused;
     private long consumingSequence;
     private long consumedSequence;
-    private final Object lockObj = new Object();
-    private final Object asyncLock = new Object();
     private ConcurrentHashMap<Long, TMessage> messageDict;
     private Map<Long, TMessageProcessResult> requestToCompleteMessageDict;
     private Func1<TMessage, CompletableFuture> messageHandler;
@@ -111,7 +109,6 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
                 nextSequence++;
                 if (logger.isDebugEnabled()) {
                     logger.debug("{} enqueued new message, routingKey: {}, messageSequence: {}", getClass().getName(), routingKey, message.getSequence());
-
                 }
                 lastActiveTime = new Date();
                 tryRun();
@@ -237,7 +234,6 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
                 long consumingSequence = this.consumingSequence;
                 long scannedSequenceSize = 0;
                 List<TMessage> messageList = new ArrayList<>();
-
                 while (hasNextMessage(consumingSequence) && scannedSequenceSize < batchSize && !isPauseRequested) {
                     TMessage message = getMessage(consumingSequence);
                     if (message != null) {
@@ -246,13 +242,11 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
                     scannedSequenceSize++;
                     consumingSequence++;
                 }
-
                 List<TMessage> filterMessages = filterMessages(messageList);
                 if (filterMessages != null && filterMessages.size() > 0) {
                     await(messageListHandler.apply(filterMessages));
                 }
                 this.consumingSequence = consumingSequence;
-
                 if (filterMessages == null || filterMessages.size() == 0) {
                     completeRun();
                 }
@@ -309,5 +303,4 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
     private void setAsNotRunning() {
         isRunning = false;
     }
-
 }

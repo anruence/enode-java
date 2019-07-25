@@ -45,9 +45,7 @@ public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y exte
         if (!(waitingMessage.getMessage() instanceof ISequenceMessage)) {
             throw new IllegalArgumentException("sequenceMessage should not be null.");
         }
-
         ISequenceMessage sequenceMessage = (ISequenceMessage) waitingMessage.getMessage();
-
         if (waitingMessageDict == null) {
             synchronized (lockObj) {
                 if (waitingMessageDict == null) {
@@ -55,9 +53,7 @@ public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y exte
                 }
             }
         }
-
         waitingMessageDict.putIfAbsent(sequenceMessage.getVersion(), waitingMessage);
-
         lastActiveTime = new Date();
         exit();
         tryRun();
@@ -76,7 +72,6 @@ public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y exte
         X processingMessage = null;
         try {
             processingMessage = messageQueue.poll();
-
             if (processingMessage != null) {
                 await(messageHandler.handleAsync(processingMessage));
             }
@@ -101,18 +96,14 @@ public class ProcessingMessageMailbox<X extends IProcessingMessage<X, Y>, Y exte
         if (!(currentCompletedMessage.getMessage() instanceof ISequenceMessage)) {
             return false;
         }
-
         ISequenceMessage sequenceMessage = (ISequenceMessage) currentCompletedMessage.getMessage();
         if (sequenceMessage == null) {
             return false;
         }
-
         if (waitingMessageDict == null) {
             return false;
         }
-
         X nextMessage = waitingMessageDict.remove(sequenceMessage.getVersion() + 1);
-
         if (nextMessage != null) {
             scheduler.scheduleMessage(nextMessage);
             return true;

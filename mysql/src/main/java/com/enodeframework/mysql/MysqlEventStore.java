@@ -31,11 +31,8 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class MysqlEventStore implements IEventStore {
-
     private static final Logger logger = LoggerFactory.getLogger(MysqlEventStore.class);
-
     private static final String EVENT_TABLE_NAME_FORMAT = "%s_%s";
-
     private final String tableName;
     private final int tableCount;
     private final String versionIndexName;
@@ -43,10 +40,8 @@ public class MysqlEventStore implements IEventStore {
     private final int bulkCopyBatchSize;
     private final int bulkCopyTimeout;
     private final QueryRunner queryRunner;
-
     @Autowired
     private IEventSerializer eventSerializer;
-
     private boolean supportBatchAppendEvent = true;
 
     public MysqlEventStore(DataSource ds, OptionSetting optionSetting) {
@@ -67,7 +62,6 @@ public class MysqlEventStore implements IEventStore {
             bulkCopyBatchSize = setting.getEventTableBulkCopyBatchSize();
             bulkCopyTimeout = setting.getEventTableBulkCopyTimeout();
         }
-
         Ensure.notNull(tableName, "tableName");
         Ensure.notNull(versionIndexName, "eventIndexName");
         Ensure.notNull(commandIndexName, "commandIndexName");
@@ -106,7 +100,6 @@ public class MysqlEventStore implements IEventStore {
                                 aggregateRootId,
                                 minVersion,
                                 maxVersion);
-
                         List<DomainEventStream> streams = result.stream().map(this::convertFrom).collect(Collectors.toList());
                         return new AsyncTaskResult<>(AsyncTaskStatus.Success, streams);
                     } catch (SQLException ex) {
@@ -125,7 +118,6 @@ public class MysqlEventStore implements IEventStore {
         if (eventStreams.size() == 0) {
             throw new IllegalArgumentException("Event streams cannot be empty.");
         }
-
         Map<String, List<DomainEventStream>> eventStreamMap = eventStreams.stream().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
         for (List<DomainEventStream> x : eventStreamMap.values()) {
             try {
@@ -174,7 +166,6 @@ public class MysqlEventStore implements IEventStore {
             } else if (ex.getErrorCode() == 1062 && ex.getMessage().contains(commandIndexName)) {
                 return new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.DuplicateCommand);
             }
-
             logger.error(String.format("Append event has sql exception, eventStream: %s", eventStream), ex);
             return new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage(), EventAppendResult.Failed);
         } catch (Exception ex) {
@@ -192,9 +183,7 @@ public class MysqlEventStore implements IEventStore {
                                 new BeanHandler<>(StreamRecord.class),
                                 aggregateRootId,
                                 version);
-
                         DomainEventStream stream = record != null ? convertFrom(record) : null;
-
                         return new AsyncTaskResult<>(AsyncTaskStatus.Success, stream);
                     } catch (SQLException ex) {
                         logger.error(String.format("Find event by version has sql exception, aggregateRootId: %s, version: %d", aggregateRootId, version), ex);
@@ -211,12 +200,10 @@ public class MysqlEventStore implements IEventStore {
         return IOHelper.tryIOFuncAsync(() ->
                 CompletableFuture.supplyAsync(() -> {
                     try {
-
                         StreamRecord record = queryRunner.query(String.format("select * from `%s` where AggregateRootId=? and CommandId=?", getTableName(aggregateRootId)),
                                 new BeanHandler<>(StreamRecord.class),
                                 aggregateRootId,
                                 commandId);
-
                         DomainEventStream stream = record != null ? convertFrom(record) : null;
                         return new AsyncTaskResult<>(AsyncTaskStatus.Success, stream);
                     } catch (SQLException ex) {
@@ -241,9 +228,7 @@ public class MysqlEventStore implements IEventStore {
         if (tableCount <= 1) {
             return tableName;
         }
-
         int tableIndex = getTableIndex(aggregateRootId);
-
         return String.format(EVENT_TABLE_NAME_FORMAT, tableName, tableIndex);
     }
 

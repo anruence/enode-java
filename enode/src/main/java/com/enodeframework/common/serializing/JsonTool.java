@@ -17,7 +17,6 @@ import java.util.Date;
  * @author anruence@gmail.com
  */
 public class JsonTool {
-
     private static Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new DateSerializer()).registerTypeAdapter(Date.class, new DateDeserializer()).serializeNulls().create();
 
     public static String serialize(Object obj) {

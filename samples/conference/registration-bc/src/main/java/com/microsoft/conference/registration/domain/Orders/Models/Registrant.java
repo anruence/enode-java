@@ -18,5 +18,4 @@ public class Registrant {
         LastName = lastName;
         Email = email;
     }
-
 }

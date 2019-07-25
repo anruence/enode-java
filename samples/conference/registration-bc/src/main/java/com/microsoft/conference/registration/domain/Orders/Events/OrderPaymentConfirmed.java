@@ -13,4 +13,3 @@ public class OrderPaymentConfirmed extends OrderEvent {
         this.orderStatus = orderStatus;
     }
 }
-

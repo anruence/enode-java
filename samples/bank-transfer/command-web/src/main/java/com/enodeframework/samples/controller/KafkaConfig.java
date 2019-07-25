@@ -16,7 +16,6 @@ import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
 import static com.enodeframework.samples.QueueProperties.KAFKA_SERVER;
 
 public class KafkaConfig {
-
     @Bean
     public KafkaCommandService kafkaCommandService(KafkaTemplate producer) {
         KafkaCommandService kafkaCommandService = new KafkaCommandService();

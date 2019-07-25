@@ -38,7 +38,6 @@ public class RocketMQCommandConfig {
         return defaultMQPushConsumer;
     }
 
-
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQProducer defaultMQProducer() {
         DefaultMQProducer producer = new DefaultMQProducer();
@@ -76,5 +75,4 @@ public class RocketMQCommandConfig {
         exceptionPublisher.setTopicData(new TopicData(EXCEPTION_TOPIC, "*"));
         return exceptionPublisher;
     }
-
 }

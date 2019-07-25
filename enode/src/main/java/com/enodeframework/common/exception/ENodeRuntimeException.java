@@ -5,9 +5,7 @@ package com.enodeframework.common.exception;
  * checked exception covert to non-checked exception
  */
 public class ENodeRuntimeException extends RuntimeException {
-
     private static final long serialVersionUID = -8951926710590746149L;
-
     /**
      * checked exception
      */

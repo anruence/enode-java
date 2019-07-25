@@ -42,19 +42,16 @@ public class OrderCommandHandler {
 
     public void HandleAsync(ICommandContext context, ConfirmReservation command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-
         order.ConfirmReservation(command.IsReservationSuccess);
     }
 
     public void HandleAsync(ICommandContext context, ConfirmPayment command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-
         order.ConfirmPayment(command.IsPaymentSuccess);
     }
 
     public void HandleAsync(ICommandContext context, MarkAsSuccess command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-
         order.MarkAsSuccess();
     }
 

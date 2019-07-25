@@ -16,5 +16,4 @@ public class OrderSeatAssignmentsCreated extends DomainEvent<String> {
         OrderId = orderId;
         Assignments = assignments;
     }
-
 }

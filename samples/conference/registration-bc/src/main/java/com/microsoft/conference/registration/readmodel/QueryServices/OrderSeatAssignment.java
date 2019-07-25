@@ -8,4 +8,3 @@ public class OrderSeatAssignment {
     public String AttendeeFirstName;
     public String AttendeeLastName;
 }
-

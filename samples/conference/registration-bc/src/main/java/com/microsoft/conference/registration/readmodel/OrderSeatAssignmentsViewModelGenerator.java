@@ -59,7 +59,6 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //            });
         return null;
     }
-
 //        private async AsyncTaskResult TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action)
 //        {
 //            using (var connection = GetConnection())
@@ -91,5 +90,4 @@ public class OrderSeatAssignmentsViewModelGenerator {
 //        {
 //            return new SqlConnection(ConfigSettings.ConferenceConnectionString);
 //        }
-
 }

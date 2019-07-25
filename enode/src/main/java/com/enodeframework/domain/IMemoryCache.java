@@ -21,7 +21,6 @@ public interface IMemoryCache {
      */
     <T extends IAggregateRoot> CompletableFuture<T> getAsync(Object aggregateRootId, Class<T> aggregateRootType);
 
-
     /**
      * Update the given aggregate root's memory cache.
      *

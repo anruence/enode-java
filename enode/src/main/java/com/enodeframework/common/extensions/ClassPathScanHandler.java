@@ -26,9 +26,7 @@ import java.util.regex.Pattern;
  * @author anruence@gmail.com
  */
 public class ClassPathScanHandler {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassPathScanHandler.class);
-
     /**
      * class file extension name.
      */
@@ -198,7 +196,6 @@ public class ClassPathScanHandler {
             return;
         }
         File[] files = dir.listFiles(pathname -> filterClassFileByCustomization(pathname, recursive));
-
         if (null == files || files.length == 0) {
             return;
         }

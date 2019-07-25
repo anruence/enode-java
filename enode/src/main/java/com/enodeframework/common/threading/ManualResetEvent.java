@@ -6,9 +6,7 @@ import com.enodeframework.common.exception.ENodeRuntimeException;
  * @author anruence@gmail.com
  */
 public class ManualResetEvent {
-
     private final Object monitor = new Object();
-
     private volatile boolean open = false;
 
     public ManualResetEvent(boolean initialState) {

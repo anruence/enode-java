@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author anruence@gmail.com
  */
 public class EventMailBox extends DefaultMailBox<EventCommittingContext, Boolean> {
-
     private ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> aggregateDictDict;
 
     public EventMailBox(String routingKey, int batchSize, Action1<List<EventCommittingContext>> handleMessageAction) {

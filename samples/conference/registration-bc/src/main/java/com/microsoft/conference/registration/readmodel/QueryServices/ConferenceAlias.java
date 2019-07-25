@@ -6,4 +6,3 @@ public class ConferenceAlias {
     public String Name;
     public String Tagline;
 }
-

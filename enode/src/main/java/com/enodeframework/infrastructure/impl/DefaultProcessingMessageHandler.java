@@ -20,14 +20,10 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>, Y extends IMessage> implements IProcessingMessageHandler<X, Y> {
-
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingMessageHandler.class);
-
     private String domainEventStreamMessageHandlerName = "DefaultEventProcessor";
-
     @Autowired
     private IMessageDispatcher dispatcher;
-
     @Autowired
     private IPublishedVersionStore publishedVersionStore;
 

@@ -24,13 +24,12 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class DefaultMemoryCache implements IMemoryCache {
-
     private static final Logger logger = LoggerFactory.getLogger(DefaultMemoryCache.class);
     private final ConcurrentMap<String, AggregateCacheInfo> aggregateRootInfoDict;
+    private final Object lockObj = new Object();
     private int timeoutSeconds = 5000;
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
     private String taskName;
-    private final Object lockObj = new Object();
     @Autowired
     private IAggregateStorage aggregateStorage;
     @Autowired
@@ -124,7 +123,6 @@ public class DefaultMemoryCache implements IMemoryCache {
         if (aggregateRootType == null) {
             throw new NullPointerException("aggregateRootType");
         }
-
         return aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString()).thenApply(aggregateRoot -> {
             if (aggregateRoot != null) {
                 resetAggregateRootCache(aggregateRoot);
@@ -153,14 +151,11 @@ public class DefaultMemoryCache implements IMemoryCache {
             }
             AggregateCacheInfo cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.uniqueId(), x -> {
                 if (logger.isDebugEnabled()) {
-
                     logger.debug("Aggregate root in-memory cache init, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.getVersion());
                 }
-
                 return new AggregateCacheInfo(aggregateRoot);
             });
             int aggregateRootOldVersion = cacheInfo.getAggregateRoot().getVersion();
-
             cacheInfo.setAggregateRoot(aggregateRoot);
             cacheInfo.setLastUpdateTimeMillis(System.currentTimeMillis());
             if (logger.isDebugEnabled()) {
@@ -173,7 +168,6 @@ public class DefaultMemoryCache implements IMemoryCache {
         List<Map.Entry<String, AggregateCacheInfo>> inactiveList = aggregateRootInfoDict.entrySet().stream()
                 .filter(entry -> entry.getValue().isExpired(timeoutSeconds))
                 .collect(Collectors.toList());
-
         inactiveList.forEach(entry -> {
             if (aggregateRootInfoDict.remove(entry.getKey()) != null) {
                 logger.info("Removed inactive aggregate root, id: {}", entry.getKey());

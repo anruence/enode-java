@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 @Event
 public class NoteEventHandler {
-
     public static Logger logger = LoggerFactory.getLogger(NoteEventHandler.class);
 
     @Subscribe

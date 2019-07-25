@@ -15,4 +15,3 @@ public class OrderRegistrantAssigned extends DomainEvent<String> {
         Registrant = registrant;
     }
 }
-

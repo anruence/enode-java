@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 @Event
 public class AccountEventHandler {
-
     public static Logger logger = LoggerFactory.getLogger(AccountEventHandler.class);
 
     @Subscribe

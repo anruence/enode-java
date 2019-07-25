@@ -19,11 +19,9 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class SendRocketMQService {
-
     private static Logger logger = LoggerFactory.getLogger(SendRocketMQService.class);
 
     public static CompletableFuture<AsyncTaskResult> sendMessageAsync(DefaultMQProducer producer, Message message, String routingKey) {
-
         CompletableFuture<AsyncTaskResult> promise = new CompletableFuture<>();
         try {
             producer.send(message, SendRocketMQService::messageQueueSelect, routingKey, new SendCallback() {

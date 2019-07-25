@@ -23,7 +23,6 @@ public class OrderSeatAssignments extends AggregateRoot<String> {
         Ensure.notNullOrEmpty(orderId, "orderId");
         Ensure.notNull(orderLines, "orderLines");
         if (orderLines.isEmpty()) throw new ArgumentException("The seats of order cannot be empty.");
-
         int position = 0;
         List<SeatAssignment> assignments = new ArrayList<>();
         for (OrderLine orderLine : orderLines) {
@@ -65,5 +64,4 @@ public class OrderSeatAssignments extends AggregateRoot<String> {
     private void Handle(SeatUnassigned evnt) {
         Linq.single(_assignments, x -> x.Position == evnt.Position).attendee = null;
     }
-
 }

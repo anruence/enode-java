@@ -17,7 +17,6 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class KafkaCommandService extends AbstractCommandService {
-
     private KafkaTemplate<String, String> producer;
 
     public KafkaTemplate<String, String> getProducer() {
@@ -66,10 +65,8 @@ public class KafkaCommandService extends AbstractCommandService {
         return taskCompletionSource;
     }
 
-
     protected ProducerRecord<String, String> buildKafkaMessage(ICommand command, boolean needReply) {
         QueueMessage queueMessage = buildCommandMessage(command, needReply);
         return KafkaTool.covertToProducerRecord(queueMessage);
     }
-
 }

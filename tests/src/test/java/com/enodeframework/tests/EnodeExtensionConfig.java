@@ -14,9 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @ComponentScan(value = "com.enodeframework")
 public class EnodeExtensionConfig {
-
     public static String JDBC_URL = "jdbc:mysql://p.anruence.com:13306/enode";
-
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public CommandResultProcessor commandResultProcessor() {
@@ -47,7 +45,7 @@ public class EnodeExtensionConfig {
         return new DefaultCommandProcessor();
     }
 
-//    @Bean
+    //    @Bean
 //    public InMemoryEventStore eventStore() {
 //        return new InMemoryEventStore();
 //    }
@@ -56,7 +54,6 @@ public class EnodeExtensionConfig {
 //    public InMemoryPublishedVersionStore publishedVersionStore() {
 //        return new InMemoryPublishedVersionStore();
 //    }
-
     @Bean
     public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
         MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);

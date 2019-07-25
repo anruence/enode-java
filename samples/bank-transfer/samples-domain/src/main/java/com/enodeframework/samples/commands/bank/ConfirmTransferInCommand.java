@@ -12,4 +12,3 @@ public class ConfirmTransferInCommand extends Command {
         super(transactionId);
     }
 }
-

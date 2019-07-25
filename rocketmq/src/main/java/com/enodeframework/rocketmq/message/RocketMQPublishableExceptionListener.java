@@ -17,7 +17,6 @@ import java.util.concurrent.CountDownLatch;
  * @author anruence@gmail.com
  */
 public class RocketMQPublishableExceptionListener extends AbstractPublishableExceptionListener implements MessageListenerConcurrently {
-
     private static Logger logger = LoggerFactory.getLogger(RocketMQPublishableExceptionListener.class);
 
     @Override

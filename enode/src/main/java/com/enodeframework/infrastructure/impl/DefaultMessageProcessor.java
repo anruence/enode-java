@@ -22,23 +22,15 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y extends IMessage> implements IMessageProcessor<X, Y> {
-
     private static final Logger logger = LoggerFactory.getLogger(DefaultMessageProcessor.class);
-
     private int timeoutSeconds = 3600 * 24 * 3;
-
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
-
     private String taskName;
-
     private ConcurrentMap<String, ProcessingMessageMailbox<X, Y>> mailboxDict;
-
     @Autowired
     private IScheduleService scheduleService;
-
     @Autowired
     private IProcessingMessageScheduler<X, Y> processingMessageScheduler;
-
     @Autowired
     private IProcessingMessageHandler<X, Y> processingMessageHandler;
 
@@ -91,7 +83,6 @@ public class DefaultMessageProcessor<X extends IProcessingMessage<X, Y>, Y exten
         List<Map.Entry<String, ProcessingMessageMailbox<X, Y>>> inactiveList = mailboxDict.entrySet().stream().filter(entry ->
                 entry.getValue().isInactive(timeoutSeconds) && !entry.getValue().isRunning()
         ).collect(Collectors.toList());
-
         inactiveList.forEach(entry -> {
             if (mailboxDict.remove(entry.getKey()) != null) {
                 logger.info("Removed inactive {} mailbox, aggregateRootId: {}", getMessageName(), entry.getKey());

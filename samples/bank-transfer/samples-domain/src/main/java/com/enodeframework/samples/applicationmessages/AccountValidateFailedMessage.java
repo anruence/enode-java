@@ -6,11 +6,8 @@ import com.enodeframework.infrastructure.ApplicationMessage;
 /// </summary>
 public class AccountValidateFailedMessage extends ApplicationMessage {
     public String AccountId;
-
     public String TransactionId;
-
     public String Reason;
-
 
     public AccountValidateFailedMessage() {
     }
@@ -20,7 +17,6 @@ public class AccountValidateFailedMessage extends ApplicationMessage {
         TransactionId = transactionId;
         Reason = reason;
     }
-
 
     @Override
     public String getRoutingKey() {
