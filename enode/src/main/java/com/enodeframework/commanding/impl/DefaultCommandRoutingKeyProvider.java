@@ -12,7 +12,6 @@ public class DefaultCommandRoutingKeyProvider implements ICommandRoutingKeyProvi
         if (!(command.getAggregateRootId() == null || "".equals(command.getAggregateRootId().trim()))) {
             return command.getAggregateRootId();
         }
-
         return command.getId();
     }
 }

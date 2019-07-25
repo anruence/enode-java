@@ -5,7 +5,6 @@ public enum EventAppendResult {
     Failed(2),
     DuplicateEvent(3),
     DuplicateCommand(4);
-
     private int status;
 
     EventAppendResult(int status) {

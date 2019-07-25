@@ -60,7 +60,6 @@ public class RegistrationProcessManager {
             itemInfo.Quantity = x.SeatQuantity.Quantity;
             return itemInfo;
         }).collect(Collectors.toList());
-
         return Task.get(_commandService.sendAsync(reservation));
     }
 

@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
  * List常用操作类
  */
 public class Linq {
-
     public static <T> T first(List<T> list) {
         if (list == null || list.size() < 1) {
             throw new ArrayIndexOutOfBoundsException("");
@@ -43,7 +42,6 @@ public class Linq {
             throw new ENodeRuntimeException("find more than one result");
         }
     }
-
 
     public static <T> T singleOrDefault(List<T> list, Predicate<T> predicate) {
         List<T> rets = list.stream().filter(predicate).collect(Collectors.toList());

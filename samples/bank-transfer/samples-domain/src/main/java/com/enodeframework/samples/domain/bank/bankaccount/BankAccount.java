@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 /// <summary>银行账户聚合根，封装银行账户余额变动的数据一致性
 /// </summary>
 public class BankAccount extends AggregateRoot<String> {
-
     private Map<String, TransactionPreparation> transactionPreparations;
     private String owner;
     private double balance;
@@ -29,7 +28,6 @@ public class BankAccount extends AggregateRoot<String> {
         if (preparationType == PreparationType.DebitPreparation && availableBalance < amount) {
             throw new InsufficientBalanceException(id, transactionid, transactionType, amount, balance, availableBalance);
         }
-
         applyEvent(new TransactionPreparationAddedEvent(new TransactionPreparation(id, transactionid, transactionType, preparationType, amount)));
     }
 
@@ -52,7 +50,6 @@ public class BankAccount extends AggregateRoot<String> {
         applyEvent(new TransactionPreparationCanceledEvent(GetTransactionPreparation(transactionId)));
     }
 
-
     /// <summary>获取当前账户内的一笔预操作，如果预操作不存在，则抛出异常
     /// </summary>
     private TransactionPreparation GetTransactionPreparation(String transactionId) {
@@ -72,15 +69,12 @@ public class BankAccount extends AggregateRoot<String> {
         if (transactionPreparations == null || transactionPreparations.size() == 0) {
             return balance;
         }
-
         double totalDebitTransactionPreparationAmount = 0;
         for (TransactionPreparation debitTransactionPreparation : transactionPreparations.values().stream().filter(x -> x.preparationType == PreparationType.DebitPreparation).collect(Collectors.toList())) {
             totalDebitTransactionPreparationAmount += debitTransactionPreparation.Amount;
         }
-
         return balance - totalDebitTransactionPreparationAmount;
     }
-
 
     private void handle(AccountCreatedEvent evnt) {
         owner = evnt.Owner;

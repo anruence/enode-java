@@ -2,7 +2,6 @@ package com.enodeframework.samples.commands.bank;
 
 import com.enodeframework.commanding.Command;
 
-
 /// <summary>确认预转入
 /// </summary>
 public class ConfirmTransferInPreparationCommand extends Command {
@@ -13,4 +12,3 @@ public class ConfirmTransferInPreparationCommand extends Command {
         super(transactionId);
     }
 }
-

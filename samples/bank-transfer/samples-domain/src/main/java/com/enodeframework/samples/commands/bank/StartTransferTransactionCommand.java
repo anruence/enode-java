@@ -18,7 +18,3 @@ public class StartTransferTransactionCommand extends Command {
         TransactionInfo = transactionInfo;
     }
 }
-
-
-
-

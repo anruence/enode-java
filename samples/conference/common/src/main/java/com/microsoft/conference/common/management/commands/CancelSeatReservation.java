@@ -13,4 +13,3 @@ public class CancelSeatReservation extends Command<String> {
         ReservationId = reservationId;
     }
 }
-

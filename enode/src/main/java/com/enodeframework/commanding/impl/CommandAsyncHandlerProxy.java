@@ -12,36 +12,47 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * @author anruence@gmail.com
  */
 public class CommandAsyncHandlerProxy implements ICommandAsyncHandlerProxy {
-
     @Autowired
     private IObjectContainer objectContainer;
     private Class handlerType;
     private Object commandHandler;
     private MethodHandle methodHandle;
     private Method method;
+    private Executor executor;
 
     public CommandAsyncHandlerProxy setObjectContainer(IObjectContainer objectContainer) {
         this.objectContainer = objectContainer;
         return this;
     }
 
+    public CommandAsyncHandlerProxy setExecutor(Executor executor) {
+        this.executor = executor;
+        return this;
+    }
+
     @Override
     public CompletableFuture<AsyncTaskResult<IApplicationMessage>> handleAsync(ICommand command) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return (AsyncTaskResult<IApplicationMessage>) methodHandle.invoke(getInnerObject(), command);
-            } catch (Throwable throwable) {
-                if (throwable instanceof IORuntimeException) {
-                    throw new IORuntimeException(throwable);
-                }
-                throw new ENodeRuntimeException(throwable);
+        if (executor != null) {
+            return CompletableFuture.supplyAsync(() -> handle(command), executor);
+        }
+        return CompletableFuture.supplyAsync(() -> handle(command));
+    }
+
+    public AsyncTaskResult<IApplicationMessage> handle(ICommand command) {
+        try {
+            return (AsyncTaskResult<IApplicationMessage>) methodHandle.invoke(getInnerObject(), command);
+        } catch (Throwable throwable) {
+            if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
+                throw new IORuntimeException(throwable);
             }
-        });
+            throw new ENodeRuntimeException(throwable);
+        }
     }
 
     @Override

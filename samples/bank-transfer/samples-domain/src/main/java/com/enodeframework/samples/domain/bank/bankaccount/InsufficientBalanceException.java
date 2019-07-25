@@ -34,7 +34,6 @@ public class InsufficientBalanceException extends PublishableException {
         CurrentAvailableBalance = currentAvailableBalance;
     }
 
-
     @Override
     public void serializeTo(Map<String, String> serializableInfo) {
         serializableInfo.put("AccountId", AccountId);

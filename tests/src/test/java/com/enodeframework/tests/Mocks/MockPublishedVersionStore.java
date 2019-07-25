@@ -36,7 +36,6 @@ public class MockPublishedVersionStore implements IPublishedVersionStore {
     public CompletableFuture<AsyncTaskResult> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
         if (_currentUpdateFailedCount < _expectUpdateFailedCount) {
             _currentUpdateFailedCount++;
-
             if (_failedType == FailedType.UnKnownException) {
                 throw new ENodeRuntimeException("UpdatePublishedVersionAsyncUnKnownException" + _currentUpdateFailedCount);
             } else if (_failedType == FailedType.IOException) {
@@ -52,7 +51,6 @@ public class MockPublishedVersionStore implements IPublishedVersionStore {
     public CompletableFuture<AsyncTaskResult<Integer>> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
         if (_currentGetFailedCount < _expectGetFailedCount) {
             _currentGetFailedCount++;
-
             if (_failedType == FailedType.UnKnownException) {
                 throw new ENodeRuntimeException("GetPublishedVersionAsyncUnKnownException" + _currentGetFailedCount);
             } else if (_failedType == FailedType.IOException) {

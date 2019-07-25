@@ -13,4 +13,3 @@ public class AggregateThrowExceptionCommand extends Command {
         PublishableException = publishableException;
     }
 }
-

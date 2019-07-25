@@ -7,9 +7,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author anruence@gmail.com
  */
-
 public class ProcessingCommandMailbox extends DefaultMailBox<ProcessingCommand, CommandResult> {
-
     private static int commandMailBoxPersistenceMaxBatchSize = 1000;
 
     public ProcessingCommandMailbox(String aggregateRootId, IProcessingCommandHandler messageHandler) {
@@ -23,5 +21,4 @@ public class ProcessingCommandMailbox extends DefaultMailBox<ProcessingCommand, 
             return null;
         });
     }
-
 }

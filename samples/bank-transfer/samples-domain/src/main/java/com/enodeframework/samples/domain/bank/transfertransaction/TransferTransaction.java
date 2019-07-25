@@ -1,13 +1,11 @@
 package com.enodeframework.samples.domain.bank.transfertransaction;
 
-
 import com.enodeframework.domain.AggregateRoot;
 import com.enodeframework.samples.domain.bank.TransactionStatus;
 
 /// <summary>聚合根，表示一笔银行内账户之间的转账交易
 /// </summary>
 public class TransferTransaction extends AggregateRoot<String> {
-
     private TransferTransactionInfo _transactionInfo;
     private int _status;
     private boolean _isSourceAccountValidatePassed;
@@ -17,14 +15,12 @@ public class TransferTransaction extends AggregateRoot<String> {
     private boolean _isTransferOutConfirmed;
     private boolean _isTransferInConfirmed;
 
-
     /// <summary>构造函数
     /// </summary>
     public TransferTransaction(String transactionId, TransferTransactionInfo transactionInfo) {
         super(transactionId);
         applyEvent(new TransferTransactionStartedEvent(transactionInfo));
     }
-
 
     /// <summary>确认账户验证通过
     /// </summary>
@@ -99,7 +95,6 @@ public class TransferTransaction extends AggregateRoot<String> {
     public void Cancel() {
         applyEvent(new TransferTransactionCanceledEvent());
     }
-
 
     private void Handle(TransferTransactionStartedEvent evnt) {
         _transactionInfo = evnt.TransactionInfo;

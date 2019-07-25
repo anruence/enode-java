@@ -22,4 +22,3 @@ public class DefaultPricingService implements IPricingService {
         return new OrderTotal(orderLines, total);
     }
 }
-

@@ -51,7 +51,6 @@ public class ObjectId {
         if ((increment & 0xff000000) != 0) {
             throw new IllegalArgumentException("The increment value must be between 0 and 16777215 (it must fit in 3 bytes).");
         }
-
         this.timestamp = timestamp;
         this.machine = machine;
         this.pid = pid;
@@ -83,7 +82,6 @@ public class ObjectId {
         if ((increment & 0xff000000) != 0) {
             throw new IllegalArgumentException("The increment value must be between 0 and 16777215 (it must fit in 3 bytes).");
         }
-
         byte[] bytes = new byte[12];
         bytes[0] = (byte) (timestamp >> 24);
         bytes[1] = (byte) (timestamp >> 16);
@@ -117,7 +115,6 @@ public class ObjectId {
             String hostName = InetAddress.getLocalHost().getHostName();
             MessageDigest md5 = MessageDigest.getInstance("md5");
             byte[] hash = md5.digest(hostName.getBytes());
-
             // use first 3 bytes of hash
             return ((hash[0] & 0xff) << 16) | ((hash[1] & 0xff) << 8) | hash[2] & 0xff;
         } catch (Exception ex) {

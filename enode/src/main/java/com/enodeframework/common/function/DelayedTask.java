@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
  * @author anruence@gmail.com
  */
 public class DelayedTask {
-
     private static final ScheduledExecutorService EXECUTOR = new ScheduledThreadPoolExecutor(
             1, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DelayedThread-%d").build());
 

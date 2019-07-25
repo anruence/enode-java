@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AppConfigCommand {
-
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public CommandResultProcessor commandResultProcessor() {
         CommandResultProcessor processor = new CommandResultProcessor();

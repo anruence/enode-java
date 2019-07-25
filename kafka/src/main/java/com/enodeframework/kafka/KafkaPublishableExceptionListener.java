@@ -10,7 +10,6 @@ import org.springframework.kafka.support.Acknowledgment;
  * @author anruence@gmail.com
  */
 public class KafkaPublishableExceptionListener extends AbstractPublishableExceptionListener implements AcknowledgingMessageListener {
-
     /**
      * Invoked with data from kafka.
      *
@@ -34,6 +33,5 @@ public class KafkaPublishableExceptionListener extends AbstractPublishableExcept
      */
     @Override
     public void onMessage(Object data) {
-
     }
 }

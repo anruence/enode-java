@@ -32,9 +32,7 @@ import static com.enodeframework.common.io.Task.await;
  * @author anruence@gmail.com
  */
 public class DefaultEventService implements IEventService {
-
     private static final Logger logger = LoggerFactory.getLogger(DefaultEventService.class);
-
     private int batchSize;
     private int timeoutSeconds;
     private String taskName;
@@ -44,16 +42,12 @@ public class DefaultEventService implements IEventService {
     private int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
     private int eventMailBoxCount = 4;
     private List<EventMailBox> eventMailBoxList;
-
     @Autowired
     private IScheduleService scheduleService;
-
     @Autowired
     private IMemoryCache memoryCache;
-
     @Autowired
     private IEventStore eventStore;
-
     @Autowired
     private IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
 
@@ -150,7 +144,6 @@ public class DefaultEventService implements IEventService {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Batch persist event success, routingKey: {}, eventStreamCount: {}, minEventVersion: {}, maxEventVersion: {}", eventMailBox.getRoutingKey(), committingContexts.size(), Linq.first(committingContexts).getEventStream().getVersion(), Linq.last(committingContexts).getEventStream().getVersion());
                         }
-
                         CompletableFuture.runAsync(() ->
                                 committingContexts.forEach(context -> publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream()))
                         );
@@ -188,14 +181,12 @@ public class DefaultEventService implements IEventService {
         IOHelper.tryAsyncActionRecursively("PersistEvent",
                 () -> eventStore.appendAsync(context.getEventStream()),
                 currentRetryTimes -> persistEvent(context, currentRetryTimes),
-
                 result -> {
                     if (result.getData() == EventAppendResult.Success) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Persist events success, {}", context.getEventStream());
                         }
                         publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream());
-
                         if (context.getNext() != null) {
                             persistEvent(context.getNext(), 0);
                         } else {
@@ -239,7 +230,6 @@ public class DefaultEventService implements IEventService {
 
     private void tryToRepublishEventAsync(EventCommittingContext context, int retryTimes) {
         ICommand command = context.getProcessingCommand().getMessage();
-
         IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
                 () -> eventStore.findAsync(context.getEventStream().getAggregateRootId(), command.getId()),
                 currentRetryTimes -> tryToRepublishEventAsync(context, currentRetryTimes),
@@ -260,7 +250,6 @@ public class DefaultEventService implements IEventService {
                                 command.getId(),
                                 context.getEventStream().getAggregateRootId());
                         logger.error(errorMessage);
-
                         CommandResult commandResult = new CommandResult(CommandStatus.Failed, command.getId(), command.getAggregateRootId(), "Command should be exist in the event store, but we cannot find it from the event store.", String.class.getName());
                         completeCommand(context.getProcessingCommand(), commandResult);
                     }
@@ -274,7 +263,6 @@ public class DefaultEventService implements IEventService {
     }
 
     private void handleFirstEventDuplicationAsync(EventCommittingContext context, int retryTimes) {
-
         IOHelper.tryAsyncActionRecursively("FindFirstEventByVersion",
                 () -> eventStore.findAsync(context.getEventStream().getAggregateRootId(), 1),
                 currentRetryTimes -> handleFirstEventDuplicationAsync(context, currentRetryTimes),
@@ -316,7 +304,6 @@ public class DefaultEventService implements IEventService {
                 retryTimes, true);
     }
 
-
     private void publishDomainEventAsync(ProcessingCommand processingCommand, DomainEventStreamMessage eventStream, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("PublishDomainEventAsync",
                 () -> domainEventPublisher.publishAsync(eventStream),
@@ -326,7 +313,6 @@ public class DefaultEventService implements IEventService {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Publish domain events success, {}", eventStream);
                     }
-
                     String commandHandleResult = processingCommand.getCommandExecuteContext().getResult();
                     CommandResult commandResult = new CommandResult(CommandStatus.Success, processingCommand.getMessage().getId(), eventStream.getAggregateRootId(), commandHandleResult, String.class.getName());
                     completeCommand(processingCommand, commandResult);

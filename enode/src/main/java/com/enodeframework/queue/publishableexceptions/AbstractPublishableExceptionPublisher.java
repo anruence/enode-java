@@ -49,5 +49,4 @@ public abstract class AbstractPublishableExceptionPublisher implements IMessageP
         queueMessage.setRouteKey(routeKey);
         return queueMessage;
     }
-
 }

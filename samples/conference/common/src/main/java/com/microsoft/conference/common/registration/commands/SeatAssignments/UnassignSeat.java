@@ -11,5 +11,4 @@ public class UnassignSeat extends Command<String> {
     public UnassignSeat(String orderId) {
         super(orderId);
     }
-
 }

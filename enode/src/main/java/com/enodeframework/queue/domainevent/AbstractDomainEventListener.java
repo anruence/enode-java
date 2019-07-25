@@ -17,18 +17,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractDomainEventListener implements IMessageHandler {
-
     private static final Logger logger = LoggerFactory.getLogger(AbstractDomainEventListener.class);
-
     @Autowired
     protected SendReplyService sendReplyService;
-
     @Autowired
     protected IEventSerializer eventSerializer;
-
     @Autowired
     protected IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> domainEventMessageProcessor;
-
     protected boolean sendEventHandledMessage = true;
 
     public AbstractDomainEventListener setEventSerializer(IEventSerializer eventSerializer) {
@@ -82,7 +77,6 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         );
         domainEventStreamMessage.setId(message.getId());
         domainEventStreamMessage.setTimestamp(message.getTimestamp());
-
         return domainEventStreamMessage;
     }
 
@@ -104,12 +98,10 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
             if (!eventConsumer.isSendEventHandledMessage()) {
                 return;
             }
-
             String replyAddress = domainEventStreamMessage.getItems().get("CommandReplyAddress");
             if (replyAddress == null || "".equals(replyAddress.trim())) {
                 return;
             }
-
             String commandResult = domainEventStreamMessage.getItems().get("CommandResult");
             DomainEventHandledMessage domainEventHandledMessage = new DomainEventHandledMessage();
             domainEventHandledMessage.setCommandId(domainEventStreamMessage.getCommandId());

@@ -2,9 +2,7 @@ package com.enodeframework.tests.Commands;
 
 import com.enodeframework.commanding.Command;
 
-
 public class ChangeMultipleAggregatesCommand extends Command {
-
     public String AggregateRootId1;
     public String AggregateRootId2;
 
@@ -23,6 +21,4 @@ public class ChangeMultipleAggregatesCommand extends Command {
     public void setAggregateRootId2(String aggregateRootId2) {
         AggregateRootId2 = aggregateRootId2;
     }
-
 }
-

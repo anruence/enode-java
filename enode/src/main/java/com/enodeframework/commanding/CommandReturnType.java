@@ -4,7 +4,6 @@ package com.enodeframework.commanding;
  * A enum defines the command result return type.
  */
 public enum CommandReturnType {
-
     /**
      * Return the command result when the command execution has the following cases:
      * 1. the command execution meets some error or exception;
@@ -19,7 +18,6 @@ public enum CommandReturnType {
      * 3. the command execution success, and the domain event is handled.
      */
     EventHandled((short) 2);
-
     short value;
 
     CommandReturnType(short value) {

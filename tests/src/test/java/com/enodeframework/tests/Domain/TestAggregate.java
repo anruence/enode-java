@@ -7,7 +7,6 @@ public class TestAggregate extends AggregateRoot<String> {
     private String _title;
 
     public TestAggregate() {
-
     }
 
     public TestAggregate(String id, String title) {

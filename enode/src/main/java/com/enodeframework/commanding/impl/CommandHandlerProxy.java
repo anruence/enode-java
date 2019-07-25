@@ -11,36 +11,47 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * @author anruence@gmail.com
  */
 public class CommandHandlerProxy implements ICommandHandlerProxy {
-
     @Autowired
     private IObjectContainer objectContainer;
     private Class handlerType;
     private Object commandHandler;
     private MethodHandle methodHandle;
     private Method method;
+    private Executor executor;
 
     public CommandHandlerProxy setObjectContainer(IObjectContainer objectContainer) {
         this.objectContainer = objectContainer;
         return this;
     }
 
+    public CommandHandlerProxy setExecutor(Executor executor) {
+        this.executor = executor;
+        return this;
+    }
+
     @Override
     public CompletableFuture<Void> handleAsync(ICommandContext context, ICommand command) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                methodHandle.invoke(getInnerObject(), context, command);
-            } catch (Throwable throwable) {
-                if (throwable instanceof IORuntimeException) {
-                    throw new IORuntimeException(throwable);
-                }
-                throw new ENodeRuntimeException(throwable);
+        if (executor != null) {
+            return CompletableFuture.runAsync(() -> handle(context, command), executor);
+        }
+        return CompletableFuture.runAsync(() -> handle(context, command));
+    }
+
+    public void handle(ICommandContext context, ICommand command) {
+        try {
+            methodHandle.invoke(getInnerObject(), context, command);
+        } catch (Throwable throwable) {
+            if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
+                throw new IORuntimeException(throwable);
             }
-        });
+            throw new ENodeRuntimeException(throwable);
+        }
     }
 
     @Override

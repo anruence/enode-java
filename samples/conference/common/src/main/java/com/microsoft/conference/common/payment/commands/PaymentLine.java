@@ -7,4 +7,3 @@ public class PaymentLine {
     public String Description;
     public BigDecimal Amount;
 }
-

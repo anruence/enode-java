@@ -2,11 +2,8 @@ package com.enodeframework.tests.Commands;
 
 import com.enodeframework.commanding.Command;
 
-
 public class AsyncHandlerCommand extends Command {
-
     public boolean ShouldGenerateApplicationMessage;
-
     public boolean ShouldThrowException;
     public boolean ShouldThrowIOException;
 
@@ -33,7 +30,4 @@ public class AsyncHandlerCommand extends Command {
     public void setShouldThrowIOException(boolean shouldThrowIOException) {
         ShouldThrowIOException = shouldThrowIOException;
     }
-
-
 }
-

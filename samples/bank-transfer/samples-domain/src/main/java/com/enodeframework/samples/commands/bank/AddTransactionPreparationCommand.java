@@ -1,6 +1,5 @@
 package com.enodeframework.samples.commands.bank;
 
-
 import com.enodeframework.commanding.Command;
 
 /// <summary>向账户添加一笔预操作

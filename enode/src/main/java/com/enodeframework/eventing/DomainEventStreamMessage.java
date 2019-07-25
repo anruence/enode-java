@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class DomainEventStreamMessage extends SequenceMessage<String> {
-
     private String commandId;
     private Map<String, String> items;
     private List<IDomainEvent> events;
@@ -62,5 +61,4 @@ public class DomainEventStreamMessage extends SequenceMessage<String> {
     public void setEvents(List<IDomainEvent> events) {
         this.events = events;
     }
-
 }

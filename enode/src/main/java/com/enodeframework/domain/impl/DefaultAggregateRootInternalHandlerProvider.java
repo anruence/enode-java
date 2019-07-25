@@ -23,7 +23,6 @@ import static com.enodeframework.common.SysProperties.AGGREGATE_ROOT_HANDLE_METH
  * @author anruence@gmail.com
  */
 public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRootInternalHandlerProvider, IAssemblyInitializer {
-
     private Map<Class, Map<Class, Action2<IAggregateRoot, IDomainEvent>>> mappings = new HashMap<>();
 
     @Override
@@ -33,23 +32,18 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
 
     private void recurseRegisterInternalHandler(Class aggregateRootType) {
         Class superclass = aggregateRootType.getSuperclass();
-
         if (!isInterfaceOrObjectClass(superclass)) {
             registerInternalHandlerWithSuperclass(aggregateRootType, superclass);
         }
-
         register(aggregateRootType, aggregateRootType);
     }
 
     private void registerInternalHandlerWithSuperclass(Class aggregateRootType, Class parentType) {
         Class superclass = parentType.getSuperclass();
-
         if (!isInterfaceOrObjectClass(superclass)) {
             registerInternalHandlerWithSuperclass(aggregateRootType, superclass);
         }
-
         register(aggregateRootType, parentType);
-
     }
 
     private boolean isInterfaceOrObjectClass(Class type) {

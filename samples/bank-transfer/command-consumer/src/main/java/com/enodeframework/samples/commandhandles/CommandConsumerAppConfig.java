@@ -15,7 +15,6 @@ import static com.enodeframework.samples.QueueProperties.JDBC_URL;
 
 @Configuration
 public class CommandConsumerAppConfig {
-
     /**
      * 命令处理器
      */
@@ -61,5 +60,4 @@ public class CommandConsumerAppConfig {
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
     }
-
 }

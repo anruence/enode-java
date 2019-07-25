@@ -59,7 +59,6 @@ public class ConferenceQueryService {
 //        }
         return null;
     }
-
 //    private IDbConnection GetConnection() {
 //        return new SqlConnection(ConfigSettings.ConferenceConnectionString);
 //    }

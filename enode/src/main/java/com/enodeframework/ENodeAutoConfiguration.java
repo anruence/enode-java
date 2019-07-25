@@ -37,7 +37,6 @@ import org.springframework.context.annotation.Scope;
  * @author anruence@gmail.com
  */
 public class ENodeAutoConfiguration {
-
     @Bean
     public ScheduleService scheduleService() {
         return new ScheduleService();
@@ -193,4 +192,3 @@ public class ENodeAutoConfiguration {
         return new EventSourcingAggregateStorage();
     }
 }
-

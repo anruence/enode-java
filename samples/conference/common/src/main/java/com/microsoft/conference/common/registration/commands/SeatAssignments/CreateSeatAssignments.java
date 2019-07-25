@@ -9,5 +9,4 @@ public class CreateSeatAssignments extends Command<String> {
     public CreateSeatAssignments(String orderId) {
         super(orderId);
     }
-
 }

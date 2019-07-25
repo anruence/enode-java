@@ -8,4 +8,3 @@ public class OrderExpired extends OrderEvent {
         super(conferenceId);
     }
 }
-

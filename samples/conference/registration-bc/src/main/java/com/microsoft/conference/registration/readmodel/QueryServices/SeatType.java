@@ -10,5 +10,4 @@ public class SeatType {
     public BigDecimal Price;
     public int Quantity;
     public int AvailableQuantity;
-
 }

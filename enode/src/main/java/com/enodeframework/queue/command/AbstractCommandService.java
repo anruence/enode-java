@@ -14,10 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractCommandService implements ICommandService {
     @Autowired
     protected ICommandRoutingKeyProvider commandRouteKeyProvider;
-
     @Autowired
     protected CommandResultProcessor commandResultProcessor;
-
     private TopicData topicData;
 
     public AbstractCommandService setCommandRouteKeyProvider(ICommandRoutingKeyProvider commandRouteKeyProvider) {

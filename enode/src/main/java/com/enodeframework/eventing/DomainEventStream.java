@@ -31,7 +31,6 @@ public class DomainEventStream {
         this.events = events;
         this.items = items == null ? new HashMap<>() : items;
         int sequence = 1;
-
         for (IDomainEvent event : events) {
             if (event.getVersion() != this.getVersion()) {
                 throw new RuntimeException(String.format("Invalid domain event version, aggregateRootTypeName: %s aggregateRootId: %s expected version: %d, but was: %d",

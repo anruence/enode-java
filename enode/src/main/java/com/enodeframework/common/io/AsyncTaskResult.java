@@ -4,13 +4,9 @@ package com.enodeframework.common.io;
  * @author anruence@gmail.com
  */
 public class AsyncTaskResult<T> {
-
     public static AsyncTaskResult Success = new AsyncTaskResult(AsyncTaskStatus.Success, null);
-
     private AsyncTaskStatus status;
-
     private String errorMessage;
-
     private T data;
 
     public AsyncTaskResult(AsyncTaskStatus status) {

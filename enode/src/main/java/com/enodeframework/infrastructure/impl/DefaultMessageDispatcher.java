@@ -32,9 +32,7 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class DefaultMessageDispatcher implements IMessageDispatcher {
-
     private static final Logger logger = LoggerFactory.getLogger(DefaultMessageDispatcher.class);
-
     @Autowired
     private ITypeNameProvider typeNameProvider;
     @Autowired
@@ -80,11 +78,9 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
             return CompletableFuture.completedFuture(AsyncTaskResult.Success);
         }
         RootDispatching rootDispatching = new RootDispatching();
-
         //先对每个事件调用其Handler
         QueueMessageDispatching queueMessageDispatching = new QueueMessageDispatching(this, rootDispatching, messages);
         dispatchSingleMessage(queueMessageDispatching.dequeueMessage(), queueMessageDispatching);
-
         //如果有至少两个事件，则尝试调用针对两个事件的Handler
         if (messageCount >= 2) {
             List<MessageHandlerData<IMessageHandlerProxy2>> twoMessageHandlers = twoMessageHandlerProvider.getHandlers(messages.stream().map(x -> x.getClass()).collect(Collectors.toList()));
@@ -108,13 +104,11 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
             queueMessageDispatching.onMessageHandled(message);
             return;
         }
-
         messageHandlerDataList.forEach(messageHandlerData -> {
             SingleMessageDispatching singleMessageDispatching = new SingleMessageDispatching(message, queueMessageDispatching, messageHandlerData.AllHandlers, typeNameProvider);
             if (messageHandlerData.ListHandlers != null && !messageHandlerData.ListHandlers.isEmpty()) {
                 messageHandlerData.ListHandlers.forEach(handler -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, handler, null, 0));
             }
-
             if (messageHandlerData.QueuedHandlers != null && !messageHandlerData.QueuedHandlers.isEmpty()) {
                 QueuedHandler<IMessageHandlerProxy1> queueHandler = new QueuedHandler<>(messageHandlerData.QueuedHandlers, (queuedHandler, nextHandler) -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, nextHandler, queuedHandler, 0));
                 dispatchSingleMessageToHandlerAsync(singleMessageDispatching, queueHandler.dequeueHandler(), queueHandler, 0);
@@ -126,18 +120,15 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                                                                RootDispatching rootDispatching, Action4<MultiMessageDisptaching, T, QueuedHandler<T>, Integer> dispatchAction) {
         messageHandlerDataList.forEach(messageHandlerData -> {
             MultiMessageDisptaching multiMessageDispatching = new MultiMessageDisptaching(messages, messageHandlerData.AllHandlers, rootDispatching, typeNameProvider);
-
             if (messageHandlerData.ListHandlers != null && !messageHandlerData.ListHandlers.isEmpty()) {
                 messageHandlerData.ListHandlers.forEach(handler -> {
                     dispatchAction.apply(multiMessageDispatching, handler, null, 0);
                 });
             }
-
             if (messageHandlerData.QueuedHandlers != null && !messageHandlerData.QueuedHandlers.isEmpty()) {
                 QueuedHandler<T> queuedHandler = new QueuedHandler<>(messageHandlerData.QueuedHandlers, (currentQueuedHandler, nextHandler) ->
                         dispatchAction.apply(multiMessageDispatching, nextHandler, currentQueuedHandler, 0)
                 );
-
                 dispatchAction.apply(multiMessageDispatching, queuedHandler.dequeueHandler(), queuedHandler, 0);
             }
         });
@@ -149,7 +140,6 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         String messageTypeName = typeNameProvider.getTypeName(message.getClass());
         Class handlerType = handlerProxy.getInnerObject().getClass();
         String handlerTypeName = typeNameProvider.getTypeName(handlerType);
-
         handleSingleMessageAsync(singleMessageDispatching, handlerProxy, handlerTypeName, messageTypeName, queueHandler, retryTimes);
     }
 
@@ -170,7 +160,6 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
             String handlerTypeName, String messageTypeName, QueuedHandler<IMessageHandlerProxy1> queueHandler,
             int retryTimes) {
         IMessage message = singleMessageDispatching.getMessage();
-
         IOHelper.tryAsyncActionRecursively("HandleSingleMessageAsync",
                 () -> handlerProxy.handleAsync(message),
                 currentRetryTimes -> handleSingleMessageAsync(singleMessageDispatching, handlerProxy, handlerTypeName, messageTypeName, queueHandler, currentRetryTimes),
@@ -197,7 +186,6 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         IMessage[] messages = multiMessageDispatching.getMessages();
         IMessage message1 = messages[0];
         IMessage message2 = messages[1];
-
         IOHelper.tryAsyncActionRecursively("HandleTwoMessageAsync",
                 () -> handlerProxy.handleAsync(message1, message2),
                 currentRetryTimes -> handleTwoMessageAsync(multiMessageDispatching, handlerProxy, handlerTypeName, queueHandler, currentRetryTimes),
@@ -225,18 +213,15 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         IMessage message1 = messages[0];
         IMessage message2 = messages[1];
         IMessage message3 = messages[2];
-
         IOHelper.tryAsyncActionRecursively("HandleThreeMessageAsync",
                 () -> handlerProxy.handleAsync(message1, message2, message3),
                 currentRetryTimes -> handleThreeMessageAsync(multiMessageDispatching, handlerProxy, handlerTypeName, queueHandler, currentRetryTimes),
-
                 result ->
                 {
                     multiMessageDispatching.removeHandledHandler(handlerTypeName);
                     if (queueHandler != null) {
                         queueHandler.onHandlerFinished(handlerProxy);
                     }
-
                     if (logger.isDebugEnabled()) {
                         logger.debug("ThreeMessage handled success, [messages:{}, handlerType:{}]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
                     }
@@ -328,7 +313,6 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
     class SingleMessageDispatching {
         private ConcurrentMap<String, IObjectProxy> handlerDict;
         private QueueMessageDispatching queueMessageDispatching;
-
         private IMessage message;
 
         public SingleMessageDispatching(IMessage message, QueueMessageDispatching queueMessageDispatching, List<? extends IObjectProxy> handlers, ITypeNameProvider typeNameProvider) {

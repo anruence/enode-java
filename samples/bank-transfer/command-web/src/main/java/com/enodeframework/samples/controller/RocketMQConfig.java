@@ -10,7 +10,6 @@ import static com.enodeframework.samples.QueueProperties.DEFAULT_PRODUCER_GROUP;
 import static com.enodeframework.samples.QueueProperties.NAMESRVADDR;
 
 public class RocketMQConfig {
-
     @Bean
     public RocketMQCommandService rocketMQCommandService(DefaultMQProducer producer) {
         RocketMQCommandService rocketMQCommandService = new RocketMQCommandService();
@@ -27,5 +26,4 @@ public class RocketMQConfig {
         producer.setProducerGroup(DEFAULT_PRODUCER_GROUP);
         return producer;
     }
-
 }

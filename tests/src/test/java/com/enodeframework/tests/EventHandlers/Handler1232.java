@@ -1,6 +1,5 @@
 package com.enodeframework.tests.EventHandlers;
 
-
 import com.enodeframework.annotation.Event;
 import com.enodeframework.annotation.Priority;
 import com.enodeframework.annotation.Subscribe;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 @Priority(2)
 @Event
 public class Handler1232 {
-
     private Logger _logger = LoggerFactory.getLogger(Handler123.class);
 
     @Subscribe

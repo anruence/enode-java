@@ -33,6 +33,5 @@ public class KafkaCommandListener extends AbstractCommandListener implements Ack
      */
     @Override
     public void onMessage(Object data) {
-
     }
 }

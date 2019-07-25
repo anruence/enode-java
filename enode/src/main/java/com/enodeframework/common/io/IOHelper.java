@@ -42,10 +42,8 @@ public class IOHelper {
             boolean retryWhenFailed,
             int maxRetryTimes,
             int retryInterval) {
-
         AsyncTaskExecutionContext<TAsyncResult> asyncTaskExecutionContext = new AsyncTaskExecutionContext<>(asyncActionName, asyncAction, mainAction,
                 successAction, getContextInfoFunc, failedAction, retryTimes, retryWhenFailed, maxRetryTimes, retryInterval);
-
         asyncTaskExecutionContext.execute();
     }
 
@@ -93,13 +91,11 @@ public class IOHelper {
         public void execute() {
             TAsyncResult result = null;
             Exception ex = null;
-
             try {
                 result = action.apply();
             } catch (Exception e) {
                 ex = e;
             }
-
             taskContinueAction(result, ex);
         }
     }
@@ -168,11 +164,9 @@ public class IOHelper {
                     executeFailedAction(String.format("Task '%s' was cancelled.", actionName));
                     return;
                 }
-
                 processTaskException(ex);
                 return;
             }
-
             if (result == null) {
                 logger.error("Task '{}' result is null, contextInfo:{}, current retryTimes:{}",
                         actionName,
@@ -185,7 +179,6 @@ public class IOHelper {
                 }
                 return;
             }
-
             if (result.getStatus().equals(AsyncTaskStatus.Success)) {
                 executeSuccessAction(result);
             } else if (result.getStatus().equals(AsyncTaskStatus.IOException)) {

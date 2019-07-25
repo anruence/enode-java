@@ -1,6 +1,5 @@
 package com.enodeframework.samples.domain.bank.bankaccount;
 
-
 import com.enodeframework.eventing.DomainEvent;
 
 /// <summary>账户预操作已取消

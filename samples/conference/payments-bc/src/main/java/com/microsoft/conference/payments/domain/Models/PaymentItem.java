@@ -12,5 +12,4 @@ public class PaymentItem {
         this.Description = description;
         this.Amount = amount;
     }
-
 }

@@ -31,7 +31,6 @@ import static com.enodeframework.common.io.Task.await;
 
 @Command
 public class TestCommandHandler {
-
     @Subscribe
     public void handleAsync(ICommandContext context, CreateTestAggregateCommand command) {
         if (command.SleepMilliseconds > 0) {
@@ -49,7 +48,6 @@ public class TestCommandHandler {
     @Subscribe
     public void HandleAsync(ICommandContext context, CreateInheritTestAggregateCommand command) {
         context.add(new InheritTestAggregate(command.getAggregateRootId(), command.Title));
-
     }
 
     @Subscribe
@@ -60,7 +58,6 @@ public class TestCommandHandler {
 
     @Subscribe
     public void HandleAsync(ICommandContext context, ChangeNothingCommand command) {
-
     }
 
     @Subscribe
@@ -96,12 +93,10 @@ public class TestCommandHandler {
 
     @Subscribe
     public void HandleAsync1(ICommandContext context, TwoHandlersCommand command) {
-
     }
 
     @Subscribe
     public void HandleAsync2(ICommandContext context, TwoHandlersCommand command) {
-
     }
 
     @Subscribe
@@ -113,7 +108,6 @@ public class TestCommandHandler {
     public void HandleAsync(ICommandContext context, ChildCommand command) {
         context.setResult("ResultFromChildCommand");
     }
-
 
     @Subscribe
     public AsyncTaskResult<IApplicationMessage> HandleAsync(NotCheckAsyncHandlerExistCommand command) {

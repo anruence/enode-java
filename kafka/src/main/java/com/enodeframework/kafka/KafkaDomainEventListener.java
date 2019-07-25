@@ -12,7 +12,6 @@ import org.springframework.kafka.support.Acknowledgment;
  * @author anruence@gmail.com
  */
 public class KafkaDomainEventListener extends AbstractDomainEventListener implements AcknowledgingMessageListener {
-
     private static final Logger logger = LoggerFactory.getLogger(KafkaDomainEventListener.class);
 
     /**

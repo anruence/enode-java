@@ -32,7 +32,6 @@ import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.KAFKA_SERVER;
 
 public class KafkaEventConfig {
-
     @Bean
     public KafkaCommandService kafkaCommandService(KafkaTemplate kafkaTemplate) {
         KafkaCommandService kafkaCommandService = new KafkaCommandService();
@@ -153,5 +152,4 @@ public class KafkaEventConfig {
         domainEventPublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
         return domainEventPublisher;
     }
-
 }

@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RestController
 @RequestMapping("/note")
 public class NoteController {
-
     @Autowired
     private ICommandService commandService;
 

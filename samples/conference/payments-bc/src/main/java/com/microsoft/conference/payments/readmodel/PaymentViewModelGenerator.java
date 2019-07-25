@@ -48,7 +48,6 @@ public class PaymentViewModelGenerator {
 //                }, ConfigSettings.PaymentTable);
 //            });
         return null;
-
     }
 
     public AsyncTaskResult HandleAsync(PaymentRejected evnt) {
@@ -65,9 +64,7 @@ public class PaymentViewModelGenerator {
 //                }, ConfigSettings.PaymentTable);
 //            });
         return null;
-
     }
-
 //        private async AsyncTaskResult TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action)
 //        {
 //            using (var connection = GetConnection())

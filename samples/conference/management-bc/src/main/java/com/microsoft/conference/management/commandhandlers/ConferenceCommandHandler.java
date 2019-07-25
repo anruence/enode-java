@@ -26,9 +26,7 @@ import java.util.stream.Collectors;
 import static com.enodeframework.common.io.Task.await;
 
 public class ConferenceCommandHandler {
-
     private ILockService _lockService;
-
     private RegisterConferenceSlugService _registerConferenceSlugService;
 
     public ConferenceCommandHandler(ILockService lockService, RegisterConferenceSlugService registerConferenceSlugService) {
@@ -112,5 +110,4 @@ public class ConferenceCommandHandler {
         Conference conference = await(context.getAsync(command.getAggregateRootId(), Conference.class));
         conference.CancelReservation(command.ReservationId);
     }
-
 }

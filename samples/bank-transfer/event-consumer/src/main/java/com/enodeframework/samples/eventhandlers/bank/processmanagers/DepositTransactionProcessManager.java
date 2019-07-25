@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Event
 public class DepositTransactionProcessManager {
-
     @Autowired
     private ICommandService _commandService;
 
@@ -46,7 +45,6 @@ public class DepositTransactionProcessManager {
     public AsyncTaskResult handleAsync(TransactionPreparationAddedEvent evnt) {
         if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction
                 && evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
-
             ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.TransactionPreparation.TransactionId);
             command.setId(evnt.getId());
             return Task.get(_commandService.sendAsync(command));

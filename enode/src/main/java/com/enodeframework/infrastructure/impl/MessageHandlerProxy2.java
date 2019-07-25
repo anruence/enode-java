@@ -11,18 +11,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * @author anruence@gmail.com
  */
 public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
-
     @Autowired
     private IObjectContainer objectContainer;
     private Class handlerType;
     private Object handler;
     private MethodHandle methodHandle;
     private Method method;
+    private Executor executor;
     private Class<?>[] methodParameterTypes;
 
     public MessageHandlerProxy2 setObjectContainer(IObjectContainer objectContainer) {
@@ -30,22 +31,32 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
         return this;
     }
 
+    public MessageHandlerProxy2 setExecutor(Executor executor) {
+        this.executor = executor;
+        return this;
+    }
+
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message1, IMessage message2) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                if (methodParameterTypes[0].isAssignableFrom(message1.getClass())) {
-                    return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), message1, message2);
-                } else {
-                    return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), message2, message1);
-                }
-            } catch (Throwable throwable) {
-                if (throwable instanceof IORuntimeException) {
-                    throw new IORuntimeException(throwable);
-                }
-                throw new ENodeRuntimeException(throwable);
+        if (executor != null) {
+            return CompletableFuture.supplyAsync(() -> handle(message1, message2), executor);
+        }
+        return CompletableFuture.supplyAsync(() -> handle(message1, message2));
+    }
+
+    public AsyncTaskResult handle(IMessage message1, IMessage message2) {
+        try {
+            if (methodParameterTypes[0].isAssignableFrom(message1.getClass())) {
+                return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), message1, message2);
+            } else {
+                return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), message2, message1);
             }
-        });
+        } catch (Throwable throwable) {
+            if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
+                throw new IORuntimeException(throwable);
+            }
+            throw new ENodeRuntimeException(throwable);
+        }
     }
 
     @Override
@@ -77,5 +88,4 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
         this.method = method;
         methodParameterTypes = method.getParameterTypes();
     }
-
 }

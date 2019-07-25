@@ -19,7 +19,6 @@ public class CommandResult {
     /**
      * Represents the command result data.
      */
-
     private String result;
     /**
      * Represents the command result data type.

@@ -31,7 +31,6 @@ public class MockPublishableExceptionPublisher implements IMessagePublisher<IPub
     public CompletableFuture<AsyncTaskResult> publishAsync(IPublishableException message) {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
-
             if (_failedType == FailedType.UnKnownException) {
                 throw new ENodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
@@ -43,4 +42,3 @@ public class MockPublishableExceptionPublisher implements IMessagePublisher<IPub
         return _successResultTask;
     }
 }
-

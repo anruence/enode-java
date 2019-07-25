@@ -11,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class DefaultRepository implements IRepository {
-
     @Autowired
     private IMemoryCache memoryCache;
 

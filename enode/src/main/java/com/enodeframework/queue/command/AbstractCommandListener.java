@@ -20,21 +20,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractCommandListener implements IMessageHandler {
-
     private static final Logger logger = LoggerFactory.getLogger(AbstractCommandListener.class);
-
     @Autowired
     protected SendReplyService sendReplyService;
-
     @Autowired
     protected ITypeNameProvider typeNameProvider;
-
     @Autowired
     protected ICommandProcessor commandProcessor;
-
     @Autowired
     protected IRepository repository;
-
     @Autowired
     protected IAggregateStorage aggregateRootStorage;
 

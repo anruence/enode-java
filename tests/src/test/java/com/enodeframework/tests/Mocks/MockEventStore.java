@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MockEventStore implements IEventStore {
-
     public boolean SupportBatchAppendEvent;
     private int _expectFailedCount = 0;
     private int _currentFailedCount = 0;
@@ -46,7 +45,6 @@ public class MockEventStore implements IEventStore {
     public CompletableFuture<AsyncTaskResult<EventAppendResult>> batchAppendAsync(List<DomainEventStream> eventStreams) {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
-
             if (_failedType == FailedType.UnKnownException) {
                 throw new ENodeRuntimeException("BatchAppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
@@ -62,7 +60,6 @@ public class MockEventStore implements IEventStore {
     public CompletableFuture<AsyncTaskResult<EventAppendResult>> appendAsync(DomainEventStream eventStream) {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
-
             if (_failedType == FailedType.UnKnownException) {
                 throw new ENodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
@@ -78,7 +75,6 @@ public class MockEventStore implements IEventStore {
     public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, int version) {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
-
             if (_failedType == FailedType.UnKnownException) {
                 throw new ENodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {

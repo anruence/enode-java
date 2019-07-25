@@ -17,4 +17,3 @@ public class ConfirmAccountValidatePassedCommand extends Command {
         AccountId = accountId;
     }
 }
-

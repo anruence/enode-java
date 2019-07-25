@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class DefaultAggregateSnapshotter implements IAggregateSnapshotter {
-
     @Autowired
     private IAggregateRepositoryProvider aggregateRepositoryProvider;
 

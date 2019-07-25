@@ -29,7 +29,6 @@ import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.KAFKA_SERVER;
 
 public class KafkaCommandConfig {
-
     @Bean
     public KafkaCommandListener commandListener() {
         return new KafkaCommandListener();
@@ -43,7 +42,6 @@ public class KafkaCommandConfig {
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
-
 
     @Bean
     public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate kafkaTemplate) {
@@ -74,7 +72,6 @@ public class KafkaCommandConfig {
         exceptionPublisher.setTopicData(new TopicData(EXCEPTION_TOPIC, "*"));
         return exceptionPublisher;
     }
-
 
     /**
      * 根据consumerProps填写的参数创建消费者工厂

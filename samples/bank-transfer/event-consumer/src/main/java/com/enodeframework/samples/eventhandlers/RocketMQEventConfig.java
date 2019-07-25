@@ -26,7 +26,6 @@ import static com.enodeframework.samples.QueueProperties.EXCEPTION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.NAMESRVADDR;
 
 public class RocketMQEventConfig {
-
     @Bean
     public RocketMQCommandService rocketMQCommandService(DefaultMQProducer defaultMQProducer) {
         RocketMQCommandService rocketMQCommandService = new RocketMQCommandService();
@@ -103,7 +102,6 @@ public class RocketMQEventConfig {
         return domainEventPublisher;
     }
 
-
     @Bean
     public RocketMQApplicationMessagePublisher rocketMQApplicationMessagePublisher(DefaultMQProducer defaultMQProducer) {
         RocketMQApplicationMessagePublisher applicationMessagePublisher = new RocketMQApplicationMessagePublisher();
@@ -119,5 +117,4 @@ public class RocketMQEventConfig {
         exceptionPublisher.setTopicData(new TopicData(EXCEPTION_TOPIC, "*"));
         return exceptionPublisher;
     }
-
 }

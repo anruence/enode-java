@@ -9,7 +9,6 @@ public enum OrderStatus {
     Expired(6),               //订单已过期
     Success(7),               //交易已成功
     Closed(8);              //订单已关闭
-
     private int status;
 
     OrderStatus(int status) {

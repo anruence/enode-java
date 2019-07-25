@@ -35,5 +35,4 @@ class OrderLine {
     public int Quantity;
     public BigDecimal UnitPrice;
     public BigDecimal LineTotal;
-
 }

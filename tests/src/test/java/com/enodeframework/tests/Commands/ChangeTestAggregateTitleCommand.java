@@ -13,5 +13,3 @@ public class ChangeTestAggregateTitleCommand extends Command {
         Title = title;
     }
 }
-
-

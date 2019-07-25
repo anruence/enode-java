@@ -1,7 +1,6 @@
 package com.enodeframework.samples.domain.bank;
 
 public class TransactionType {
-
     /// <summary>存款
     /// </summary>
     public static int DepositTransaction = 1;

@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class MysqlPublishedVersionStore implements IPublishedVersionStore {
     private static final Logger logger = LoggerFactory.getLogger(MysqlPublishedVersionStore.class);
-
     private final QueryRunner queryRunner;
     private final String tableName;
     private final String uniqueIndexName;
@@ -34,7 +33,6 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
 
     public MysqlPublishedVersionStore(DataSource ds, OptionSetting optionSetting) {
         Ensure.notNull(ds, "ds");
-
         if (optionSetting != null) {
             tableName = optionSetting.getOptionValue("TableName");
             uniqueIndexName = optionSetting.getOptionValue("UniqueIndexName");
@@ -43,10 +41,8 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
             tableName = setting.getPublishedVersionTableName();
             uniqueIndexName = setting.getPublishedVersionUniqueIndexName();
         }
-
         Ensure.notNull(tableName, "tableName");
         Ensure.notNull(uniqueIndexName, "uniqueIndexName");
-
         queryRunner = new QueryRunner(ds);
         executor = new ThreadPoolExecutor(4, 4,
                 0L, TimeUnit.MILLISECONDS,
@@ -65,7 +61,6 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
                             aggregateRootId,
                             1,
                             new Timestamp(System.currentTimeMillis()));
-
                     return AsyncTaskResult.Success;
                 } catch (SQLException ex) {
                     if (ex.getErrorCode() == 1062 && ex.getMessage().contains(uniqueIndexName)) {
@@ -87,7 +82,6 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
                             processorName,
                             aggregateRootId,
                             publishedVersion - 1);
-
                     return AsyncTaskResult.Success;
                 } catch (SQLException ex) {
                     logger.error("Update aggregate published version has sql exception.", ex);
@@ -106,9 +100,7 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
             try {
                 Object resultObj = queryRunner.query(String.format("SELECT Version FROM %s WHERE ProcessorName=? AND AggregateRootId=?", tableName),
                         new ScalarHandler<>(), processorName, aggregateRootId);
-
                 int result = (resultObj == null ? 0 : ((Number) resultObj).intValue());
-
                 return new AsyncTaskResult<>(AsyncTaskStatus.Success, result);
             } catch (SQLException ex) {
                 logger.error("Get aggregate published version has sql exception.", ex);

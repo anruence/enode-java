@@ -23,26 +23,18 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public abstract class AbstractTest {
     @Autowired
     protected ICommandService _commandService;
-
     @Autowired
     protected IMemoryCache _memoryCache;
-
     @Autowired
     protected IEventStore _eventStore;
-
     @Autowired
     protected IPublishedVersionStore _publishedVersionStore;
-
     @Autowired
     protected IMessagePublisher<DomainEventStreamMessage> _domainEventPublisher;
-
     @Autowired
     protected IMessagePublisher<IApplicationMessage> _applicationMessagePublisher;
-
     @Autowired
     protected IMessagePublisher<IPublishableException> _publishableExceptionPublisher;
-
     @Autowired
     protected IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> processor;
-
 }

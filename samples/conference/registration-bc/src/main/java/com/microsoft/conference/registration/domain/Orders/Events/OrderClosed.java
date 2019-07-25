@@ -1,6 +1,5 @@
 package com.microsoft.conference.registration.domain.Orders.Events;
 
-
 public class OrderClosed extends OrderEvent {
     public OrderClosed() {
     }
@@ -9,4 +8,3 @@ public class OrderClosed extends OrderEvent {
         super(conferenceId);
     }
 }
-

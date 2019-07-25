@@ -1,9 +1,7 @@
 package com.enodeframework.tests.Domain;
 
 public class InheritTestAggregate extends TestAggregate {
-
     public InheritTestAggregate() {
-
     }
 
     public InheritTestAggregate(String id, String title) {

@@ -9,7 +9,6 @@ public class ConfirmReservation extends Command<String> {
     }
 
     public ConfirmReservation(String orderId, boolean isReservationSuccess) {
-
         super(orderId);
         IsReservationSuccess = isReservationSuccess;
     }

@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
  * @author anruence@gmail.com
  */
 public class Task extends CompletableFuture {
-
     public static CompletableFuture<Void> completedTask = CompletableFuture.completedFuture(null);
 
     public static <T> CompletableFuture<T> fromResult(T o) {
@@ -29,7 +28,7 @@ public class Task extends CompletableFuture {
 
     public static <T> T get(CompletableFuture<T> future) {
         try {
-            return future.get(5000, TimeUnit.MILLISECONDS);
+            return future.get(10000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             throw new ENodeRuntimeException(e);
         }

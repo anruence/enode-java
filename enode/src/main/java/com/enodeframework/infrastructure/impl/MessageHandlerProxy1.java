@@ -11,36 +11,47 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 /**
  * @author anruence@gmail.com
  */
 public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
-
     @Autowired
     private IObjectContainer objectContainer;
     private Class handlerType;
     private Object handler;
     private MethodHandle methodHandle;
     private Method method;
+    private Executor executor;
 
     public MessageHandlerProxy1 setObjectContainer(IObjectContainer objectContainer) {
         this.objectContainer = objectContainer;
         return this;
     }
 
+    public MessageHandlerProxy1 setExecutor(Executor executor) {
+        this.executor = executor;
+        return this;
+    }
+
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), message);
-            } catch (Throwable throwable) {
-                if (throwable instanceof IORuntimeException) {
-                    throw new IORuntimeException(throwable);
-                }
-                throw new ENodeRuntimeException(throwable);
+        if (executor != null) {
+            return CompletableFuture.supplyAsync(() -> handle(message), executor);
+        }
+        return CompletableFuture.supplyAsync(() -> handle(message));
+    }
+
+    public AsyncTaskResult handle(IMessage message) {
+        try {
+            return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), message);
+        } catch (Throwable throwable) {
+            if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
+                throw new IORuntimeException(throwable);
             }
-        });
+            throw new ENodeRuntimeException(throwable);
+        }
     }
 
     @Override
@@ -71,5 +82,4 @@ public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
     public void setMethod(Method method) {
         this.method = method;
     }
-
 }

@@ -16,13 +16,9 @@ import java.util.concurrent.TimeUnit;
  * @author anruence@gmail.com
  */
 public class ScheduleService implements IScheduleService {
-
     private static final Logger logger = LoggerFactory.getLogger(ScheduleService.class);
-
     private final Object lockObject = new Object();
-
     private Map<String, TimerBasedTask> taskDict = new HashMap<>();
-
     private ScheduledExecutorService scheduledThreadPool;
 
     public ScheduleService() {
@@ -35,9 +31,7 @@ public class ScheduleService implements IScheduleService {
             if (taskDict.containsKey(name)) {
                 return;
             }
-
             ScheduledFuture<?> scheduledFuture = scheduledThreadPool.scheduleWithFixedDelay(new TaskCallback(name), dueTime, period, TimeUnit.MILLISECONDS);
-
             taskDict.put(name, new TimerBasedTask(name, action, scheduledFuture, dueTime, period, false));
         }
     }
@@ -55,7 +49,6 @@ public class ScheduleService implements IScheduleService {
     }
 
     class TaskCallback implements Runnable {
-
         private String taskName;
 
         public TaskCallback(String taskName) {
@@ -65,7 +58,6 @@ public class ScheduleService implements IScheduleService {
         @Override
         public void run() {
             TimerBasedTask task = taskDict.get(taskName);
-
             if (task != null) {
                 try {
                     if (!task.isStopped()) {

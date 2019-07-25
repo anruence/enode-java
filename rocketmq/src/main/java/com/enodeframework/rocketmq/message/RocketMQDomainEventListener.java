@@ -17,7 +17,6 @@ import java.util.concurrent.CountDownLatch;
  * @author anruence@gmail.com
  */
 public class RocketMQDomainEventListener extends AbstractDomainEventListener implements MessageListenerConcurrently {
-
     private static Logger logger = LoggerFactory.getLogger(RocketMQDomainEventListener.class);
 
     @Override

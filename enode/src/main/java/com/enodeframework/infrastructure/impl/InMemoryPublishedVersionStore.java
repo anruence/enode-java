@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class InMemoryPublishedVersionStore implements IPublishedVersionStore {
     private final CompletableFuture<AsyncTaskResult> successTask = CompletableFuture.completedFuture(AsyncTaskResult.Success);
-
     private final ConcurrentMap<String, Integer> versionDict = new ConcurrentHashMap<>();
 
     @Override

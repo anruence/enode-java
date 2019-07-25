@@ -15,7 +15,6 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class SendMessageService {
-
     private static Logger logger = LoggerFactory.getLogger(SendMessageService.class);
 
     public static CompletableFuture<AsyncTaskResult> sendMessageAsync(KafkaTemplate<String, String> producer, ProducerRecord<String, String> message) {

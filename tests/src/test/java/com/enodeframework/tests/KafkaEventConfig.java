@@ -25,10 +25,15 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.enodeframework.tests.Constants.*;
+import static com.enodeframework.tests.Constants.APPLICATION_TOPIC;
+import static com.enodeframework.tests.Constants.COMMAND_TOPIC;
+import static com.enodeframework.tests.Constants.DEFAULT_CONSUMER_GROUP;
+import static com.enodeframework.tests.Constants.DEFAULT_PRODUCER_GROUP;
+import static com.enodeframework.tests.Constants.EVENT_TOPIC;
+import static com.enodeframework.tests.Constants.EXCEPTION_TOPIC;
+import static com.enodeframework.tests.Constants.KAFKA_SERVER;
 
 public class KafkaEventConfig {
-
     @Bean
     public KafkaCommandService kafkaCommandService(KafkaTemplate kafkaTemplate) {
         KafkaCommandService kafkaCommandService = new KafkaCommandService();
@@ -92,7 +97,6 @@ public class KafkaEventConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-
     @Bean
     public KafkaPublishableExceptionListener publishableExceptionListener() {
         return new KafkaPublishableExceptionListener();
@@ -107,7 +111,6 @@ public class KafkaEventConfig {
     public KafkaDomainEventListener domainEventListener() {
         return new KafkaDomainEventListener();
     }
-
 
     @Bean
     public KafkaCommandListener commandListener() {
@@ -172,5 +175,4 @@ public class KafkaEventConfig {
         domainEventPublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
         return domainEventPublisher;
     }
-
 }

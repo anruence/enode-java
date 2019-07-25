@@ -42,7 +42,6 @@ import java.util.concurrent.CompletableFuture;
  */
 @Event
 public class TransferTransactionProcessManager {
-
     @Autowired
     private ICommandService commandService;
 
@@ -63,7 +62,6 @@ public class TransferTransactionProcessManager {
         ConfirmAccountValidatePassedCommand command = new ConfirmAccountValidatePassedCommand(message.TransactionId, message.AccountId);
         command.setId(message.getId());
         return Task.get(commandService.sendAsync(command));
-
     }
 
     @Subscribe
@@ -83,7 +81,6 @@ public class TransferTransactionProcessManager {
                 evnt.TransactionInfo.Amount);
         command.setId(evnt.getId());
         return Task.get(commandService.sendAsync(command));
-
     }
 
     @Subscribe

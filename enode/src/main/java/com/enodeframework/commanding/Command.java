@@ -6,7 +6,6 @@ import com.enodeframework.infrastructure.Message;
  * @author anruence@gmail.com
  */
 public class Command<TAggregateRootId> extends Message implements ICommand {
-
     public TAggregateRootId aggregateRootId;
 
     public Command() {

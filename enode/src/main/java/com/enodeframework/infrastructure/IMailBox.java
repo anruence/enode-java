@@ -1,11 +1,9 @@
 package com.enodeframework.infrastructure;
 
-
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 public interface IMailBox<TMessage extends IMailBoxMessage, TMessageProcessResult> {
-
     String getRoutingKey();
 
     Date getLastActiveTime();
@@ -41,5 +39,4 @@ public interface IMailBox<TMessage extends IMailBoxMessage, TMessageProcessResul
     CompletableFuture<Void> completeMessage(TMessage message, TMessageProcessResult result);
 
     boolean isInactive(int timeoutSeconds);
-
 }

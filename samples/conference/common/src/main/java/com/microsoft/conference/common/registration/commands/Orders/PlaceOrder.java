@@ -14,5 +14,4 @@ public class PlaceOrder extends Command<String> {
         super(ObjectId.generateNewStringId());
         Seats = new ArrayList<>();
     }
-
 }

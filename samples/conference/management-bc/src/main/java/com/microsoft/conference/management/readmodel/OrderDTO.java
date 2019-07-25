@@ -26,5 +26,4 @@ public class OrderDTO {
     public String GetStatusText() {
         return String.valueOf(Status);
     }
-
 }

@@ -18,12 +18,10 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  * @param <TAggregateRootId>
  */
 public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot {
-
     /**
      * dynamic inject through ApplicationContext instance
      */
     private static IAggregateRootInternalHandlerProvider eventHandlerProvider;
-
     protected TAggregateRootId id;
     protected int version;
     private List<IDomainEvent> emptyEvents = new ArrayList<>();
@@ -58,7 +56,6 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         if (domainEvent == null) {
             throw new NullPointerException("domainEvent");
         }
-
         if (id == null) {
             throw new RuntimeException("Aggregate root id cannot be null.");
         }
@@ -129,7 +126,6 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         if (uncommittedEvents == null) {
             return emptyEvents;
         }
-
         return Lists.newArrayList(uncommittedEvents);
     }
 
@@ -146,7 +142,6 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         if (eventStreams == null) {
             return;
         }
-
         eventStreams.forEach(eventStream -> {
             verifyEvent(eventStream);
             eventStream.events().forEach(this::handleEvent);

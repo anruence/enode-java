@@ -23,15 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author anruence@gmail.com
  */
 public class SendReplyService {
-
     private static final Logger logger = LoggerFactory.getLogger(SendReplyService.class);
-
     private boolean started;
-
     private boolean stoped;
-
     private NetClient netClient;
-
     private ConcurrentHashMap<String, NetSocket> socketMap = new ConcurrentHashMap<>();
 
     public void start() {

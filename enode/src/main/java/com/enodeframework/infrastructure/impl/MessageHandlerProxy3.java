@@ -15,18 +15,20 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 /**
  * @author anruence@gmail.com
  */
 public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
-
     @Autowired
     private IObjectContainer objectContainer;
     private Class handlerType;
     private Object handler;
     private MethodHandle methodHandle;
     private Method method;
+    private Executor executor;
     private Class<?>[] methodParameterTypes;
 
     public MessageHandlerProxy3 setObjectContainer(IObjectContainer objectContainer) {
@@ -34,27 +36,38 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
         return this;
     }
 
+    public MessageHandlerProxy3 setExecutor(Executor executor) {
+        this.executor = executor;
+        return this;
+    }
+
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message1, IMessage message2, IMessage message3) {
-        return CompletableFuture.supplyAsync(() -> {
-            List<Class<?>> parameterTypes = Arrays.asList(methodParameterTypes);
-            List<IMessage> params = new ArrayList<>();
-            params.add(message1);
-            params.add(message2);
-            params.add(message3);
-            //排序参数
-            params.sort(Comparator.comparingInt(m -> getMessageParameterIndex(parameterTypes, m))
-            );
-            try {
-                //参数按照方法定义参数类型列表传递
-                return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), params.get(0), params.get(1), params.get(2));
-            } catch (Throwable throwable) {
-                if (throwable instanceof IORuntimeException) {
-                    throw new IORuntimeException(throwable);
-                }
-                throw new ENodeRuntimeException(throwable);
+        final Supplier<AsyncTaskResult> asyncTaskResultSupplier = () -> handle(message1, message2, message3);
+        if (executor != null) {
+            return CompletableFuture.supplyAsync(asyncTaskResultSupplier, executor);
+        }
+        return CompletableFuture.supplyAsync(asyncTaskResultSupplier);
+    }
+
+    public AsyncTaskResult handle(IMessage message1, IMessage message2, IMessage message3) {
+        List<Class<?>> parameterTypes = Arrays.asList(methodParameterTypes);
+        List<IMessage> params = new ArrayList<>();
+        params.add(message1);
+        params.add(message2);
+        params.add(message3);
+        //排序参数
+        params.sort(Comparator.comparingInt(m -> getMessageParameterIndex(parameterTypes, m))
+        );
+        try {
+            //参数按照方法定义参数类型列表传递
+            return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), params.get(0), params.get(1), params.get(2));
+        } catch (Throwable throwable) {
+            if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
+                throw new IORuntimeException(throwable);
             }
-        });
+            throw new ENodeRuntimeException(throwable);
+        }
     }
 
     private int getMessageParameterIndex(List<Class<?>> methodParameterTypes, IMessage message) {
@@ -97,5 +110,4 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
         this.method = method;
         methodParameterTypes = method.getParameterTypes();
     }
-
 }

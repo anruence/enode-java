@@ -14,14 +14,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class PublishedVersionStoreFailedTest extends AbstractTest {
-
     @Test
     public void published_version_store_failed_test() {
         MockPublishedVersionStore mockPublishedVersionStore = (MockPublishedVersionStore) _publishedVersionStore;
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
-
         mockPublishedVersionStore.SetExpectFailedCount(FailedType.UnKnownException, 5);
         AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);
@@ -30,11 +28,9 @@ public class PublishedVersionStoreFailedTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         mockPublishedVersionStore.Reset();
-
         command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
-
         mockPublishedVersionStore.SetExpectFailedCount(FailedType.IOException, 5);
         asyncResult = Task.get(_commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);
@@ -43,11 +39,9 @@ public class PublishedVersionStoreFailedTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         mockPublishedVersionStore.Reset();
-
         command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
-
         mockPublishedVersionStore.SetExpectFailedCount(FailedType.TaskIOException, 5);
         asyncResult = Task.get(_commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);

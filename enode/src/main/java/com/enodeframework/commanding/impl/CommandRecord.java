@@ -13,7 +13,6 @@ public class CommandRecord {
     private Date createdOn;
 
     public CommandRecord() {
-
     }
 
     public CommandRecord(String commandId, String aggregateRootId, String messagePayload, String messageTypeName, Date createdOn) {

@@ -13,7 +13,6 @@ import java.lang.reflect.Method;
  * @author anruence@gmail.com
  */
 public class DefaultCommandAsyncHandlerProvider extends AbstractHandlerProvider<Class, ICommandAsyncHandlerProxy, Class> implements ICommandAsyncHandlerProvider {
-
     @Autowired
     private IObjectContainer objectContainer;
 

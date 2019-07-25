@@ -17,7 +17,6 @@ import java.util.Map;
  * @author anruence@gmail.com
  */
 public class DefaultEventSerializer implements IEventSerializer {
-
     @Autowired
     private ITypeNameProvider typeNameProvider;
 
@@ -29,13 +28,11 @@ public class DefaultEventSerializer implements IEventSerializer {
     @Override
     public Map<String, String> serialize(List<IDomainEvent> evnts) {
         Map<String, String> dict = new HashMap<String, String>();
-
         evnts.forEach(evnt -> {
             String typeName = typeNameProvider.getTypeName(evnt.getClass());
             String eventData = JsonTool.serialize(evnt);
             dict.put(typeName, eventData);
         });
-
         return dict;
     }
 

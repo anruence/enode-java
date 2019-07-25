@@ -7,7 +7,6 @@ public enum QueueMessageTypeCode {
     DomainEventStreamMessage(2),
     ExceptionMessage(3),
     ApplicationMessage(4);
-
     int value;
 
     QueueMessageTypeCode(int value) {

@@ -13,7 +13,6 @@ import static com.enodeframework.samples.QueueProperties.JDBC_URL;
 
 @Configuration
 public class EventAppConfig {
-
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
         ENodeBootstrap bootstrap = new ENodeBootstrap();

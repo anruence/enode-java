@@ -12,4 +12,3 @@ public abstract class OrderEvent extends DomainEvent<String> {
         ConferenceId = conferenceId;
     }
 }
-

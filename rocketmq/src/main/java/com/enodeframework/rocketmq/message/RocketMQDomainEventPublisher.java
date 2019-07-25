@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class RocketMQDomainEventPublisher extends AbstractDomainEventPublisher {
-
     private DefaultMQProducer producer;
 
     @Override

@@ -1,7 +1,6 @@
 server:
   #端口号
   port: 8002
-
 logging:
   file: logs/dev_profile_app.log
   pattern:

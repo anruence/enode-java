@@ -28,11 +28,8 @@ public class StringKeyValuePair {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
         StringKeyValuePair that = (StringKeyValuePair) o;
-
         return key.equals(that.key);
-
     }
 
     @Override

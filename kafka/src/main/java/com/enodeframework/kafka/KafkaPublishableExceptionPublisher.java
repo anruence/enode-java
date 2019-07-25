@@ -13,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class KafkaPublishableExceptionPublisher extends AbstractPublishableExceptionPublisher {
-
     private KafkaTemplate<String, String> producer;
 
     public KafkaTemplate<String, String> getProducer() {

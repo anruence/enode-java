@@ -7,10 +7,8 @@ import com.enodeframework.infrastructure.ProcessingPublishableExceptionMessage;
  * @author anruence@gmail.com
  */
 public class DefaultPublishableExceptionProcessor extends DefaultMessageProcessor<ProcessingPublishableExceptionMessage, IPublishableException> {
-
     @Override
     public String getMessageName() {
         return "exception message";
     }
 }
-
