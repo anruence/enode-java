@@ -7,48 +7,42 @@ import io.vertx.core.net.NetSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 
 public class SocketClient {
 
     public static Logger logger = LoggerFactory.getLogger(SocketClient.class);
 
-    public static ConcurrentHashMap<String, NetSocket> smap = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, CompletableFuture<NetSocket>> smap = new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws Exception {
         NetClient client = Vertx.vertx().createNetClient();
         String host = "127.0.0.1";
         long start = System.currentTimeMillis();
-        int total = 100;
-        CountDownLatch connectLatch = new CountDownLatch(1);
-        CountDownLatch latch = new CountDownLatch(total);
-        for (int i = 0; i < total; i++) {
-            int ii = i;
-            if (smap.containsKey(host)) {
-                NetSocket socket = smap.get(host);
-                socket.write("send message:" + ii + SysProperties.DELIMITED);
-                latch.countDown();
-                continue;
-            }
+        int total = 100000;
+        CompletableFuture<NetSocket> future = new CompletableFuture<>();
+        if (smap.putIfAbsent(host, future) == null) {
             client.connect(6008, host, socketAsyncResult -> {
                 if (socketAsyncResult.succeeded()) {
-                    connectLatch.countDown();
                     NetSocket socket = socketAsyncResult.result();
-                    smap.put(host, socket);
                     socket.closeHandler(x -> {
                         smap.remove(host);
                     }).endHandler(x -> {
                         smap.remove(host);
-                        logger.info("end:{}{}", ii, x);
+                        logger.info("end:{}", x);
                     });
-                    socket.write("send message:" + ii + SysProperties.DELIMITED);
-                    latch.countDown();
+                    future.complete(socket);
                 }
             });
-            connectLatch.await();
         }
-        latch.await();
+        smap.get(host).thenAccept(socket -> {
+            for (int i = 0; i < total; i++) {
+                int ii = i;
+                socket.write("send message:" + ii + SysProperties.DELIMITED);
+            }
+        });
+
         long end = System.currentTimeMillis();
         logger.info("time:{}", end - start);
         System.in.read();
