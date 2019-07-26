@@ -42,6 +42,16 @@ public class DefaultMemoryCache implements IMemoryCache {
         taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
     }
 
+    public DefaultMemoryCache setTimeoutSeconds(int timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
+        return this;
+    }
+
+    public DefaultMemoryCache setScanExpiredAggregateIntervalMilliseconds(int scanExpiredAggregateIntervalMilliseconds) {
+        this.scanExpiredAggregateIntervalMilliseconds = scanExpiredAggregateIntervalMilliseconds;
+        return this;
+    }
+
     public DefaultMemoryCache setAggregateStorage(IAggregateStorage aggregateStorage) {
         this.aggregateStorage = aggregateStorage;
         return this;

@@ -26,8 +26,8 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     private String taskName;
     private int commandMailBoxPersistenceMaxBatchSize = 1000;
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
-    private int eventMailBoxPersistenceMaxBatchSize = 1000;
     private int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
+
     @Autowired
     private IProcessingCommandHandler processingCommandHandler;
     @Autowired
@@ -37,6 +37,21 @@ public class DefaultCommandProcessor implements ICommandProcessor {
         this.mailboxDict = new ConcurrentHashMap<>();
         this.timeoutSeconds = aggregateRootMaxInactiveSeconds;
         this.taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
+    }
+
+    public DefaultCommandProcessor setCommandMailBoxPersistenceMaxBatchSize(int commandMailBoxPersistenceMaxBatchSize) {
+        this.commandMailBoxPersistenceMaxBatchSize = commandMailBoxPersistenceMaxBatchSize;
+        return this;
+    }
+
+    public DefaultCommandProcessor setScanExpiredAggregateIntervalMilliseconds(int scanExpiredAggregateIntervalMilliseconds) {
+        this.scanExpiredAggregateIntervalMilliseconds = scanExpiredAggregateIntervalMilliseconds;
+        return this;
+    }
+
+    public DefaultCommandProcessor setAggregateRootMaxInactiveSeconds(int aggregateRootMaxInactiveSeconds) {
+        this.aggregateRootMaxInactiveSeconds = aggregateRootMaxInactiveSeconds;
+        return this;
     }
 
     public DefaultCommandProcessor setProcessingCommandHandler(IProcessingCommandHandler processingCommandHandler) {
@@ -55,7 +70,7 @@ public class DefaultCommandProcessor implements ICommandProcessor {
         if (aggregateRootId == null || "".equals(aggregateRootId.trim())) {
             throw new IllegalArgumentException("aggregateRootId of command cannot be null or empty, commandId:" + processingCommand.getMessage().getId());
         }
-        ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, processingCommandHandler));
+        ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize));
         mailbox.enqueueMessage(processingCommand);
     }
 

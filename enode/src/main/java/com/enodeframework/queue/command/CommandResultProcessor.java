@@ -82,7 +82,7 @@ public class CommandResultProcessor {
         CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().remove(command.getId());
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Failed, command.getId(), command.getAggregateRootId(), "Failed to send the command.", String.class.getName());
-            // 消息发送失败
+            // 发送失败消息
             commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult));
         }
     }
@@ -142,7 +142,7 @@ public class CommandResultProcessor {
             commandTaskDict.asMap().remove(commandResult.getCommandId());
             if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Command result return, {}", commandResult);
+                    logger.debug("Command result return CommandExecuted, {}", commandResult);
                 }
             }
         } else if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.EventHandled)) {
@@ -150,7 +150,7 @@ public class CommandResultProcessor {
                 commandTaskDict.asMap().remove(commandResult.getCommandId());
                 if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Command result return, {}", commandResult);
+                        logger.debug("Command result return EventHandled, {}", commandResult);
                     }
                 }
             }
@@ -176,42 +176,5 @@ public class CommandResultProcessor {
     public CommandResultProcessor setCompletionSourceTimeout(int completionSourceTimeout) {
         this.completionSourceTimeout = completionSourceTimeout;
         return this;
-    }
-
-    class CommandTaskCompletionSource {
-        private String aggregateRootId;
-        private CommandReturnType commandReturnType;
-        private CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource;
-
-        public CommandTaskCompletionSource(String aggregateRootId, CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
-            this.aggregateRootId = aggregateRootId;
-            this.commandReturnType = commandReturnType;
-            this.taskCompletionSource = taskCompletionSource;
-        }
-
-        public CommandReturnType getCommandReturnType() {
-            return commandReturnType;
-        }
-
-        public void setCommandReturnType(CommandReturnType commandReturnType) {
-            this.commandReturnType = commandReturnType;
-        }
-
-        public CompletableFuture<AsyncTaskResult<CommandResult>> getTaskCompletionSource() {
-            return taskCompletionSource;
-        }
-
-        public void setTaskCompletionSource(CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
-            this.taskCompletionSource = taskCompletionSource;
-        }
-
-        public String getAggregateRootId() {
-            return aggregateRootId;
-        }
-
-        public CommandTaskCompletionSource setAggregateRootId(String aggregateRootId) {
-            this.aggregateRootId = aggregateRootId;
-            return this;
-        }
     }
 }

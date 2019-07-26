@@ -8,10 +8,9 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class ProcessingCommandMailbox extends DefaultMailBox<ProcessingCommand, CommandResult> {
-    private static int commandMailBoxPersistenceMaxBatchSize = 1000;
 
-    public ProcessingCommandMailbox(String aggregateRootId, IProcessingCommandHandler messageHandler) {
-        super(aggregateRootId, commandMailBoxPersistenceMaxBatchSize, false, (messageHandler::handle), null);
+    public ProcessingCommandMailbox(String aggregateRootId, IProcessingCommandHandler messageHandler, int batchSize) {
+        super(aggregateRootId, batchSize, false, (messageHandler::handle), null);
     }
 
     @Override
