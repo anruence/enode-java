@@ -22,8 +22,7 @@ public class EventAppConfig {
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public CommandResultProcessor commandResultProcessor() {
-        CommandResultProcessor processor = new CommandResultProcessor();
-        processor.setPort(6001);
+        CommandResultProcessor processor = new CommandResultProcessor(6001);
         return processor;
     }
 

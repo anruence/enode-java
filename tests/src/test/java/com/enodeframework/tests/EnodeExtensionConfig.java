@@ -4,6 +4,8 @@ import com.enodeframework.ENodeBootstrap;
 import com.enodeframework.commanding.impl.DefaultCommandProcessor;
 import com.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import com.enodeframework.eventing.impl.DefaultEventService;
+import com.enodeframework.eventing.impl.InMemoryEventStore;
+import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
 import com.enodeframework.mysql.MysqlEventStore;
 import com.enodeframework.mysql.MysqlPublishedVersionStore;
 import com.enodeframework.queue.command.CommandResultProcessor;
@@ -19,7 +21,6 @@ public class EnodeExtensionConfig {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public CommandResultProcessor commandResultProcessor() {
         CommandResultProcessor processor = new CommandResultProcessor();
-        processor.setPort(6000);
         return processor;
     }
 
@@ -45,33 +46,33 @@ public class EnodeExtensionConfig {
         return new DefaultCommandProcessor();
     }
 
-    //    @Bean
-//    public InMemoryEventStore eventStore() {
-//        return new InMemoryEventStore();
+    @Bean
+    public InMemoryEventStore eventStore() {
+        return new InMemoryEventStore();
+    }
+
+    @Bean
+    public InMemoryPublishedVersionStore publishedVersionStore() {
+        return new InMemoryPublishedVersionStore();
+    }
+//    @Bean
+//    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
+//        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
+//        return mysqlEventStore;
 //    }
 //
 //    @Bean
-//    public InMemoryPublishedVersionStore publishedVersionStore() {
-//        return new InMemoryPublishedVersionStore();
+//    public HikariDataSource dataSource() {
+//        HikariDataSource dataSource = new HikariDataSource();
+//        dataSource.setJdbcUrl(JDBC_URL);
+//        dataSource.setUsername("root");
+//        dataSource.setPassword("root");
+//        dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
+//        return dataSource;
 //    }
-    @Bean
-    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
-        return mysqlEventStore;
-    }
-
-    @Bean
-    public HikariDataSource dataSource() {
-        HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(JDBC_URL);
-        dataSource.setUsername("root");
-        dataSource.setPassword("root");
-        dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
-        return dataSource;
-    }
-
-    @Bean
-    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        return new MysqlPublishedVersionStore(dataSource, null);
-    }
+//
+//    @Bean
+//    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
+//        return new MysqlPublishedVersionStore(dataSource, null);
+//    }
 }

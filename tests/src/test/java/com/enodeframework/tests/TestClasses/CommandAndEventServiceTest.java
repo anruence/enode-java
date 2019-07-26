@@ -13,6 +13,7 @@ import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.EventAppendResult;
+import com.enodeframework.eventing.impl.InMemoryEventStore;
 import com.enodeframework.infrastructure.ProcessingDomainEventStreamMessage;
 import com.enodeframework.mysql.MysqlEventStore;
 import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
@@ -70,7 +71,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
     public static ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
     private static Logger _logger = LoggerFactory.getLogger(CommandAndEventServiceTest.class);
     @Autowired
-    private MysqlEventStore _eventStore;
+    private InMemoryEventStore _eventStore;
 
     @Test
     public void create_and_update_aggregate_test() {
