@@ -17,17 +17,18 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author anruence@gmail.com
  */
 public class SendReplyService {
     private static final Logger logger = LoggerFactory.getLogger(SendReplyService.class);
+
     private boolean started;
+
     private boolean stoped;
+
     private NetClient netClient;
-    private ConcurrentHashMap<String, NetSocket> socketMap = new ConcurrentHashMap<>();
 
     public void start() {
         if (!started) {
@@ -58,30 +59,23 @@ public class SendReplyService {
                 String message = JsonTool.serialize(remoteReply);
                 InetSocketAddress inetSocketAddress = RemotingUtil.string2SocketAddress(replyAddress);
                 SocketAddress address = SocketAddress.inetSocketAddress(inetSocketAddress.getPort(), inetSocketAddress.getHostName());
-                if (!socketMap.containsKey(replyAddress)) {
-                    netClient.connect(address, res -> {
-                        if (!res.succeeded()) {
-                            logger.error("Failed to connect NetServer", res.cause());
-                            return;
-                        }
-                        NetSocket socket = res.result();
-                        socketMap.put(replyAddress, socket);
-                        socket.endHandler(v -> socket.close()).exceptionHandler(t -> {
-                            logger.error("NetSocket occurs unexpected error", t);
-                            socketMap.remove(replyAddress);
-                            socket.close();
-                        }).handler(buffer -> {
-                            String greeting = buffer.toString("UTF-8");
-                            logger.info("NetClient receiving: {}", greeting);
-                        }).closeHandler(v -> {
-                            logger.info("NetClient socket closed: {}", replyAddress);
-                            socketMap.remove(replyAddress);
-                        });
-                        socket.write(message);
+                netClient.connect(address, res -> {
+                    if (!res.succeeded()) {
+                        logger.error("Failed to connect NetServer", res.cause());
+                        return;
+                    }
+                    NetSocket socket = res.result();
+                    socket.endHandler(v -> socket.close()).exceptionHandler(t -> {
+                        logger.error("NetSocket occurs unexpected error", t);
+                        socket.close();
+                    }).handler(buffer -> {
+                        String greeting = buffer.toString("UTF-8");
+                        logger.info("NetClient receiving: {}", greeting);
+                    }).closeHandler(v -> {
+                        logger.info("NetClient socket closed: {}", replyAddress);
                     });
-                } else {
-                    socketMap.get(replyAddress).write(message);
-                }
+                    socket.write(message).close();
+                });
             } catch (Exception ex) {
                 logger.error("Send command reply has exception, replyAddress: {}", context.getReplyAddress(), ex);
             }
