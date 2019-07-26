@@ -45,7 +45,7 @@ public class Worker {
             }
             status = Status.StopRequested;
             thread.interrupt();
-            logger.info("Worker thread shutdown,thread id:{}", thread.getName());
+            logger.info("Worker thread shutdown, thread id:{}", thread.getName());
             return this;
         }
     }
@@ -57,7 +57,6 @@ public class Worker {
             } catch (InterruptedException e) {
                 if (status != Status.StopRequested) {
                     logger.info("Worker thread caught ThreadAbortException, try to resetting, actionName:{}", actionName);
-                    logger.info("Worker thread ThreadAbortException resetted, actionName:{}", actionName);
                 }
             } catch (Exception ex) {
                 logger.error(String.format("Worker thread has exception, actionName:%s", actionName), ex);
