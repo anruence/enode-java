@@ -6,11 +6,9 @@ import com.enodeframework.rocketmq.message.RocketMQCommandListener;
 import com.enodeframework.rocketmq.message.RocketMQDomainEventPublisher;
 import com.enodeframework.rocketmq.message.RocketMQPublishableExceptionPublisher;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.springframework.context.annotation.Bean;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.enodeframework.samples.QueueProperties.APPLICATION_TOPIC;
 import static com.enodeframework.samples.QueueProperties.COMMAND_TOPIC;
@@ -27,13 +25,11 @@ public class RocketMQCommandConfig {
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer defaultMQPushConsumer(RocketMQCommandListener commandListener) {
+    public DefaultMQPushConsumer defaultMQPushConsumer(RocketMQCommandListener commandListener) throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP3);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
-        Map<String, String> topic = new HashMap<>();
-        topic.put(COMMAND_TOPIC, "*");
-        defaultMQPushConsumer.setSubscription(topic);
+        defaultMQPushConsumer.subscribe(COMMAND_TOPIC, "*");
         defaultMQPushConsumer.setMessageListener(commandListener);
         return defaultMQPushConsumer;
     }

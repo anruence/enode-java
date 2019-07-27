@@ -20,6 +20,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
+import org.springframework.kafka.listener.adapter.RetryingMessageListenerAdapter;
+import org.springframework.retry.support.RetryTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +52,6 @@ public class KafkaEventConfig {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, DEFAULT_PRODUCER_GROUP);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "15000");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(props);
@@ -62,21 +63,15 @@ public class KafkaEventConfig {
     @Bean
     public ProducerFactory<Object, Object> producerFactory() {
         Map<String, Object> props = new HashMap<>();
-        //连接地址
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
-        //重试，0为不启用重试机制
-        props.put(ProducerConfig.RETRIES_CONFIG, 1);
-        //控制批处理大小，单位为字节
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
-        //批量发送，延迟为1毫秒，启用该功能能有效减少生产者发送消息次数，从而提高并发量
-        props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
-        //生产者可以使用的总内存字节来缓冲等待发送到服务器的记录
-        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 1024000);
-        //键的序列化方式
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        //值的序列化方式
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return new DefaultKafkaProducerFactory<>(props);
+    }
+
+    @Bean
+    public RetryTemplate retryTemplate() {
+        return new RetryTemplate();
     }
 
     /**
@@ -103,28 +98,31 @@ public class KafkaEventConfig {
     }
 
     @Bean
-    public KafkaMessageListenerContainer domainEventListenerContainer(KafkaDomainEventListener domainEventListener) {
+    public KafkaMessageListenerContainer domainEventListenerContainer(KafkaDomainEventListener domainEventListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(EVENT_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
-        properties.setMessageListener(domainEventListener);
+        RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(domainEventListener, retryTemplate);
+        properties.setMessageListener(listenerAdapter);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
     @Bean
-    public KafkaMessageListenerContainer applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener) {
+    public KafkaMessageListenerContainer applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(APPLICATION_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
-        properties.setMessageListener(applicationMessageListener);
+        RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(applicationMessageListener, retryTemplate);
+        properties.setMessageListener(listenerAdapter);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
     @Bean
-    public KafkaMessageListenerContainer publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener) {
+    public KafkaMessageListenerContainer publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(EXCEPTION_TOPIC);
         properties.setGroupId(DEFAULT_PRODUCER_GROUP);
-        properties.setMessageListener(publishableExceptionListener);
+        RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(publishableExceptionListener, retryTemplate);
+        properties.setMessageListener(listenerAdapter);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }

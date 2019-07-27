@@ -9,6 +9,7 @@ import com.enodeframework.rocketmq.message.RocketMQDomainEventPublisher;
 import com.enodeframework.rocketmq.message.RocketMQPublishableExceptionListener;
 import com.enodeframework.rocketmq.message.RocketMQPublishableExceptionPublisher;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.springframework.context.annotation.Bean;
 
@@ -51,37 +52,33 @@ public class RocketMQEventConfig {
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer eventConsumer(RocketMQDomainEventListener domainEventListener) {
+    public DefaultMQPushConsumer eventConsumer(RocketMQDomainEventListener domainEventListener) throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
-        Map<String, String> topic = new HashMap<>();
-        topic.put(EVENT_TOPIC, "*");
-        defaultMQPushConsumer.setSubscription(topic);
+        defaultMQPushConsumer.subscribe(EVENT_TOPIC, "*");
         defaultMQPushConsumer.setMessageListener(domainEventListener);
         return defaultMQPushConsumer;
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer applicationConsumer(RocketMQApplicationMessageListener applicationMessageListener) {
+    public DefaultMQPushConsumer applicationConsumer(RocketMQApplicationMessageListener applicationMessageListener) throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP1);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
-        Map<String, String> topic = new HashMap<>();
-        topic.put(APPLICATION_TOPIC, "*");
-        defaultMQPushConsumer.setSubscription(topic);
+        defaultMQPushConsumer.subscribe(APPLICATION_TOPIC, "*");
         defaultMQPushConsumer.setMessageListener(applicationMessageListener);
         return defaultMQPushConsumer;
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer exceptionConsumer(RocketMQPublishableExceptionListener publishableExceptionListener) {
+    public DefaultMQPushConsumer exceptionConsumer(RocketMQPublishableExceptionListener publishableExceptionListener) throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(DEFAULT_CONSUMER_GROUP2);
         defaultMQPushConsumer.setNamesrvAddr(NAMESRVADDR);
         Map<String, String> topic = new HashMap<>();
         topic.put(EXCEPTION_TOPIC, "*");
-        defaultMQPushConsumer.setSubscription(topic);
+        defaultMQPushConsumer.subscribe(EXCEPTION_TOPIC, "*");
         defaultMQPushConsumer.setMessageListener(publishableExceptionListener);
         return defaultMQPushConsumer;
     }

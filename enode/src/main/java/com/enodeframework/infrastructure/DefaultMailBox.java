@@ -198,14 +198,16 @@ public class DefaultMailBox<TMessage extends IMailBoxMessage, TMessageProcessRes
             try {
                 if (message.getSequence() == consumedSequence + 1) {
                     messageDict.remove(message.getSequence());
-                    await(completeMessageWithResult(message, result));
-                    consumedSequence = processNextCompletedMessages(message.getSequence());
+                    return completeMessageWithResult(message, result).thenAccept(x -> {
+                        consumedSequence = processNextCompletedMessages(message.getSequence());
+                    });
                 } else if (message.getSequence() > consumedSequence + 1) {
                     requestToCompleteMessageDict.put(message.getSequence(), result);
                 } else if (message.getSequence() < consumedSequence + 1) {
                     messageDict.remove(message.getSequence());
-                    await(completeMessageWithResult(message, result));
-                    requestToCompleteMessageDict.remove(message.getSequence());
+                    return completeMessageWithResult(message, result).thenAccept(x -> {
+                        requestToCompleteMessageDict.remove(message.getSequence());
+                    });
                 }
             } catch (Exception ex) {
                 logger.error("MailBox complete message with result failed, routingKey: {}, message: {}, result: {}", routingKey, message, result, ex);

@@ -13,6 +13,7 @@ import com.enodeframework.eventing.IDomainEvent;
 import com.enodeframework.eventing.IEventSerializer;
 import com.enodeframework.eventing.IEventStore;
 import com.enodeframework.eventing.impl.StreamRecord;
+import com.google.common.collect.Maps;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -240,7 +241,7 @@ public class MysqlEventStore implements IEventStore {
                 record.getVersion(),
                 record.getCreatedOn(),
                 eventSerializer.deserialize(JsonTool.deserialize(record.getEvents(), Map.class), IDomainEvent.class),
-                null);
+                Maps.newHashMap());
     }
 
     private StreamRecord convertTo(DomainEventStream eventStream) {
