@@ -50,6 +50,7 @@ public class NoteController {
         CountDownLatch latch = new CountDownLatch(totalCount);
         AtomicInteger success = new AtomicInteger(0);
         AtomicInteger failed = new AtomicInteger(0);
+        System.out.println("start time " + start);
         for (int i = 0; i < totalCount; i++) {
             CreateNoteCommand command = new CreateNoteCommand(ObjectId.generateNewStringId(), "Sample Note" + ObjectId.generateNewStringId());
             command.setId(String.valueOf(i));

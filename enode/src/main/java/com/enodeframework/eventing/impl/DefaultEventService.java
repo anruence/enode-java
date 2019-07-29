@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.enodeframework.common.io.Task.await;
@@ -144,9 +143,7 @@ public class DefaultEventService implements IEventService {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Batch persist event success, routingKey: {}, eventStreamCount: {}, minEventVersion: {}, maxEventVersion: {}", eventMailBox.getRoutingKey(), committingContexts.size(), Linq.first(committingContexts).getEventStream().getVersion(), Linq.last(committingContexts).getEventStream().getVersion());
                         }
-                        CompletableFuture.runAsync(() ->
-                                committingContexts.forEach(context -> publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream()))
-                        );
+                        committingContexts.forEach(context -> publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream()));
                         for (EventCommittingContext committingContext : committingContexts) {
                             committingContext.getMailBox().completeMessage(committingContext, true);
                         }

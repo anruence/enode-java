@@ -148,6 +148,10 @@ public class CommandResultProcessor {
         }
         if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.CommandExecuted)) {
             commandTaskCompletionSource = commandTaskDict.asMap().remove(commandResult.getCommandId());
+            if (commandTaskCompletionSource.getTaskCompletionSource() == null){
+                logger.debug("Command result return CommandExecuted, {}", commandResult);
+                return;
+            }
             if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Command result return CommandExecuted, {}", commandResult);

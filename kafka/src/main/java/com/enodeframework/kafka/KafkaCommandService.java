@@ -29,11 +29,7 @@ public class KafkaCommandService extends AbstractCommandService {
 
     @Override
     public CompletableFuture<AsyncTaskResult> sendAsync(ICommand command) {
-        try {
-            return SendMessageService.sendMessageAsync(producer, buildKafkaMessage(command, false));
-        } catch (Exception ex) {
-            return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
-        }
+        return SendMessageService.sendMessageAsync(producer, buildKafkaMessage(command, false));
     }
 
     @Override

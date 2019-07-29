@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 public class ProcessingCommandMailbox extends DefaultMailBox<ProcessingCommand, CommandResult> {
 
     public ProcessingCommandMailbox(String aggregateRootId, IProcessingCommandHandler messageHandler, int batchSize) {
-        super(aggregateRootId, batchSize, false, (messageHandler::handle), null);
+        super(aggregateRootId, batchSize, false, messageHandler::handle, null);
     }
 
     @Override

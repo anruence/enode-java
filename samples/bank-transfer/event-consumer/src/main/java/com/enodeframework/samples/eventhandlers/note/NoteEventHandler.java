@@ -15,13 +15,13 @@ public class NoteEventHandler {
 
     @Subscribe
     public AsyncTaskResult handleAsync(NoteTitleChanged evnt) {
-        logger.info("NoteTitleChanged Note denormalizered, title：{}, Version: {}", evnt.getTitle(), evnt.getVersion());
+        logger.info("NoteTitleChanged Note denormalizered, title：{}, Version: {},endTime:{}", evnt.getTitle(), evnt.getVersion(), System.currentTimeMillis());
         return AsyncTaskResult.Success;
     }
 
     @Subscribe
     public AsyncTaskResult handleAsync(NoteCreated evnt) {
-        logger.info("NoteCreated title：{}, Version: {}", evnt.getTitle(), evnt.getVersion());
+        logger.info("NoteCreated title：{}, Version: {},endTime:{}", evnt.getTitle(), evnt.getVersion(), System.currentTimeMillis());
         return AsyncTaskResult.Success;
     }
 

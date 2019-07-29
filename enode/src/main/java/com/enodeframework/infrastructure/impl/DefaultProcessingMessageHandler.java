@@ -60,7 +60,7 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
                 currentRetryTimes -> handleMessageAsync(processingMessage, currentRetryTimes),
                 result ->
                 {
-                    Integer publishedVersion = result.getData();
+                    int publishedVersion = result.getData();
                     if (publishedVersion + 1 == message.getVersion()) {
                         doDispatchProcessingMessageAsync(processingMessage, 0);
                     } else if (publishedVersion + 1 < message.getVersion()) {

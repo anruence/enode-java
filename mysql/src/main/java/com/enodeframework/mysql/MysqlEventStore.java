@@ -198,23 +198,22 @@ public class MysqlEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, String commandId) {
-        return IOHelper.tryIOFuncAsync(() ->
-                CompletableFuture.supplyAsync(() -> {
-                    try {
-                        StreamRecord record = queryRunner.query(String.format("select * from `%s` where AggregateRootId=? and CommandId=?", getTableName(aggregateRootId)),
-                                new BeanHandler<>(StreamRecord.class),
-                                aggregateRootId,
-                                commandId);
-                        DomainEventStream stream = record != null ? convertFrom(record) : null;
-                        return new AsyncTaskResult<>(AsyncTaskStatus.Success, stream);
-                    } catch (SQLException ex) {
-                        logger.error(String.format("Find event by commandId has sql exception, aggregateRootId: %s, commandId: %s", aggregateRootId, commandId), ex);
-                        return new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage());
-                    } catch (Exception ex) {
-                        logger.error(String.format("Find event by commandId has unknown exception, aggregateRootId: %s, commandId: %s", aggregateRootId, commandId), ex);
-                        return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage());
-                    }
-                }), "FindEventByCommandIdAsync");
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                StreamRecord record = queryRunner.query(String.format("select * from `%s` where AggregateRootId=? and CommandId=?", getTableName(aggregateRootId)),
+                        new BeanHandler<>(StreamRecord.class),
+                        aggregateRootId,
+                        commandId);
+                DomainEventStream stream = record != null ? convertFrom(record) : null;
+                return new AsyncTaskResult<>(AsyncTaskStatus.Success, stream);
+            } catch (SQLException ex) {
+                logger.error(String.format("Find event by commandId has sql exception, aggregateRootId: %s, commandId: %s", aggregateRootId, commandId), ex);
+                return new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage());
+            } catch (Exception ex) {
+                logger.error(String.format("Find event by commandId has unknown exception, aggregateRootId: %s, commandId: %s", aggregateRootId, commandId), ex);
+                return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage());
+            }
+        });
     }
 
     private int getTableIndex(String aggregateRootId) {
