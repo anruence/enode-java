@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -54,11 +54,11 @@ public class MysqlPublishedVersionStoreVertx implements IPublishedVersionStore {
             array.add(aggregateRootTypeName);
             array.add(aggregateRootId);
             array.add(1);
-            array.add(new Timestamp(System.currentTimeMillis()));
+            array.add(new Date().toInstant());
         } else {
             sql = String.format("UPDATE %s set Version=?,CreatedOn=? WHERE ProcessorName=? and AggregateRootId=? and Version=?", tableName);
             array.add(publishedVersion);
-            array.add(new Timestamp(System.currentTimeMillis()));
+            array.add(new Date().toInstant());
             array.add(processorName);
             array.add(aggregateRootId);
             array.add(publishedVersion - 1);
@@ -90,6 +90,8 @@ public class MysqlPublishedVersionStoreVertx implements IPublishedVersionStore {
 
         String sql = String.format("SELECT Version FROM %s WHERE ProcessorName=? AND AggregateRootId=?", tableName);
         JsonArray array = new JsonArray();
+        array.add(processorName);
+        array.add(aggregateRootId);
         sqlClient.queryWithParams(sql, array, x -> {
             if (x.succeeded()) {
                 int result = 0;

@@ -2,7 +2,6 @@ package com.enodeframework.mysql;
 
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
-import com.enodeframework.common.io.IOHelper;
 import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.configurations.DefaultDBConfigurationSetting;
@@ -19,15 +18,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
-import io.vertx.ext.sql.SQLConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -97,46 +93,29 @@ public class MysqlEventStoreVertx implements IEventStore {
         }
         Map<String, List<DomainEventStream>> eventStreamMap = eventStreams.stream().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
         for (List<DomainEventStream> domainEventStreams : eventStreamMap.values()) {
-            List<JsonArray> arrays = new ArrayList<>(domainEventStreams.size());
-            domainEventStreams.forEach(record -> {
-                JsonArray array = new JsonArray();
+            String aggregateRootId = domainEventStreams.get(0).getAggregateRootId();
+            String sql = String.format("INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)", getTableName(aggregateRootId));
+            int size = domainEventStreams.size();
+            JsonArray array = new JsonArray();
+            for (int i = 0; i < size; i++) {
+                DomainEventStream record = domainEventStreams.get(i);
                 array.add(record.getAggregateRootId());
                 array.add(record.getAggregateRootTypeName());
                 array.add(record.getCommandId());
                 array.add(record.getVersion());
                 array.add(record.getTimestamp().toInstant());
                 array.add(JsonTool.serialize(eventSerializer.serialize(record.events())));
-                arrays.add(array);
-            });
-            String aggregateRootId = domainEventStreams.get(0).getAggregateRootId();
-            String sql = String.format("INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)", getTableName(aggregateRootId));
-            sqlClient.getConnection(c -> {
-                if (c.failed()) {
-                    future.completeExceptionally(c.cause());
+                if (i == 0) {
+                    continue;
+                }
+                sql = sql.concat(",(?,?,?,?,?,?)");
+            }
+            sqlClient.updateWithParams(sql, array, x -> {
+                if (x.failed()) {
+                    future.completeExceptionally(x.cause());
                     return;
                 }
-                SQLConnection connection = c.result();
-                connection.setAutoCommit(false, begin -> {
-                    if (begin.failed()) {
-                        future.completeExceptionally(begin.cause());
-                        connection.close();
-                        return;
-                    }
-                    connection.batchWithParams(sql, arrays, batch -> {
-                        if (batch.failed()) {
-                            future.completeExceptionally(batch.cause());
-                            connection.rollback(r -> connection.close());
-                        } else {
-                            connection.commit(end -> {
-                                if (end.succeeded()) {
-                                    future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.Success));
-                                }
-                                connection.close();
-                            });
-                        }
-                    });
-                });
-
+                future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.Success));
             });
 
         }
@@ -166,7 +145,7 @@ public class MysqlEventStoreVertx implements IEventStore {
         array.add(record.getAggregateRootTypeName());
         array.add(record.getCommandId());
         array.add(record.getVersion());
-        array.add(record.getCreatedOn());
+        array.add(record.getCreatedOn().toInstant());
         array.add(record.getEvents());
         sqlClient.updateWithParams(sql, array, x -> {
             if (x.succeeded()) {
@@ -231,11 +210,13 @@ public class MysqlEventStoreVertx implements IEventStore {
         array.add(version);
         sqlClient.queryWithParams(sql, array, x -> {
             if (x.succeeded()) {
+                StreamRecord record = null;
                 if (x.result().getRows().size() > 1) {
-                    StreamRecord record = x.result().getRows().get(0).mapTo(StreamRecord.class);
-                    DomainEventStream stream = record != null ? convertFrom(record) : null;
-                    future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, stream));
+                    record = x.result().getRows().get(0).mapTo(StreamRecord.class);
                 }
+                DomainEventStream stream = record != null ? convertFrom(record) : null;
+
+                future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, stream));
                 return;
             }
             if (x.cause() instanceof SQLException) {
@@ -254,33 +235,33 @@ public class MysqlEventStoreVertx implements IEventStore {
 
     @Override
     public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, String commandId) {
-        return IOHelper.tryIOFuncAsync(() -> {
-            CompletableFuture<AsyncTaskResult<DomainEventStream>> future = new CompletableFuture<>();
-            String sql = String.format("select * from `%s` where AggregateRootId=? and CommandId=?", getTableName(aggregateRootId));
-            JsonArray array = new JsonArray();
-            array.add(aggregateRootId);
-            array.add(commandId);
-            sqlClient.queryWithParams(sql, array, x -> {
-                if (x.succeeded()) {
-                    if (x.result().getRows().size() > 1) {
-                        StreamRecord record = x.result().getRows().get(0).mapTo(StreamRecord.class);
-                        DomainEventStream stream = record != null ? convertFrom(record) : null;
-                        future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, stream));
-                    }
-                    return;
+        CompletableFuture<AsyncTaskResult<DomainEventStream>> future = new CompletableFuture<>();
+        String sql = String.format("select * from `%s` where AggregateRootId=? and CommandId=?", getTableName(aggregateRootId));
+        JsonArray array = new JsonArray();
+        array.add(aggregateRootId);
+        array.add(commandId);
+        sqlClient.queryWithParams(sql, array, x -> {
+            if (x.succeeded()) {
+                if (x.result().getRows().size() > 1) {
+                    StreamRecord record = x.result().getRows().get(0).mapTo(StreamRecord.class);
+                    DomainEventStream stream = record != null ? convertFrom(record) : null;
+                    future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, stream));
+                } else {
+                    future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Failed));
                 }
-                if (x.cause() instanceof SQLException) {
-                    SQLException ex = (SQLException) x.cause();
-                    logger.error("Find event by commandId has sql exception, aggregateRootId: {}, commandId: {}", aggregateRootId, commandId, ex);
-                    future.complete(new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage()));
-                    return;
-                }
-                Throwable ex = x.cause();
-                logger.error("Find event by commandId has unknown exception, aggregateRootId: {}, commandId: {}", aggregateRootId, commandId, ex);
-                future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
-            });
-            return future;
-        }, "FindEventByCommandIdAsync");
+                return;
+            }
+            if (x.cause() instanceof SQLException) {
+                SQLException ex = (SQLException) x.cause();
+                logger.error("Find event by commandId has sql exception, aggregateRootId: {}, commandId: {}", aggregateRootId, commandId, ex);
+                future.complete(new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage()));
+                return;
+            }
+            Throwable ex = x.cause();
+            logger.error("Find event by commandId has unknown exception, aggregateRootId: {}, commandId: {}", aggregateRootId, commandId, ex);
+            future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
+        });
+        return future;
     }
 
     private int getTableIndex(String aggregateRootId) {

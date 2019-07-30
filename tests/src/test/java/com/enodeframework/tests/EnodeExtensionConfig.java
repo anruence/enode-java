@@ -4,19 +4,18 @@ import com.enodeframework.ENodeBootstrap;
 import com.enodeframework.commanding.impl.DefaultCommandProcessor;
 import com.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import com.enodeframework.eventing.impl.DefaultEventService;
-import com.enodeframework.eventing.impl.InMemoryEventStore;
-import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
-import com.enodeframework.mysql.MysqlEventStore;
-import com.enodeframework.mysql.MysqlPublishedVersionStore;
+import com.enodeframework.mysql.MysqlEventStoreVertx;
+import com.enodeframework.mysql.MysqlPublishedVersionStoreVertx;
 import com.enodeframework.queue.command.CommandResultProcessor;
 import com.google.common.collect.Lists;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
+import static com.enodeframework.tests.Constants.JDBC_URL;
+
 @ComponentScan(value = "com.enodeframework")
 public class EnodeExtensionConfig {
-    public static String JDBC_URL = "jdbc:mysql://p.anruence.com:13306/enode";
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public CommandResultProcessor commandResultProcessor() {
@@ -46,33 +45,34 @@ public class EnodeExtensionConfig {
         return new DefaultCommandProcessor();
     }
 
+//    @Bean
+//    public InMemoryEventStore eventStore() {
+//        return new InMemoryEventStore();
+//    }
+//
+//    @Bean
+//    public InMemoryPublishedVersionStore publishedVersionStore() {
+//        return new InMemoryPublishedVersionStore();
+//    }
+
     @Bean
-    public InMemoryEventStore eventStore() {
-        return new InMemoryEventStore();
+    public MysqlEventStoreVertx mysqlEventStore(HikariDataSource dataSource) {
+        MysqlEventStoreVertx mysqlEventStore = new MysqlEventStoreVertx(dataSource, null);
+        return mysqlEventStore;
     }
 
     @Bean
-    public InMemoryPublishedVersionStore publishedVersionStore() {
-        return new InMemoryPublishedVersionStore();
+    public HikariDataSource dataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl(JDBC_URL);
+        dataSource.setUsername("root");
+        dataSource.setPassword("root");
+        dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
+        return dataSource;
     }
-//    @Bean
-//    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-//        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
-//        return mysqlEventStore;
-//    }
-//
-//    @Bean
-//    public HikariDataSource dataSource() {
-//        HikariDataSource dataSource = new HikariDataSource();
-//        dataSource.setJdbcUrl(JDBC_URL);
-//        dataSource.setUsername("root");
-//        dataSource.setPassword("root");
-//        dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
-//        return dataSource;
-//    }
-//
-//    @Bean
-//    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-//        return new MysqlPublishedVersionStore(dataSource, null);
-//    }
+
+    @Bean
+    public MysqlPublishedVersionStoreVertx mysqlPublishedVersionStore(HikariDataSource dataSource) {
+        return new MysqlPublishedVersionStoreVertx(dataSource, null);
+    }
 }

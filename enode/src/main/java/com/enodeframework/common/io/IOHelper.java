@@ -225,8 +225,7 @@ public class IOHelper {
                 try {
                     successAction.apply(result);
                 } catch (Exception ex) {
-                    logger.error("Failed to execute the successAction, actionName:{}, contextInfo:{}", actionName, getContextInfo(contextInfoFunc), ex)
-                    ;
+                    logger.error("Failed to execute the successAction, actionName:{}, contextInfo:{}", actionName, getContextInfo(contextInfoFunc), ex);
                 }
             }
         }

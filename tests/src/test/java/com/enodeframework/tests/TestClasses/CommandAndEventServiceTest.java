@@ -16,6 +16,7 @@ import com.enodeframework.eventing.EventAppendResult;
 import com.enodeframework.eventing.impl.InMemoryEventStore;
 import com.enodeframework.infrastructure.ProcessingDomainEventStreamMessage;
 import com.enodeframework.mysql.MysqlEventStore;
+import com.enodeframework.mysql.MysqlEventStoreVertx;
 import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
 import com.enodeframework.tests.Commands.AsyncHandlerBaseCommand;
 import com.enodeframework.tests.Commands.AsyncHandlerChildCommand;
@@ -71,7 +72,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
     public static ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
     private static Logger _logger = LoggerFactory.getLogger(CommandAndEventServiceTest.class);
     @Autowired
-    private InMemoryEventStore _eventStore;
+    private MysqlEventStoreVertx _eventStore;
 
     @Test
     public void create_and_update_aggregate_test() {
