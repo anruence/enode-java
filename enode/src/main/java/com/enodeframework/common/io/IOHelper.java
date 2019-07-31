@@ -22,19 +22,17 @@ public class IOHelper {
     public static <TAsyncResult extends AsyncTaskResult> void tryAsyncActionRecursively(
             String asyncActionName,
             Func<CompletableFuture<TAsyncResult>> asyncAction,
-            Action1<Integer> mainAction,
             Action1<TAsyncResult> successAction,
             Func<String> getContextInfoFunc,
             Action1<String> failedAction,
             int retryTimes,
             boolean retryWhenFailed) {
-        tryAsyncActionRecursively(asyncActionName, asyncAction, mainAction, successAction, getContextInfoFunc, failedAction, retryTimes, retryWhenFailed, 3, 1000);
+        tryAsyncActionRecursively(asyncActionName, asyncAction, successAction, getContextInfoFunc, failedAction, retryTimes, retryWhenFailed, 3, 1000);
     }
 
     public static <TAsyncResult extends AsyncTaskResult> void tryAsyncActionRecursively(
             String asyncActionName,
             Func<CompletableFuture<TAsyncResult>> asyncAction,
-            Action1<Integer> mainAction,
             Action1<TAsyncResult> successAction,
             Func<String> getContextInfoFunc,
             Action1<String> failedAction,
@@ -42,8 +40,7 @@ public class IOHelper {
             boolean retryWhenFailed,
             int maxRetryTimes,
             int retryInterval) {
-        AsyncTaskExecutionContext<TAsyncResult> asyncTaskExecutionContext = new AsyncTaskExecutionContext<>(asyncActionName, asyncAction, mainAction,
-                successAction, getContextInfoFunc, failedAction, retryTimes, retryWhenFailed, maxRetryTimes, retryInterval);
+        AsyncTaskExecutionContext<TAsyncResult> asyncTaskExecutionContext = new AsyncTaskExecutionContext<>(asyncActionName, asyncAction, successAction, getContextInfoFunc, failedAction, retryTimes, retryWhenFailed, maxRetryTimes, retryInterval);
         asyncTaskExecutionContext.execute();
     }
 
@@ -80,10 +77,10 @@ public class IOHelper {
     static class SyncTaskExecutionContext<TAsyncResult extends AsyncTaskResult> extends AbstractTaskExecutionContext<TAsyncResult> {
         private Func<TAsyncResult> action;
 
-        SyncTaskExecutionContext(String actionName, Func<TAsyncResult> action, Action1<Integer> mainAction, Action1<TAsyncResult> successAction,
+        SyncTaskExecutionContext(String actionName, Func<TAsyncResult> action, Action1<TAsyncResult> successAction,
                                  Func<String> contextInfoFunc, Action1<String> failedAction, int retrtTimes,
                                  boolean retryWhenFailed, int maxRetryTimes, int retryInterval) {
-            super(actionName, mainAction, successAction, contextInfoFunc, failedAction, retrtTimes, retryWhenFailed, maxRetryTimes, retryInterval);
+            super(actionName, successAction, contextInfoFunc, failedAction, retrtTimes, retryWhenFailed, maxRetryTimes, retryInterval);
             this.action = action;
         }
 
@@ -104,10 +101,10 @@ public class IOHelper {
         private Func<CompletableFuture<TAsyncResult>> asyncAction;
 
         AsyncTaskExecutionContext(
-                String actionName, Func<CompletableFuture<TAsyncResult>> asyncAction, Action1<Integer> mainAction,
+                String actionName, Func<CompletableFuture<TAsyncResult>> asyncAction,
                 Action1<TAsyncResult> successAction, Func<String> contextInfoFunc, Action1<String> failedAction,
                 int retryTimes, boolean retryWhenFailed, int maxRetryTimes, int retryInterval) {
-            super(actionName, mainAction, successAction, contextInfoFunc, failedAction, retryTimes, retryWhenFailed, maxRetryTimes, retryInterval);
+            super(actionName, successAction, contextInfoFunc, failedAction, retryTimes, retryWhenFailed, maxRetryTimes, retryInterval);
             this.asyncAction = asyncAction;
         }
 
@@ -130,7 +127,6 @@ public class IOHelper {
 
     static abstract class AbstractTaskExecutionContext<TAsyncResult extends AsyncTaskResult> {
         private String actionName;
-        private Action1<Integer> mainAction;
         private Action1<TAsyncResult> successAction;
         private Func<String> contextInfoFunc;
         private Action1<String> failedAction;
@@ -139,10 +135,8 @@ public class IOHelper {
         private int maxRetryTimes;
         private int retryInterval;
 
-        AbstractTaskExecutionContext(String actionName, Action1<Integer> mainAction, Action1<TAsyncResult> successAction, Func<String> contextInfoFunc,
-                                     Action1<String> failedAction, int retryTimes, boolean retryWhenFailed, int maxRetryTimes, int retryInterval) {
+        AbstractTaskExecutionContext(String actionName, Action1<TAsyncResult> successAction, Func<String> contextInfoFunc, Action1<String> failedAction, int retryTimes, boolean retryWhenFailed, int maxRetryTimes, int retryInterval) {
             this.actionName = actionName;
-            this.mainAction = mainAction;
             this.successAction = successAction;
             this.contextInfoFunc = contextInfoFunc;
             this.failedAction = failedAction;
@@ -210,8 +204,7 @@ public class IOHelper {
                     doRetry();
                 }
             } catch (Exception ex) {
-                logger.error("Failed to execute the retryAction, actionName:{}, contextInfo:{}", actionName, getContextInfo(contextInfoFunc), ex)
-                ;
+                logger.error("Failed to execute the retryAction, actionName:{}, contextInfo:{}", actionName, getContextInfo(contextInfoFunc), ex);
             }
         }
 
@@ -225,8 +218,7 @@ public class IOHelper {
                 try {
                     successAction.apply(result);
                 } catch (Exception ex) {
-                    logger.error("Failed to execute the successAction, actionName:{}, contextInfo:{}", actionName, getContextInfo(contextInfoFunc), ex)
-                    ;
+                    logger.error("Failed to execute the successAction, actionName:{}, contextInfo:{}", actionName, getContextInfo(contextInfoFunc), ex);
                 }
             }
         }

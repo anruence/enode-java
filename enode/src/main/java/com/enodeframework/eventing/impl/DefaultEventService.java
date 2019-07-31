@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.enodeframework.common.io.Task.await;
@@ -135,7 +134,6 @@ public class DefaultEventService implements IEventService {
     private void batchPersistEventAsync(List<EventCommittingContext> committingContexts, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("BatchPersistEventAsync",
                 () -> eventStore.batchAppendAsync(committingContexts.stream().map(EventCommittingContext::getEventStream).collect(Collectors.toList())),
-                currentRetryTimes -> batchPersistEventAsync(committingContexts, currentRetryTimes),
                 result ->
                 {
                     EventAppendResult appendResult = result.getData();
@@ -144,9 +142,7 @@ public class DefaultEventService implements IEventService {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Batch persist event success, routingKey: {}, eventStreamCount: {}, minEventVersion: {}, maxEventVersion: {}", eventMailBox.getRoutingKey(), committingContexts.size(), Linq.first(committingContexts).getEventStream().getVersion(), Linq.last(committingContexts).getEventStream().getVersion());
                         }
-                        CompletableFuture.runAsync(() ->
-                                committingContexts.forEach(context -> publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream()))
-                        );
+                        committingContexts.forEach(context -> publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream()));
                         for (EventCommittingContext committingContext : committingContexts) {
                             committingContext.getMailBox().completeMessage(committingContext, true);
                         }
@@ -180,7 +176,6 @@ public class DefaultEventService implements IEventService {
     private void persistEvent(EventCommittingContext context, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("PersistEvent",
                 () -> eventStore.appendAsync(context.getEventStream()),
-                currentRetryTimes -> persistEvent(context, currentRetryTimes),
                 result -> {
                     if (result.getData() == EventAppendResult.Success) {
                         if (logger.isDebugEnabled()) {
@@ -232,7 +227,6 @@ public class DefaultEventService implements IEventService {
         ICommand command = context.getProcessingCommand().getMessage();
         IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
                 () -> eventStore.findAsync(context.getEventStream().getAggregateRootId(), command.getId()),
-                currentRetryTimes -> tryToRepublishEventAsync(context, currentRetryTimes),
                 result ->
                 {
                     DomainEventStream existingEventStream = result.getData();
@@ -265,7 +259,6 @@ public class DefaultEventService implements IEventService {
     private void handleFirstEventDuplicationAsync(EventCommittingContext context, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("FindFirstEventByVersion",
                 () -> eventStore.findAsync(context.getEventStream().getAggregateRootId(), 1),
-                currentRetryTimes -> handleFirstEventDuplicationAsync(context, currentRetryTimes),
                 result ->
                 {
                     DomainEventStream firstEventStream = result.getData();
@@ -307,7 +300,6 @@ public class DefaultEventService implements IEventService {
     private void publishDomainEventAsync(ProcessingCommand processingCommand, DomainEventStreamMessage eventStream, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("PublishDomainEventAsync",
                 () -> domainEventPublisher.publishAsync(eventStream),
-                currentRetryTimes -> publishDomainEventAsync(processingCommand, eventStream, currentRetryTimes),
                 result ->
                 {
                     if (logger.isDebugEnabled()) {
