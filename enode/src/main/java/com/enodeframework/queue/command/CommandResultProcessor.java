@@ -142,12 +142,12 @@ public class CommandResultProcessor {
         commandTaskDict.cleanUp();
         if (commandTaskCompletionSource == null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Command result return timeout, {}, but commandTaskCompletionSource maybe timeout expired.", commandResult);
+                logger.debug("Command result return, {}, but commandTaskCompletionSource maybe timeout expired.", commandResult);
             }
             return;
         }
         if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.CommandExecuted)) {
-            commandTaskCompletionSource = commandTaskDict.asMap().remove(commandResult.getCommandId());
+            commandTaskDict.asMap().remove(commandResult.getCommandId());
             if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Command result return CommandExecuted, {}", commandResult);
@@ -155,7 +155,7 @@ public class CommandResultProcessor {
             }
         } else if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.EventHandled)) {
             if (commandResult.getStatus().equals(CommandStatus.Failed) || commandResult.getStatus().equals(CommandStatus.NothingChanged)) {
-                commandTaskCompletionSource = commandTaskDict.asMap().remove(commandResult.getCommandId());
+                commandTaskDict.asMap().remove(commandResult.getCommandId());
                 if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Command result return EventHandled, {}", commandResult);
