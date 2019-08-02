@@ -1,5 +1,6 @@
 package com.enodeframework.tests.Exceptions;
 
+import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import org.junit.Test;
 
@@ -8,30 +9,39 @@ import java.util.concurrent.CompletableFuture;
 public class Future {
     @Test
     public void test_can_throw_in_future() throws Exception {
-        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
-//            throw new IORuntimeException("test exception");
-            return 2;
+        CompletableFuture<Integer> future = new CompletableFuture<>();
+
+        future = CompletableFuture.supplyAsync(() -> {
+            throw new IORuntimeException("test exception");
         });
-        future.thenAccept(r -> {
-            int a = 1;
-            return;
-        }).exceptionally(e -> {
+        try {
+            future.thenAccept(x -> {
+                throw new ENodeRuntimeException("ss");
+            });
+        } catch (Exception e) {
+            // 此时catch不到异常
+            e.printStackTrace();
+        }
+        future.exceptionally(e -> {
             if (e.getCause() instanceof IORuntimeException) {
+                System.out.println("===IO");
                 e.printStackTrace();
             } else {
+                System.out.println("===NO");
+                e.printStackTrace();
             }
             return null;
         }).handleAsync((r, e) -> {
             if (e != null) {
+                e.printStackTrace();
             }
             if (r != null) {
-//            r.getClass();
+                System.out.println(r.getClass().getName());
             }
-            e.printStackTrace();
             return null;
         }).thenAccept(r -> {
-            int a = 1;
-            return;
+            // 执行结果
+            System.out.println("RET" + r);
         });
     }
 }

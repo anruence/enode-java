@@ -60,19 +60,19 @@ public class EnodeExtensionConfig {
 //        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
 //        return mysqlEventStore;
 //    }
-//
-//    @Bean
-//    public HikariDataSource dataSource() {
-//        HikariDataSource dataSource = new HikariDataSource();
-//        dataSource.setJdbcUrl(JDBC_URL);
-//        dataSource.setUsername("root");
-//        dataSource.setPassword("root");
-//        dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
-//        return dataSource;
-//    }
-//
 //    @Bean
 //    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
 //        return new MysqlPublishedVersionStore(dataSource, null);
 //    }
+    @Bean
+    public HikariDataSource dataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl(JDBC_URL);
+        dataSource.setUsername("root");
+        dataSource.setPassword("root");
+        dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
+        return dataSource;
+    }
+
+
 }

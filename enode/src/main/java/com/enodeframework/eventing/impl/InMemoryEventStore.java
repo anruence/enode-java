@@ -5,7 +5,6 @@ import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.EventAppendResult;
 import com.enodeframework.eventing.IEventStore;
-import com.google.common.collect.Maps;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -57,29 +55,36 @@ public class InMemoryEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<AsyncTaskResult<EventAppendResult>> batchAppendAsync(List<DomainEventStream> eventStreams) {
-        BatchAppendFuture batchAppendFuture = new BatchAppendFuture();
-        eventStreams.stream().map(this::appendAsync).forEach(batchAppendFuture::addTask);
-        return batchAppendFuture.result();
+        CompletableFuture<AsyncTaskResult<EventAppendResult>> result = new CompletableFuture<>();
+        for (DomainEventStream eventStream : eventStreams) {
+            EventAppendResult x = appends(eventStream);
+            if (x != EventAppendResult.Success) {
+                result.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, x));
+                return result;
+            }
+        }
+        result.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.Success));
+        return result;
     }
 
     @Override
     public CompletableFuture<AsyncTaskResult<EventAppendResult>> appendAsync(DomainEventStream eventStream) {
-        return CompletableFuture.supplyAsync(() -> new AsyncTaskResult<>(AsyncTaskStatus.Success, null, appends(eventStream)));
+        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, null, appends(eventStream)));
     }
 
     @Override
     public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, int version) {
-        return CompletableFuture.supplyAsync(() -> new AsyncTaskResult<>(AsyncTaskStatus.Success, null, find(aggregateRootId, version)));
+        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, null, find(aggregateRootId, version)));
     }
 
     @Override
     public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, String commandId) {
-        return CompletableFuture.supplyAsync(() -> new AsyncTaskResult<>(AsyncTaskStatus.Success, null, find(aggregateRootId, commandId)));
+        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, null, find(aggregateRootId, commandId)));
     }
 
     @Override
     public CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
-        return CompletableFuture.supplyAsync(() -> new AsyncTaskResult<>(AsyncTaskStatus.Success, null, queryAggregateEvents(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion)));
+        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, null, queryAggregateEvents(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion)));
     }
 
     private EventAppendResult appends(DomainEventStream eventStream) {
@@ -117,39 +122,6 @@ public class InMemoryEventStore implements IEventStore {
             return null;
         }
         return aggregateInfo.getCommandDict().get(commandId);
-    }
-
-    class BatchAppendFuture {
-        private AtomicInteger index;
-        private ConcurrentMap<Integer, CompletableFuture<AsyncTaskResult<EventAppendResult>>> taskDict = Maps.newConcurrentMap();
-        private CompletableFuture<AsyncTaskResult<EventAppendResult>> result;
-
-        public BatchAppendFuture() {
-            index = new AtomicInteger(0);
-            result = new CompletableFuture<>();
-        }
-
-        public void addTask(CompletableFuture<AsyncTaskResult<EventAppendResult>> task) {
-            int i = index.get();
-            taskDict.put(index.getAndIncrement(), task);
-            task.thenAccept(t -> {
-                if (t.getData() != EventAppendResult.Success) {
-                    result.complete(t);
-                    taskDict.clear();
-                    return;
-                }
-                if (!result.isDone()) {
-                    taskDict.remove(i);
-                    if (taskDict.isEmpty()) {
-                        result.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.Success));
-                    }
-                }
-            });
-        }
-
-        public CompletableFuture<AsyncTaskResult<EventAppendResult>> result() {
-            return result;
-        }
     }
 
     class AggregateInfo {
