@@ -57,7 +57,6 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
         DomainEventStreamMessage message = processingMessage.getMessage();
         IOHelper.tryAsyncActionRecursively("GetPublishedVersionAsync",
                 () -> publishedVersionStore.getPublishedVersionAsync(getName(), message.getAggregateRootTypeName(), message.getAggregateRootStringId()),
-                currentRetryTimes -> handleMessageAsync(processingMessage, currentRetryTimes),
                 result ->
                 {
                     int publishedVersion = result.getData();
@@ -80,7 +79,6 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
     private void doDispatchProcessingMessageAsync(ProcessingDomainEventStreamMessage processingMessage, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("DispatchProcessingMessageAsync",
                 () -> dispatchProcessingMessageAsync(processingMessage),
-                currentRetryTimes -> doDispatchProcessingMessageAsync(processingMessage, currentRetryTimes),
                 result -> updatePublishedVersionAsync(processingMessage, 0),
                 () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%d]", processingMessage.getMessage().getId(), processingMessage.getMessage().getClass().getName(), processingMessage.getMessage().getAggregateRootStringId(), processingMessage.getMessage().getVersion()),
                 errorMessage -> logger.error("Dispatching message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
@@ -90,7 +88,6 @@ public class DefaultProcessingMessageHandler<X extends IProcessingMessage<X, Y>,
     private void updatePublishedVersionAsync(ProcessingDomainEventStreamMessage processingMessage, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("UpdatePublishedVersionAsync",
                 () -> publishedVersionStore.updatePublishedVersionAsync(getName(), processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootStringId(), processingMessage.getMessage().getVersion()),
-                currentRetryTimes -> updatePublishedVersionAsync(processingMessage, currentRetryTimes),
                 result -> processingMessage.complete(),
                 () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%d]", processingMessage.getMessage().getId(), processingMessage.getMessage().getClass().getName(), processingMessage.getMessage().getAggregateRootStringId(), processingMessage.getMessage().getVersion()),
                 errorMessage ->

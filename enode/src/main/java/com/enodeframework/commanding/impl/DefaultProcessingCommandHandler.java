@@ -232,7 +232,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         ICommand command = processingCommand.getMessage();
         IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
                 () -> eventStore.findAsync(command.getAggregateRootId(), command.getId()),
-                currentRetryTimes -> processIfNoEventsOfCommand(processingCommand, currentRetryTimes),
                 result ->
                 {
                     DomainEventStream existingEventStream = result.getData();
@@ -266,7 +265,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         ICommand command = processingCommand.getMessage();
         IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
                 () -> eventStore.findAsync(command.getAggregateRootId(), command.getId()),
-                currentRetryTimes -> handleExceptionAsync(processingCommand, commandHandler, exception, currentRetryTimes),
                 result -> {
                     DomainEventStream existingEventStream = result.getData();
                     if (existingEventStream != null) {
@@ -301,7 +299,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     private void publishExceptionAsync(ProcessingCommand processingCommand, IPublishableException exception, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("PublishExceptionAsync",
                 () -> exceptionPublisher.publishAsync(exception),
-                currentRetryTimes -> publishExceptionAsync(processingCommand, exception, currentRetryTimes),
                 result -> completeCommand(processingCommand, CommandStatus.Failed, exception.getClass().getName(), ((Exception) exception).getMessage()),
                 () -> {
                     Map<String, String> serializableInfo = new HashMap<>();
@@ -356,7 +353,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage());
                     });
                 },
-                currentRetryTimes -> handleCommandAsync(processingCommand, commandHandler, currentRetryTimes),
                 result -> commitChangesAsync(processingCommand, true, result.getData(), null),
                 () -> String.format("[command:[id:%s,type:%s],handlerType:%s]", command.getId(), command.getClass().getName(), commandHandler.getInnerObject().getClass().getName()),
                 errorMessage -> commitChangesAsync(processingCommand, false, null, errorMessage),
@@ -380,7 +376,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         ICommand command = processingCommand.getMessage();
         IOHelper.tryAsyncActionRecursively("PublishApplicationMessageAsync",
                 () -> applicationMessagePublisher.publishAsync(message),
-                currentRetryTimes -> publishMessageAsync(processingCommand, message, currentRetryTimes),
                 result -> completeCommand(processingCommand, CommandStatus.Success, message.getTypeName(), JsonTool.serialize(message)),
                 () -> String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.getId(), message.getClass().getName(), command.getId(), command.getClass().getName()),
                 errorMessage -> logger.error(String.format("Publish application message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),

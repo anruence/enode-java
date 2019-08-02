@@ -162,7 +162,6 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         IMessage message = singleMessageDispatching.getMessage();
         IOHelper.tryAsyncActionRecursively("HandleSingleMessageAsync",
                 () -> handlerProxy.handleAsync(message),
-                currentRetryTimes -> handleSingleMessageAsync(singleMessageDispatching, handlerProxy, handlerTypeName, messageTypeName, queueHandler, currentRetryTimes),
                 result ->
                 {
                     singleMessageDispatching.removeHandledHandler(handlerTypeName);
@@ -188,7 +187,6 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         IMessage message2 = messages[1];
         IOHelper.tryAsyncActionRecursively("HandleTwoMessageAsync",
                 () -> handlerProxy.handleAsync(message1, message2),
-                currentRetryTimes -> handleTwoMessageAsync(multiMessageDispatching, handlerProxy, handlerTypeName, queueHandler, currentRetryTimes),
                 result ->
                 {
                     multiMessageDispatching.removeHandledHandler(handlerTypeName);
@@ -215,7 +213,6 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         IMessage message3 = messages[2];
         IOHelper.tryAsyncActionRecursively("HandleThreeMessageAsync",
                 () -> handlerProxy.handleAsync(message1, message2, message3),
-                currentRetryTimes -> handleThreeMessageAsync(multiMessageDispatching, handlerProxy, handlerTypeName, queueHandler, currentRetryTimes),
                 result ->
                 {
                     multiMessageDispatching.removeHandledHandler(handlerTypeName);

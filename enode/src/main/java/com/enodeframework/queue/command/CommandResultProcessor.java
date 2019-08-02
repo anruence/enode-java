@@ -142,7 +142,7 @@ public class CommandResultProcessor {
         commandTaskDict.cleanUp();
         if (commandTaskCompletionSource == null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Command result return timeout, {}, but commandTaskCompletionSource maybe timeout expired.", commandResult);
+                logger.debug("Command result return, {}, but commandTaskCompletionSource maybe timeout expired.", commandResult);
             }
             return;
         }

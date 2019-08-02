@@ -45,16 +45,6 @@ public class EnodeExtensionConfig {
         return new DefaultCommandProcessor();
     }
 
-//    @Bean
-//    public InMemoryEventStore eventStore() {
-//        return new InMemoryEventStore();
-//    }
-//
-//    @Bean
-//    public InMemoryPublishedVersionStore publishedVersionStore() {
-//        return new InMemoryPublishedVersionStore();
-//    }
-
     @Bean
     public MysqlEventStoreVertx mysqlEventStore(HikariDataSource dataSource) {
         MysqlEventStoreVertx mysqlEventStore = new MysqlEventStoreVertx(dataSource, null);
