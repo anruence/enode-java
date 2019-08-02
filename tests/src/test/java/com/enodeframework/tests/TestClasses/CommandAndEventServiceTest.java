@@ -14,6 +14,7 @@ import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.EventAppendResult;
 import com.enodeframework.infrastructure.ProcessingDomainEventStreamMessage;
+import com.enodeframework.mysql.MysqlEventStore;
 import com.enodeframework.mysql.MysqlEventStoreVertx;
 import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
 import com.enodeframework.tests.Commands.AsyncHandlerBaseCommand;

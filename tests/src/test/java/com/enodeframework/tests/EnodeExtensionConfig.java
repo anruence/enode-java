@@ -4,7 +4,9 @@ import com.enodeframework.ENodeBootstrap;
 import com.enodeframework.commanding.impl.DefaultCommandProcessor;
 import com.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import com.enodeframework.eventing.impl.DefaultEventService;
+import com.enodeframework.mysql.MysqlEventStore;
 import com.enodeframework.mysql.MysqlEventStoreVertx;
+import com.enodeframework.mysql.MysqlPublishedVersionStore;
 import com.enodeframework.mysql.MysqlPublishedVersionStoreVertx;
 import com.enodeframework.queue.command.CommandResultProcessor;
 import com.google.common.collect.Lists;
@@ -52,6 +54,23 @@ public class EnodeExtensionConfig {
     }
 
     @Bean
+    public MysqlPublishedVersionStoreVertx mysqlPublishedVersionStore(HikariDataSource dataSource) {
+        return new MysqlPublishedVersionStoreVertx(dataSource, null);
+    }
+
+//    @Bean
+//    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
+//        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
+//        return mysqlEventStore;
+//    }
+//
+//    @Bean
+//    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
+//        return new MysqlPublishedVersionStore(dataSource, null);
+//    }
+
+
+    @Bean
     public HikariDataSource dataSource() {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(JDBC_URL);
@@ -59,10 +78,5 @@ public class EnodeExtensionConfig {
         dataSource.setPassword("root");
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
-    }
-
-    @Bean
-    public MysqlPublishedVersionStoreVertx mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        return new MysqlPublishedVersionStoreVertx(dataSource, null);
     }
 }

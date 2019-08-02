@@ -45,8 +45,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.enodeframework.common.io.Task.await;
-
 /**
  * @author anruence@gmail.com
  */
@@ -164,8 +162,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 commitAggregateChanges(processingCommand);
             } catch (Exception ex) {
                 logCommandExecuteException(processingCommand, commandHandler, ex);
-                // await
-                await(completeCommand(processingCommand, CommandStatus.Failed, ex.getClass().getName(), "Unknown exception caught when committing changes of command."));
+                completeCommand(processingCommand, CommandStatus.Failed, ex.getClass().getName(), "Unknown exception caught when committing changes of command.");
             }
         }).exceptionally(ex -> {
             handleExceptionAsync(processingCommand, commandHandler, (Exception) ex, 0);

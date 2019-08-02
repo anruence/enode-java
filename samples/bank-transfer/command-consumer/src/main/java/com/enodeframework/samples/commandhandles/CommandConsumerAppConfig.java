@@ -4,7 +4,11 @@ import com.enodeframework.ENodeBootstrap;
 import com.enodeframework.commanding.impl.DefaultCommandProcessor;
 import com.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import com.enodeframework.eventing.impl.DefaultEventService;
+import com.enodeframework.eventing.impl.InMemoryEventStore;
+import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
+import com.enodeframework.mysql.MysqlEventStore;
 import com.enodeframework.mysql.MysqlEventStoreVertx;
+import com.enodeframework.mysql.MysqlPublishedVersionStore;
 import com.enodeframework.mysql.MysqlPublishedVersionStoreVertx;
 import com.google.common.collect.Lists;
 import com.zaxxer.hikari.HikariDataSource;
@@ -40,26 +44,25 @@ public class CommandConsumerAppConfig {
         return bootstrap;
     }
 
+    @Bean
+    public InMemoryEventStore inMemoryEventStore(){
+        return new InMemoryEventStore();
+    }
+
+    @Bean
+    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore(){
+        return new InMemoryPublishedVersionStore();
+    }
+
 //    @Bean
-//    public InMemoryEventStore inMemoryEventStore(){
-//        return new InMemoryEventStore();
+//    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
+//        return new MysqlEventStore(dataSource, null);
 //    }
 //
 //    @Bean
-//    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore(){
-//        return new InMemoryPublishedVersionStore();
+//    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
+//        return new MysqlPublishedVersionStore(dataSource, null);
 //    }
-
-    @Bean
-    public MysqlEventStoreVertx mysqlEventStore(HikariDataSource dataSource) {
-        MysqlEventStoreVertx mysqlEventStore = new MysqlEventStoreVertx(dataSource, null);
-        return mysqlEventStore;
-    }
-
-    @Bean
-    public MysqlPublishedVersionStoreVertx mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        return new MysqlPublishedVersionStoreVertx(dataSource, null);
-    }
 
     @Bean
     public HikariDataSource dataSource() {

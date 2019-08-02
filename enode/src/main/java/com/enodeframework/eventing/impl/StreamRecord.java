@@ -6,13 +6,13 @@ import java.util.Date;
  * @author anruence@gmail.com
  */
 public class StreamRecord {
-    private Long Sequence;
-    private String AggregateRootTypeName;
-    private String AggregateRootId;
-    private int Version;
-    private String CommandId;
-    private Date CreatedOn;
-    private String Events;
+    public Long Sequence;
+    public String AggregateRootTypeName;
+    public String AggregateRootId;
+    public int Version;
+    public String CommandId;
+    public Date CreatedOn;
+    public String Events;
 
     public StreamRecord() {
     }

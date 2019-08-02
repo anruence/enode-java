@@ -28,23 +28,27 @@ public class EventAppConfig {
         return processor;
     }
 
-    @Bean
-    public InMemoryEventStore inMemoryEventStore(){
-        return new InMemoryEventStore();
-    }
-
-    @Bean
-    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore(){
-        return new InMemoryPublishedVersionStore();
-    }
-
-
 //    @Bean
-//    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-//        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
-//        return mysqlEventStore;
+//    public InMemoryEventStore inMemoryEventStore() {
+//        return new InMemoryEventStore();
 //    }
 //
+//    @Bean
+//    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
+//        return new InMemoryPublishedVersionStore();
+//    }
+
+    @Bean
+    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
+        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
+        return mysqlEventStore;
+    }
+
+    @Bean
+    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
+        return new MysqlPublishedVersionStore(dataSource, null);
+    }
+
     @Bean
     public HikariDataSource dataSource() {
         HikariDataSource dataSource = new HikariDataSource();
@@ -54,9 +58,5 @@ public class EventAppConfig {
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
     }
-//
-//    @Bean
-//    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-//        return new MysqlPublishedVersionStore(dataSource, null);
-//    }
+
 }

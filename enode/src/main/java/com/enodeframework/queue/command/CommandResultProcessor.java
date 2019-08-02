@@ -15,6 +15,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalListener;
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.parsetools.RecordParser;
@@ -33,7 +34,7 @@ import static com.enodeframework.common.SysProperties.PORT;
 /**
  * @author anruence@gmail.com
  */
-public class CommandResultProcessor {
+public class CommandResultProcessor extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(CommandResultProcessor.class);
     private InetSocketAddress bindAddress;
     private NetServer netServer;
@@ -91,21 +92,20 @@ public class CommandResultProcessor {
     }
 
 
-    public CommandResultProcessor start() {
+    @Override
+    public void start() {
         if (started) {
-            return this;
+            return;
         }
         commandExecutedMessageWorker.start();
         domainEventHandledMessageWorker.start();
         started = true;
-        return this;
     }
 
-    public CommandResultProcessor shutdown() {
+    public void shutdown() {
         commandExecutedMessageWorker.stop();
         domainEventHandledMessageWorker.stop();
         netServer.close();
-        return this;
     }
 
     public InetSocketAddress getBindAddress() {

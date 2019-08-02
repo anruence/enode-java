@@ -11,42 +11,42 @@ import javax.sql.DataSource;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class Jdbc extends AbstractTest {
+public class VertxJdbc extends AbstractTest {
 
     @Autowired
-    DataSource ds;
+    private DataSource dataSource;
 
     @Test
     public void block() {
         Vertx vertx = Vertx.vertx();
-        JDBCClient client = JDBCClient.create(vertx, ds);
-        CompletableFuture future = new CompletableFuture();
+        JDBCClient client = JDBCClient.create(vertx, dataSource);
+        CompletableFuture future1 = new CompletableFuture();
         client.query("select * from eventStream limit 1", x -> {
             if (x.succeeded()) {
-                future.complete(true);
+                future1.complete(true);
                 System.out.println(x.result());
             } else {
-                future.completeExceptionally(x.cause());
+                future1.completeExceptionally(x.cause());
             }
-            CompletableFuture future1 = new CompletableFuture();
+            CompletableFuture future2 = new CompletableFuture();
             client.query("select * from eventStream limit 1", xx -> {
                 if (xx.succeeded()) {
-                    future1.complete(true);
+                    future2.complete(true);
                     System.out.println(xx.result());
                 } else {
-                    future1.completeExceptionally(xx.cause());
+                    future2.completeExceptionally(xx.cause());
                 }
             });
             try {
-                future1.get();
+                //EventLoop thread always block here
+                future2.get();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
                 e.printStackTrace();
             }
-            return;
         });
 
-        Task.sleep(10000000);
+        Task.sleep(100000);
     }
 }

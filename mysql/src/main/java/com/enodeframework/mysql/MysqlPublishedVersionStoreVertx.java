@@ -87,7 +87,6 @@ public class MysqlPublishedVersionStoreVertx implements IPublishedVersionStore {
     @Override
     public CompletableFuture<AsyncTaskResult<Integer>> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
         CompletableFuture<AsyncTaskResult<Integer>> future = new CompletableFuture<>();
-
         String sql = String.format("SELECT Version FROM %s WHERE ProcessorName=? AND AggregateRootId=?", tableName);
         JsonArray array = new JsonArray();
         array.add(processorName);
@@ -95,7 +94,7 @@ public class MysqlPublishedVersionStoreVertx implements IPublishedVersionStore {
         sqlClient.queryWithParams(sql, array, x -> {
             if (x.succeeded()) {
                 int result = 0;
-                if (x.result().getNumRows() > 1) {
+                if (x.result().getNumRows() >= 1) {
                     result = x.result().getRows().get(0).getInteger("Version");
                 }
                 future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, result));

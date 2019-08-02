@@ -116,8 +116,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         });
     }
 
-    private <T extends IObjectProxy> void dispatchMultiMessage(List<? extends IMessage> messages, List<MessageHandlerData<T>> messageHandlerDataList,
-                                                               RootDispatching rootDispatching, Action4<MultiMessageDisptaching, T, QueuedHandler<T>, Integer> dispatchAction) {
+    private <T extends IObjectProxy> void dispatchMultiMessage(List<? extends IMessage> messages, List<MessageHandlerData<T>> messageHandlerDataList, RootDispatching rootDispatching, Action4<MultiMessageDisptaching, T, QueuedHandler<T>, Integer> dispatchAction) {
         messageHandlerDataList.forEach(messageHandlerData -> {
             MultiMessageDisptaching multiMessageDispatching = new MultiMessageDisptaching(messages, messageHandlerData.AllHandlers, rootDispatching, typeNameProvider);
             if (messageHandlerData.ListHandlers != null && !messageHandlerData.ListHandlers.isEmpty()) {
@@ -134,8 +133,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         });
     }
 
-    private void dispatchSingleMessageToHandlerAsync(SingleMessageDispatching singleMessageDispatching, IMessageHandlerProxy1 handlerProxy,
-                                                     QueuedHandler<IMessageHandlerProxy1> queueHandler, int retryTimes) {
+    private void dispatchSingleMessageToHandlerAsync(SingleMessageDispatching singleMessageDispatching, IMessageHandlerProxy1 handlerProxy, QueuedHandler<IMessageHandlerProxy1> queueHandler, int retryTimes) {
         IMessage message = singleMessageDispatching.getMessage();
         String messageTypeName = typeNameProvider.getTypeName(message.getClass());
         Class handlerType = handlerProxy.getInnerObject().getClass();
@@ -155,15 +153,11 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         handleThreeMessageAsync(multiMessageDispatching, handlerProxy, handlerTypeName, queueHandler, 0);
     }
 
-    private void handleSingleMessageAsync(
-            SingleMessageDispatching singleMessageDispatching, IMessageHandlerProxy1 handlerProxy,
-            String handlerTypeName, String messageTypeName, QueuedHandler<IMessageHandlerProxy1> queueHandler,
-            int retryTimes) {
+    private void handleSingleMessageAsync(SingleMessageDispatching singleMessageDispatching, IMessageHandlerProxy1 handlerProxy, String handlerTypeName, String messageTypeName, QueuedHandler<IMessageHandlerProxy1> queueHandler, int retryTimes) {
         IMessage message = singleMessageDispatching.getMessage();
         IOHelper.tryAsyncActionRecursively("HandleSingleMessageAsync",
                 () -> handlerProxy.handleAsync(message),
-                result ->
-                {
+                result -> {
                     singleMessageDispatching.removeHandledHandler(handlerTypeName);
                     if (queueHandler != null) {
                         queueHandler.onHandlerFinished(handlerProxy);
@@ -173,15 +167,11 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                     }
                 },
                 () -> String.format("[messageId:%s, messageType:%s, handlerType:%s]", message.getId(), message.getClass().getName(), handlerProxy.getInnerObject().getClass().getName()),
-                errorMessage ->
-                        logger.error(String.format("Handle single message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage))
-                ,
+                errorMessage -> logger.error("Handle single message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
                 retryTimes, true);
     }
 
-    private void handleTwoMessageAsync(
-            MultiMessageDisptaching multiMessageDispatching, IMessageHandlerProxy2 handlerProxy,
-            String handlerTypeName, QueuedHandler<IMessageHandlerProxy2> queueHandler, int retryTimes) {
+    private void handleTwoMessageAsync(MultiMessageDisptaching multiMessageDispatching, IMessageHandlerProxy2 handlerProxy, String handlerTypeName, QueuedHandler<IMessageHandlerProxy2> queueHandler, int retryTimes) {
         IMessage[] messages = multiMessageDispatching.getMessages();
         IMessage message1 = messages[0];
         IMessage message2 = messages[1];
@@ -198,9 +188,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                     }
                 },
                 () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
-                errorMessage ->
-                        logger.error(String.format("Handle two message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage))
-                ,
+                errorMessage -> logger.error("Handle two message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
                 retryTimes, true);
     }
 
@@ -224,7 +212,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                     }
                 },
                 () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
-                errorMessage -> logger.error(String.format("Handle three message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
+                errorMessage -> logger.error("Handle three message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
                 retryTimes, true);
     }
 
