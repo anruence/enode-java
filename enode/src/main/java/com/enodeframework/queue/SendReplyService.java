@@ -4,6 +4,7 @@ import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.commanding.CommandReturnType;
 import com.enodeframework.common.SysProperties;
 import com.enodeframework.common.serializing.JsonTool;
+import com.enodeframework.common.utilities.Address;
 import com.enodeframework.common.utilities.RemoteReply;
 import com.enodeframework.common.utilities.RemotingUtil;
 import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
@@ -16,7 +17,6 @@ import io.vertx.core.net.SocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,11 +59,11 @@ public class SendReplyService {
             remoteReply.setEventHandledMessage((DomainEventHandledMessage) context.getReplyData());
         }
         String message = JsonTool.serialize(remoteReply) + SysProperties.DELIMITED;
-        InetSocketAddress inetSocketAddress = RemotingUtil.string2SocketAddress(replyAddress);
-        SocketAddress address = SocketAddress.inetSocketAddress(inetSocketAddress.getPort(), inetSocketAddress.getHostName());
+        Address address = RemotingUtil.string2Address(replyAddress);
+        SocketAddress socketAddress = SocketAddress.inetSocketAddress(address.getPort(), address.getHost());
         CompletableFuture<NetSocket> future = new CompletableFuture<>();
         if (socketMap.putIfAbsent(replyAddress, future) == null) {
-            netClient.connect(address, res -> {
+            netClient.connect(socketAddress, res -> {
                 if (!res.succeeded()) {
                     future.completeExceptionally(res.cause());
                     logger.error("Failed to connect NetServer", res.cause());

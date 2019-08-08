@@ -47,10 +47,9 @@ public class RemotingUtil {
         return isLinuxPlatform;
     }
 
-    public static InetSocketAddress string2SocketAddress(final String addr) {
+    public static Address string2Address(final String addr) {
         String[] s = addr.split(":");
-        InetSocketAddress isa = new InetSocketAddress(s[0], Integer.parseInt(s[1]));
-        return isa;
+        return new Address(s[0], Integer.valueOf(s[1]));
     }
 
     public static String parseAddress(InetSocketAddress socketAddress) {

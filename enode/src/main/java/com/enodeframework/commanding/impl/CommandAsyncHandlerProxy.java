@@ -6,13 +6,13 @@ import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
+import com.enodeframework.common.io.Task;
 import com.enodeframework.infrastructure.IApplicationMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 /**
  * @author anruence@gmail.com
@@ -24,29 +24,24 @@ public class CommandAsyncHandlerProxy implements ICommandAsyncHandlerProxy {
     private Object commandHandler;
     private MethodHandle methodHandle;
     private Method method;
-    private Executor executor;
 
     public CommandAsyncHandlerProxy setObjectContainer(IObjectContainer objectContainer) {
         this.objectContainer = objectContainer;
         return this;
     }
 
-    public CommandAsyncHandlerProxy setExecutor(Executor executor) {
-        this.executor = executor;
-        return this;
-    }
-
     @Override
     public CompletableFuture<AsyncTaskResult<IApplicationMessage>> handleAsync(ICommand command) {
-        if (executor != null) {
-            return CompletableFuture.supplyAsync(() -> handle(command), executor);
+        Object result = handle(command);
+        if (result instanceof CompletableFuture) {
+            return (CompletableFuture<AsyncTaskResult<IApplicationMessage>>) result;
         }
-        return CompletableFuture.supplyAsync(() -> handle(command));
+        return Task.fromResult((AsyncTaskResult<IApplicationMessage>) result);
     }
 
-    public AsyncTaskResult<IApplicationMessage> handle(ICommand command) {
+    public Object handle(ICommand command) {
         try {
-            return (AsyncTaskResult<IApplicationMessage>) methodHandle.invoke(getInnerObject(), command);
+            return methodHandle.invoke(getInnerObject(), command);
         } catch (Throwable throwable) {
             if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
                 throw new IORuntimeException(throwable);

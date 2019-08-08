@@ -6,71 +6,81 @@ import java.util.Date;
  * @author anruence@gmail.com
  */
 public class StreamRecord {
-    private String aggregateRootTypeName;
-    private String aggregateRootId;
-    private int version;
-    private String commandId;
-    private Date createdOn;
-    private String events;
+    public Long Sequence;
+    public String AggregateRootTypeName;
+    public String AggregateRootId;
+    public int Version;
+    public String CommandId;
+    public Date CreatedOn;
+    public String Events;
 
     public StreamRecord() {
     }
 
     public StreamRecord(String commandId, String aggregateRootId, String aggregateRootTypeName, int version,
                         Date createdOn, String events) {
-        this.aggregateRootTypeName = aggregateRootTypeName;
-        this.aggregateRootId = aggregateRootId;
-        this.version = version;
-        this.commandId = commandId;
-        this.createdOn = createdOn;
-        this.events = events;
+        this.AggregateRootTypeName = aggregateRootTypeName;
+        this.AggregateRootId = aggregateRootId;
+        this.Version = version;
+        this.CommandId = commandId;
+        this.CreatedOn = createdOn;
+        this.Events = events;
     }
 
     public String getAggregateRootTypeName() {
-        return aggregateRootTypeName;
+        return AggregateRootTypeName;
     }
 
     public void setAggregateRootTypeName(String aggregateRootTypeName) {
-        this.aggregateRootTypeName = aggregateRootTypeName;
+        this.AggregateRootTypeName = aggregateRootTypeName;
     }
 
     public String getAggregateRootId() {
-        return aggregateRootId;
+        return AggregateRootId;
     }
 
     public void setAggregateRootId(String aggregateRootId) {
-        this.aggregateRootId = aggregateRootId;
+        this.AggregateRootId = aggregateRootId;
     }
 
     public int getVersion() {
-        return version;
+        return Version;
     }
 
     public void setVersion(int version) {
-        this.version = version;
+        this.Version = version;
     }
 
     public String getCommandId() {
-        return commandId;
+        return CommandId;
     }
 
     public void setCommandId(String commandId) {
-        this.commandId = commandId;
+        this.CommandId = commandId;
     }
 
     public Date getCreatedOn() {
-        return createdOn;
+        return CreatedOn;
     }
 
     public void setCreatedOn(Date createdOn) {
-        this.createdOn = createdOn;
+        this.CreatedOn = createdOn;
     }
 
     public String getEvents() {
-        return events;
+        return Events;
     }
 
     public void setEvents(String events) {
-        this.events = events;
+        this.Events = events;
+    }
+
+    public Long getSequence() {
+        return Sequence;
+    }
+
+    public StreamRecord setSequence(Long sequence) {
+        this.Sequence = sequence;
+        return this;
     }
 }

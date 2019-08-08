@@ -4,6 +4,7 @@ import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
+import com.enodeframework.common.io.Task;
 import com.enodeframework.infrastructure.IMessage;
 import com.enodeframework.infrastructure.IMessageHandlerProxy1;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 /**
  * @author anruence@gmail.com
@@ -23,29 +23,19 @@ public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
     private Object handler;
     private MethodHandle methodHandle;
     private Method method;
-    private Executor executor;
-
-    public MessageHandlerProxy1 setObjectContainer(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-        return this;
-    }
-
-    public MessageHandlerProxy1 setExecutor(Executor executor) {
-        this.executor = executor;
-        return this;
-    }
 
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message) {
-        if (executor != null) {
-            return CompletableFuture.supplyAsync(() -> handle(message), executor);
+        Object result = handle(message);
+        if (result instanceof CompletableFuture) {
+            return (CompletableFuture<AsyncTaskResult>) result;
         }
-        return CompletableFuture.supplyAsync(() -> handle(message));
+        return Task.fromResult((AsyncTaskResult) result);
     }
 
-    public AsyncTaskResult handle(IMessage message) {
+    public Object handle(IMessage message) {
         try {
-            return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), message);
+            return methodHandle.invoke(getInnerObject(), message);
         } catch (Throwable throwable) {
             if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
                 throw new IORuntimeException(throwable);

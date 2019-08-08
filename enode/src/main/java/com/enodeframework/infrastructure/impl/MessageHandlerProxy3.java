@@ -4,6 +4,7 @@ import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
+import com.enodeframework.common.io.Task;
 import com.enodeframework.infrastructure.IMessage;
 import com.enodeframework.infrastructure.IMessageHandlerProxy3;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.function.Supplier;
 
 /**
  * @author anruence@gmail.com
@@ -28,29 +27,18 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
     private Object handler;
     private MethodHandle methodHandle;
     private Method method;
-    private Executor executor;
     private Class<?>[] methodParameterTypes;
-
-    public MessageHandlerProxy3 setObjectContainer(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-        return this;
-    }
-
-    public MessageHandlerProxy3 setExecutor(Executor executor) {
-        this.executor = executor;
-        return this;
-    }
 
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message1, IMessage message2, IMessage message3) {
-        final Supplier<AsyncTaskResult> asyncTaskResultSupplier = () -> handle(message1, message2, message3);
-        if (executor != null) {
-            return CompletableFuture.supplyAsync(asyncTaskResultSupplier, executor);
+        Object result = handle(message1, message2, message3);
+        if (result instanceof CompletableFuture) {
+            return (CompletableFuture<AsyncTaskResult>) result;
         }
-        return CompletableFuture.supplyAsync(asyncTaskResultSupplier);
+        return Task.fromResult((AsyncTaskResult) result);
     }
 
-    public AsyncTaskResult handle(IMessage message1, IMessage message2, IMessage message3) {
+    public Object handle(IMessage message1, IMessage message2, IMessage message3) {
         List<Class<?>> parameterTypes = Arrays.asList(methodParameterTypes);
         List<IMessage> params = new ArrayList<>();
         params.add(message1);
@@ -61,7 +49,7 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
         );
         try {
             //参数按照方法定义参数类型列表传递
-            return (AsyncTaskResult) methodHandle.invoke(getInnerObject(), params.get(0), params.get(1), params.get(2));
+            return methodHandle.invoke(getInnerObject(), params.get(0), params.get(1), params.get(2));
         } catch (Throwable throwable) {
             if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
                 throw new IORuntimeException(throwable);

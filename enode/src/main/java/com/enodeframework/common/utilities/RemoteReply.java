@@ -2,11 +2,10 @@ package com.enodeframework.common.utilities;
 
 import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.queue.domainevent.DomainEventHandledMessage;
-/**
- * remote relay used by vert.x
- */
 
 /**
+ * remote reply used by vert.x
+ *
  * @author anruence@gmail.com
  */
 public class RemoteReply {

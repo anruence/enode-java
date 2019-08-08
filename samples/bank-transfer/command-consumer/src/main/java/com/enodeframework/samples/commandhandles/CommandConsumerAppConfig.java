@@ -4,13 +4,16 @@ import com.enodeframework.ENodeBootstrap;
 import com.enodeframework.commanding.impl.DefaultCommandProcessor;
 import com.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import com.enodeframework.eventing.impl.DefaultEventService;
+import com.enodeframework.eventing.impl.InMemoryEventStore;
+import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
 import com.enodeframework.mysql.MysqlEventStore;
+import com.enodeframework.mysql.MysqlEventStoreVertx;
 import com.enodeframework.mysql.MysqlPublishedVersionStore;
+import com.enodeframework.mysql.MysqlPublishedVersionStoreVertx;
 import com.google.common.collect.Lists;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.retry.support.RetryTemplate;
 
 import static com.enodeframework.samples.QueueProperties.JDBC_URL;
 
@@ -42,15 +45,24 @@ public class CommandConsumerAppConfig {
     }
 
     @Bean
-    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
-        return mysqlEventStore;
+    public InMemoryEventStore inMemoryEventStore(){
+        return new InMemoryEventStore();
     }
 
     @Bean
-    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        return new MysqlPublishedVersionStore(dataSource, null);
+    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore(){
+        return new InMemoryPublishedVersionStore();
     }
+
+//    @Bean
+//    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
+//        return new MysqlEventStore(dataSource, null);
+//    }
+//
+//    @Bean
+//    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
+//        return new MysqlPublishedVersionStore(dataSource, null);
+//    }
 
     @Bean
     public HikariDataSource dataSource() {

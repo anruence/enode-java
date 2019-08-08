@@ -6,12 +6,12 @@ import com.enodeframework.commanding.ICommandHandlerProxy;
 import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
+import com.enodeframework.common.io.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 /**
  * @author anruence@gmail.com
@@ -23,29 +23,24 @@ public class CommandHandlerProxy implements ICommandHandlerProxy {
     private Object commandHandler;
     private MethodHandle methodHandle;
     private Method method;
-    private Executor executor;
 
     public CommandHandlerProxy setObjectContainer(IObjectContainer objectContainer) {
         this.objectContainer = objectContainer;
         return this;
     }
 
-    public CommandHandlerProxy setExecutor(Executor executor) {
-        this.executor = executor;
-        return this;
-    }
-
     @Override
     public CompletableFuture<Void> handleAsync(ICommandContext context, ICommand command) {
-        if (executor != null) {
-            return CompletableFuture.runAsync(() -> handle(context, command), executor);
+        Object result = handle(context, command);
+        if (result instanceof CompletableFuture) {
+            return (CompletableFuture<Void>) result;
         }
-        return CompletableFuture.runAsync(() -> handle(context, command));
+        return Task.completedTask;
     }
 
-    public void handle(ICommandContext context, ICommand command) {
+    public Object handle(ICommandContext context, ICommand command) {
         try {
-            methodHandle.invoke(getInnerObject(), context, command);
+            return methodHandle.invoke(getInnerObject(), context, command);
         } catch (Throwable throwable) {
             if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
                 throw new IORuntimeException(throwable);
