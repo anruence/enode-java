@@ -1,12 +1,12 @@
 package com.enodeframework.mysql;
 
+import com.enodeframework.ObjectContainer;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.utilities.Ensure;
 import com.enodeframework.configurations.DefaultDBConfigurationSetting;
 import com.enodeframework.configurations.OptionSetting;
 import com.enodeframework.infrastructure.IPublishedVersionStore;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
@@ -39,8 +39,7 @@ public class MysqlPublishedVersionStoreVertx implements IPublishedVersionStore {
         }
         Ensure.notNull(tableName, "tableName");
         Ensure.notNull(uniqueIndexName, "uniqueIndexName");
-        Vertx vertx = Vertx.vertx();
-        sqlClient = JDBCClient.create(vertx, ds);
+        sqlClient = JDBCClient.create(ObjectContainer.vertx, ds);
     }
 
     @Override

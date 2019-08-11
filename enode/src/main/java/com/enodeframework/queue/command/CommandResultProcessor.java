@@ -1,5 +1,6 @@
 package com.enodeframework.queue.command;
 
+import com.enodeframework.ObjectContainer;
 import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.commanding.CommandReturnType;
 import com.enodeframework.commanding.CommandStatus;
@@ -15,8 +16,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalListener;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Vertx;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.parsetools.RecordParser;
 import org.slf4j.Logger;
@@ -34,7 +33,7 @@ import static com.enodeframework.common.SysProperties.PORT;
 /**
  * @author anruence@gmail.com
  */
-public class CommandResultProcessor extends AbstractVerticle {
+public class CommandResultProcessor {
     private static final Logger logger = LoggerFactory.getLogger(CommandResultProcessor.class);
     private InetSocketAddress bindAddress;
     private NetServer netServer;
@@ -54,8 +53,7 @@ public class CommandResultProcessor extends AbstractVerticle {
     }
 
     public CommandResultProcessor(int port, int completionSourceTimeout) {
-        Vertx vertx = Vertx.vertx();
-        netServer = vertx.createNetServer();
+        netServer = ObjectContainer.vertx.createNetServer();
         netServer.connectHandler(sock -> {
             RecordParser parser = RecordParser.newDelimited(SysProperties.DELIMITED, sock);
             parser.endHandler(v -> sock.close()).exceptionHandler(t -> {
@@ -91,8 +89,6 @@ public class CommandResultProcessor extends AbstractVerticle {
         commandTaskDict.asMap().put(command.getId(), new CommandTaskCompletionSource(command.getAggregateRootId(), commandReturnType, taskCompletionSource));
     }
 
-
-    @Override
     public void start() {
         if (started) {
             return;

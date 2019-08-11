@@ -1,5 +1,6 @@
 package com.enodeframework.mysql;
 
+import com.enodeframework.ObjectContainer;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.IOHelper;
@@ -15,7 +16,6 @@ import com.enodeframework.eventing.IEventStore;
 import com.enodeframework.eventing.impl.StreamRecordVertx;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
@@ -72,8 +72,7 @@ public class MysqlEventStoreVertx implements IEventStore {
         Ensure.notNull(commandIndexName, "commandIndexName");
         Ensure.positive(bulkCopyBatchSize, "bulkCopyBatchSize");
         Ensure.positive(bulkCopyTimeout, "bulkCopyTimeout");
-        Vertx vertx = Vertx.vertx();
-        sqlClient = JDBCClient.create(vertx, ds);
+        sqlClient = JDBCClient.create(ObjectContainer.vertx, ds);
     }
 
     @Override
