@@ -13,9 +13,8 @@ import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.EventAppendResult;
-import com.enodeframework.infrastructure.ProcessingDomainEventStreamMessage;
-import com.enodeframework.mysql.MysqlEventStore;
-import com.enodeframework.mysql.MysqlEventStoreVertx;
+import com.enodeframework.eventing.IEventStore;
+import com.enodeframework.eventing.ProcessingDomainEventStreamMessage;
 import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
 import com.enodeframework.tests.Commands.AsyncHandlerBaseCommand;
 import com.enodeframework.tests.Commands.AsyncHandlerChildCommand;
@@ -69,9 +68,11 @@ import static com.enodeframework.common.io.Task.await;
 
 public class CommandAndEventServiceTest extends AbstractTest {
     public static ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
+
     private static Logger _logger = LoggerFactory.getLogger(CommandAndEventServiceTest.class);
+
     @Autowired
-    private MysqlEventStoreVertx _eventStore;
+    private IEventStore _eventStore;
 
     @Test
     public void create_and_update_aggregate_test() {
@@ -588,10 +589,10 @@ public class CommandAndEventServiceTest extends AbstractTest {
                 new Date(),
                 Lists.newArrayList(aggregateCreated),
                 null);
-        AsyncTaskResult<EventAppendResult> result = await(_eventStore.appendAsync(eventStream));
+        AsyncTaskResult<EventAppendResult> result = await(_eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         Assert.assertEquals(AsyncTaskStatus.Success, result.getStatus());
-        Assert.assertEquals(EventAppendResult.Success, result.getData());
+        assertAppendResult(result.getData());
         _logger.info("----create_concurrent_conflict_and_then_update_many_times_test, _eventStore.appendAsync success");
         AsyncTaskResult result2 = await(_publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
         Assert.assertNotNull(result2);
@@ -654,11 +655,11 @@ public class CommandAndEventServiceTest extends AbstractTest {
                 1,
                 new Date(),
                 Lists.newArrayList(aggregateCreated),
-                null);
-        AsyncTaskResult<EventAppendResult> result = await(_eventStore.appendAsync(eventStream));
+                Maps.newHashMap());
+        AsyncTaskResult<EventAppendResult> result = await(_eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         Assert.assertEquals(AsyncTaskStatus.Success, result.getStatus());
-        Assert.assertEquals(EventAppendResult.Success, result.getData());
+        assertAppendResult(result.getData());
         AsyncTaskResult result2 = await(_publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
         Assert.assertNotNull(result2);
         Assert.assertEquals(AsyncTaskStatus.Success, result2.getStatus());
@@ -698,89 +699,63 @@ public class CommandAndEventServiceTest extends AbstractTest {
         waitHandle.waitOne();
         TestAggregate note = await(_memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
-        Assert.assertEquals(true, createCommandSuccess.get());
+        Assert.assertTrue(createCommandSuccess.get());
         Assert.assertEquals(commandList.size(), note.getVersion());
     }
 
     @Test
-    public void create_concurrent_conflict_and_then_update_many_times_not_enable_batch_insert_test() {
-        _eventStore.setSupportBatchAppendEvent(false);
-        try {
-            create_concurrent_conflict_and_then_update_many_times_test();
-            Task.sleep(10);
-        } finally {
-            _eventStore.setSupportBatchAppendEvent(true);
-        }
-    }
-
-    @Test
-    public void create_concurrent_conflict_and_then_update_many_times_not_enable_batch_insert_test2() {
-        _eventStore.setSupportBatchAppendEvent(false);
-        try {
-            create_concurrent_conflict_and_then_update_many_times_test2();
-        } finally {
-            _eventStore.setSupportBatchAppendEvent(true);
-        }
-    }
-
-    @Test
     public void create_concurrent_conflict_not_enable_batch_insert_test() {
-        _eventStore.setSupportBatchAppendEvent(false);
-        try {
-            String aggregateId = ObjectId.generateNewStringId();
-            String commandId = ObjectId.generateNewStringId();
-            TestAggregateTitleChanged titleChanged = new TestAggregateTitleChanged("Note Title");
-            titleChanged.setAggregateRootId(aggregateId);
-            titleChanged.setVersion(1);
-            //往EventStore直接插入事件，用于模拟并发冲突的情况
-            DomainEventStream eventStream = new DomainEventStream(
-                    commandId,
-                    aggregateId,
-                    TestAggregate.class.getName(),
-                    1,
-                    new Date(),
-                    Lists.newArrayList(titleChanged),
-                    null);
-            AsyncTaskResult result = await(_eventStore.appendAsync(eventStream));
-            Assert.assertNotNull(result);
-            Assert.assertEquals(AsyncTaskStatus.Success, result.getStatus());
-            Assert.assertEquals(EventAppendResult.Success, result.getData());
-            AsyncTaskResult result2 = await(_publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
-            Assert.assertNotNull(result2);
-            Assert.assertEquals(AsyncTaskStatus.Success, result2.getStatus());
-            //执行创建聚合根的命令
-            CreateTestAggregateCommand command = new CreateTestAggregateCommand();
-            command.aggregateRootId = aggregateId;
-            command.setTitle("Sample Note");
-            AsyncTaskResult<CommandResult> asyncResult = await(_commandService.executeAsync(command));
-            Assert.assertNotNull(asyncResult);
-            Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
-            CommandResult commandResult = asyncResult.getData();
-            Assert.assertNotNull(commandResult);
-            Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
-            Assert.assertEquals("Duplicate aggregate creation.", commandResult.getResult());
-            TestAggregate note = await(_memoryCache.getAsync(aggregateId, TestAggregate.class));
-            Assert.assertNotNull(note);
-            Assert.assertEquals("Note Title", note.getTitle());
-            Assert.assertEquals(1, note.getVersion());
-            //执行创建聚合根的命令
-            command = new CreateTestAggregateCommand();
-            command.setId(commandId);
-            command.aggregateRootId = aggregateId;
-            command.setTitle("Sample Note");
-            asyncResult = await(_commandService.executeAsync(command));
-            Assert.assertNotNull(asyncResult);
-            Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
-            commandResult = asyncResult.getData();
-            Assert.assertNotNull(commandResult);
-            Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-            note = await(_memoryCache.getAsync(aggregateId, TestAggregate.class));
-            Assert.assertNotNull(note);
-            Assert.assertEquals("Note Title", note.getTitle());
-            Assert.assertEquals(1, note.getVersion());
-        } finally {
-            _eventStore.setSupportBatchAppendEvent(true);
-        }
+        String aggregateId = ObjectId.generateNewStringId();
+        String commandId = ObjectId.generateNewStringId();
+        TestAggregateTitleChanged titleChanged = new TestAggregateTitleChanged("Note Title");
+        titleChanged.setAggregateRootId(aggregateId);
+        titleChanged.setVersion(1);
+        //往EventStore直接插入事件，用于模拟并发冲突的情况
+        DomainEventStream eventStream = new DomainEventStream(
+                commandId,
+                aggregateId,
+                TestAggregate.class.getName(),
+                1,
+                new Date(),
+                Lists.newArrayList(titleChanged),
+                null);
+        AsyncTaskResult<EventAppendResult> result = await(_eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
+        Assert.assertNotNull(result);
+        Assert.assertEquals(AsyncTaskStatus.Success, result.getStatus());
+        assertAppendResult(result.getData());
+        AsyncTaskResult result2 = await(_publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
+        Assert.assertNotNull(result2);
+        Assert.assertEquals(AsyncTaskStatus.Success, result2.getStatus());
+        //执行创建聚合根的命令
+        CreateTestAggregateCommand command = new CreateTestAggregateCommand();
+        command.aggregateRootId = aggregateId;
+        command.setTitle("Sample Note");
+        AsyncTaskResult<CommandResult> asyncResult = await(_commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+        Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
+        CommandResult commandResult = asyncResult.getData();
+        Assert.assertNotNull(commandResult);
+        Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
+        Assert.assertEquals("Duplicate aggregate creation.", commandResult.getResult());
+        TestAggregate note = await(_memoryCache.getAsync(aggregateId, TestAggregate.class));
+        Assert.assertNotNull(note);
+        Assert.assertEquals("Note Title", note.getTitle());
+        Assert.assertEquals(1, note.getVersion());
+        //执行创建聚合根的命令
+        command = new CreateTestAggregateCommand();
+        command.setId(commandId);
+        command.aggregateRootId = aggregateId;
+        command.setTitle("Sample Note");
+        asyncResult = await(_commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+        Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
+        commandResult = asyncResult.getData();
+        Assert.assertNotNull(commandResult);
+        Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
+        note = await(_memoryCache.getAsync(aggregateId, TestAggregate.class));
+        Assert.assertNotNull(note);
+        Assert.assertEquals("Note Title", note.getTitle());
+        Assert.assertEquals(1, note.getVersion());
     }
 
     @Test
@@ -812,10 +787,10 @@ public class CommandAndEventServiceTest extends AbstractTest {
                 new Date(),
                 Lists.newArrayList(aggregateTitleChanged),
                 null);
-        AsyncTaskResult<EventAppendResult> result = await(_eventStore.appendAsync(eventStream));
+        AsyncTaskResult<EventAppendResult> result = await(_eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         Assert.assertEquals(AsyncTaskStatus.Success, result.getStatus());
-        Assert.assertEquals(EventAppendResult.Success, result.getData());
+        assertAppendResult(result.getData());
         AsyncTaskResult result2 = await(_publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 2));
         Assert.assertNotNull(result2);
         Assert.assertEquals(AsyncTaskStatus.Success, result2.getStatus());
@@ -849,15 +824,6 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals("Changed Note2", note.getTitle());
     }
 
-    @Test
-    public void update_concurrent_conflict_not_enable_batch_insert_test() {
-        _eventStore.setSupportBatchAppendEvent(false);
-        try {
-            update_concurrent_conflict_test();
-        } finally {
-            _eventStore.setSupportBatchAppendEvent(true);
-        }
-    }
 
     @Test
     public void event_handler_priority_test() {
@@ -911,11 +877,17 @@ public class CommandAndEventServiceTest extends AbstractTest {
     private DomainEventStreamMessage CreateMessage(IAggregateRoot aggregateRoot) {
         return new DomainEventStreamMessage(
                 ObjectId.generateNewStringId(),
-                aggregateRoot.uniqueId(),
+                aggregateRoot.getUniqueId(),
                 aggregateRoot.getVersion() + 1,
                 aggregateRoot.getClass().getName(),
                 aggregateRoot.getChanges(),
                 Maps.newHashMap()
         );
+    }
+
+    private void assertAppendResult(EventAppendResult appendResult) {
+        Assert.assertEquals(1, appendResult.getSuccessAggregateRootIdList().size());
+        Assert.assertEquals(0, appendResult.getDuplicateCommandIdList().size());
+        Assert.assertEquals(0, appendResult.getDuplicateEventAggregateRootIdList().size());
     }
 }

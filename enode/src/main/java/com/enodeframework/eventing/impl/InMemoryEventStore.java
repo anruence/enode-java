@@ -2,6 +2,8 @@ package com.enodeframework.eventing.impl;
 
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
+import com.enodeframework.common.io.Task;
+import com.enodeframework.common.utilities.Linq;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.EventAppendResult;
 import com.enodeframework.eventing.IEventStore;
@@ -21,21 +23,11 @@ import java.util.stream.Collectors;
 public class InMemoryEventStore implements IEventStore {
     private static final boolean EDITING = true;
     private static final boolean UNEDITING = false;
+    private final Object lockObj = new Object();
     private ConcurrentMap<String, AggregateInfo> aggregateInfoDict;
-    private boolean supportBatchAppendEvent;
 
     public InMemoryEventStore() {
         this.aggregateInfoDict = new ConcurrentHashMap<>();
-        this.supportBatchAppendEvent = true;
-    }
-
-    @Override
-    public boolean isSupportBatchAppendEvent() {
-        return supportBatchAppendEvent;
-    }
-
-    public void setSupportBatchAppendEvent(boolean supportBatchAppendEvent) {
-        this.supportBatchAppendEvent = supportBatchAppendEvent;
     }
 
     public List<DomainEventStream> queryAggregateEvents(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
@@ -44,8 +36,8 @@ public class InMemoryEventStore implements IEventStore {
         if (aggregateInfo == null) {
             return eventStreams;
         }
-        int min = minVersion > 1 ? minVersion : 1;
-        int max = maxVersion < aggregateInfo.getCurrentVersion() ? maxVersion : aggregateInfo.getCurrentVersion();
+        int min = Math.max(minVersion, 1);
+        int max = Math.min(maxVersion, aggregateInfo.getCurrentVersion());
         return aggregateInfo.getEventDict().entrySet()
                 .stream()
                 .filter(x -> x.getKey() >= min && x.getKey() <= max)
@@ -55,21 +47,12 @@ public class InMemoryEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<AsyncTaskResult<EventAppendResult>> batchAppendAsync(List<DomainEventStream> eventStreams) {
-        CompletableFuture<AsyncTaskResult<EventAppendResult>> result = new CompletableFuture<>();
-        for (DomainEventStream eventStream : eventStreams) {
-            EventAppendResult x = appends(eventStream);
-            if (x != EventAppendResult.Success) {
-                result.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, x));
-                return result;
-            }
+        Map<String, List<DomainEventStream>> eventStreamDict = eventStreams.stream().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
+        EventAppendResult eventAppendResult = new EventAppendResult();
+        for (Map.Entry<String, List<DomainEventStream>> entry : eventStreamDict.entrySet()) {
+            batchAppend(entry.getKey(), entry.getValue(), eventAppendResult);
         }
-        result.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendResult.Success));
-        return result;
-    }
-
-    @Override
-    public CompletableFuture<AsyncTaskResult<EventAppendResult>> appendAsync(DomainEventStream eventStream) {
-        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, null, appends(eventStream)));
+        return Task.fromResult(new AsyncTaskResult<>(AsyncTaskStatus.Success, eventAppendResult));
     }
 
     @Override
@@ -87,29 +70,8 @@ public class InMemoryEventStore implements IEventStore {
         return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, null, queryAggregateEvents(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion)));
     }
 
-    private EventAppendResult appends(DomainEventStream eventStream) {
-        AggregateInfo aggregateInfo = aggregateInfoDict.computeIfAbsent(eventStream.getAggregateRootId(), key -> new AggregateInfo());
-        if (!aggregateInfo.tryEnterEditing()) {
-            return EventAppendResult.DuplicateEvent;
-        }
-        try {
-            if (eventStream.getVersion() == aggregateInfo.getCurrentVersion() + 1) {
-                if (aggregateInfo.getCommandDict().containsKey(eventStream.getCommandId())) {
-                    return EventAppendResult.DuplicateCommand;
-                }
-                aggregateInfo.getEventDict().put(eventStream.getVersion(), eventStream);
-                aggregateInfo.getCommandDict().put(eventStream.getCommandId(), eventStream);
-                aggregateInfo.setCurrentVersion(eventStream.getVersion());
-                return EventAppendResult.Success;
-            }
-            return EventAppendResult.DuplicateEvent;
-        } finally {
-            aggregateInfo.exitEditing();
-        }
-    }
-
     private DomainEventStream find(String aggregateRootId, int version) {
-        AggregateInfo aggregateInfo = aggregateInfoDict.get(aggregateRootId);
+        AggregateInfo aggregateInfo = aggregateInfoDict.getOrDefault(aggregateRootId, null);
         if (aggregateInfo == null) {
             return null;
         }
@@ -117,11 +79,58 @@ public class InMemoryEventStore implements IEventStore {
     }
 
     private DomainEventStream find(String aggregateRootId, String commandId) {
-        AggregateInfo aggregateInfo = aggregateInfoDict.get(aggregateRootId);
+        AggregateInfo aggregateInfo = aggregateInfoDict.getOrDefault(aggregateRootId, null);
         if (aggregateInfo == null) {
             return null;
         }
         return aggregateInfo.getCommandDict().get(commandId);
+    }
+
+    private void batchAppend(String aggregateRootId, List<DomainEventStream> eventStreamList, EventAppendResult eventAppendResult) {
+        synchronized (lockObj) {
+            AggregateInfo aggregateInfo = aggregateInfoDict.computeIfAbsent(aggregateRootId, x -> new AggregateInfo());
+            DomainEventStream firstEventStream = Linq.first(eventStreamList);
+
+            //检查提交过来的第一个事件的版本号是否是当前聚合根的当前版本号的下一个版本号
+            if (firstEventStream.getVersion() != aggregateInfo.getCurrentVersion() + 1) {
+                if (!eventAppendResult.getDuplicateEventAggregateRootIdList().contains(aggregateRootId)) {
+                    eventAppendResult.getDuplicateEventAggregateRootIdList().add(aggregateRootId);
+                }
+                return;
+            }
+
+            //检查重复处理的命令ID
+            for (DomainEventStream eventStream : eventStreamList) {
+                if (aggregateInfo.getCommandDict().containsKey(eventStream.getCommandId())) {
+                    if (!eventAppendResult.getDuplicateCommandIdList().contains(eventStream.getCommandId())) {
+                        eventAppendResult.getDuplicateCommandIdList().add(eventStream.getCommandId());
+                    }
+                }
+            }
+            if (eventAppendResult.getDuplicateCommandIdList().size() > 0) {
+                return;
+            }
+
+            //检查提交过来的事件本身是否满足版本号的递增关系
+            for (int i = 0; i < eventStreamList.size() - 1; i++) {
+                if (eventStreamList.get(i + 1).getVersion() != eventStreamList.get(i).getVersion() + 1) {
+                    if (!eventAppendResult.getDuplicateEventAggregateRootIdList().contains(aggregateRootId)) {
+                        eventAppendResult.getDuplicateEventAggregateRootIdList().add(aggregateRootId);
+                    }
+                    return;
+                }
+            }
+
+            for (DomainEventStream eventStream : eventStreamList) {
+                aggregateInfo.getEventDict().put(eventStream.getVersion(), eventStream);
+                aggregateInfo.getCommandDict().put(eventStream.getCommandId(), eventStream);
+                aggregateInfo.setCurrentVersion(eventStream.getVersion());
+            }
+
+            if (!eventAppendResult.getSuccessAggregateRootIdList().contains(aggregateRootId)) {
+                eventAppendResult.getSuccessAggregateRootIdList().add(aggregateRootId);
+            }
+        }
     }
 
     class AggregateInfo {
@@ -133,14 +142,6 @@ public class InMemoryEventStore implements IEventStore {
         public AggregateInfo() {
             this.eventDict = new ConcurrentHashMap<>();
             this.commandDict = new ConcurrentHashMap<>();
-        }
-
-        public boolean tryEnterEditing() {
-            return status.compareAndSet(UNEDITING, EDITING);
-        }
-
-        public void exitEditing() {
-            status.getAndSet(UNEDITING);
         }
 
         public int getCurrentVersion() {

@@ -2,9 +2,7 @@ package com.enodeframework.samples.eventhandlers;
 
 import com.enodeframework.ENodeBootstrap;
 import com.enodeframework.eventing.impl.InMemoryEventStore;
-import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
-import com.enodeframework.mysql.MysqlEventStore;
-import com.enodeframework.mysql.MysqlPublishedVersionStore;
+import com.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
 import com.enodeframework.queue.command.CommandResultProcessor;
 import com.google.common.collect.Lists;
 import com.zaxxer.hikari.HikariDataSource;
@@ -28,26 +26,26 @@ public class EventAppConfig {
         return processor;
     }
 
+    @Bean
+    public InMemoryEventStore inMemoryEventStore() {
+        return new InMemoryEventStore();
+    }
+
+    @Bean
+    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
+        return new InMemoryPublishedVersionStore();
+    }
+
 //    @Bean
-//    public InMemoryEventStore inMemoryEventStore() {
-//        return new InMemoryEventStore();
+//    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
+//        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
+//        return mysqlEventStore;
 //    }
 //
 //    @Bean
-//    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
-//        return new InMemoryPublishedVersionStore();
+//    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
+//        return new MysqlPublishedVersionStore(dataSource, null);
 //    }
-
-    @Bean
-    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
-        return mysqlEventStore;
-    }
-
-    @Bean
-    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        return new MysqlPublishedVersionStore(dataSource, null);
-    }
 
     @Bean
     public HikariDataSource dataSource() {

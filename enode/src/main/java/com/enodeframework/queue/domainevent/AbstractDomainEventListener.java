@@ -5,9 +5,9 @@ import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.IDomainEvent;
 import com.enodeframework.eventing.IEventSerializer;
-import com.enodeframework.infrastructure.IMessageProcessor;
-import com.enodeframework.infrastructure.ProcessingDomainEventStreamMessage;
-import com.enodeframework.infrastructure.impl.DefaultMessageProcessContext;
+import com.enodeframework.eventing.IProcessingDomainEventStreamMessageProcessor;
+import com.enodeframework.eventing.ProcessingDomainEventStreamMessage;
+import com.enodeframework.messaging.impl.DefaultMessageProcessContext;
 import com.enodeframework.queue.IMessageContext;
 import com.enodeframework.queue.IMessageHandler;
 import com.enodeframework.queue.QueueMessage;
@@ -23,7 +23,7 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
     @Autowired
     protected IEventSerializer eventSerializer;
     @Autowired
-    protected IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> domainEventMessageProcessor;
+    protected IProcessingDomainEventStreamMessageProcessor domainEventMessageProcessor;
     protected boolean sendEventHandledMessage = true;
 
     public AbstractDomainEventListener setEventSerializer(IEventSerializer eventSerializer) {
@@ -31,7 +31,7 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         return this;
     }
 
-    public AbstractDomainEventListener setDomainEventMessageProcessor(IMessageProcessor<ProcessingDomainEventStreamMessage, DomainEventStreamMessage> domainEventMessageProcessor) {
+    public AbstractDomainEventListener setDomainEventMessageProcessor(IProcessingDomainEventStreamMessageProcessor domainEventMessageProcessor) {
         this.domainEventMessageProcessor = domainEventMessageProcessor;
         return this;
     }
@@ -61,7 +61,7 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(this, domainEventStreamMessage, queueMessage, context);
         ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
         if (logger.isDebugEnabled()) {
-            logger.debug("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.getId(), domainEventStreamMessage.getAggregateRootStringId(), domainEventStreamMessage.getAggregateRootTypeName(), domainEventStreamMessage.getVersion());
+            logger.debug("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.getId(), domainEventStreamMessage.getAggregateRootId(), domainEventStreamMessage.getAggregateRootTypeName(), domainEventStreamMessage.getVersion());
         }
         domainEventMessageProcessor.process(processingMessage);
     }

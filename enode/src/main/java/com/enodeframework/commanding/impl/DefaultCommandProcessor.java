@@ -5,6 +5,7 @@ import com.enodeframework.commanding.IProcessingCommandHandler;
 import com.enodeframework.commanding.ProcessingCommand;
 import com.enodeframework.commanding.ProcessingCommandMailbox;
 import com.enodeframework.common.scheduling.IScheduleService;
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class DefaultCommandProcessor implements ICommandProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCommandProcessor.class);
     private final ConcurrentMap<String, ProcessingCommandMailbox> mailboxDict;
+    private final Object lockObj = new Object();
     private int timeoutSeconds;
     private String taskName;
     private int commandMailBoxPersistenceMaxBatchSize = 1000;
@@ -67,11 +69,14 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     @Override
     public void process(ProcessingCommand processingCommand) {
         String aggregateRootId = processingCommand.getMessage().getAggregateRootId();
-        if (aggregateRootId == null || "".equals(aggregateRootId.trim())) {
+        if (Strings.isNullOrEmpty(aggregateRootId)) {
             throw new IllegalArgumentException("aggregateRootId of command cannot be null or empty, commandId:" + processingCommand.getMessage().getId());
         }
-        ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize));
-        mailbox.enqueueMessage(processingCommand);
+        synchronized (lockObj) {
+            ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize));
+            mailbox.enqueueMessage(processingCommand);
+        }
+
     }
 
     @Override
@@ -88,11 +93,19 @@ public class DefaultCommandProcessor implements ICommandProcessor {
 
     private void cleanInactiveMailbox() {
         List<Map.Entry<String, ProcessingCommandMailbox>> inactiveList = mailboxDict.entrySet().stream()
-                .filter(entry -> entry.getValue().isInactive(timeoutSeconds) && !entry.getValue().isRunning())
+                .filter(entry -> entry.getValue().isInactive(timeoutSeconds)
+                        && !entry.getValue().isRunning()
+                        && entry.getValue().getTotalUnHandledMessageCount() == 0)
                 .collect(Collectors.toList());
         inactiveList.forEach(entry -> {
-            if (mailboxDict.remove(entry.getKey()) != null) {
-                logger.info("Removed inactive command mailbox, aggregateRootId: {}", entry.getKey());
+            synchronized (lockObj) {
+                if (entry.getValue().isInactive(timeoutSeconds)
+                        && !entry.getValue().isRunning()
+                        && entry.getValue().getTotalUnHandledMessageCount() == 0) {
+                    if (mailboxDict.remove(entry.getKey()) != null) {
+                        logger.info("Removed inactive command mailbox, aggregateRootId: {}", entry.getKey());
+                    }
+                }
             }
         });
     }

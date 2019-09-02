@@ -1,26 +1,35 @@
 CREATE TABLE `EventStream`
 (
-    `id`                      BIGINT AUTO_INCREMENT NOT NULL,
-    `aggregateroot_type_name` VARCHAR(256)          NOT NULL,
-    `aggregateroot_id`        VARCHAR(36)           NOT NULL,
-    `version`                 INT                   NOT NULL,
-    `command_id`              VARCHAR(36)           NOT NULL,
-    `created_on`              DATETIME              NOT NULL,
-    `events`                  MEDIUMTEXT            NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `IX_EventStream_AggId_Version` (`aggregateroot_id`, `Version`),
-    UNIQUE KEY `IX_EventStream_AggId_CommandId` (`aggregateroot_id`, `command_id`)
+    `Sequence`              bigint(20)    NOT NULL AUTO_INCREMENT,
+    `AggregateRootTypeName` varchar(256)  NOT NULL,
+    `AggregateRootId`       varchar(36)   NOT NULL,
+    `Version`               int(11)       NOT NULL,
+    `CommandId`             varchar(36)   NOT NULL,
+    `CreatedOn`             datetime      NOT NULL,
+    `Events`                varchar(4000) NOT NULL,
+    PRIMARY KEY (`Sequence`),
+    UNIQUE KEY `IX_EventStream_AggId_Version` (`AggregateRootId`, `Version`),
+    UNIQUE KEY `IX_EventStream_AggId_CommandId` (`AggregateRootId`, `CommandId`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
+
 CREATE TABLE `PublishedVersion`
 (
-    `id`                      BIGINT AUTO_INCREMENT NOT NULL,
-    `processor_name`          VARCHAR(128)          NOT NULL,
-    `aggregateroot_type_name` VARCHAR(256)          NOT NULL,
-    `aggregateroot_id`        VARCHAR(36)           NOT NULL,
-    `version`                 INT                   NOT NULL,
-    `created_on`              DATETIME              NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `IX_PublishedVersion_AggId_Version` (`processor_name`, `aggregateroot_id`, `version`)
+    `Sequence`              bigint(20)   NOT NULL AUTO_INCREMENT,
+    `ProcessorName`         varchar(128) NOT NULL,
+    `AggregateRootTypeName` varchar(256) NOT NULL,
+    `AggregateRootId`       varchar(36)  NOT NULL,
+    `Version`               int(11)      NOT NULL,
+    `CreatedOn`             datetime     NOT NULL,
+    `UpdatedOn`             datetime     NOT NULL,
+    PRIMARY KEY (`Sequence`),
+    UNIQUE KEY `IX_PublishedVersion_AggId_Version` (`ProcessorName`, `AggregateRootId`, `Version`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE `LockKey`
+(
+    `Name` varchar(128) NOT NULL,
+    PRIMARY KEY (`Name`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;

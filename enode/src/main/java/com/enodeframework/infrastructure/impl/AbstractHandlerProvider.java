@@ -8,7 +8,7 @@ import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.infrastructure.IAssemblyInitializer;
 import com.enodeframework.infrastructure.IObjectProxy;
-import com.enodeframework.infrastructure.MessageHandlerData;
+import com.enodeframework.messaging.MessageHandlerData;
 import com.enodeframework.infrastructure.MethodInvocation;
 import org.reflections.ReflectionUtils;
 
@@ -100,10 +100,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
         if (Modifier.isAbstract(type.getModifiers())) {
             return false;
         }
-        if (!containsHandleType(type)) {
-            return false;
-        }
-        return true;
+        return containsHandleType(type);
     }
 
     private boolean containsHandleType(Class type) {

@@ -1,6 +1,6 @@
 package com.enodeframework.samples.domain.bank.bankaccount;
 
-import com.enodeframework.infrastructure.PublishableException;
+import com.enodeframework.publishableexception.PublishableException;
 
 import java.util.Map;
 
@@ -52,10 +52,5 @@ public class InsufficientBalanceException extends PublishableException {
         Amount = Double.parseDouble(serializableInfo.get("Amount"));
         CurrentBalance = Double.parseDouble(serializableInfo.get("CurrentBalance"));
         CurrentAvailableBalance = Double.parseDouble(serializableInfo.get("CurrentAvailableBalance"));
-    }
-
-    @Override
-    public String getRoutingKey() {
-        return AccountId;
     }
 }

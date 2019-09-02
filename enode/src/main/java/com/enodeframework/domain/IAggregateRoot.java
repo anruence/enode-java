@@ -9,10 +9,19 @@ import java.util.List;
  * Represents an aggregate root.
  */
 public interface IAggregateRoot {
-    String uniqueId();
+    /**
+     * Represents the unique id of the aggregate root.
+     */
+    String getUniqueId();
 
+    /**
+     * Represents the current version of the aggregate root.
+     */
     int getVersion();
 
+    /**
+     * Get all the changes of the aggregate root.
+     */
     List<IDomainEvent> getChanges();
 
     /**
@@ -22,8 +31,6 @@ public interface IAggregateRoot {
 
     /**
      * Replay the given event streams.
-     *
-     * @param eventStreams
      */
     void replayEvents(List<DomainEventStream> eventStreams);
 }

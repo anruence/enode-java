@@ -2,9 +2,8 @@ package com.enodeframework.queue.publishableexceptions;
 
 import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.common.utilities.Ensure;
-import com.enodeframework.infrastructure.IMessagePublisher;
-import com.enodeframework.infrastructure.IPublishableException;
-import com.enodeframework.infrastructure.ISequenceMessage;
+import com.enodeframework.messaging.IMessagePublisher;
+import com.enodeframework.publishableexception.IPublishableException;
 import com.enodeframework.queue.QueueMessage;
 import com.enodeframework.queue.QueueMessageTypeCode;
 import com.enodeframework.queue.TopicData;
@@ -27,19 +26,13 @@ public abstract class AbstractPublishableExceptionPublisher implements IMessageP
         Ensure.notNull(topicData, "topicData");
         Map<String, String> serializableInfo = new HashMap<>();
         exception.serializeTo(serializableInfo);
-        ISequenceMessage sequenceMessage = null;
-        if (exception instanceof ISequenceMessage) {
-            sequenceMessage = (ISequenceMessage) exception;
-        }
         PublishableExceptionMessage exceptionMessage = new PublishableExceptionMessage();
         exceptionMessage.setUniqueId(exception.getId());
-        exceptionMessage.setAggregateRootTypeName(sequenceMessage != null ? sequenceMessage.getAggregateRootTypeName() : null);
-        exceptionMessage.setAggregateRootId(sequenceMessage != null ? sequenceMessage.getAggregateRootStringId() : null);
         exceptionMessage.setExceptionType(exception.getClass().getName());
         exceptionMessage.setTimestamp(exception.getTimestamp());
         exceptionMessage.setSerializableInfo(serializableInfo);
         String data = JsonTool.serialize(exceptionMessage);
-        String routeKey = exception.getRoutingKey() == null ? exception.getRoutingKey() : exception.getId();
+        String routeKey = exception.getId();
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setCode(QueueMessageTypeCode.ExceptionMessage.getValue());
         queueMessage.setTopic(topicData.getTopic());

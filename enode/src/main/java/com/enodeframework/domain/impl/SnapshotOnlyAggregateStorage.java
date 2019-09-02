@@ -29,10 +29,10 @@ public class SnapshotOnlyAggregateStorage implements IAggregateStorage {
         }
         CompletableFuture<T> future = aggregateSnapshotter.restoreFromSnapshotAsync(aggregateRootType, aggregateRootId);
         return future.thenApply(aggregateRoot -> {
-            if (aggregateRoot != null && (aggregateRoot.getClass() != aggregateRootType || !aggregateRoot.uniqueId().equals(aggregateRootId))) {
+            if (aggregateRoot != null && (aggregateRoot.getClass() != aggregateRootType || !aggregateRoot.getUniqueId().equals(aggregateRootId))) {
                 throw new RuntimeException(String.format("AggregateRoot recovery from snapshot is invalid as the aggregateRootType or aggregateRootId is not matched. Snapshot: [aggregateRootType:%s,aggregateRootId:%s], expected: [aggregateRootType:%s,aggregateRootId:%s]",
                         aggregateRoot.getClass(),
-                        aggregateRoot.uniqueId(),
+                        aggregateRoot.getUniqueId(),
                         aggregateRootType,
                         aggregateRootId));
             }

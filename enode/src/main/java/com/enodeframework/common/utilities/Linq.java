@@ -1,8 +1,10 @@
 package com.enodeframework.common.utilities;
 
 import com.enodeframework.common.exception.ENodeRuntimeException;
+import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -11,17 +13,12 @@ import java.util.stream.Collectors;
  */
 public class Linq {
     public static <T> T first(List<T> list) {
-        if (list == null || list.size() < 1) {
-            throw new ArrayIndexOutOfBoundsException("");
+        Assert.notEmpty(list, "List can not be empty");
+        Optional<T> optional = list.stream().findFirst();
+        if (!optional.isPresent()) {
+            throw new ENodeRuntimeException("");
         }
-        return list.get(0);
-    }
-
-    public static <T> T last(List<T> list) {
-        if (list == null || list.size() < 1) {
-            throw new ArrayIndexOutOfBoundsException("");
-        }
-        return list.get(list.size() - 1);
+        return optional.get();
     }
 
     public static <T> T firstOrDefault(List<T> list) {

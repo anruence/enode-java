@@ -1,7 +1,7 @@
 package com.enodeframework.kafka;
 
 import com.enodeframework.common.io.AsyncTaskResult;
-import com.enodeframework.infrastructure.IPublishableException;
+import com.enodeframework.publishableexception.IPublishableException;
 import com.enodeframework.queue.QueueMessage;
 import com.enodeframework.queue.publishableexceptions.AbstractPublishableExceptionPublisher;
 import org.apache.kafka.clients.producer.ProducerRecord;

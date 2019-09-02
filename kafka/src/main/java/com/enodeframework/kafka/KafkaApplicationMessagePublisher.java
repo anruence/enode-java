@@ -1,7 +1,7 @@
 package com.enodeframework.kafka;
 
+import com.enodeframework.applicationmessage.IApplicationMessage;
 import com.enodeframework.common.io.AsyncTaskResult;
-import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.queue.QueueMessage;
 import com.enodeframework.queue.applicationmessage.AbstractApplicationMessagePublisher;
 import org.apache.kafka.clients.producer.ProducerRecord;

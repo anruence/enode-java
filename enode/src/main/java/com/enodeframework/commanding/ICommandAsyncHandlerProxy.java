@@ -1,7 +1,7 @@
 package com.enodeframework.commanding;
 
+import com.enodeframework.applicationmessage.IApplicationMessage;
 import com.enodeframework.common.io.AsyncTaskResult;
-import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.infrastructure.IObjectProxy;
 import com.enodeframework.infrastructure.MethodInvocation;
 

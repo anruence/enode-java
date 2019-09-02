@@ -1,6 +1,11 @@
 package com.enodeframework.commanding;
 
 public interface ICommandProcessor {
+    /**
+     * Process the given command.
+     *
+     * @param processingCommand
+     */
     void process(ProcessingCommand processingCommand);
 
     void start();

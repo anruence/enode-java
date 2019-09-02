@@ -2,11 +2,11 @@ package com.enodeframework.samples.commandhandles.bank;
 
 import com.enodeframework.annotation.Command;
 import com.enodeframework.annotation.Subscribe;
+import com.enodeframework.applicationmessage.IApplicationMessage;
 import com.enodeframework.commanding.ICommandContext;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.Task;
-import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.samples.applicationmessages.AccountValidateFailedMessage;
 import com.enodeframework.samples.applicationmessages.AccountValidatePassedMessage;
 import com.enodeframework.samples.commands.bank.AddTransactionPreparationCommand;

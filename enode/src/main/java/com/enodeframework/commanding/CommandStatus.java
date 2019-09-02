@@ -4,5 +4,5 @@ public enum CommandStatus {
     None,
     Success,
     NothingChanged,
-    Failed;
+    Failed
 }

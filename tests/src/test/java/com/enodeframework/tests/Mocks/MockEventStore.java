@@ -37,11 +37,6 @@ public class MockEventStore implements IEventStore {
     }
 
     @Override
-    public boolean isSupportBatchAppendEvent() {
-        return SupportBatchAppendEvent;
-    }
-
-    @Override
     public CompletableFuture<AsyncTaskResult<EventAppendResult>> batchAppendAsync(List<DomainEventStream> eventStreams) {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
@@ -54,21 +49,6 @@ public class MockEventStore implements IEventStore {
             }
         }
         return _inMemoryEventStore.batchAppendAsync(eventStreams);
-    }
-
-    @Override
-    public CompletableFuture<AsyncTaskResult<EventAppendResult>> appendAsync(DomainEventStream eventStream) {
-        if (_currentFailedCount < _expectFailedCount) {
-            _currentFailedCount++;
-            if (_failedType == FailedType.UnKnownException) {
-                throw new ENodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
-            } else if (_failedType == FailedType.IOException) {
-                throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
-            } else if (_failedType == FailedType.TaskIOException) {
-                return Task.fromResult(new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.Failed, "AppendAsyncError" + _currentFailedCount));
-            }
-        }
-        return _inMemoryEventStore.appendAsync(eventStream);
     }
 
     @Override

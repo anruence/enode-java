@@ -1,6 +1,6 @@
 package com.microsoft.conference.common.management.message;
 
-import com.enodeframework.infrastructure.ApplicationMessage;
+import com.enodeframework.applicationmessage.ApplicationMessage;
 
 public class SeatsReservationCancelledMessage extends ApplicationMessage {
     public String ConferenceId;

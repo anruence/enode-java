@@ -1,6 +1,6 @@
 package com.enodeframework.commanding;
 
-import com.enodeframework.infrastructure.IMessage;
+import com.enodeframework.messaging.IMessage;
 
 /**
  * Represents a command.

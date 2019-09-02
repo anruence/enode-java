@@ -1,7 +1,6 @@
 package com.enodeframework.queue.command;
 
 import com.enodeframework.commanding.ICommand;
-import com.enodeframework.commanding.ICommandRoutingKeyProvider;
 import com.enodeframework.commanding.ICommandService;
 import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.common.utilities.Ensure;
@@ -13,15 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractCommandService implements ICommandService {
     @Autowired
-    protected ICommandRoutingKeyProvider commandRouteKeyProvider;
-    @Autowired
     protected CommandResultProcessor commandResultProcessor;
-    private TopicData topicData;
 
-    public AbstractCommandService setCommandRouteKeyProvider(ICommandRoutingKeyProvider commandRouteKeyProvider) {
-        this.commandRouteKeyProvider = commandRouteKeyProvider;
-        return this;
-    }
+    private TopicData topicData;
 
     public AbstractCommandService setCommandResultProcessor(CommandResultProcessor commandResultProcessor) {
         this.commandResultProcessor = commandResultProcessor;
@@ -50,7 +43,7 @@ public abstract class AbstractCommandService implements ICommandService {
         String key = String.format("%s%s", command.getId(), command.getAggregateRootId() == null ? "" : "cmd_agg_" + command.getAggregateRootId());
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setBody(messageData);
-        queueMessage.setRouteKey(commandRouteKeyProvider.getRoutingKey(command));
+        queueMessage.setRouteKey(command.getAggregateRootId());
         queueMessage.setCode(QueueMessageTypeCode.CommandMessage.getValue());
         queueMessage.setKey(key);
         queueMessage.setTopic(topicData.getTopic());

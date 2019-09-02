@@ -39,7 +39,7 @@ public class DefaultMemoryCache implements IMemoryCache {
 
     public DefaultMemoryCache() {
         aggregateRootInfoDict = new ConcurrentHashMap<>();
-        taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
+        taskName = "CleanInactiveAggregates_" + System.nanoTime() + new Random().nextInt(10000);
     }
 
     public DefaultMemoryCache setTimeoutSeconds(int timeoutSeconds) {
@@ -159,9 +159,9 @@ public class DefaultMemoryCache implements IMemoryCache {
             if (aggregateRoot == null) {
                 throw new NullPointerException("aggregateRoot");
             }
-            AggregateCacheInfo cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.uniqueId(), x -> {
+            AggregateCacheInfo cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.getUniqueId(), x -> {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Aggregate root in-memory cache init, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.getVersion());
+                    logger.debug("Aggregate root in-memory cache init, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion());
                 }
                 return new AggregateCacheInfo(aggregateRoot);
             });
@@ -169,7 +169,7 @@ public class DefaultMemoryCache implements IMemoryCache {
             cacheInfo.setAggregateRoot(aggregateRoot);
             cacheInfo.setLastUpdateTimeMillis(System.currentTimeMillis());
             if (logger.isDebugEnabled()) {
-                logger.debug("Aggregate root in-memory cache reset, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.uniqueId(), aggregateRoot.getVersion(), aggregateRootOldVersion);
+                logger.debug("Aggregate root in-memory cache reset, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion(), aggregateRootOldVersion);
             }
         }
     }
