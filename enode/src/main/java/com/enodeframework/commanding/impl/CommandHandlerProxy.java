@@ -4,9 +4,7 @@ import com.enodeframework.commanding.ICommand;
 import com.enodeframework.commanding.ICommandContext;
 import com.enodeframework.commanding.ICommandHandlerProxy;
 import com.enodeframework.common.container.IObjectContainer;
-import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
-import com.enodeframework.common.io.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.invoke.MethodHandle;
@@ -17,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class CommandHandlerProxy implements ICommandHandlerProxy {
+
     @Autowired
     private IObjectContainer objectContainer;
     private Class handlerType;
@@ -31,22 +30,20 @@ public class CommandHandlerProxy implements ICommandHandlerProxy {
 
     @Override
     public CompletableFuture<Void> handleAsync(ICommandContext context, ICommand command) {
-        Object result = handle(context, command);
-        if (result instanceof CompletableFuture) {
-            return (CompletableFuture<Void>) result;
-        }
-        return Task.completedTask;
-    }
-
-    public Object handle(ICommandContext context, ICommand command) {
+        CompletableFuture<Void> future = new CompletableFuture();
         try {
-            return methodHandle.invoke(getInnerObject(), context, command);
-        } catch (Throwable throwable) {
-            if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
-                throw new IORuntimeException(throwable);
+            Object result = methodHandle.invoke(getInnerObject(), context, command);
+            if (result instanceof CompletableFuture) {
+                return (CompletableFuture<Void>) result;
             }
-            throw new ENodeRuntimeException(throwable);
+            future.complete(null);
+        } catch (Throwable throwable) {
+            if (throwable.getCause() instanceof IORuntimeException) {
+                throwable = new IORuntimeException(throwable);
+            }
+            future.completeExceptionally(throwable);
         }
+        return future;
     }
 
     @Override

@@ -82,8 +82,7 @@ public class NoteEventHandler {
 ```java
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public CommandResultProcessor commandResultProcessor() {
-        CommandResultProcessor processor = new CommandResultProcessor();
-        processor.setPort(6000);
+        CommandResultProcessor processor = new CommandResultProcessor(6000);
         return processor;
     }
     @Bean(initMethod = "init")

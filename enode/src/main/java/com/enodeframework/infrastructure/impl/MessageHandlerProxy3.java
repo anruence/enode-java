@@ -1,10 +1,8 @@
 package com.enodeframework.infrastructure.impl;
 
 import com.enodeframework.common.container.IObjectContainer;
-import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
-import com.enodeframework.common.io.Task;
 import com.enodeframework.infrastructure.IMessage;
 import com.enodeframework.infrastructure.IMessageHandlerProxy3;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +29,7 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
 
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message1, IMessage message2, IMessage message3) {
-        Object result = handle(message1, message2, message3);
-        if (result instanceof CompletableFuture) {
-            return (CompletableFuture<AsyncTaskResult>) result;
-        }
-        return Task.fromResult((AsyncTaskResult) result);
-    }
-
-    public Object handle(IMessage message1, IMessage message2, IMessage message3) {
+        CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
         List<Class<?>> parameterTypes = Arrays.asList(methodParameterTypes);
         List<IMessage> params = new ArrayList<>();
         params.add(message1);
@@ -49,13 +40,20 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
         );
         try {
             //参数按照方法定义参数类型列表传递
-            return methodHandle.invoke(getInnerObject(), params.get(0), params.get(1), params.get(2));
-        } catch (Throwable throwable) {
-            if (throwable instanceof IORuntimeException || throwable.getCause() instanceof IORuntimeException) {
-                throw new IORuntimeException(throwable);
+            Object result = methodHandle.invoke(getInnerObject(), params.get(0), params.get(1), params.get(2));
+            if (result instanceof CompletableFuture) {
+                return (CompletableFuture<AsyncTaskResult>) result;
             }
-            throw new ENodeRuntimeException(throwable);
+            future.complete((AsyncTaskResult) result);
+        } catch (Throwable throwable) {
+            if (throwable.getCause() instanceof IORuntimeException) {
+                throwable = new IORuntimeException(throwable);
+            }
+            future.completeExceptionally(throwable);
         }
+        return future;
+
+
     }
 
     private int getMessageParameterIndex(List<Class<?>> methodParameterTypes, IMessage message) {

@@ -4,7 +4,6 @@ import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
-import com.enodeframework.common.io.Task;
 import com.enodeframework.infrastructure.IMessage;
 import com.enodeframework.infrastructure.IMessageHandlerProxy1;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
+
     @Autowired
     private IObjectContainer objectContainer;
     private Class handlerType;
@@ -26,11 +26,20 @@ public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
 
     @Override
     public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message) {
-        Object result = handle(message);
-        if (result instanceof CompletableFuture) {
-            return (CompletableFuture<AsyncTaskResult>) result;
+        CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
+        try {
+            Object result = methodHandle.invoke(getInnerObject(), message);
+            if (result instanceof CompletableFuture) {
+                return (CompletableFuture<AsyncTaskResult>) result;
+            }
+            future.complete((AsyncTaskResult) result);
+        } catch (Throwable throwable) {
+            if (throwable.getCause() instanceof IORuntimeException) {
+                throwable = new IORuntimeException(throwable);
+            }
+            future.completeExceptionally(throwable);
         }
-        return Task.fromResult((AsyncTaskResult) result);
+        return future;
     }
 
     public Object handle(IMessage message) {
