@@ -8,8 +8,8 @@ import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.exception.ENodeRuntimeException;
 import com.enodeframework.infrastructure.IAssemblyInitializer;
 import com.enodeframework.infrastructure.IObjectProxy;
-import com.enodeframework.messaging.MessageHandlerData;
 import com.enodeframework.infrastructure.MethodInvocation;
+import com.enodeframework.messaging.MessageHandlerData;
 import org.reflections.ReflectionUtils;
 
 import java.lang.invoke.MethodHandle;

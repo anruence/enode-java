@@ -1,7 +1,5 @@
 package com.enodeframework.eventing;
 
-import com.enodeframework.eventing.DomainEventStreamMessage;
-import com.enodeframework.eventing.ProcessingDomainEventStreamMessageMailBox;
 import com.enodeframework.messaging.IMessageProcessContext;
 
 /**

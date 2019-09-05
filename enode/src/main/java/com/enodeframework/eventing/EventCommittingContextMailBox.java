@@ -16,14 +16,10 @@ import java.util.stream.Collectors;
 
 public class EventCommittingContextMailBox {
 
-    private final Object lockObj = new Object();
-
-    private final Object processMessageLockObj = new Object();
-
-    private final static Byte ONE_BYTE = 1;
-
     public final static Logger logger = LoggerFactory.getLogger(EventCommittingContextMailBox.class);
-
+    private final static Byte ONE_BYTE = 1;
+    private final Object lockObj = new Object();
+    private final Object processMessageLockObj = new Object();
     private Date lastActiveTime;
     private boolean isRunning;
     private int number;

@@ -1,5 +1,7 @@
 package com.enodeframework.common.utilities;
 
+import com.google.common.base.Strings;
+
 /**
  * @author anruence@gmail.com
  */
@@ -11,7 +13,7 @@ public class Ensure {
     }
 
     public static void notNullOrEmpty(String argument, String argumentName) {
-        if (argument == null || "".equals(argument.trim())) {
+        if (Strings.isNullOrEmpty(argument)) {
             throw new IllegalArgumentException(argumentName + " should not be null or empty.");
         }
     }

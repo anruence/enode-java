@@ -13,7 +13,6 @@ import com.enodeframework.domain.IAggregateRoot;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.DomainEventStreamMessage;
 import com.enodeframework.eventing.EventAppendResult;
-import com.enodeframework.eventing.IEventStore;
 import com.enodeframework.eventing.ProcessingDomainEventStreamMessage;
 import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
 import com.enodeframework.tests.Commands.AsyncHandlerBaseCommand;
@@ -53,7 +52,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,9 +68,6 @@ public class CommandAndEventServiceTest extends AbstractTest {
     public static ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
 
     private static Logger _logger = LoggerFactory.getLogger(CommandAndEventServiceTest.class);
-
-    @Autowired
-    private IEventStore _eventStore;
 
     @Test
     public void create_and_update_aggregate_test() {

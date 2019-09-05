@@ -30,13 +30,9 @@ import java.util.stream.Collectors;
  */
 public class DefaultProcessingDomainEventStreamMessageProcessor implements IProcessingDomainEventStreamMessageProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingDomainEventStreamMessageProcessor.class);
-
-    private int timeoutSeconds = 3600 * 24 * 3;
-
-    private int scanExpiredAggregateIntervalMilliseconds = 5000;
-
     private final Object lockObj = new Object();
-
+    private int timeoutSeconds = 3600 * 24 * 3;
+    private int scanExpiredAggregateIntervalMilliseconds = 5000;
     private String taskName;
 
     private String processorName = "DefaultEventProcessor";

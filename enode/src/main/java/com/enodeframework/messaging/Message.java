@@ -1,7 +1,6 @@
 package com.enodeframework.messaging;
 
 import com.enodeframework.common.utilities.ObjectId;
-import com.enodeframework.messaging.IMessage;
 
 import java.util.Date;
 
