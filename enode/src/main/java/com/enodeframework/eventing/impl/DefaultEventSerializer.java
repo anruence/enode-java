@@ -3,12 +3,10 @@ package com.enodeframework.eventing.impl;
 import com.enodeframework.common.serializing.JsonTool;
 import com.enodeframework.eventing.IDomainEvent;
 import com.enodeframework.eventing.IEventSerializer;
-import com.enodeframework.infrastructure.IMessage;
 import com.enodeframework.infrastructure.ITypeNameProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +42,6 @@ public class DefaultEventSerializer implements IEventSerializer {
             TEvent evnt = (TEvent) JsonTool.deserialize(value, eventType);
             evnts.add(evnt);
         });
-        evnts.sort(Comparator.comparingInt(IMessage::getSequence));
         return evnts;
     }
 }

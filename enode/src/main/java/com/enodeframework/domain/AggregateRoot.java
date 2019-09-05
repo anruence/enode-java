@@ -82,11 +82,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         if (this.id == null && domainEvent.getVersion() == 1) {
             this.id = (TAggregateRootId) domainEvent.getAggregateRootId();
         }
-        try {
-            handler.apply(this, domainEvent);
-        } catch (Exception e) {
-            throw new ENodeRuntimeException(e);
-        }
+        handler.apply(this, domainEvent);
     }
 
     private void appendUncommittedEvent(IDomainEvent<TAggregateRootId> domainEvent) {
@@ -94,22 +90,22 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
             uncommittedEvents = new ConcurrentLinkedDeque<>();
         }
         if (uncommittedEvents.stream().anyMatch(x -> x.getClass().equals(domainEvent.getClass()))) {
-            throw new UnsupportedOperationException(String.format("Cannot apply duplicated domain event type: %s, current aggregateRoot type: %s, id: %s", domainEvent.getTypeName(), this.getClass().getName(), id));
+            throw new UnsupportedOperationException(String.format("Cannot apply duplicated domain event type: %s, current aggregateRoot type: %s, id: %s", domainEvent.getClass(), this.getClass().getName(), id));
         }
         uncommittedEvents.add(domainEvent);
     }
 
     private void verifyEvent(DomainEventStream eventStream) {
-        if (eventStream.getVersion() > 1 && !eventStream.getAggregateRootId().equals(this.uniqueId())) {
-            throw new UnsupportedOperationException(String.format("Invalid domain event stream, aggregateRootId:%s, expected aggregateRootId:%s, type:%s", eventStream.getAggregateRootId(), this.uniqueId(), this.getClass().getName()));
+        if (eventStream.getVersion() > 1 && !eventStream.getAggregateRootId().equals(this.getUniqueId())) {
+            throw new UnsupportedOperationException(String.format("Invalid domain event stream, aggregateRootId:%s, expected aggregateRootId:%s, type:%s", eventStream.getAggregateRootId(), this.getUniqueId(), this.getClass().getName()));
         }
         if (eventStream.getVersion() != this.getVersion() + 1) {
-            throw new UnsupportedOperationException(String.format("Invalid domain event stream, version:%d, expected version:%d, current aggregateRoot type:%s, id:%s", eventStream.getVersion(), this.getVersion(), this.getClass().getName(), this.uniqueId()));
+            throw new UnsupportedOperationException(String.format("Invalid domain event stream, version:%d, expected version:%d, current aggregateRoot type:%s, id:%s", eventStream.getVersion(), this.getVersion(), this.getClass().getName(), this.getUniqueId()));
         }
     }
 
     @Override
-    public String uniqueId() {
+    public String getUniqueId() {
         if (id != null) {
             return id.toString();
         }

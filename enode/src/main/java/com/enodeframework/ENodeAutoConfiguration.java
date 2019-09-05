@@ -4,7 +4,6 @@ import com.enodeframework.commanding.impl.CommandAsyncHandlerProxy;
 import com.enodeframework.commanding.impl.CommandHandlerProxy;
 import com.enodeframework.commanding.impl.DefaultCommandAsyncHandlerProvider;
 import com.enodeframework.commanding.impl.DefaultCommandHandlerProvider;
-import com.enodeframework.commanding.impl.DefaultCommandRoutingKeyProvider;
 import com.enodeframework.common.container.SpringObjectContainer;
 import com.enodeframework.common.scheduling.ScheduleService;
 import com.enodeframework.domain.impl.DefaultAggregateRepositoryProvider;
@@ -15,19 +14,15 @@ import com.enodeframework.domain.impl.DefaultMemoryCache;
 import com.enodeframework.domain.impl.DefaultRepository;
 import com.enodeframework.domain.impl.EventSourcingAggregateStorage;
 import com.enodeframework.eventing.impl.DefaultEventSerializer;
-import com.enodeframework.infrastructure.impl.DefaultApplicationMessageProcessor;
-import com.enodeframework.infrastructure.impl.DefaultDomainEventProcessor;
-import com.enodeframework.infrastructure.impl.DefaultMessageDispatcher;
-import com.enodeframework.infrastructure.impl.DefaultMessageHandlerProvider;
-import com.enodeframework.infrastructure.impl.DefaultProcessingMessageHandler;
-import com.enodeframework.infrastructure.impl.DefaultProcessingMessageScheduler;
-import com.enodeframework.infrastructure.impl.DefaultPublishableExceptionProcessor;
-import com.enodeframework.infrastructure.impl.DefaultThreeMessageHandlerProvider;
-import com.enodeframework.infrastructure.impl.DefaultTwoMessageHandlerProvider;
+import com.enodeframework.eventing.impl.DefaultProcessingDomainEventStreamMessageProcessor;
 import com.enodeframework.infrastructure.impl.DefaultTypeNameProvider;
-import com.enodeframework.infrastructure.impl.MessageHandlerProxy1;
-import com.enodeframework.infrastructure.impl.MessageHandlerProxy2;
-import com.enodeframework.infrastructure.impl.MessageHandlerProxy3;
+import com.enodeframework.messaging.impl.DefaultMessageDispatcher;
+import com.enodeframework.messaging.impl.DefaultMessageHandlerProvider;
+import com.enodeframework.messaging.impl.DefaultThreeMessageHandlerProvider;
+import com.enodeframework.messaging.impl.DefaultTwoMessageHandlerProvider;
+import com.enodeframework.messaging.impl.MessageHandlerProxy1;
+import com.enodeframework.messaging.impl.MessageHandlerProxy2;
+import com.enodeframework.messaging.impl.MessageHandlerProxy3;
 import com.enodeframework.queue.SendReplyService;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
@@ -43,33 +38,8 @@ public class ENodeAutoConfiguration {
     }
 
     @Bean
-    public DefaultProcessingMessageScheduler defaultProcessingMessageScheduler() {
-        return new DefaultProcessingMessageScheduler();
-    }
-
-    @Bean
     public DefaultTypeNameProvider defaultTypeNameProvider() {
         return new DefaultTypeNameProvider();
-    }
-
-    @Bean
-    public DefaultProcessingMessageHandler defaultProcessingMessageHandler() {
-        return new DefaultProcessingMessageHandler();
-    }
-
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public DefaultPublishableExceptionProcessor defaultPublishableExceptionProcessor() {
-        return new DefaultPublishableExceptionProcessor();
-    }
-
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public DefaultApplicationMessageProcessor defaultApplicationMessageProcessor() {
-        return new DefaultApplicationMessageProcessor();
-    }
-
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public DefaultDomainEventProcessor defaultDomainEventProcessor() {
-        return new DefaultDomainEventProcessor();
     }
 
     @Bean
@@ -77,6 +47,11 @@ public class ENodeAutoConfiguration {
         SpringObjectContainer objectContainer = new SpringObjectContainer();
         ObjectContainer.container = objectContainer;
         return objectContainer;
+    }
+
+    @Bean
+    public DefaultProcessingDomainEventStreamMessageProcessor defaultProcessingDomainEventStreamMessageProcessor() {
+        return new DefaultProcessingDomainEventStreamMessageProcessor();
     }
 
     /**
@@ -140,11 +115,6 @@ public class ENodeAutoConfiguration {
     @Bean(initMethod = "start", destroyMethod = "stop")
     public DefaultMemoryCache defaultMemoryCache() {
         return new DefaultMemoryCache();
-    }
-
-    @Bean
-    public DefaultCommandRoutingKeyProvider commandRoutingKeyProvider() {
-        return new DefaultCommandRoutingKeyProvider();
     }
 
     @Bean

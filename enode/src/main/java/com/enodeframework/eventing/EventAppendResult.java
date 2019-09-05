@@ -1,17 +1,37 @@
 package com.enodeframework.eventing;
 
-public enum EventAppendResult {
-    Success(1),
-    Failed(2),
-    DuplicateEvent(3),
-    DuplicateCommand(4);
-    private int status;
+import com.google.common.collect.Lists;
 
-    EventAppendResult(int status) {
-        this.status = status;
+import java.util.List;
+
+public class EventAppendResult {
+
+    private List<String> successAggregateRootIdList = Lists.newArrayList();
+    private List<String> duplicateEventAggregateRootIdList = Lists.newArrayList();
+    private List<String> duplicateCommandIdList = Lists.newArrayList();
+
+    public List<String> getSuccessAggregateRootIdList() {
+        return successAggregateRootIdList;
     }
 
-    public int status() {
-        return status;
+    public void setSuccessAggregateRootIdList(List<String> successAggregateRootIdList) {
+        this.successAggregateRootIdList = successAggregateRootIdList;
     }
+
+    public List<String> getDuplicateEventAggregateRootIdList() {
+        return duplicateEventAggregateRootIdList;
+    }
+
+    public void setDuplicateEventAggregateRootIdList(List<String> duplicateEventAggregateRootIdList) {
+        this.duplicateEventAggregateRootIdList = duplicateEventAggregateRootIdList;
+    }
+
+    public List<String> getDuplicateCommandIdList() {
+        return duplicateCommandIdList;
+    }
+
+    public void setDuplicateCommandIdList(List<String> duplicateCommandIdList) {
+        this.duplicateCommandIdList = duplicateCommandIdList;
+    }
+
 }

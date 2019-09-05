@@ -2,11 +2,11 @@ package com.enodeframework.tests.CommandHandlers;
 
 import com.enodeframework.annotation.Command;
 import com.enodeframework.annotation.Subscribe;
+import com.enodeframework.applicationmessage.IApplicationMessage;
 import com.enodeframework.commanding.ICommandContext;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.Task;
-import com.enodeframework.infrastructure.IApplicationMessage;
 import com.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
 import com.enodeframework.tests.Commands.AsyncHandlerBaseCommand;
 import com.enodeframework.tests.Commands.AsyncHandlerChildCommand;

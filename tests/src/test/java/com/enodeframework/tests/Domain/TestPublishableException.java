@@ -1,6 +1,6 @@
 package com.enodeframework.tests.Domain;
 
-import com.enodeframework.infrastructure.PublishableException;
+import com.enodeframework.publishableexception.PublishableException;
 
 import java.util.Map;
 

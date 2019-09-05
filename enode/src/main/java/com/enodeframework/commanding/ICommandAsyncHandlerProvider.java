@@ -1,6 +1,6 @@
 package com.enodeframework.commanding;
 
-import com.enodeframework.infrastructure.MessageHandlerData;
+import com.enodeframework.messaging.MessageHandlerData;
 
 import java.util.List;
 

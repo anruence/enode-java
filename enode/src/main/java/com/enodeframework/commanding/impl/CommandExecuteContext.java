@@ -64,10 +64,10 @@ public class CommandExecuteContext implements ICommandExecuteContext {
         if (aggregateRoot == null) {
             throw new NullPointerException("aggregateRoot");
         }
-        if (trackingAggregateRootDict.containsKey(aggregateRoot.uniqueId())) {
-            throw new AggregateRootAlreadyExistException(aggregateRoot.uniqueId(), aggregateRoot.getClass());
+        if (trackingAggregateRootDict.containsKey(aggregateRoot.getUniqueId())) {
+            throw new AggregateRootAlreadyExistException(aggregateRoot.getUniqueId(), aggregateRoot.getClass());
         }
-        trackingAggregateRootDict.put(aggregateRoot.uniqueId(), aggregateRoot);
+        trackingAggregateRootDict.put(aggregateRoot.getUniqueId(), aggregateRoot);
     }
 
     /**
@@ -108,7 +108,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
         }
         return future.thenApply(aggregateRoot -> {
             if (aggregateRoot != null) {
-                trackingAggregateRootDict.putIfAbsent(aggregateRoot.uniqueId(), aggregateRoot);
+                trackingAggregateRootDict.putIfAbsent(aggregateRoot.getUniqueId(), aggregateRoot);
             }
             return aggregateRoot;
         });

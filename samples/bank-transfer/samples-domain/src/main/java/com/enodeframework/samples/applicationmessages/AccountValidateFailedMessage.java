@@ -1,6 +1,6 @@
 package com.enodeframework.samples.applicationmessages;
 
-import com.enodeframework.infrastructure.ApplicationMessage;
+import com.enodeframework.applicationmessage.ApplicationMessage;
 
 /// <summary>账户验证未通过
 /// </summary>
@@ -16,10 +16,5 @@ public class AccountValidateFailedMessage extends ApplicationMessage {
         AccountId = accountId;
         TransactionId = transactionId;
         Reason = reason;
-    }
-
-    @Override
-    public String getRoutingKey() {
-        return AccountId;
     }
 }

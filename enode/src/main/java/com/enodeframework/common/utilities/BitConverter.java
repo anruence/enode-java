@@ -1,12 +1,13 @@
 package com.enodeframework.common.utilities;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author anruence@gmail.com
  */
 public class BitConverter {
-    private static final Charset UTF8 = Charset.forName("utf-8");
+    private static final Charset UTF8 = StandardCharsets.UTF_8;
 
     public static byte[] getBytes(short v) {
         return new byte[]{(byte) v, (byte) (v >> 8)};

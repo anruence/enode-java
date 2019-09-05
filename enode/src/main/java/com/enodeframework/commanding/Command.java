@@ -1,6 +1,6 @@
 package com.enodeframework.commanding;
 
-import com.enodeframework.infrastructure.Message;
+import com.enodeframework.messaging.Message;
 
 /**
  * @author anruence@gmail.com
@@ -22,19 +22,14 @@ public class Command<TAggregateRootId> extends Message implements ICommand {
 
     @Override
     public String getAggregateRootId() {
-        if (this.aggregateRootId != null) {
-            return this.aggregateRootId.toString();
-        } else {
-            return null;
+        if (aggregateRootId != null) {
+            return aggregateRootId.toString();
         }
+        return null;
     }
 
     public void setAggregateRootId(TAggregateRootId aggregateRootId) {
         this.aggregateRootId = aggregateRootId;
     }
 
-    @Override
-    public String getRoutingKey() {
-        return getAggregateRootId();
-    }
 }

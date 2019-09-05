@@ -6,7 +6,7 @@ import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.Task;
 import com.enodeframework.eventing.DomainEventStreamMessage;
-import com.enodeframework.infrastructure.IMessagePublisher;
+import com.enodeframework.messaging.IMessagePublisher;
 
 import java.util.concurrent.CompletableFuture;
 

@@ -1,8 +1,5 @@
 package com.enodeframework.commanding;
 
-import com.enodeframework.infrastructure.IMailBox;
-import com.enodeframework.infrastructure.IMailBoxMessage;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -10,11 +7,11 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author anruence@gmail.com
  */
-public class ProcessingCommand implements IMailBoxMessage<ProcessingCommand, CommandResult> {
+public class ProcessingCommand {
     private final ICommand message;
     private final ICommandExecuteContext commandExecuteContext;
     private final Map<String, String> items;
-    private IMailBox<ProcessingCommand, CommandResult> mailBox;
+    private ProcessingCommandMailbox mailBox;
     private long sequence;
 
     public ProcessingCommand(ICommand command, ICommandExecuteContext commandExecuteContext, Map<String, String> items) {
@@ -27,22 +24,10 @@ public class ProcessingCommand implements IMailBoxMessage<ProcessingCommand, Com
         return commandExecuteContext.onCommandExecutedAsync(commandResult);
     }
 
-    @Override
-    public IMailBox<ProcessingCommand, CommandResult> getMailBox() {
-        return mailBox;
-    }
-
-    @Override
-    public void setMailBox(IMailBox mailBox) {
-        this.mailBox = mailBox;
-    }
-
-    @Override
     public long getSequence() {
         return sequence;
     }
 
-    @Override
     public void setSequence(long sequence) {
         this.sequence = sequence;
     }
@@ -57,5 +42,13 @@ public class ProcessingCommand implements IMailBoxMessage<ProcessingCommand, Com
 
     public Map<String, String> getItems() {
         return items;
+    }
+
+    public ProcessingCommandMailbox getMailBox() {
+        return mailBox;
+    }
+
+    public void setMailBox(ProcessingCommandMailbox mailBox) {
+        this.mailBox = mailBox;
     }
 }

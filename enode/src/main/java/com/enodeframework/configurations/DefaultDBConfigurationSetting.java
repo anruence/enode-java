@@ -7,7 +7,7 @@ public class DefaultDBConfigurationSetting {
     /**
      * 数据库连接字符串
      */
-    private String ConnectionString;
+    private String connectionString;
     /**
      * 命令表的默认名称；默认为：Command
      */
@@ -73,11 +73,11 @@ public class DefaultDBConfigurationSetting {
     }
 
     public String getConnectionString() {
-        return ConnectionString;
+        return connectionString;
     }
 
     public void setConnectionString(String connectionString) {
-        ConnectionString = connectionString;
+        this.connectionString = connectionString;
     }
 
     public String getCommandTableName() {

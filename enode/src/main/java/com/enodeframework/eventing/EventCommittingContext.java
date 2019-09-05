@@ -2,19 +2,15 @@ package com.enodeframework.eventing;
 
 import com.enodeframework.commanding.ProcessingCommand;
 import com.enodeframework.domain.IAggregateRoot;
-import com.enodeframework.infrastructure.IMailBox;
-import com.enodeframework.infrastructure.IMailBoxMessage;
 
 /**
  * @author anruence@gmail.com
  */
-public class EventCommittingContext implements IMailBoxMessage<EventCommittingContext, Boolean> {
-    private IMailBox<EventCommittingContext, Boolean> mailBox;
-    private long sequence;
+public class EventCommittingContext {
+    private EventCommittingContextMailBox mailBox;
     private IAggregateRoot aggregateRoot;
     private DomainEventStream eventStream;
     private ProcessingCommand processingCommand;
-    private EventCommittingContext next;
 
     public EventCommittingContext(IAggregateRoot aggregateRoot, DomainEventStream eventStream, ProcessingCommand processingCommand) {
         this.aggregateRoot = aggregateRoot;
@@ -34,31 +30,11 @@ public class EventCommittingContext implements IMailBoxMessage<EventCommittingCo
         return processingCommand;
     }
 
-    public EventCommittingContext getNext() {
-        return next;
-    }
-
-    public void setNext(EventCommittingContext next) {
-        this.next = next;
-    }
-
-    @Override
-    public IMailBox<EventCommittingContext, Boolean> getMailBox() {
+    public EventCommittingContextMailBox getMailBox() {
         return mailBox;
     }
 
-    @Override
-    public void setMailBox(IMailBox<EventCommittingContext, Boolean> mailBox) {
+    public void setMailBox(EventCommittingContextMailBox mailBox) {
         this.mailBox = mailBox;
-    }
-
-    @Override
-    public long getSequence() {
-        return sequence;
-    }
-
-    @Override
-    public void setSequence(long sequence) {
-        this.sequence = sequence;
     }
 }

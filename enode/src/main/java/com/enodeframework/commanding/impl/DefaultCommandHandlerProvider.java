@@ -46,10 +46,7 @@ public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class
         if (!ICommand.class.isAssignableFrom(method.getParameterTypes()[1])) {
             return false;
         }
-        if (!isMethodAnnotationSubscribe(method)) {
-            return false;
-        }
-        return true;
+        return isMethodAnnotationSubscribe(method);
     }
 
     @Override

@@ -5,8 +5,8 @@ import com.enodeframework.common.exception.IORuntimeException;
 import com.enodeframework.common.io.AsyncTaskResult;
 import com.enodeframework.common.io.AsyncTaskStatus;
 import com.enodeframework.common.io.Task;
-import com.enodeframework.infrastructure.IPublishedVersionStore;
-import com.enodeframework.infrastructure.impl.InMemoryPublishedVersionStore;
+import com.enodeframework.eventing.IPublishedVersionStore;
+import com.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
 
 import java.util.concurrent.CompletableFuture;
 

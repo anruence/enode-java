@@ -1,5 +1,6 @@
 package com.enodeframework.commanding.impl;
 
+import com.enodeframework.applicationmessage.IApplicationMessage;
 import com.enodeframework.commanding.CommandResult;
 import com.enodeframework.commanding.CommandStatus;
 import com.enodeframework.commanding.ICommand;
@@ -23,14 +24,13 @@ import com.enodeframework.domain.IMemoryCache;
 import com.enodeframework.eventing.DomainEventStream;
 import com.enodeframework.eventing.EventCommittingContext;
 import com.enodeframework.eventing.IDomainEvent;
-import com.enodeframework.eventing.IEventService;
+import com.enodeframework.eventing.IEventCommittingService;
 import com.enodeframework.eventing.IEventStore;
-import com.enodeframework.infrastructure.IApplicationMessage;
-import com.enodeframework.infrastructure.IMessagePublisher;
 import com.enodeframework.infrastructure.IObjectProxy;
-import com.enodeframework.infrastructure.IPublishableException;
 import com.enodeframework.infrastructure.ITypeNameProvider;
-import com.enodeframework.infrastructure.MessageHandlerData;
+import com.enodeframework.messaging.IMessagePublisher;
+import com.enodeframework.messaging.MessageHandlerData;
+import com.enodeframework.publishableexception.IPublishableException;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +59,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     @Autowired
     private ITypeNameProvider typeNameProvider;
     @Autowired
-    private IEventService eventService;
+    private IEventCommittingService eventService;
     @Autowired
     private IMemoryCache memoryCache;
     @Autowired
@@ -87,7 +87,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         return this;
     }
 
-    public DefaultProcessingCommandHandler setEventService(IEventService eventService) {
+    public DefaultProcessingCommandHandler setEventService(IEventCommittingService eventService) {
         this.eventService = eventService;
         return this;
     }
@@ -108,7 +108,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     }
 
     @Override
-    public CompletableFuture<Void> handle(ProcessingCommand processingCommand) {
+    public CompletableFuture<Void> handleAsync(ProcessingCommand processingCommand) {
         ICommand command = processingCommand.getMessage();
         if (Strings.isNullOrEmpty(command.getAggregateRootId())) {
             String errorMessage = String.format("The aggregateRootId of command cannot be null or empty. commandType:%s, commandId:%s", command.getClass().getName(), command.getId());
@@ -215,7 +215,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         }
         DomainEventStream eventStream = new DomainEventStream(
                 processingCommand.getMessage().getId(),
-                dirtyAggregateRoot.uniqueId(),
+                dirtyAggregateRoot.getUniqueId(),
                 typeNameProvider.getTypeName(dirtyAggregateRoot.getClass()),
                 Linq.first(changedEvents).getVersion(),
                 new Date(),
@@ -243,21 +243,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 retryTimes, true);
     }
 
-    private DomainEventStream buildDomainEventStream(IAggregateRoot aggregateRoot, List<IDomainEvent> changedEvents, ProcessingCommand processingCommand) {
-        String commandResult = processingCommand.getCommandExecuteContext().getResult();
-        if (commandResult != null) {
-            processingCommand.getItems().put("CommandResult", commandResult);
-        }
-        return new DomainEventStream(
-                processingCommand.getMessage().getId(),
-                aggregateRoot.uniqueId(),
-                typeNameProvider.getTypeName(aggregateRoot.getClass()),
-                aggregateRoot.getVersion() + 1,
-                new Date(),
-                changedEvents,
-                processingCommand.getItems());
-    }
-
     private void handleExceptionAsync(ProcessingCommand processingCommand, ICommandHandlerProxy commandHandler, Exception exception, int retryTimes) {
         ICommand command = processingCommand.getMessage();
         IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
@@ -268,7 +253,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         //这里，我们需要再重新做一遍发布事件这个操作；
                         //之所以要这样做是因为虽然该command产生的事件已经持久化成功，但并不表示事件已经发布出去了；
                         //因为有可能事件持久化成功了，但那时正好机器断电了，则发布事件就没有做；
-                        logger.info("handle command exception,and the command has consumed before,we will publish domain event again and try execute next command mailbox message.", exception);
                         eventService.publishDomainEventAsync(processingCommand, existingEventStream);
                     } else {
                         //到这里，说明当前command执行遇到异常，然后当前command之前也没执行过，是第一次被执行。
@@ -300,7 +284,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 () -> {
                     Map<String, String> serializableInfo = new HashMap<>();
                     exception.serializeTo(serializableInfo);
-                    String exceptionInfo = String.join(",", serializableInfo.entrySet().stream().map(x -> String.format("%s:%s", x.getKey(), x.getValue())).collect(Collectors.toList()));
+                    String exceptionInfo = serializableInfo.entrySet().stream().map(x -> String.format("%s:%s", x.getKey(), x.getValue())).collect(Collectors.joining(","));
                     return String.format("[commandId:%s, exceptionInfo:%s]", processingCommand.getMessage().getId(), exceptionInfo);
                 },
                 errorMessage -> logger.error(String.format("Publish event has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
@@ -334,19 +318,19 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                                 command.getAggregateRootId());
                     }
                     return asyncResult.exceptionally(ex -> {
-                        if (ex.getCause() instanceof IORuntimeException) {
-                            logger.error(String.format("Handle command async has io exception. handlerType:%s, commandType:%s, commandId:%s, aggregateRootId:%s",
+                        if (ex instanceof IORuntimeException || ex.getCause() instanceof IORuntimeException) {
+                            logger.error("Handle command async has io exception. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                     commandHandler.getInnerObject().getClass().getName(),
                                     command.getClass().getName(),
                                     command.getId(),
-                                    command.getAggregateRootId()), ex);
+                                    command.getAggregateRootId(), ex);
                             return new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage());
                         }
-                        logger.error(String.format("Handle command async has unknown exception. handlerType:%s, commandType:%s, commandId:%s, aggregateRootId:%s",
+                        logger.error("Handle command async has unknown exception. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                 commandHandler.getInnerObject().getClass().getName(),
                                 command.getClass().getName(),
                                 command.getId(),
-                                command.getAggregateRootId()), ex);
+                                command.getAggregateRootId(), ex);
                         return new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage());
                     });
                 },
@@ -373,7 +357,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         ICommand command = processingCommand.getMessage();
         IOHelper.tryAsyncActionRecursively("PublishApplicationMessageAsync",
                 () -> applicationMessagePublisher.publishAsync(message),
-                result -> completeCommand(processingCommand, CommandStatus.Success, message.getTypeName(), JsonTool.serialize(message)),
+                result -> completeCommand(processingCommand, CommandStatus.Success, message.getClass().getName(), JsonTool.serialize(message)),
                 () -> String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.getId(), message.getClass().getName(), command.getId(), command.getClass().getName()),
                 errorMessage -> logger.error(String.format("Publish application message has unknown exception, the code should not be run to here, errorMessage: %s", errorMessage)),
                 retryTimes, true);
@@ -403,9 +387,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     }
 
     enum HandlerFindStatus {
-        /**
-         *
-         */
         NotFound,
         Found,
         TooManyHandlerData,
