@@ -21,7 +21,7 @@ public class EventCommittingContextMailBox {
     private final Object lockObj = new Object();
     private final Object processMessageLockObj = new Object();
     private Date lastActiveTime;
-    private boolean isRunning;
+    private boolean running;
     private int number;
     private ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> aggregateDictDict;
 
@@ -46,7 +46,7 @@ public class EventCommittingContextMailBox {
     }
 
     public boolean isRunning() {
-        return isRunning;
+        return running;
     }
 
     public long getTotalUnHandledMessageCount() {
@@ -85,7 +85,7 @@ public class EventCommittingContextMailBox {
      */
     public void tryRun() {
         synchronized (lockObj) {
-            if (isRunning) {
+            if (isRunning()) {
                 return;
             }
             setAsRunning();
@@ -150,11 +150,11 @@ public class EventCommittingContextMailBox {
     }
 
     private void setAsRunning() {
-        isRunning = true;
+        running = true;
     }
 
     private void setAsNotRunning() {
-        isRunning = false;
+        running = false;
     }
 
     public int getNumber() {

@@ -851,13 +851,13 @@ public class CommandAndEventServiceTest extends AbstractTest {
     @Test
     public void sequence_domain_event_process_test() {
         TestAggregate note = new TestAggregate(ObjectId.generateNewStringId(), "initial title");
-        DomainEventStreamMessage message1 = CreateMessage(note);
+        DomainEventStreamMessage message1 = createMessage(note);
         ((IAggregateRoot) note).acceptChanges();
         note.ChangeTitle("title1");
-        DomainEventStreamMessage message2 = CreateMessage(note);
+        DomainEventStreamMessage message2 = createMessage(note);
         ((IAggregateRoot) note).acceptChanges();
         note.ChangeTitle("title2");
-        DomainEventStreamMessage message3 = CreateMessage(note);
+        DomainEventStreamMessage message3 = createMessage(note);
         ManualResetEvent waitHandle = new ManualResetEvent(false);
         List<Integer> versionList = new ArrayList<>();
         processor.process(new ProcessingDomainEventStreamMessage(message1, new DomainEventStreamProcessContext(message1, waitHandle, versionList)));
@@ -869,7 +869,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         }
     }
 
-    private DomainEventStreamMessage CreateMessage(IAggregateRoot aggregateRoot) {
+    private DomainEventStreamMessage createMessage(IAggregateRoot aggregateRoot) {
         return new DomainEventStreamMessage(
                 ObjectId.generateNewStringId(),
                 aggregateRoot.getUniqueId(),

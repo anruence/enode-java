@@ -19,7 +19,7 @@ public class ApplicationMessagePublisherFailedTest extends AbstractTest {
         AsyncHandlerCommand command = new AsyncHandlerCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setShouldGenerateApplicationMessage(true);
-        AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
+        AsyncTaskResult<CommandResult> asyncResult = Task.await(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         CommandResult commandResult = asyncResult.getData();
@@ -30,7 +30,7 @@ public class ApplicationMessagePublisherFailedTest extends AbstractTest {
         AsyncHandlerCommand command1 = new AsyncHandlerCommand();
         command1.aggregateRootId = ObjectId.generateNewStringId();
         command1.setShouldGenerateApplicationMessage(true);
-        asyncResult = Task.get(_commandService.executeAsync(command1));
+        asyncResult = Task.await(_commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();
@@ -41,7 +41,7 @@ public class ApplicationMessagePublisherFailedTest extends AbstractTest {
         AsyncHandlerCommand command2 = new AsyncHandlerCommand();
         command2.aggregateRootId = ObjectId.generateNewStringId();
         command2.setShouldGenerateApplicationMessage(true);
-        asyncResult = Task.get(_commandService.executeAsync(command2));
+        asyncResult = Task.await(_commandService.executeAsync(command2));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();

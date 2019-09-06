@@ -40,7 +40,7 @@ public class BankAccountCommandHandler {
     @Subscribe
     public void handleAsync(ICommandContext context, AddTransactionPreparationCommand command) {
         CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
-        BankAccount account = Task.get(future);
+        BankAccount account = Task.await(future);
         account.AddTransactionPreparation(command.TransactionId, command.TransactionType, command.PreparationType, command.Amount);
     }
 
@@ -70,7 +70,7 @@ public class BankAccountCommandHandler {
     @Subscribe
     public void handleAsync(ICommandContext context, CommitTransactionPreparationCommand command) {
         CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
-        BankAccount account = Task.get(future);
+        BankAccount account = Task.await(future);
         account.CommitTransactionPreparation(command.TransactionId);
     }
 }

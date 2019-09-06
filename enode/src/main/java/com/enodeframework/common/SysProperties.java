@@ -15,9 +15,9 @@ public class SysProperties {
     public static final String DELIMITED = "**|**";
 
     /**
-     * 默认等待执行结果的超时时间
+     * 默认等待执行结果的超时时间，3分钟
      */
-    public static final int COMPLETION_SOURCE_TIMEOUT = 10000;
+    public static final int COMPLETION_SOURCE_TIMEOUT = 3 * 60 * 1000;
 
     /**
      * 接收Command执行结果服务启动时默认的端口

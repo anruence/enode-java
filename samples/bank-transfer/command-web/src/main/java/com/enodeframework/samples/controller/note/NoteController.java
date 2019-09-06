@@ -18,12 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/note")
 public class NoteController {
+
     @Autowired
     private ICommandService commandService;
 
@@ -41,22 +43,30 @@ public class NoteController {
         commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
         ChangeNoteTitleCommand titleCommand = new ChangeNoteTitleCommand(noteId, title + " change");
         // always block here
-        return Task.get(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
+        return Task.await(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
     }
 
     @RequestMapping("test")
-    public Object test(@RequestParam("id") int totalCount) throws InterruptedException {
+    public Map test(@RequestParam("id") int totalCount,
+                    @RequestParam(required = false, name = "mode", defaultValue = "0") int mode) throws Exception {
         long start = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(totalCount);
         AtomicInteger success = new AtomicInteger(0);
         AtomicInteger failed = new AtomicInteger(0);
-        System.out.println("start time " + start);
         for (int i = 0; i < totalCount; i++) {
             CreateNoteCommand command = new CreateNoteCommand(ObjectId.generateNewStringId(), "Sample Note" + ObjectId.generateNewStringId());
             command.setId(String.valueOf(i));
             try {
-                commandService.executeAsync(command).thenAccept(result -> {
-                    if (result.getStatus() == AsyncTaskStatus.Success) {
+                CompletableFuture future;
+                if (mode == 1) {
+                    future = commandService.executeAsync(command, CommandReturnType.EventHandled);
+                } else if (mode == 2) {
+                    future = commandService.executeAsync(command, CommandReturnType.CommandExecuted);
+                } else {
+                    future = commandService.sendAsync(command);
+                }
+                future.thenAccept(result -> {
+                    if (((AsyncTaskResult) result).getStatus() == AsyncTaskStatus.Success) {
                         success.incrementAndGet();
                     } else {
                         failed.incrementAndGet();
@@ -69,7 +79,6 @@ public class NoteController {
         }
         latch.await();
         long end = System.currentTimeMillis();
-        System.out.println("run duration " + (end - start));
         Map map = new HashMap();
         map.put("time", end - start);
         map.put("success", success.get());

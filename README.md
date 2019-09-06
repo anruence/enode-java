@@ -146,7 +146,39 @@ CQRS架构中的Command端应用
 领域事件处理服务
 事件可能会多次投递，所以需要消费端逻辑保证幂等处理
 ### 测试
-http://localhost:8001/note/create?id=noteid&t=notetitle&c=commandid
+http://localhost:8080/note/create?id=noteid&t=notetitle&c=commandid
+
+### 压测数据
+
+#### MySQL
+
+| 模式 | 数据量 | 处理耗时 | QPS |
+|:----:|:----:|:----:|:----:|
+|SendOneWay|10000| 737     |**|
+|SendOneWay|50000| 4856    |**|
+|SendOneWay|100000| 8162   |**|
+|EventHandle|5000| 7218    |**|
+|EventHandle|10000| 11066  |**|
+|EventHandle|50000| 71014  |**|
+|CommandHandle|5000| 4001  |**|
+|CommandHandle|10000| 7957 |**|
+|CommandHandle|50000| 44531 |**|
+
+#### InMemory
+
+| 模式 | 数据量 | 处理耗时 | QPS |
+|:----:|:----:|:----:|:----:|
+|SendOneWay|10000| 1425     |**|
+|SendOneWay|50000| 8383    |**|
+|SendOneWay|100000| 12914   |**|
+|EventHandle|5000| 1172    |**|
+|EventHandle|10000| 2403  |**|
+|EventHandle|50000| 12124  |**|
+|CommandHandle|5000| 985  |**|
+|CommandHandle|10000| 1939 |**|
+|CommandHandle|50000| 11265 |**|
+
+
 ## 参考项目
 - https://github.com/tangxuehua/enode
 - https://github.com/coffeewar/enode-master

@@ -1,9 +1,9 @@
 package com.enodeframework.common.io;
 
+import com.ea.async.Async;
 import com.enodeframework.common.exception.ENodeRuntimeException;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author anruence@gmail.com
@@ -19,19 +19,14 @@ public class Task extends CompletableFuture {
      * async await operation
      *
      * @param future
-     * @param <T>
      * @return
      */
-    public static <T> T await(CompletableFuture<T> future) {
-        return future.join();
+    public static <T> CompletableFuture<T> handle(CompletableFuture<T> future) {
+        return CompletableFuture.completedFuture(Async.await(future));
     }
 
-    public static <T> T get(CompletableFuture<T> future) {
-        try {
-            return future.get(10000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            throw new ENodeRuntimeException(e);
-        }
+    public static <T> T await(CompletableFuture<T> future) {
+        return handle(future).join();
     }
 
     public static void sleep(long sleepMilliseconds) {

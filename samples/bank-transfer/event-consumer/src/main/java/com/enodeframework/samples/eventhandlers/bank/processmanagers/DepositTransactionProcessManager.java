@@ -38,7 +38,7 @@ public class DepositTransactionProcessManager {
                 PreparationType.CreditPreparation,
                 evnt.Amount);
         command.setId(evnt.getId());
-        return Task.get(_commandService.sendAsync(command));
+        return Task.await(_commandService.sendAsync(command));
     }
 
     @Subscribe
@@ -47,7 +47,7 @@ public class DepositTransactionProcessManager {
                 && evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
             ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.TransactionPreparation.TransactionId);
             command.setId(evnt.getId());
-            return Task.get(_commandService.sendAsync(command));
+            return Task.await(_commandService.sendAsync(command));
         }
         return AsyncTaskResult.Success;
     }
@@ -56,7 +56,7 @@ public class DepositTransactionProcessManager {
     public AsyncTaskResult handleAsync(DepositTransactionPreparationCompletedEvent evnt) {
         CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.AccountId, evnt.getAggregateRootId());
         command.setId(evnt.getId());
-        return Task.get(_commandService.sendAsync(command));
+        return Task.await(_commandService.sendAsync(command));
     }
 
     @Subscribe
@@ -65,7 +65,7 @@ public class DepositTransactionProcessManager {
                 evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
             ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.TransactionPreparation.TransactionId);
             command.setId(evnt.getId());
-            return Task.get(_commandService.sendAsync(command));
+            return Task.await(_commandService.sendAsync(command));
         }
         return AsyncTaskResult.Success;
     }

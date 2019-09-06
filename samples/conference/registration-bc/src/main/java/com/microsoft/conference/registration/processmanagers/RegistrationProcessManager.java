@@ -60,48 +60,48 @@ public class RegistrationProcessManager {
             itemInfo.Quantity = x.SeatQuantity.Quantity;
             return itemInfo;
         }).collect(Collectors.toList());
-        return Task.get(_commandService.sendAsync(reservation));
+        return Task.await(_commandService.sendAsync(reservation));
     }
 
     public AsyncTaskResult HandleAsync(SeatsReservedMessage message) {
-        return Task.get(_commandService.sendAsync(new ConfirmReservation(message.ReservationId, true)));
+        return Task.await(_commandService.sendAsync(new ConfirmReservation(message.ReservationId, true)));
     }
 
     public AsyncTaskResult HandleAsync(SeatInsufficientMessage message) {
-        return Task.get(_commandService.sendAsync(new ConfirmReservation(message.ReservationId, false)));
+        return Task.await(_commandService.sendAsync(new ConfirmReservation(message.ReservationId, false)));
     }
 
     public AsyncTaskResult HandleAsync(PaymentCompletedMessage message) {
-        return Task.get(_commandService.sendAsync(new ConfirmPayment(message.OrderId, true)));
+        return Task.await(_commandService.sendAsync(new ConfirmPayment(message.OrderId, true)));
     }
 
     public AsyncTaskResult HandleAsync(PaymentRejectedMessage message) {
-        return Task.get(_commandService.sendAsync(new ConfirmPayment(message.OrderId, false)));
+        return Task.await(_commandService.sendAsync(new ConfirmPayment(message.OrderId, false)));
     }
 
     public AsyncTaskResult HandleAsync(OrderPaymentConfirmed evnt) {
         if (evnt.orderStatus == OrderStatus.PaymentSuccess) {
-            return Task.get(_commandService.sendAsync(new CommitSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
+            return Task.await(_commandService.sendAsync(new CommitSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
         } else if (evnt.orderStatus == OrderStatus.PaymentRejected) {
-            return Task.get(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
+            return Task.await(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
         }
         return AsyncTaskResult.Success;
     }
 
     public AsyncTaskResult HandleAsync(SeatsReservationCommittedMessage message) {
-        return Task.get(_commandService.sendAsync(new MarkAsSuccess(message.ReservationId)));
+        return Task.await(_commandService.sendAsync(new MarkAsSuccess(message.ReservationId)));
     }
 
     public AsyncTaskResult HandleAsync(SeatsReservationCancelledMessage message) {
-        return Task.get(_commandService.sendAsync(new CloseOrder(message.ReservationId)));
+        return Task.await(_commandService.sendAsync(new CloseOrder(message.ReservationId)));
     }
 
     public AsyncTaskResult HandleAsync(OrderSuccessed evnt) {
-        return Task.get(_commandService.sendAsync(new CreateSeatAssignments(evnt.getAggregateRootId())));
+        return Task.await(_commandService.sendAsync(new CreateSeatAssignments(evnt.getAggregateRootId())));
     }
 
     public AsyncTaskResult HandleAsync(OrderExpired evnt) {
-        return Task.get(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
+        return Task.await(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
     }
 }
         

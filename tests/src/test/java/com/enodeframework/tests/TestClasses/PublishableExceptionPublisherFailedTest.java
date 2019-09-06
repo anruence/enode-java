@@ -25,7 +25,7 @@ public class PublishableExceptionPublisherFailedTest extends AbstractTest {
         command1.aggregateRootId = aggregateId;
         command1.setPublishableException(true);
         ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).SetExpectFailedCount(FailedType.UnKnownException, 5);
-        AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command1));
+        AsyncTaskResult<CommandResult> asyncResult = Task.await(_commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         CommandResult commandResult = asyncResult.getData();
@@ -33,7 +33,7 @@ public class PublishableExceptionPublisherFailedTest extends AbstractTest {
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
         ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).Reset();
         ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).SetExpectFailedCount(FailedType.IOException, 5);
-        asyncResult = Task.get(_commandService.executeAsync(command1));
+        asyncResult = Task.await(_commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();
@@ -41,7 +41,7 @@ public class PublishableExceptionPublisherFailedTest extends AbstractTest {
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
         ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).Reset();
         ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).SetExpectFailedCount(FailedType.TaskIOException, 5);
-        asyncResult = Task.get(_commandService.executeAsync(command1));
+        asyncResult = Task.await(_commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();

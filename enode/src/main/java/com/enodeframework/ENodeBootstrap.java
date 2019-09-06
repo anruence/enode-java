@@ -1,5 +1,6 @@
 package com.enodeframework;
 
+import com.ea.async.Async;
 import com.enodeframework.common.container.IObjectContainer;
 import com.enodeframework.common.extensions.ClassNameComparator;
 import com.enodeframework.common.extensions.ClassPathScanHandler;
@@ -25,6 +26,7 @@ public class ENodeBootstrap {
     private IObjectContainer objectContainer;
 
     public void init() {
+        Async.init();
         Set<Class<?>> classSet = scanConfiguredPackages();
         registerBeans(classSet);
     }
