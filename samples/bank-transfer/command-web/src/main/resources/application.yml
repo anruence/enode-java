@@ -1,10 +1,9 @@
 server:
-  #端口号
-  port: 8001
+  port: 8080
 logging:
   file: logs/dev_profile_app.log
   pattern:
     console: "%d %-5level %logger : %msg%n"
     file: "%d %-5level [%thread] %logger : %msg%n"
   level:
-    com.enodeframework: DEBUG
+    com.enodeframework: INFO

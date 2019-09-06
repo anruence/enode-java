@@ -19,7 +19,7 @@ public class EventPublisherFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         ((MockDomainEventPublisher) _domainEventPublisher).setExpectFailedCount(FailedType.UnKnownException, 5);
-        AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
+        AsyncTaskResult<CommandResult> asyncResult = Task.await(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         CommandResult commandResult = asyncResult.getData();
@@ -30,7 +30,7 @@ public class EventPublisherFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         ((MockDomainEventPublisher) _domainEventPublisher).setExpectFailedCount(FailedType.IOException, 5);
-        asyncResult = Task.get(_commandService.executeAsync(command));
+        asyncResult = Task.await(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();
@@ -41,7 +41,7 @@ public class EventPublisherFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         ((MockDomainEventPublisher) _domainEventPublisher).setExpectFailedCount(FailedType.TaskIOException, 5);
-        asyncResult = Task.get(_commandService.executeAsync(command));
+        asyncResult = Task.await(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();

@@ -21,7 +21,7 @@ public class EventStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockEventStore.SetExpectFailedCount(FailedType.UnKnownException, 5);
-        AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command));
+        AsyncTaskResult<CommandResult> asyncResult = Task.await(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         CommandResult commandResult = asyncResult.getData();
@@ -32,7 +32,7 @@ public class EventStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockEventStore.SetExpectFailedCount(FailedType.IOException, 5);
-        asyncResult = Task.get(_commandService.executeAsync(command));
+        asyncResult = Task.await(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();
@@ -43,7 +43,7 @@ public class EventStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockEventStore.SetExpectFailedCount(FailedType.TaskIOException, 5);
-        asyncResult = Task.get(_commandService.executeAsync(command));
+        asyncResult = Task.await(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();

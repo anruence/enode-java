@@ -27,14 +27,14 @@ public class DepositTransactionCommandHandle {
     @Subscribe
     public void handleAsync(ICommandContext context, ConfirmDepositPreparationCommand command) {
         CompletableFuture<DepositTransaction> future = context.getAsync(command.getAggregateRootId(), DepositTransaction.class);
-        DepositTransaction depositTransaction = Task.get(future);
+        DepositTransaction depositTransaction = Task.await(future);
         depositTransaction.ConfirmDepositPreparation();
     }
 
     @Subscribe
     public void handleAsync(ICommandContext context, ConfirmDepositCommand command) {
         CompletableFuture<DepositTransaction> future = context.getAsync(command.getAggregateRootId(), DepositTransaction.class);
-        DepositTransaction depositTransaction = Task.get(future);
+        DepositTransaction depositTransaction = Task.await(future);
         depositTransaction.ConfirmDeposit();
     }
 }

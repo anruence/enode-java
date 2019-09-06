@@ -25,9 +25,9 @@ public class ProcessingCommandMailbox {
 
     private String aggregateRootId;
     private Date lastActiveTime;
-    private boolean isRunning;
-    private boolean isPauseRequested;
-    private boolean isPaused;
+    private boolean running;
+    private boolean pauseRequested;
+    private boolean paused;
     private long nextSequence;
     private long consumingSequence;
 
@@ -48,15 +48,15 @@ public class ProcessingCommandMailbox {
     }
 
     public boolean isRunning() {
-        return isRunning;
+        return running;
     }
 
     public boolean isPauseRequested() {
-        return isPauseRequested;
+        return pauseRequested;
     }
 
     public boolean isPaused() {
-        return isPaused;
+        return paused;
     }
 
     public long getConsumingSequence() {
@@ -101,14 +101,14 @@ public class ProcessingCommandMailbox {
 
     public void tryRun() {
         synchronized (lockObj) {
-            if (isRunning || isPauseRequested || isPaused) {
+            if (isRunning() || isPauseRequested() || isPaused()) {
                 return;
             }
             setAsRunning();
             if (logger.isDebugEnabled()) {
                 logger.debug("{} start run, aggregateRootId: {}, consumingSequence: {}", getClass().getName(), aggregateRootId, consumingSequence);
             }
-            CompletableFuture.runAsync(this::processMessages);
+            CompletableFuture.supplyAsync(this::processMessages);
         }
     }
 
@@ -130,12 +130,12 @@ public class ProcessingCommandMailbox {
      * 暂停当前MailBox的运行，暂停成功可以确保当前MailBox不会处于运行状态，也就是不会在处理任何消息
      */
     public void pause() {
-        isPauseRequested = true;
+        pauseRequested = true;
         if (logger.isDebugEnabled()) {
             logger.debug("{} pause requested, aggregateRootId: {}", getClass().getName(), aggregateRootId);
         }
         long count = 0L;
-        while (isRunning) {
+        while (running) {
             Task.sleep(10);
             count++;
             if (count % 100 == 0) {
@@ -145,15 +145,15 @@ public class ProcessingCommandMailbox {
             }
         }
         lastActiveTime = new Date();
-        isPaused = true;
+        paused = true;
     }
 
     /**
      * 恢复当前MailBox的运行，恢复后，当前MailBox又可以进行运行，需要手动调用TryRun方法来运行
      */
     public void resume() {
-        isPauseRequested = false;
-        isPaused = false;
+        pauseRequested = false;
+        paused = false;
         lastActiveTime = new Date();
         if (logger.isDebugEnabled()) {
             logger.debug("{} resume requested, aggregateRootId: {}, consumingSequence: {}", getClass().getName(), aggregateRootId, consumingSequence);
@@ -192,13 +192,12 @@ public class ProcessingCommandMailbox {
         return (System.currentTimeMillis() - lastActiveTime.getTime()) >= timeoutSeconds;
     }
 
-
-    private void processMessages() {
+    private CompletableFuture<Void> processMessages() {
         synchronized (asyncLock) {
             lastActiveTime = new Date();
             try {
                 long scannedCount = 0;
-                while (getTotalUnHandledMessageCount() > 0 && scannedCount < batchSize && !isPauseRequested) {
+                while (getTotalUnHandledMessageCount() > 0 && scannedCount < batchSize && !pauseRequested) {
                     ProcessingCommand message = getMessage(consumingSequence);
                     if (message != null) {
                         await(messageHandler.handleAsync(message));
@@ -213,6 +212,7 @@ public class ProcessingCommandMailbox {
                 completeRun();
             }
         }
+        return Task.completedTask;
     }
 
     private ProcessingCommand getMessage(long sequence) {
@@ -220,11 +220,11 @@ public class ProcessingCommandMailbox {
     }
 
     private void setAsRunning() {
-        isRunning = true;
+        running = true;
     }
 
     private void setAsNotRunning() {
-        isRunning = false;
+        running = false;
     }
 
 }

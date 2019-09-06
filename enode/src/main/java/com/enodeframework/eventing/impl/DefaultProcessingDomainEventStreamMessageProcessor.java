@@ -20,10 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+
+import static com.enodeframework.common.io.Task.await;
 
 /**
  * @author anruence@gmail.com
@@ -93,8 +94,7 @@ public class DefaultProcessingDomainEventStreamMessageProcessor implements IProc
 
     private int getAggregateRootLatestHandledEventVersion(String aggregateRootType, String aggregateRootId) {
         try {
-            CompletableFuture<AsyncTaskResult<Integer>> taskFuture = publishedVersionStore.getPublishedVersionAsync(processorName, aggregateRootType, aggregateRootId);
-            AsyncTaskResult<Integer> task = taskFuture.get();
+            AsyncTaskResult<Integer> task = await(publishedVersionStore.getPublishedVersionAsync(processorName, aggregateRootType, aggregateRootId));
             if (task.getStatus() == AsyncTaskStatus.Success) {
                 return task.getData();
             } else {

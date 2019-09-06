@@ -21,7 +21,7 @@ public class PublishedVersionStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockPublishedVersionStore.SetExpectFailedCount(FailedType.UnKnownException, 5);
-        AsyncTaskResult<CommandResult> asyncResult = Task.get(_commandService.executeAsync(command, CommandReturnType.EventHandled));
+        AsyncTaskResult<CommandResult> asyncResult = Task.await(_commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         CommandResult commandResult = asyncResult.getData();
@@ -32,7 +32,7 @@ public class PublishedVersionStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockPublishedVersionStore.SetExpectFailedCount(FailedType.IOException, 5);
-        asyncResult = Task.get(_commandService.executeAsync(command, CommandReturnType.EventHandled));
+        asyncResult = Task.await(_commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();
@@ -43,7 +43,7 @@ public class PublishedVersionStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockPublishedVersionStore.SetExpectFailedCount(FailedType.TaskIOException, 5);
-        asyncResult = Task.get(_commandService.executeAsync(command, CommandReturnType.EventHandled));
+        asyncResult = Task.await(_commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();

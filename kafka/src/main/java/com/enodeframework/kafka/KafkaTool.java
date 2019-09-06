@@ -11,7 +11,8 @@ import org.apache.kafka.common.header.internals.RecordHeaders;
  * @author anruence@gmail.com
  */
 public class KafkaTool {
-    public static String HEADERCODE = "CODE";
+
+    private final static String HEADER_CODE = "CODE";
 
     public static QueueMessage covertToQueueMessage(ConsumerRecord record) {
         QueueMessage queueMessage = new QueueMessage();
@@ -23,7 +24,7 @@ public class KafkaTool {
 
     public static ProducerRecord<String, String> covertToProducerRecord(QueueMessage queueMessage) {
         RecordHeaders headers = new RecordHeaders();
-        RecordHeader header = new RecordHeader(HEADERCODE, BitConverter.getBytes(queueMessage.getCode()));
+        RecordHeader header = new RecordHeader(HEADER_CODE, BitConverter.getBytes(queueMessage.getCode()));
         headers.add(header);
         return new ProducerRecord<>(
                 queueMessage.getTopic(),

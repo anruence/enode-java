@@ -61,14 +61,14 @@ public class TransferTransactionProcessManager {
     public AsyncTaskResult handleAsync(AccountValidatePassedMessage message) {
         ConfirmAccountValidatePassedCommand command = new ConfirmAccountValidatePassedCommand(message.TransactionId, message.AccountId);
         command.setId(message.getId());
-        return Task.get(commandService.sendAsync(command));
+        return Task.await(commandService.sendAsync(command));
     }
 
     @Subscribe
     public AsyncTaskResult handleAsync(AccountValidateFailedMessage message) {
         CancelTransferTransactionCommand command = new CancelTransferTransactionCommand(message.TransactionId);
         command.setId(message.getId());
-        return Task.get(commandService.sendAsync(command));
+        return Task.await(commandService.sendAsync(command));
     }
 
     @Subscribe
@@ -80,7 +80,7 @@ public class TransferTransactionProcessManager {
                 PreparationType.DebitPreparation,
                 evnt.TransactionInfo.Amount);
         command.setId(evnt.getId());
-        return Task.get(commandService.sendAsync(command));
+        return Task.await(commandService.sendAsync(command));
     }
 
     @Subscribe
@@ -89,11 +89,11 @@ public class TransferTransactionProcessManager {
             if (evnt.TransactionPreparation.preparationType == PreparationType.DebitPreparation) {
                 ConfirmTransferOutPreparationCommand command = new ConfirmTransferOutPreparationCommand(evnt.TransactionPreparation.TransactionId);
                 command.setId(evnt.getId());
-                return Task.get(commandService.sendAsync(command));
+                return Task.await(commandService.sendAsync(command));
             } else if (evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
                 ConfirmTransferInPreparationCommand command = new ConfirmTransferInPreparationCommand(evnt.TransactionPreparation.TransactionId);
                 command.setId(evnt.getId());
-                return Task.get(commandService.sendAsync(command));
+                return Task.await(commandService.sendAsync(command));
             }
         }
         return AsyncTaskResult.Success;
@@ -104,7 +104,7 @@ public class TransferTransactionProcessManager {
         if (exception.TransactionType == TransactionType.TransferTransaction) {
             CancelTransferTransactionCommand command = new CancelTransferTransactionCommand(exception.TransactionId);
             command.setId(exception.getId());
-            return Task.get(commandService.sendAsync(command));
+            return Task.await(commandService.sendAsync(command));
         }
         return AsyncTaskResult.Success;
     }
@@ -118,7 +118,7 @@ public class TransferTransactionProcessManager {
                 PreparationType.CreditPreparation,
                 evnt.TransactionInfo.Amount);
         command.setId(evnt.getId());
-        return Task.get(commandService.sendAsync(command));
+        return Task.await(commandService.sendAsync(command));
     }
 
     @Subscribe
@@ -138,11 +138,11 @@ public class TransferTransactionProcessManager {
             if (evnt.TransactionPreparation.preparationType == PreparationType.DebitPreparation) {
                 ConfirmTransferOutCommand command = new ConfirmTransferOutCommand(evnt.TransactionPreparation.TransactionId);
                 command.setId(evnt.getId());
-                return Task.get(commandService.sendAsync(command));
+                return Task.await(commandService.sendAsync(command));
             } else if (evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
                 ConfirmTransferInCommand command = new ConfirmTransferInCommand(evnt.TransactionPreparation.TransactionId);
                 command.setId(evnt.getId());
-                return Task.get(commandService.sendAsync(command));
+                return Task.await(commandService.sendAsync(command));
             }
         }
         return AsyncTaskResult.Success;
