@@ -1,7 +1,5 @@
 package com.microsoft.conference.management.readmodel;
 
-import com.enodeframework.annotation.Event;
-import com.enodeframework.common.io.AsyncTaskResult;
 import com.microsoft.conference.management.domain.Events.ConferenceCreated;
 import com.microsoft.conference.management.domain.Events.ConferencePublished;
 import com.microsoft.conference.management.domain.Events.ConferenceUnpublished;
@@ -13,6 +11,8 @@ import com.microsoft.conference.management.domain.Events.SeatTypeUpdated;
 import com.microsoft.conference.management.domain.Events.SeatsReservationCancelled;
 import com.microsoft.conference.management.domain.Events.SeatsReservationCommitted;
 import com.microsoft.conference.management.domain.Events.SeatsReserved;
+import org.enodeframework.annotation.Event;
+import org.enodeframework.common.io.AsyncTaskResult;
 
 /**
  * IMessageHandler<ConferenceCreated>,

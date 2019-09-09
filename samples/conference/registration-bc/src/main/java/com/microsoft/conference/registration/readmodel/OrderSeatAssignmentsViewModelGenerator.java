@@ -1,7 +1,7 @@
-import com.enodeframework.common.io.AsyncTaskResult;
 import com.microsoft.conference.registration.domain.SeatAssigning.Events.OrderSeatAssignmentsCreated;
 import com.microsoft.conference.registration.domain.SeatAssigning.Events.SeatAssigned;
 import com.microsoft.conference.registration.domain.SeatAssigning.Events.SeatUnassigned;
+import org.enodeframework.common.io.AsyncTaskResult;
 
 public class OrderSeatAssignmentsViewModelGenerator {
     public AsyncTaskResult HandleAsync(OrderSeatAssignmentsCreated evnt) {

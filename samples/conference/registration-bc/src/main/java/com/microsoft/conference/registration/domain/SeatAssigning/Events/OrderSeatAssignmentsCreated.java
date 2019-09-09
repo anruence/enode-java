@@ -1,7 +1,7 @@
 package com.microsoft.conference.registration.domain.SeatAssigning.Events;
 
-import com.enodeframework.eventing.DomainEvent;
 import com.microsoft.conference.registration.domain.SeatAssigning.Models.SeatAssignment;
+import org.enodeframework.eventing.DomainEvent;
 
 import java.util.List;
 

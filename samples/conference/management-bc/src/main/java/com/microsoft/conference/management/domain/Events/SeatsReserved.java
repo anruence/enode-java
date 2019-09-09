@@ -1,8 +1,8 @@
 package com.microsoft.conference.management.domain.Events;
 
-import com.enodeframework.eventing.DomainEvent;
 import com.microsoft.conference.management.domain.Models.ReservationItem;
 import com.microsoft.conference.management.domain.Models.SeatAvailableQuantity;
+import org.enodeframework.eventing.DomainEvent;
 
 import java.util.List;
 

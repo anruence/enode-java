@@ -1,6 +1,6 @@
 package com.microsoft.conference.common.management.message;
 
-import com.enodeframework.applicationmessage.ApplicationMessage;
+import org.enodeframework.applicationmessage.ApplicationMessage;
 
 import java.util.List;
 

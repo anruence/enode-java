@@ -1,6 +1,6 @@
 package com.microsoft.conference.registration.domain.Orders.Models;
 
-import com.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utilities.Ensure;
 
 public class Registrant {
     public String FirstName;

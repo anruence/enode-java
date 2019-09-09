@@ -1,8 +1,8 @@
 package com.microsoft.conference.registration.domain.SeatAssigning.Events;
 
-import com.enodeframework.eventing.DomainEvent;
 import com.microsoft.conference.registration.domain.SeatAssigning.Models.Attendee;
 import com.microsoft.conference.registration.domain.SeatType;
+import org.enodeframework.eventing.DomainEvent;
 
 public class SeatAssigned extends DomainEvent<String> {
     public int Position;

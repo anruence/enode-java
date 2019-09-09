@@ -1,7 +1,7 @@
 package com.microsoft.conference.management.domain.Events;
 
-import com.enodeframework.eventing.DomainEvent;
 import com.microsoft.conference.management.domain.Models.SeatTypeInfo;
+import org.enodeframework.eventing.DomainEvent;
 
 public abstract class SeatTypeEvent extends DomainEvent<String> {
     public String SeatTypeId;

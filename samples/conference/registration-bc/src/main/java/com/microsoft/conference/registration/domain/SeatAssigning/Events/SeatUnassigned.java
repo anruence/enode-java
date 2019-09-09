@@ -1,6 +1,6 @@
 package com.microsoft.conference.registration.domain.SeatAssigning.Events;
 
-import com.enodeframework.eventing.DomainEvent;
+import org.enodeframework.eventing.DomainEvent;
 
 public class SeatUnassigned extends DomainEvent<String> {
     public int Position;
