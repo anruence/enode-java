@@ -1,6 +1,6 @@
 package com.microsoft.conference.common.management.commands;
 
-import com.enodeframework.commanding.Command;
+import org.enodeframework.commanding.Command;
 
 public class CancelSeatReservation extends Command<String> {
     public String ReservationId;

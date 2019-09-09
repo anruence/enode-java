@@ -1,7 +1,7 @@
 package com.microsoft.conference.common.registration.commands.Orders;
 
-import com.enodeframework.commanding.Command;
-import com.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.commanding.Command;
+import org.enodeframework.common.utilities.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,10 +1,5 @@
 package com.microsoft.conference.registration.domain.Orders.Models;
 
-import com.enodeframework.common.exception.ArgumentException;
-import com.enodeframework.common.exception.InvalidOperationException;
-import com.enodeframework.common.utilities.Ensure;
-import com.enodeframework.common.utilities.ObjectId;
-import com.enodeframework.domain.AggregateRoot;
 import com.microsoft.conference.registration.domain.Orders.Events.OrderClosed;
 import com.microsoft.conference.registration.domain.Orders.Events.OrderExpired;
 import com.microsoft.conference.registration.domain.Orders.Events.OrderPaymentConfirmed;
@@ -15,6 +10,11 @@ import com.microsoft.conference.registration.domain.Orders.Events.OrderSuccessed
 import com.microsoft.conference.registration.domain.Orders.IPricingService;
 import com.microsoft.conference.registration.domain.SeatAssigning.Models.OrderSeatAssignments;
 import com.microsoft.conference.registration.domain.SeatQuantity;
+import org.enodeframework.common.exception.ArgumentException;
+import org.enodeframework.common.exception.InvalidOperationException;
+import org.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.domain.AggregateRoot;
 
 import java.util.Date;
 import java.util.List;

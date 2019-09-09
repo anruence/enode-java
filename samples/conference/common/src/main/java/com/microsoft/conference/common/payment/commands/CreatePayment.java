@@ -1,6 +1,6 @@
 package com.microsoft.conference.common.payment.commands;
 
-import com.enodeframework.commanding.Command;
+import org.enodeframework.commanding.Command;
 
 import java.math.BigDecimal;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.microsoft.conference.registration.domain.SeatAssigning.Models;
 
-import com.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utilities.Ensure;
 
 public class Attendee {
     public String FirstName;

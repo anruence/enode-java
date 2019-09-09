@@ -1,6 +1,6 @@
 package com.microsoft.conference.payments.domain.Events;
 
-import com.enodeframework.eventing.DomainEvent;
+import org.enodeframework.eventing.DomainEvent;
 
 public class PaymentRejected extends DomainEvent<String> {
     public String OrderId;

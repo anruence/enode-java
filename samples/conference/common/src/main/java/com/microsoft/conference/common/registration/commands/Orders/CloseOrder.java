@@ -1,6 +1,6 @@
 package com.microsoft.conference.common.registration.commands.Orders;
 
-import com.enodeframework.commanding.Command;
+import org.enodeframework.commanding.Command;
 
 public class CloseOrder extends Command<String> {
     public CloseOrder() {

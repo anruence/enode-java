@@ -1,14 +1,14 @@
 package com.microsoft.conference.registration.commandhandlers;
 
-import com.enodeframework.commanding.ICommandContext;
 import com.microsoft.conference.common.registration.commands.SeatAssignments.AssignSeat;
 import com.microsoft.conference.common.registration.commands.SeatAssignments.CreateSeatAssignments;
 import com.microsoft.conference.common.registration.commands.SeatAssignments.UnassignSeat;
 import com.microsoft.conference.registration.domain.Orders.Models.Order;
 import com.microsoft.conference.registration.domain.SeatAssigning.Models.Attendee;
 import com.microsoft.conference.registration.domain.SeatAssigning.Models.OrderSeatAssignments;
+import org.enodeframework.commanding.ICommandContext;
 
-import static com.enodeframework.common.io.Task.await;
+import static org.enodeframework.common.io.Task.await;
 
 public class OrderSeatAssignmentsCommandHandler {
     public void HandleAsync(ICommandContext context, CreateSeatAssignments command) {

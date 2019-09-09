@@ -4,7 +4,7 @@
             <Pattern>%d [%thread] %level %logger - %m%n</Pattern>
         </layout>
     </appender>
-    <logger name="com.enodeframework" level="debug">
+    <logger name="org.enodeframework" level="debug">
     </logger>
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

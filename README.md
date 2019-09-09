@@ -88,7 +88,7 @@ public class NoteEventHandler {
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
         ENodeBootstrap bootstrap = new ENodeBootstrap();
-        bootstrap.setPackages(Lists.newArrayList("com.enodeframework.samples"));
+        bootstrap.setPackages(Lists.newArrayList("org.enodeframework.samples"));
         return bootstrap;
     }
 ```

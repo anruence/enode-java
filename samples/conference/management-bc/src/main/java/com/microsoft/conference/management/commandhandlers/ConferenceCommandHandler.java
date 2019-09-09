@@ -1,7 +1,5 @@
 package com.microsoft.conference.management.commandhandlers;
 
-import com.enodeframework.commanding.ICommandContext;
-import com.enodeframework.infrastructure.ILockService;
 import com.microsoft.conference.common.management.commands.AddSeatType;
 import com.microsoft.conference.common.management.commands.CancelSeatReservation;
 import com.microsoft.conference.common.management.commands.CommitSeatReservation;
@@ -20,10 +18,12 @@ import com.microsoft.conference.management.domain.Models.ConferenceSlugIndex;
 import com.microsoft.conference.management.domain.Models.ReservationItem;
 import com.microsoft.conference.management.domain.Models.SeatTypeInfo;
 import com.microsoft.conference.management.domain.Services.RegisterConferenceSlugService;
+import org.enodeframework.commanding.ICommandContext;
+import org.enodeframework.infrastructure.ILockService;
 
 import java.util.stream.Collectors;
 
-import static com.enodeframework.common.io.Task.await;
+import static org.enodeframework.common.io.Task.await;
 
 public class ConferenceCommandHandler {
     private ILockService _lockService;

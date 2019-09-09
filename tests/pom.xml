@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.enodeframework</groupId>
+        <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
         <version>1.0.0</version>
     </parent>
@@ -13,22 +13,22 @@
     <version>1.0.0</version>
     <dependencies>
         <dependency>
-            <groupId>com.enodeframework</groupId>
+            <groupId>org.enodeframework</groupId>
             <artifactId>enode</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.enodeframework</groupId>
+            <groupId>org.enodeframework</groupId>
             <artifactId>enode-kafka</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.enodeframework</groupId>
+            <groupId>org.enodeframework</groupId>
             <artifactId>enode-rocketmq</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>com.enodeframework</groupId>
+            <groupId>org.enodeframework</groupId>
             <artifactId>enode-mysql</artifactId>
             <version>1.0.0</version>
         </dependency>
