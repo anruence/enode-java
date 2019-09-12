@@ -14,7 +14,7 @@ import org.enodeframework.domain.impl.DefaultMemoryCache;
 import org.enodeframework.domain.impl.DefaultRepository;
 import org.enodeframework.domain.impl.EventSourcingAggregateStorage;
 import org.enodeframework.eventing.impl.DefaultEventSerializer;
-import org.enodeframework.eventing.impl.DefaultProcessingDomainEventStreamMessageProcessor;
+import org.enodeframework.eventing.impl.DefaultProcessingEventProcessor;
 import org.enodeframework.infrastructure.impl.DefaultTypeNameProvider;
 import org.enodeframework.messaging.impl.DefaultMessageDispatcher;
 import org.enodeframework.messaging.impl.DefaultMessageHandlerProvider;
@@ -50,8 +50,8 @@ public class ENodeAutoConfiguration {
     }
 
     @Bean
-    public DefaultProcessingDomainEventStreamMessageProcessor defaultProcessingDomainEventStreamMessageProcessor() {
-        return new DefaultProcessingDomainEventStreamMessageProcessor();
+    public DefaultProcessingEventProcessor defaultProcessingDomainEventStreamMessageProcessor() {
+        return new DefaultProcessingEventProcessor();
     }
 
     /**

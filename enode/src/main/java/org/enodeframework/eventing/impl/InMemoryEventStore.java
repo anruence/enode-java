@@ -47,7 +47,7 @@ public class InMemoryEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<AsyncTaskResult<EventAppendResult>> batchAppendAsync(List<DomainEventStream> eventStreams) {
-        Map<String, List<DomainEventStream>> eventStreamDict = eventStreams.stream().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
+        Map<String, List<DomainEventStream>> eventStreamDict = eventStreams.stream().distinct().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
         EventAppendResult eventAppendResult = new EventAppendResult();
         for (Map.Entry<String, List<DomainEventStream>> entry : eventStreamDict.entrySet()) {
             batchAppend(entry.getKey(), entry.getValue(), eventAppendResult);
@@ -94,31 +94,28 @@ public class InMemoryEventStore implements IEventStore {
             //检查提交过来的第一个事件的版本号是否是当前聚合根的当前版本号的下一个版本号
             if (firstEventStream.getVersion() != aggregateInfo.getCurrentVersion() + 1) {
                 if (!eventAppendResult.getDuplicateEventAggregateRootIdList().contains(aggregateRootId)) {
-                    eventAppendResult.getDuplicateEventAggregateRootIdList().add(aggregateRootId);
+                    eventAppendResult.addDuplicateEventAggregateRootId(aggregateRootId);
                 }
                 return;
+            }
+            //检查提交过来的事件本身是否满足版本号的递增关系
+            for (int i = 0; i < eventStreamList.size() - 1; i++) {
+                if (eventStreamList.get(i + 1).getVersion() != eventStreamList.get(i).getVersion() + 1) {
+                    eventAppendResult.addDuplicateEventAggregateRootId(aggregateRootId);
+                    return;
+                }
             }
 
             //检查重复处理的命令ID
             for (DomainEventStream eventStream : eventStreamList) {
                 if (aggregateInfo.getCommandDict().containsKey(eventStream.getCommandId())) {
                     if (!eventAppendResult.getDuplicateCommandIdList().contains(eventStream.getCommandId())) {
-                        eventAppendResult.getDuplicateCommandIdList().add(eventStream.getCommandId());
+                        eventAppendResult.addDuplicateCommandId(eventStream.getCommandId());
                     }
                 }
             }
             if (eventAppendResult.getDuplicateCommandIdList().size() > 0) {
                 return;
-            }
-
-            //检查提交过来的事件本身是否满足版本号的递增关系
-            for (int i = 0; i < eventStreamList.size() - 1; i++) {
-                if (eventStreamList.get(i + 1).getVersion() != eventStreamList.get(i).getVersion() + 1) {
-                    if (!eventAppendResult.getDuplicateEventAggregateRootIdList().contains(aggregateRootId)) {
-                        eventAppendResult.getDuplicateEventAggregateRootIdList().add(aggregateRootId);
-                    }
-                    return;
-                }
             }
 
             for (DomainEventStream eventStream : eventStreamList) {
@@ -128,7 +125,7 @@ public class InMemoryEventStore implements IEventStore {
             }
 
             if (!eventAppendResult.getSuccessAggregateRootIdList().contains(aggregateRootId)) {
-                eventAppendResult.getSuccessAggregateRootIdList().add(aggregateRootId);
+                eventAppendResult.addSuccessAggregateRootId(aggregateRootId);
             }
         }
     }

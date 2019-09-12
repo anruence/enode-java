@@ -2,11 +2,11 @@ package org.enodeframework.tests.TestClasses;
 
 import org.enodeframework.common.threading.ManualResetEvent;
 import org.enodeframework.eventing.DomainEventStreamMessage;
-import org.enodeframework.messaging.IMessageProcessContext;
+import org.enodeframework.messaging.IEventProcessContext;
 
 import java.util.List;
 
-public class DomainEventStreamProcessContext implements IMessageProcessContext {
+public class DomainEventStreamProcessContext implements IEventProcessContext {
     private DomainEventStreamMessage _domainEventStreamMessage;
     private ManualResetEvent _waitHandle;
     private List<Integer> _versionList;
@@ -18,7 +18,7 @@ public class DomainEventStreamProcessContext implements IMessageProcessContext {
     }
 
     @Override
-    public void notifyMessageProcessed() {
+    public void notifyEventProcessed() {
         _versionList.add(_domainEventStreamMessage.getVersion());
         if (_domainEventStreamMessage.getVersion() == 3) {
             _waitHandle.set();

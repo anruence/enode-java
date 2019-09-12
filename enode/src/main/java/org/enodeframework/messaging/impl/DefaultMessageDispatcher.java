@@ -105,12 +105,12 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
             return;
         }
         messageHandlerDataList.forEach(messageHandlerData -> {
-            SingleMessageDispatching singleMessageDispatching = new SingleMessageDispatching(message, queueMessageDispatching, messageHandlerData.AllHandlers, typeNameProvider);
-            if (messageHandlerData.ListHandlers != null && !messageHandlerData.ListHandlers.isEmpty()) {
-                messageHandlerData.ListHandlers.forEach(handler -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, handler, null, 0));
+            SingleMessageDispatching singleMessageDispatching = new SingleMessageDispatching(message, queueMessageDispatching, messageHandlerData.allHandlers, typeNameProvider);
+            if (messageHandlerData.listHandlers != null && !messageHandlerData.listHandlers.isEmpty()) {
+                messageHandlerData.listHandlers.forEach(handler -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, handler, null, 0));
             }
-            if (messageHandlerData.QueuedHandlers != null && !messageHandlerData.QueuedHandlers.isEmpty()) {
-                QueuedHandler<IMessageHandlerProxy1> queueHandler = new QueuedHandler<>(messageHandlerData.QueuedHandlers, (queuedHandler, nextHandler) -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, nextHandler, queuedHandler, 0));
+            if (messageHandlerData.queuedHandlers != null && !messageHandlerData.queuedHandlers.isEmpty()) {
+                QueuedHandler<IMessageHandlerProxy1> queueHandler = new QueuedHandler<>(messageHandlerData.queuedHandlers, (queuedHandler, nextHandler) -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, nextHandler, queuedHandler, 0));
                 dispatchSingleMessageToHandlerAsync(singleMessageDispatching, queueHandler.dequeueHandler(), queueHandler, 0);
             }
         });
@@ -118,14 +118,14 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
 
     private <T extends IObjectProxy> void dispatchMultiMessage(List<? extends IMessage> messages, List<MessageHandlerData<T>> messageHandlerDataList, RootDispatching rootDispatching, Action4<MultiMessageDisptaching, T, QueuedHandler<T>, Integer> dispatchAction) {
         messageHandlerDataList.forEach(messageHandlerData -> {
-            MultiMessageDisptaching multiMessageDispatching = new MultiMessageDisptaching(messages, messageHandlerData.AllHandlers, rootDispatching, typeNameProvider);
-            if (messageHandlerData.ListHandlers != null && !messageHandlerData.ListHandlers.isEmpty()) {
-                messageHandlerData.ListHandlers.forEach(handler -> {
+            MultiMessageDisptaching multiMessageDispatching = new MultiMessageDisptaching(messages, messageHandlerData.allHandlers, rootDispatching, typeNameProvider);
+            if (messageHandlerData.listHandlers != null && !messageHandlerData.listHandlers.isEmpty()) {
+                messageHandlerData.listHandlers.forEach(handler -> {
                     dispatchAction.apply(multiMessageDispatching, handler, null, 0);
                 });
             }
-            if (messageHandlerData.QueuedHandlers != null && !messageHandlerData.QueuedHandlers.isEmpty()) {
-                QueuedHandler<T> queuedHandler = new QueuedHandler<>(messageHandlerData.QueuedHandlers, (currentQueuedHandler, nextHandler) ->
+            if (messageHandlerData.queuedHandlers != null && !messageHandlerData.queuedHandlers.isEmpty()) {
+                QueuedHandler<T> queuedHandler = new QueuedHandler<>(messageHandlerData.queuedHandlers, (currentQueuedHandler, nextHandler) ->
                         dispatchAction.apply(multiMessageDispatching, nextHandler, currentQueuedHandler, 0)
                 );
                 dispatchAction.apply(multiMessageDispatching, queuedHandler.dequeueHandler(), queuedHandler, 0);

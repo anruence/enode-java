@@ -9,12 +9,10 @@ public abstract class PublishableException extends RuntimeException implements I
     private static final long serialVersionUID = 2099914413380872726L;
     private String id;
     private Date timestamp;
-    private int sequence;
 
     public PublishableException() {
         id = ObjectId.generateNewStringId();
         timestamp = new Date();
-        sequence = 1;
     }
 
     @Override

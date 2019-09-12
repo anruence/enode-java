@@ -2,21 +2,25 @@ package org.enodeframework.mysql;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
+import io.vertx.ext.sql.SQLConnection;
 import org.enodeframework.ObjectContainer;
 import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.common.utilities.Ensure;
-import org.enodeframework.common.utilities.Linq;
 import org.enodeframework.configurations.DataSourceKey;
 import org.enodeframework.configurations.DefaultDBConfigurationSetting;
 import org.enodeframework.configurations.OptionSetting;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.EventAppendResult;
+import org.enodeframework.eventing.EventAppendStatus;
 import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.eventing.IEventStore;
@@ -29,7 +33,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +48,8 @@ public class MysqlEventStore implements IEventStore {
     private final int bulkCopyBatchSize;
     private final int bulkCopyTimeout;
     private final SQLClient sqlClient;
+
+    private final String INSERT_EVENT_SQL = "INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)";
 
     @Autowired
     private IEventSerializer eventSerializer;
@@ -80,75 +85,102 @@ public class MysqlEventStore implements IEventStore {
         CompletableFuture<AsyncTaskResult<EventAppendResult>> future = new CompletableFuture<>();
         EventAppendResult appendResult = new EventAppendResult();
         if (eventStreams.size() == 0) {
-            throw new IllegalArgumentException("Event streams cannot be empty.");
+            future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, appendResult));
+            return future;
         }
-        Map<String, List<DomainEventStream>> eventStreamMap = eventStreams.stream().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
-        CountDownLatch latch = new CountDownLatch(eventStreamMap.size());
+        Map<String, List<DomainEventStream>> eventStreamMap = eventStreams.stream().distinct().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
+        BatchAggregateEventAppendResult batchAggregateEventAppendResult = new BatchAggregateEventAppendResult(eventStreamMap.keySet().size());
         for (Map.Entry<String, List<DomainEventStream>> entry : eventStreamMap.entrySet()) {
-            List<DomainEventStream> domainEventStreams = entry.getValue();
-            String aggregateRootId = Linq.first(domainEventStreams).getAggregateRootId();
-            String sql = String.format("INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)", getTableName(aggregateRootId));
-            int size = domainEventStreams.size();
-            JsonArray array = new JsonArray();
-            List<String> commandIds = Lists.newArrayList();
-            for (int i = 0; i < size; i++) {
-                DomainEventStream domainEventStream = domainEventStreams.get(i);
-                array.add(domainEventStream.getAggregateRootId());
-                array.add(domainEventStream.getAggregateRootTypeName());
-                array.add(domainEventStream.getCommandId());
-                array.add(domainEventStream.getVersion());
-                array.add(domainEventStream.getTimestamp().toInstant());
-                array.add(JsonTool.serialize(eventSerializer.serialize(domainEventStream.events())));
-                commandIds.add("-" + domainEventStream.getCommandId());
-                if (i == 0) {
-                    continue;
-                }
-                sql = sql.concat(",(?,?,?,?,?,?)");
-            }
-            sqlClient.updateWithParams(sql, array, x -> {
-                latch.countDown();
-                if (x.succeeded()) {
-                    appendResult.getSuccessAggregateRootIdList().add(entry.getKey());
-                    if (latch.getCount() == 0) {
-                        future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, appendResult));
-                    }
-                    return;
-                }
-                if (!(x.cause() instanceof SQLException)) {
-                    future.completeExceptionally(x.cause());
-                    return;
-                }
-                SQLException ex = (SQLException) x.cause();
-                // Duplicate entry '5d3ac841d1fcfe669e9a257d-5d3ac841d1fcfe669e9a2585' for key 'IX_EventStream_AggId_CommandId'
-                if (ex.getErrorCode() != 1062) {
-                    future.completeExceptionally(ex);
-                    return;
-                }
-                String exMessage = ex.getMessage();
-                if (exMessage.contains(versionIndexName)) {
-                    appendResult.getDuplicateEventAggregateRootIdList().add(aggregateRootId);
-                } else if (exMessage.contains(commandIndexName)) {
-                    for (String commandId : commandIds) {
-                        if (exMessage.contains(commandId)) {
-                            appendResult.getDuplicateCommandIdList().add(commandId.substring(1));
+            batchAppendAggregateEventsAsync(entry.getKey(), entry.getValue(), batchAggregateEventAppendResult, 0);
+        }
+        return batchAggregateEventAppendResult.taskCompletionSource;
+    }
+
+    private void batchAppendAggregateEventsAsync(String aggregateRootId, List<DomainEventStream> eventStreamList, BatchAggregateEventAppendResult batchAggregateEventAppendResult, int retryTimes) {
+        IOHelper.tryAsyncActionRecursively("BatchAppendAggregateEventsAsync",
+                () -> batchAppendAggregateEventsAsync(aggregateRootId, eventStreamList),
+                result -> {
+                    EventAppendStatus eventAppendStatus = result.getData();
+                    if (eventAppendStatus == EventAppendStatus.Success) {
+                        AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
+                        appendResult.setEventAppendStatus(EventAppendStatus.Success);
+                        batchAggregateEventAppendResult.addCompleteAggregate(aggregateRootId, appendResult);
+                    } else if (eventAppendStatus == EventAppendStatus.DuplicateEvent) {
+                        AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
+                        appendResult.setEventAppendStatus(EventAppendStatus.DuplicateEvent);
+                        batchAggregateEventAppendResult.addCompleteAggregate(aggregateRootId, appendResult);
+                    } else if (eventAppendStatus == EventAppendStatus.DuplicateCommand) {
+                        for (DomainEventStream eventStream : eventStreamList) {
+                            tryFindEventByCommandIdAsync(aggregateRootId, eventStream.getCommandId(), batchAggregateEventAppendResult, 0);
                         }
                     }
-                }
-                if (latch.getCount() == 0) {
-                    future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, appendResult));
-                }
-            });
+                },
+                () -> String.format("[aggregateRootId: %s, eventStreamCount: %s]", aggregateRootId, eventStreamList.size()),
+                errorMessage -> {
+                    logger.error("BatchAppendAggregateEventsAsync has unknown exception, the code should not be run to here, aggregateRootId: {}, errorMessage: {}", aggregateRootId, errorMessage);
+                },
+                retryTimes, true);
+    }
 
+    private void tryFindEventByCommandIdAsync(String aggregateRootId, String commandId, BatchAggregateEventAppendResult batchAggregateEventAppendResult, int retryTimes) {
+        IOHelper.tryAsyncActionRecursively("TryFindEventByCommandIdAsync",
+                () -> findAsync(aggregateRootId, commandId),
+                result ->
+                {
+                    if (result.getData() != null) {
+                        AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
+                        appendResult.setEventAppendStatus(EventAppendStatus.DuplicateCommand);
+                        appendResult.setDuplicateCommandId(result.getData().getCommandId());
+                        batchAggregateEventAppendResult.addCompleteAggregate(aggregateRootId, appendResult);
+                    }
+                },
+                () -> String.format("[aggregateRootId:%s, commandId:%s]", aggregateRootId, commandId),
+                errorMessage ->
+                {
+                    logger.error("TryFindEventByCommandIdAsync has unknown exception, the code should not be run to here, aggregateRootId:{}, commandId:{}, errorMessage: {}", aggregateRootId, commandId, errorMessage);
+                },
+                retryTimes, true);
+    }
+
+    private CompletableFuture<AsyncTaskResult<EventAppendStatus>> batchAppendAggregateEventsAsync(String aggregateRootId, List<DomainEventStream> eventStreamList) {
+        CompletableFuture<AsyncTaskResult<EventAppendStatus>> future = new CompletableFuture<>();
+        String sql = String.format(INSERT_EVENT_SQL, getTableName(aggregateRootId));
+        List<JsonArray> jsonArrays = Lists.newArrayList();
+        for (DomainEventStream domainEventStream : eventStreamList) {
+            JsonArray array = new JsonArray();
+            array.add(domainEventStream.getAggregateRootId());
+            array.add(domainEventStream.getAggregateRootTypeName());
+            array.add(domainEventStream.getCommandId());
+            array.add(domainEventStream.getVersion());
+            array.add(domainEventStream.getTimestamp().toInstant());
+            array.add(JsonTool.serialize(eventSerializer.serialize(domainEventStream.events())));
+            jsonArrays.add(array);
         }
+        batchWithParams(sql, jsonArrays, x -> {
+            if (x.succeeded()) {
+                future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendStatus.Success));
+                return;
+            }
+            future.completeExceptionally(x.cause());
+        });
         return future.exceptionally(throwable -> {
             if (throwable instanceof SQLException) {
+                SQLException ex = (SQLException) throwable;
+                if (ex.getErrorCode() == 1062 && ex.getMessage().contains(versionIndexName)) {
+                    return new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendStatus.DuplicateEvent);
+                }
+                if (ex.getErrorCode() == 1062 && ex.getMessage().contains(commandIndexName)) {
+                    return new AsyncTaskResult<>(AsyncTaskStatus.Success, EventAppendStatus.DuplicateCommand);
+                }
+
                 logger.error("Batch append event has sql exception.", throwable);
-                return new AsyncTaskResult<>(AsyncTaskStatus.IOException, throwable.getMessage(), appendResult);
+                return new AsyncTaskResult<>(AsyncTaskStatus.IOException, throwable.getMessage());
             }
             logger.error("Batch append event has unknown exception.", throwable);
-            return new AsyncTaskResult<>(AsyncTaskStatus.Failed, throwable.getMessage(), appendResult);
+            return new AsyncTaskResult<>(AsyncTaskStatus.Failed, throwable.getMessage());
         });
     }
+
 
     @Override
     public CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
@@ -273,5 +305,49 @@ public class MysqlEventStore implements IEventStore {
                 record.CreatedOn,
                 eventSerializer.deserialize(JsonTool.deserialize(record.Events, Map.class), IDomainEvent.class),
                 Maps.newHashMap());
+    }
+
+    private SQLClient batchWithParams(String sql, List<JsonArray> params, Handler<AsyncResult<List<Integer>>> handler) {
+        sqlClient.getConnection(getConnection -> {
+            if (getConnection.failed()) {
+                handler.handle(Future.failedFuture(getConnection.cause()));
+            } else {
+                final SQLConnection conn = getConnection.result();
+                conn.batchWithParams(sql, params, closeAndHandleResult(conn, handler));
+            }
+        });
+        return sqlClient;
+    }
+
+    /**
+     * Returns a {@link Handler} for {@link AsyncResult} of a {@code SQL} result that regardless of the outcome will close
+     * the passed {@link SQLConnection}. If the {@code AsyncResult} is failed then the failure will be propagated
+     * to the delegate handler. If it was successful, the result will be propagated to the delegate handler. In any case
+     * the delegation to the handler will be done as part of closing the {@code connection}.
+     *
+     * @param conn    the connection to close
+     * @param handler the target handler of the result
+     * @return the new handler
+     */
+    <T> Handler<AsyncResult<T>> closeAndHandleResult(SQLConnection conn, Handler<AsyncResult<T>> handler) {
+        return ar -> {
+            if (ar.failed()) {
+                conn.close(close -> {
+                    if (close.failed()) {
+                        handler.handle(Future.failedFuture(close.cause()));
+                    } else {
+                        handler.handle(Future.failedFuture(ar.cause()));
+                    }
+                });
+            } else {
+                conn.close(close -> {
+                    if (close.failed()) {
+                        handler.handle(Future.failedFuture(close.cause()));
+                    } else {
+                        handler.handle(Future.succeededFuture(ar.result()));
+                    }
+                });
+            }
+        };
     }
 }

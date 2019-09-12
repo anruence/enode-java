@@ -372,12 +372,12 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
             return HandlerFindResult.TooManyHandlerData;
         }
         MessageHandlerData<T> handlerData = Linq.first(handlerDataList);
-        if (handlerData.ListHandlers == null || handlerData.ListHandlers.size() == 0) {
+        if (handlerData.listHandlers == null || handlerData.listHandlers.size() == 0) {
             return HandlerFindResult.NotFound;
-        } else if (handlerData.ListHandlers.size() > 1) {
+        } else if (handlerData.listHandlers.size() > 1) {
             return HandlerFindResult.TooManyHandler;
         }
-        T handlerProxy = Linq.first(handlerData.ListHandlers);
+        T handlerProxy = Linq.first(handlerData.listHandlers);
         return new HandlerFindResult<>(HandlerFindStatus.Found, handlerProxy);
     }
 

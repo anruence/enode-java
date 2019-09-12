@@ -125,16 +125,16 @@ public class DefaultEventCommittingService implements IEventCommittingService {
                                 .filter(x -> appendResult.getSuccessAggregateRootIdList().contains(x.getEventStream().getAggregateRootId()))
                                 .collect(Collectors.groupingBy(x -> x.getEventStream().getAggregateRootId()));
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Batch persist events, mailboxNumber: {}, succeedAggregateRootCount: {}, detail: {}",
+                            logger.debug("Batch persist events, mailboxNumber: {}, succeedAggregateRootCount: {}, eventStreamDetail: {}",
                                     eventMailBox.getNumber(),
                                     appendResult.getSuccessAggregateRootIdList().size(),
                                     JsonTool.serialize(appendResult.getSuccessAggregateRootIdList()));
                         }
 
                         CompletableFuture.runAsync(() -> {
-                            successCommittedContextDict.values().forEach(x -> {
-                                for (EventCommittingContext context : x) {
-                                    publishDomainEventAsync(context.getProcessingCommand(), context.getEventStream());
+                            successCommittedContextDict.values().forEach(eventCommittingContexts -> {
+                                for (EventCommittingContext committingContext : eventCommittingContexts) {
+                                    publishDomainEventAsync(committingContext.getProcessingCommand(), committingContext.getEventStream());
                                 }
                             });
                         });
@@ -150,7 +150,7 @@ public class DefaultEventCommittingService implements IEventCommittingService {
                             Optional<EventCommittingContext> committingContextOptional = committingContexts.stream().filter(x -> x.getProcessingCommand().getMessage().getId().equals(commandId)).findFirst();
                             if (committingContextOptional.isPresent()) {
                                 EventCommittingContext committingContext = committingContextOptional.get();
-                                ProcessingCommandMailbox commandMailBox = committingContext.getProcessingCommand().getMailBox();
+                                //TODO 如果缺少这一行会导致程序异常
                                 resetCommandMailBoxConsumingSequence(committingContext, committingContext.getProcessingCommand().getSequence() + 1);
                                 tryToRepublishEventAsync(committingContext, 0);
                             }

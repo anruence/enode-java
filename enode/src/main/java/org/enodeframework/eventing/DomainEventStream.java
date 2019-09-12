@@ -123,7 +123,7 @@ public class DomainEventStream {
                 aggregateRootId,
                 version,
                 timestamp,
-                String.join("|", events.stream().map(x -> x.getClass().getSimpleName()).collect(Collectors.toList())),
-                String.join("|", items.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.toList())));
+                events.stream().map(x -> x.getClass().getSimpleName()).collect(Collectors.joining("|")),
+                items.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.joining("|")));
     }
 }

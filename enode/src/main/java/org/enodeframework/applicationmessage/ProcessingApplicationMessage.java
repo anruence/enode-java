@@ -1,21 +1,21 @@
 package org.enodeframework.applicationmessage;
 
-import org.enodeframework.messaging.IMessageProcessContext;
+import org.enodeframework.messaging.IEventProcessContext;
 
 /**
  * @author anruence@gmail.com
  */
 public class ProcessingApplicationMessage {
     public IApplicationMessage message;
-    private IMessageProcessContext processContext;
+    private IEventProcessContext processContext;
 
-    public ProcessingApplicationMessage(IApplicationMessage message, IMessageProcessContext processContext) {
+    public ProcessingApplicationMessage(IApplicationMessage message, IEventProcessContext processContext) {
         this.message = message;
         this.processContext = processContext;
     }
 
     public void complete() {
-        processContext.notifyMessageProcessed();
+        processContext.notifyEventProcessed();
     }
 
     public IApplicationMessage getMessage() {

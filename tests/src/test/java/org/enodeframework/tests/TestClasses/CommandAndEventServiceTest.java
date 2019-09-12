@@ -15,7 +15,7 @@ import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.EventAppendResult;
-import org.enodeframework.eventing.ProcessingDomainEventStreamMessage;
+import org.enodeframework.eventing.ProcessingEvent;
 import org.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
 import org.enodeframework.tests.Commands.AsyncHandlerBaseCommand;
 import org.enodeframework.tests.Commands.AsyncHandlerChildCommand;
@@ -858,9 +858,9 @@ public class CommandAndEventServiceTest extends AbstractTest {
         DomainEventStreamMessage message3 = createMessage(note);
         ManualResetEvent waitHandle = new ManualResetEvent(false);
         List<Integer> versionList = new ArrayList<>();
-        processor.process(new ProcessingDomainEventStreamMessage(message1, new DomainEventStreamProcessContext(message1, waitHandle, versionList)));
-        processor.process(new ProcessingDomainEventStreamMessage(message3, new DomainEventStreamProcessContext(message3, waitHandle, versionList)));
-        processor.process(new ProcessingDomainEventStreamMessage(message2, new DomainEventStreamProcessContext(message2, waitHandle, versionList)));
+        processor.process(new ProcessingEvent(message1, new DomainEventStreamProcessContext(message1, waitHandle, versionList)));
+        processor.process(new ProcessingEvent(message3, new DomainEventStreamProcessContext(message3, waitHandle, versionList)));
+        processor.process(new ProcessingEvent(message2, new DomainEventStreamProcessContext(message2, waitHandle, versionList)));
         waitHandle.waitOne();
         for (int i = 0; i < 3; i++) {
             Assert.assertEquals(i + 1, versionList.get(i).intValue());

@@ -1,13 +1,13 @@
 package org.enodeframework.messaging.impl;
 
-import org.enodeframework.messaging.IMessageProcessContext;
+import org.enodeframework.messaging.IEventProcessContext;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.QueueMessage;
 
 /**
  * @author anruence@gmail.com
  */
-public class DefaultMessageProcessContext implements IMessageProcessContext {
+public class DefaultMessageProcessContext implements IEventProcessContext {
     protected final QueueMessage queueMessage;
     protected final IMessageContext messageContext;
 
@@ -17,7 +17,7 @@ public class DefaultMessageProcessContext implements IMessageProcessContext {
     }
 
     @Override
-    public void notifyMessageProcessed() {
+    public void notifyEventProcessed() {
         messageContext.onMessageHandled(queueMessage);
     }
 }
