@@ -12,18 +12,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-public class ProcessingDomainEventStreamMessageMailBox {
-    private final static Logger logger = LoggerFactory.getLogger(ProcessingDomainEventStreamMessageMailBox.class);
+public class ProcessingEventMailBox {
+    private final static Logger logger = LoggerFactory.getLogger(ProcessingEventMailBox.class);
     private final Object lockObj = new Object();
     private String aggregateRootId;
     private Date lastActiveTime;
     private boolean running;
     private int latestHandledEventVersion;
-    private ConcurrentHashMap<Integer, ProcessingDomainEventStreamMessage> waitingMessageDict = new ConcurrentHashMap<>();
-    private ConcurrentLinkedQueue<ProcessingDomainEventStreamMessage> messageQueue;
-    private Action1<ProcessingDomainEventStreamMessage> handleMessageAction;
+    private ConcurrentHashMap<Integer, ProcessingEvent> waitingMessageDict = new ConcurrentHashMap<>();
+    private ConcurrentLinkedQueue<ProcessingEvent> messageQueue;
+    private Action1<ProcessingEvent> handleMessageAction;
 
-    public ProcessingDomainEventStreamMessageMailBox(String aggregateRootId, int latestHandledEventVersion, Action1<ProcessingDomainEventStreamMessage> handleMessageAction) {
+    public ProcessingEventMailBox(String aggregateRootId, int latestHandledEventVersion, Action1<ProcessingEvent> handleMessageAction) {
         messageQueue = new ConcurrentLinkedQueue<>();
         this.aggregateRootId = aggregateRootId;
         this.latestHandledEventVersion = latestHandledEventVersion;
@@ -43,7 +43,7 @@ public class ProcessingDomainEventStreamMessageMailBox {
         return messageQueue.size();
     }
 
-    public void enqueueMessage(ProcessingDomainEventStreamMessage message) {
+    public void enqueueMessage(ProcessingEvent message) {
         synchronized (lockObj) {
             DomainEventStreamMessage eventStream = message.getMessage();
             if (eventStream.getVersion() == latestHandledEventVersion + 1) {
@@ -64,7 +64,7 @@ public class ProcessingDomainEventStreamMessageMailBox {
                 latestHandledEventVersion = eventStream.getVersion();
                 int nextVersion = eventStream.getVersion() + 1;
                 while (waitingMessageDict.containsKey(nextVersion)) {
-                    ProcessingDomainEventStreamMessage nextMessage = waitingMessageDict.remove(nextVersion);
+                    ProcessingEvent nextMessage = waitingMessageDict.remove(nextVersion);
                     DomainEventStreamMessage nextEventStream = nextMessage.getMessage();
                     nextMessage.setMailbox(this);
                     messageQueue.add(nextMessage);
@@ -125,7 +125,7 @@ public class ProcessingDomainEventStreamMessageMailBox {
     }
 
     private void processMessages() {
-        ProcessingDomainEventStreamMessage message = messageQueue.poll();
+        ProcessingEvent message = messageQueue.poll();
         if (message != null) {
             lastActiveTime = new Date();
             try {

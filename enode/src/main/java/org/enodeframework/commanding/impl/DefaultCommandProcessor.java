@@ -38,7 +38,7 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     public DefaultCommandProcessor() {
         this.mailboxDict = new ConcurrentHashMap<>();
         this.timeoutSeconds = aggregateRootMaxInactiveSeconds;
-        this.taskName = "CleanInactiveAggregates" + System.nanoTime() + new Random().nextInt(10000);
+        this.taskName = "CleanInactiveProcessingCommandMailBoxes_" + System.nanoTime() + new Random().nextInt(10000);
     }
 
     public DefaultCommandProcessor setCommandMailBoxPersistenceMaxBatchSize(int commandMailBoxPersistenceMaxBatchSize) {

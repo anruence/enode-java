@@ -8,8 +8,6 @@ import java.util.Map;
  */
 public class PublishableExceptionMessage {
     private String uniqueId;
-    private String aggregateRootId;
-    private String aggregateRootTypeName;
     private String exceptionType;
     private Date timestamp;
     private Map<String, String> serializableInfo;
@@ -20,22 +18,6 @@ public class PublishableExceptionMessage {
 
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
-    }
-
-    public String getAggregateRootId() {
-        return aggregateRootId;
-    }
-
-    public void setAggregateRootId(String aggregateRootId) {
-        this.aggregateRootId = aggregateRootId;
-    }
-
-    public String getAggregateRootTypeName() {
-        return aggregateRootTypeName;
-    }
-
-    public void setAggregateRootTypeName(String aggregateRootTypeName) {
-        this.aggregateRootTypeName = aggregateRootTypeName;
     }
 
     public String getExceptionType() {

@@ -34,4 +34,23 @@ public class EventAppendResult {
         this.duplicateCommandIdList = duplicateCommandIdList;
     }
 
+
+    public void addSuccessAggregateRootId(String aggregateRootId) {
+        if (!successAggregateRootIdList.contains(aggregateRootId)) {
+            successAggregateRootIdList.add(aggregateRootId);
+        }
+    }
+
+    public void addDuplicateEventAggregateRootId(String aggregateRootId) {
+        if (!duplicateEventAggregateRootIdList.contains(aggregateRootId)) {
+            duplicateEventAggregateRootIdList.add(aggregateRootId);
+        }
+    }
+
+    public void addDuplicateCommandId(String commandId) {
+        if (!duplicateCommandIdList.contains(commandId)) {
+            duplicateCommandIdList.add(commandId);
+        }
+    }
+
 }

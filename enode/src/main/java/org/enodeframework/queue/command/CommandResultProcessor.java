@@ -63,7 +63,6 @@ public class CommandResultProcessor {
         });
         bindAddress = new InetSocketAddress(port);
         netServer.listen(port);
-        logger.info("CommandResultProcessor started, bindAddress:{}", bindAddress);
         commandTaskDict = CacheBuilder.newBuilder().removalListener((RemovalListener<String, CommandTaskCompletionSource>) notification -> {
             if (notification.getCause().equals(RemovalCause.EXPIRED)) {
                 processTimeoutCommand(notification.getKey(), notification.getValue());

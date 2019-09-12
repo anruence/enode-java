@@ -5,9 +5,9 @@ import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.IEventSerializer;
-import org.enodeframework.eventing.IProcessingDomainEventStreamMessageProcessor;
-import org.enodeframework.eventing.ProcessingDomainEventStreamMessage;
-import org.enodeframework.messaging.impl.DefaultMessageProcessContext;
+import org.enodeframework.eventing.IProcessingEventProcessor;
+import org.enodeframework.eventing.ProcessingEvent;
+import org.enodeframework.messaging.IEventProcessContext;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;
@@ -23,7 +23,7 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
     @Autowired
     protected IEventSerializer eventSerializer;
     @Autowired
-    protected IProcessingDomainEventStreamMessageProcessor domainEventMessageProcessor;
+    protected IProcessingEventProcessor domainEventMessageProcessor;
     protected boolean sendEventHandledMessage = true;
 
     public AbstractDomainEventListener setEventSerializer(IEventSerializer eventSerializer) {
@@ -31,7 +31,7 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         return this;
     }
 
-    public AbstractDomainEventListener setDomainEventMessageProcessor(IProcessingDomainEventStreamMessageProcessor domainEventMessageProcessor) {
+    public AbstractDomainEventListener setDomainEventMessageProcessor(IProcessingEventProcessor domainEventMessageProcessor) {
         this.domainEventMessageProcessor = domainEventMessageProcessor;
         return this;
     }
@@ -59,9 +59,9 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         EventStreamMessage message = JsonTool.deserialize(queueMessage.getBody(), EventStreamMessage.class);
         DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
         DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(this, domainEventStreamMessage, queueMessage, context);
-        ProcessingDomainEventStreamMessage processingMessage = new ProcessingDomainEventStreamMessage(domainEventStreamMessage, processContext);
+        ProcessingEvent processingMessage = new ProcessingEvent(domainEventStreamMessage, processContext);
         if (logger.isDebugEnabled()) {
-            logger.debug("ENode event message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.getId(), domainEventStreamMessage.getAggregateRootId(), domainEventStreamMessage.getAggregateRootTypeName(), domainEventStreamMessage.getVersion());
+            logger.debug("ENode event stream message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.getId(), domainEventStreamMessage.getAggregateRootId(), domainEventStreamMessage.getAggregateRootTypeName(), domainEventStreamMessage.getVersion());
         }
         domainEventMessageProcessor.process(processingMessage);
     }
@@ -80,21 +80,26 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         return domainEventStreamMessage;
     }
 
-    class DomainEventStreamProcessContext extends DefaultMessageProcessContext {
+    class DomainEventStreamProcessContext implements IEventProcessContext {
         private final AbstractDomainEventListener eventConsumer;
         private final DomainEventStreamMessage domainEventStreamMessage;
+        private final QueueMessage queueMessage;
+        private final IMessageContext messageContext;
 
         public DomainEventStreamProcessContext(
-                AbstractDomainEventListener eventConsumer, DomainEventStreamMessage domainEventStreamMessage,
-                QueueMessage queueMessage, IMessageContext messageContext) {
-            super(queueMessage, messageContext);
+                AbstractDomainEventListener eventConsumer,
+                DomainEventStreamMessage domainEventStreamMessage,
+                QueueMessage queueMessage,
+                IMessageContext messageContext) {
             this.eventConsumer = eventConsumer;
             this.domainEventStreamMessage = domainEventStreamMessage;
+            this.queueMessage = queueMessage;
+            this.messageContext = messageContext;
         }
 
         @Override
-        public void notifyMessageProcessed() {
-            super.notifyMessageProcessed();
+        public void notifyEventProcessed() {
+            messageContext.onMessageHandled(queueMessage);
             if (!eventConsumer.isSendEventHandledMessage()) {
                 return;
             }

@@ -1,21 +1,21 @@
 package org.enodeframework.publishableexception;
 
-import org.enodeframework.messaging.IMessageProcessContext;
+import org.enodeframework.messaging.IEventProcessContext;
 
 /**
  * @author anruence@gmail.com
  */
 public class ProcessingPublishableExceptionMessage {
-    private IMessageProcessContext processContext;
+    private IEventProcessContext processContext;
     private IPublishableException message;
 
-    public ProcessingPublishableExceptionMessage(IPublishableException message, IMessageProcessContext processContext) {
+    public ProcessingPublishableExceptionMessage(IPublishableException message, IEventProcessContext processContext) {
         this.message = message;
         this.processContext = processContext;
     }
 
     public void complete() {
-        processContext.notifyMessageProcessed();
+        processContext.notifyEventProcessed();
     }
 
     public IPublishableException getMessage() {

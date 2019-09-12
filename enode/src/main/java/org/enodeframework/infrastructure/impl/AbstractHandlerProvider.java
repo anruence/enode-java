@@ -67,9 +67,9 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                     queueHandlerDict.put(handler, priority);
                 }
             });
-            handlerData.AllHandlers = handlers;
-            handlerData.ListHandlers = listHandlers;
-            handlerData.QueuedHandlers = queueHandlerDict.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).map(x -> x.getKey()).collect(Collectors.toList());
+            handlerData.allHandlers = handlers;
+            handlerData.listHandlers = listHandlers;
+            handlerData.queuedHandlers = queueHandlerDict.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).map(x -> x.getKey()).collect(Collectors.toList());
             messageHandlerDict.put(key, handlerData);
         });
     }

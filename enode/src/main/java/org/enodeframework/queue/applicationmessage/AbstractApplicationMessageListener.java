@@ -1,19 +1,15 @@
 package org.enodeframework.queue.applicationmessage;
 
 import org.enodeframework.applicationmessage.IApplicationMessage;
-import org.enodeframework.applicationmessage.ProcessingApplicationMessage;
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.infrastructure.ITypeNameProvider;
 import org.enodeframework.messaging.IMessageDispatcher;
-import org.enodeframework.messaging.impl.DefaultMessageProcessContext;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.concurrent.CompletableFuture;
 
 public abstract class AbstractApplicationMessageListener implements IMessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(AbstractApplicationMessageListener.class);
@@ -38,15 +34,11 @@ public abstract class AbstractApplicationMessageListener implements IMessageHand
         ApplicationDataMessage appDataMessage = JsonTool.deserialize(msg, ApplicationDataMessage.class);
         Class applicationMessageType = typeNameProvider.getType(appDataMessage.getApplicationMessageType());
         IApplicationMessage message = (IApplicationMessage) JsonTool.deserialize(appDataMessage.getApplicationMessageData(), applicationMessageType);
-        DefaultMessageProcessContext processContext = new DefaultMessageProcessContext(queueMessage, context);
-        ProcessingApplicationMessage processingMessage = new ProcessingApplicationMessage(message, processContext);
         if (logger.isDebugEnabled()) {
-            logger.debug("ENode application message received, messageId: {}", message.getId());
+            logger.debug("ENode application message received, messageId: {}, messageType: {}", message.getId(), message.getClass().getName());
         }
-        CompletableFuture.runAsync(() -> {
-            messageDispatcher.dispatchMessageAsync(processingMessage.getMessage()).thenAccept(x -> {
-                processingMessage.complete();
-            });
+        messageDispatcher.dispatchMessageAsync(message).thenAccept(x -> {
+            context.onMessageHandled(queueMessage);
         });
     }
 }
