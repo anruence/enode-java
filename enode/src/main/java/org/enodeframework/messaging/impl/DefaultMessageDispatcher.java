@@ -208,10 +208,10 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                         queueHandler.onHandlerFinished(handlerProxy);
                     }
                     if (logger.isDebugEnabled()) {
-                        logger.debug("ThreeMessage handled success, [messages:{}, handlerType:{}]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerTypeName);
+                        logger.debug("ThreeMessage handled success, [messages:{}, handlerType:{}]", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.joining("|")), handlerTypeName);
                     }
                 },
-                () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
+                () -> String.format("[messages:%s, handlerType:%s]", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.joining("|")), handlerProxy.getInnerObject().getClass().getName()),
                 errorMessage -> logger.error("Handle three message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
                 retryTimes, true);
     }
