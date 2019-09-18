@@ -56,6 +56,7 @@ public class NoteController {
         for (int i = 0; i < totalCount; i++) {
             CreateNoteCommand command = new CreateNoteCommand(ObjectId.generateNewStringId(), "Sample Note" + ObjectId.generateNewStringId());
             command.setId(String.valueOf(i));
+            command.setId(String.valueOf(i));
             try {
                 CompletableFuture future;
                 if (mode == 1) {

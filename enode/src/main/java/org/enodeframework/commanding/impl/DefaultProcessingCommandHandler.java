@@ -12,7 +12,6 @@ import org.enodeframework.commanding.ICommandHandlerProvider;
 import org.enodeframework.commanding.ICommandHandlerProxy;
 import org.enodeframework.commanding.IProcessingCommandHandler;
 import org.enodeframework.commanding.ProcessingCommand;
-import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.common.io.AsyncTaskStatus;
@@ -217,10 +216,9 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 processingCommand.getMessage().getId(),
                 dirtyAggregateRoot.getUniqueId(),
                 typeNameProvider.getTypeName(dirtyAggregateRoot.getClass()),
-                Linq.first(changedEvents).getVersion(),
                 new Date(),
                 changedEvents,
-                processingCommand.getItems());
+                command.getItems());
         //异步将事件流提交到EventStore
         eventService.commitDomainEventAsync(new EventCommittingContext(dirtyAggregateRoot, eventStream, processingCommand));
     }
@@ -258,16 +256,15 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         //到这里，说明当前command执行遇到异常，然后当前command之前也没执行过，是第一次被执行。
                         //那就判断当前异常是否是需要被发布出去的异常，如果是，则发布该异常给所有消费者；否则，就记录错误日志；
                         //然后，认为该command处理失败即可；
-                        Throwable exp = exception.getCause();
-                        if (exp instanceof ENodeRuntimeException) {
-                            exp = ((ENodeRuntimeException) exp).getException();
-                        }
-                        if (exp instanceof IPublishableException) {
-                            IPublishableException publishableException = (IPublishableException) exp;
+                        if (exception instanceof IPublishableException) {
+                            IPublishableException publishableException = (IPublishableException) exception;
+                            publishExceptionAsync(processingCommand, publishableException, 0);
+                        } else if (exception.getCause() instanceof IPublishableException) {
+                            IPublishableException publishableException = (IPublishableException) exception.getCause();
                             publishExceptionAsync(processingCommand, publishableException, 0);
                         } else {
-                            logCommandExecuteException(processingCommand, commandHandler, exp);
-                            completeCommand(processingCommand, CommandStatus.Failed, exp.getClass().getName(), exp.getMessage());
+                            logCommandExecuteException(processingCommand, commandHandler, exception);
+                            completeCommand(processingCommand, CommandStatus.Failed, exception.getClass().getName(), exception.getMessage());
                         }
                     }
                 },
@@ -278,6 +275,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     }
 
     private void publishExceptionAsync(ProcessingCommand processingCommand, IPublishableException exception, int retryTimes) {
+        exception.mergeItems(processingCommand.getMessage().getItems());
         IOHelper.tryAsyncActionRecursively("PublishExceptionAsync",
                 () -> exceptionPublisher.publishAsync(exception),
                 result -> completeCommand(processingCommand, CommandStatus.Failed, exception.getClass().getName(), ((Exception) exception).getMessage()),
@@ -344,6 +342,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     private void commitChangesAsync(ProcessingCommand processingCommand, boolean success, IApplicationMessage message, String errorMessage) {
         if (success) {
             if (message != null) {
+                message.mergeItems(processingCommand.getMessage().getItems());
                 publishMessageAsync(processingCommand, message, 0);
             } else {
                 completeCommand(processingCommand, CommandStatus.Success, null, null);

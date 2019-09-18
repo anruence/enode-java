@@ -226,6 +226,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals(2, note.getVersion());
         //在重复执行该命令
         asyncResult = Task.await(_commandService.executeAsync(command2));
+        asyncResult = Task.await(_commandService.executeAsync(command2));
         Assert.assertNotNull(asyncResult);
         Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
         commandResult = asyncResult.getData();
@@ -573,15 +574,15 @@ public class CommandAndEventServiceTest extends AbstractTest {
         TestAggregateCreated aggregateCreated = new TestAggregateCreated("Note Title");
         aggregateCreated.setVersion(1);
         aggregateCreated.setAggregateRootId(aggregateId);
+        aggregateCreated.setAggregateRootStringId(aggregateId);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
                 commandId,
                 aggregateId,
                 TestAggregate.class.getName(),
-                1,
                 new Date(),
                 Lists.newArrayList(aggregateCreated),
-                null);
+                Maps.newHashMap());
         AsyncTaskResult<EventAppendResult> result = Task.await(_eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         Assert.assertEquals(AsyncTaskStatus.Success, result.getStatus());
@@ -639,13 +640,13 @@ public class CommandAndEventServiceTest extends AbstractTest {
         String commandId = ObjectId.generateNewStringId();
         TestAggregateCreated aggregateCreated = new TestAggregateCreated("Note Title");
         aggregateCreated.setAggregateRootId(aggregateId);
+        aggregateCreated.setAggregateRootStringId(aggregateId);
         aggregateCreated.setVersion(1);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
                 commandId,
                 aggregateId,
                 TestAggregate.class.getName(),
-                1,
                 new Date(),
                 Lists.newArrayList(aggregateCreated),
                 Maps.newHashMap());
@@ -702,16 +703,16 @@ public class CommandAndEventServiceTest extends AbstractTest {
         String commandId = ObjectId.generateNewStringId();
         TestAggregateTitleChanged titleChanged = new TestAggregateTitleChanged("Note Title");
         titleChanged.setAggregateRootId(aggregateId);
+        titleChanged.setAggregateRootStringId(aggregateId);
         titleChanged.setVersion(1);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
                 commandId,
                 aggregateId,
                 TestAggregate.class.getName(),
-                1,
                 new Date(),
                 Lists.newArrayList(titleChanged),
-                null);
+                Maps.newHashMap());
         AsyncTaskResult<EventAppendResult> result = Task.await(_eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         Assert.assertEquals(AsyncTaskStatus.Success, result.getStatus());
@@ -752,6 +753,7 @@ public class CommandAndEventServiceTest extends AbstractTest {
     }
 
     @Test
+    //TODO 需要更新策略
     public void update_concurrent_conflict_test() {
         String aggregateId = ObjectId.generateNewStringId();
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
@@ -770,16 +772,16 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals(1, note.getVersion());
         TestAggregateTitleChanged aggregateTitleChanged = new TestAggregateTitleChanged("Changed Title");
         aggregateTitleChanged.setAggregateRootId(aggregateId);
+        aggregateTitleChanged.setAggregateRootStringId(aggregateId);
         aggregateTitleChanged.setVersion(2);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
                 ObjectId.generateNewStringId(),
                 aggregateId,
                 TestAggregate.class.getName(),
-                2,
                 new Date(),
                 Lists.newArrayList(aggregateTitleChanged),
-                null);
+                Maps.newHashMap());
         AsyncTaskResult<EventAppendResult> result = Task.await(_eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         Assert.assertEquals(AsyncTaskStatus.Success, result.getStatus());

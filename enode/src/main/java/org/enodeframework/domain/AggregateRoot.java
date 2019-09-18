@@ -60,6 +60,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
             throw new RuntimeException("Aggregate root id cannot be null.");
         }
         domainEvent.setAggregateRootId(id);
+        domainEvent.setAggregateRootStringId(this.getUniqueId());
         domainEvent.setVersion(version + 1);
         handleEvent(domainEvent);
         appendUncommittedEvent(domainEvent);
@@ -80,7 +81,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
             throw new ENodeRuntimeException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
         }
         if (this.id == null && domainEvent.getVersion() == 1) {
-            this.id = (TAggregateRootId) domainEvent.getAggregateRootId();
+            this.id = (TAggregateRootId) domainEvent.getAggregateRootStringId();
         }
         handler.apply(this, domainEvent);
     }

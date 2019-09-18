@@ -11,6 +11,7 @@ public class PublishableExceptionMessage {
     private String exceptionType;
     private Date timestamp;
     private Map<String, String> serializableInfo;
+    private Map<String, String> items;
 
     public String getUniqueId() {
         return uniqueId;
@@ -42,5 +43,13 @@ public class PublishableExceptionMessage {
 
     public void setSerializableInfo(Map<String, String> serializableInfo) {
         this.serializableInfo = serializableInfo;
+    }
+
+    public Map<String, String> getItems() {
+        return items;
+    }
+
+    public void setItems(Map<String, String> items) {
+        this.items = items;
     }
 }

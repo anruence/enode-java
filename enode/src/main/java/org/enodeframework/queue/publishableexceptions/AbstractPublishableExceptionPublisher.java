@@ -31,6 +31,7 @@ public abstract class AbstractPublishableExceptionPublisher implements IMessageP
         exceptionMessage.setExceptionType(exception.getClass().getName());
         exceptionMessage.setTimestamp(exception.getTimestamp());
         exceptionMessage.setSerializableInfo(serializableInfo);
+        exceptionMessage.setItems(exception.getItems());
         String data = JsonTool.serialize(exceptionMessage);
         String routeKey = exception.getId();
         QueueMessage queueMessage = new QueueMessage();
