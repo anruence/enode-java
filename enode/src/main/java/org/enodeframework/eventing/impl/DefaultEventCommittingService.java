@@ -150,7 +150,7 @@ public class DefaultEventCommittingService implements IEventCommittingService {
                             Optional<EventCommittingContext> committingContextOptional = committingContexts.stream().filter(x -> x.getProcessingCommand().getMessage().getId().equals(commandId)).findFirst();
                             if (committingContextOptional.isPresent()) {
                                 EventCommittingContext committingContext = committingContextOptional.get();
-                                //TODO 如果缺少这一行会导致程序异常
+                                //TODO 如果缺少这一行会导致程序异常，刷新db聚合状态到内存Cache中
                                 resetCommandMailBoxConsumingSequence(committingContext, committingContext.getProcessingCommand().getSequence() + 1);
                                 tryToRepublishEventAsync(committingContext, 0);
                             }

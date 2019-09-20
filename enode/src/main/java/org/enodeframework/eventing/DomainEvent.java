@@ -13,15 +13,24 @@ public abstract class DomainEvent<TAggregateRootId> extends Message implements I
     private String aggregateRootTypeName;
     private int version;
     private int sequence;
+    private int specVersion;
 
+    public DomainEvent() {
+        super();
+        this.version = 1;
+        this.specVersion = 1;
+        this.sequence = 1;
+    }
+
+    @Override
     public String getCommandId() {
         return commandId;
     }
 
+    @Override
     public void setCommandId(String commandId) {
         this.commandId = commandId;
     }
-
 
     @Override
     public TAggregateRootId getAggregateRootId() {
@@ -72,5 +81,15 @@ public abstract class DomainEvent<TAggregateRootId> extends Message implements I
     @Override
     public void setSequence(int sequence) {
         this.sequence = sequence;
+    }
+
+    @Override
+    public int getSpecVersion() {
+        return specVersion;
+    }
+
+    @Override
+    public void setSpecVersion(int specVersion) {
+        this.specVersion = specVersion;
     }
 }

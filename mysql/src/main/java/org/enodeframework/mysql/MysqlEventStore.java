@@ -301,7 +301,6 @@ public class MysqlEventStore implements IEventStore {
                 record.CommandId,
                 record.AggregateRootId,
                 record.AggregateRootTypeName,
-                record.Version,
                 record.CreatedOn,
                 eventSerializer.deserialize(JsonTool.deserialize(record.Events, Map.class), IDomainEvent.class),
                 Maps.newHashMap());

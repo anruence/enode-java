@@ -9,6 +9,10 @@ public interface IDomainEvent<TAggregateRootId> extends IMessage {
 
     String getAggregateRootStringId();
 
+    void setCommandId(String commandId);
+
+    String getCommandId();
+
     void setAggregateRootStringId(String aggregateRootStringId);
 
     String getAggregateRootTypeName();
@@ -18,6 +22,10 @@ public interface IDomainEvent<TAggregateRootId> extends IMessage {
     int getVersion();
 
     void setVersion(int version);
+
+    int getSpecVersion();
+
+    void setSpecVersion(int specVersion);
 
     int getSequence();
 

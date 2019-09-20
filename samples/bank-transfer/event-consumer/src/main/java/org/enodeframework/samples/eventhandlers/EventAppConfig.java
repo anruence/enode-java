@@ -5,6 +5,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.enodeframework.ENodeBootstrap;
 import org.enodeframework.eventing.impl.InMemoryEventStore;
 import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
+import org.enodeframework.mysql.MysqlEventStore;
+import org.enodeframework.mysql.MysqlPublishedVersionStore;
 import org.enodeframework.queue.command.CommandResultProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,26 +28,26 @@ public class EventAppConfig {
         return processor;
     }
 
-    @Bean
-    public InMemoryEventStore inMemoryEventStore() {
-        return new InMemoryEventStore();
-    }
-
-    @Bean
-    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
-        return new InMemoryPublishedVersionStore();
-    }
-
 //    @Bean
-//    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-//        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
-//        return mysqlEventStore;
+//    public InMemoryEventStore inMemoryEventStore() {
+//        return new InMemoryEventStore();
 //    }
 //
 //    @Bean
-//    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-//        return new MysqlPublishedVersionStore(dataSource, null);
+//    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
+//        return new InMemoryPublishedVersionStore();
 //    }
+
+    @Bean
+    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
+        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
+        return mysqlEventStore;
+    }
+
+    @Bean
+    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
+        return new MysqlPublishedVersionStore(dataSource, null);
+    }
 
     @Bean
     public HikariDataSource dataSource() {

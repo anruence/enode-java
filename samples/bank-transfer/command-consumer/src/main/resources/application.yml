@@ -7,4 +7,4 @@ logging:
     console: "%d %-5level %logger : %msg%n"
     file: "%d %-5level [%thread] %logger : %msg%n"
   level:
-    org.enodeframework: INFO
+    org.enodeframework: DEBUG

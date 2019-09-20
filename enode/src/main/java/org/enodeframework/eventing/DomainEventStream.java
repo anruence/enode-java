@@ -1,7 +1,9 @@
 package org.enodeframework.eventing;
 
+import org.enodeframework.common.exception.ArgumentException;
 import org.enodeframework.common.exception.ENodeRuntimeException;
-import org.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.common.utilities.Linq;
+import org.enodeframework.messaging.Message;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -12,36 +14,45 @@ import java.util.stream.Collectors;
 /**
  * @author anruence@gmail.com
  */
-public class DomainEventStream {
-    private String id;
+public class DomainEventStream extends Message {
     private String commandId;
     private String aggregateRootTypeName;
     private String aggregateRootId;
     private int version;
     private List<IDomainEvent> events;
-    private Date timestamp;
-    private Map<String, String> items;
 
-    public DomainEventStream(String commandId, String aggregateRootId, String aggregateRootTypeName, int version, Date timestamp, List<IDomainEvent> events, Map<String, String> items) {
-        this.id = ObjectId.generateNewStringId();
+    public DomainEventStream(String commandId, String aggregateRootId, String aggregateRootTypeName, Date timestamp, List<IDomainEvent> events, Map<String, String> items) {
+        if (events == null || events.size() == 0) {
+            throw new ArgumentException("Parameter events cannot be null or empty.");
+        }
         this.commandId = commandId;
         this.aggregateRootId = aggregateRootId;
         this.aggregateRootTypeName = aggregateRootTypeName;
-        this.version = version;
+        this.version = Linq.first(events).getVersion();
         this.timestamp = timestamp;
         this.events = events;
         this.items = items == null ? new HashMap<>() : items;
         int sequence = 1;
         for (IDomainEvent event : events) {
+            if (!aggregateRootId.equals(event.getAggregateRootStringId())) {
+                throw new ENodeRuntimeException(String.format("Invalid domain event aggregateRootId, aggregateRootTypeName: %s expected aggregateRootId: %s, but was: %s",
+                        aggregateRootTypeName,
+                        aggregateRootId,
+                        event.getAggregateRootStringId()));
+            }
+
             if (event.getVersion() != this.getVersion()) {
                 throw new ENodeRuntimeException(String.format("Invalid domain event version, aggregateRootTypeName: %s aggregateRootId: %s expected version: %d, but was: %d",
-                        this.getAggregateRootTypeName(),
-                        this.getAggregateRootId(),
-                        this.getVersion(),
+                        aggregateRootTypeName,
+                        aggregateRootId,
+                        version,
                         event.getVersion()));
             }
+            event.setCommandId(commandId);
             event.setAggregateRootTypeName(aggregateRootTypeName);
             event.setSequence(sequence++);
+            event.setTimestamp(timestamp);
+            event.mergeItems(items);
         }
     }
 
@@ -51,14 +62,6 @@ public class DomainEventStream {
 
     public void setEvents(List<IDomainEvent> events) {
         this.events = events;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getCommandId() {
@@ -97,33 +100,18 @@ public class DomainEventStream {
         return events;
     }
 
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public Map<String, String> getItems() {
-        return items;
-    }
-
-    public void setItems(Map<String, String> items) {
-        this.items = items;
-    }
-
     @Override
     public String toString() {
-        String format = "[Id=%s,CommandId=%s,AggregateRootTypeName=%s,AggregateRootId=%s,Version=%d,Timestamp=%tc,Events=%s,Items=%s]";
+        String format = "[Id=%s,CommandId=%s,AggregateRootId=%s,AggregateRootTypeName=%s,Version=%d,Events=%s,Items=%s,Timestamp=%tc]";
         return String.format(format,
                 id,
                 commandId,
-                aggregateRootTypeName,
                 aggregateRootId,
+                aggregateRootTypeName,
                 version,
-                timestamp,
                 events.stream().map(x -> x.getClass().getSimpleName()).collect(Collectors.joining("|")),
-                items.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.joining("|")));
+                items.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.joining("|")),
+                timestamp
+        );
     }
 }

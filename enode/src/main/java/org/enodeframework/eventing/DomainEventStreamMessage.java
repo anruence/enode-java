@@ -1,7 +1,6 @@
 package org.enodeframework.eventing;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.enodeframework.messaging.Message;
 
 import java.util.List;
@@ -17,15 +16,14 @@ public class DomainEventStreamMessage extends Message {
     public int version;
     private String commandId;
     private List<IDomainEvent> events = Lists.newArrayList();
-    private Map<String, String> items = Maps.newHashMap();
 
     public DomainEventStreamMessage() {
     }
 
     public DomainEventStreamMessage(String commandId, String aggregateRootId, int version, String aggregateRootTypeName, List<IDomainEvent> events, Map<String, String> items) {
         this.commandId = commandId;
-        this.aggregateRootTypeName = aggregateRootTypeName;
         this.aggregateRootId = aggregateRootId;
+        this.aggregateRootTypeName = aggregateRootTypeName;
         this.version = version;
         this.events = events;
         this.items = items;
@@ -71,24 +69,18 @@ public class DomainEventStreamMessage extends Message {
         this.events = events;
     }
 
-    public Map<String, String> getItems() {
-        return items;
-    }
-
-    public void setItems(Map<String, String> items) {
-        this.items = items;
-    }
-
     @Override
     public String toString() {
-        return String.format("[MessageId=%s,CommandId=%s,AggregateRootId=%s,AggregateRootTypeName=%s,Version=%d,Events=%s,Items=%s]",
-                getId(),
-                getCommandId(),
-                getAggregateRootId(),
-                getAggregateRootTypeName(),
-                getVersion(),
-                events.stream().map(x -> x.getClass().getName()).collect(Collectors.joining("|")),
-                items.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.joining("|")));
+        String format = "[Id=%s,CommandId=%s,AggregateRootId=%s,AggregateRootTypeName=%s,Version=%d,Events=%s,Items=%s,Timestamp=%tc]";
+        return String.format(format,
+                id,
+                commandId,
+                aggregateRootId,
+                aggregateRootTypeName,
+                version,
+                events.stream().map(x -> x.getClass().getSimpleName()).collect(Collectors.joining("|")),
+                items.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.joining("|")),
+                timestamp
+        );
     }
-
 }

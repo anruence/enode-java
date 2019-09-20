@@ -37,6 +37,7 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
         }
         exception.setId(exceptionMessage.getUniqueId());
         exception.setTimestamp(exceptionMessage.getTimestamp());
+        exception.setItems(exceptionMessage.getItems());
         exception.restoreFrom(exceptionMessage.getSerializableInfo());
         if (logger.isDebugEnabled()) {
             logger.debug("ENode exception message received, messageId: {}", exceptionMessage.getUniqueId());
