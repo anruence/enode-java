@@ -22,10 +22,10 @@ public class SnapshotOnlyAggregateStorage implements IAggregateStorage {
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, String aggregateRootId) {
         if (aggregateRootType == null) {
-            throw new NullPointerException("aggregateRootType");
+            throw new IllegalArgumentException("aggregateRootType");
         }
         if (aggregateRootId == null) {
-            throw new NullPointerException("aggregateRootId");
+            throw new IllegalArgumentException("aggregateRootId");
         }
         CompletableFuture<T> future = aggregateSnapshotter.restoreFromSnapshotAsync(aggregateRootType, aggregateRootId);
         return future.thenApply(aggregateRoot -> {

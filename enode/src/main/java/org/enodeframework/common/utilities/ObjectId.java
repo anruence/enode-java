@@ -35,7 +35,7 @@ public class ObjectId {
 
     public ObjectId(byte[] bytes) {
         if (bytes == null) {
-            throw new NullPointerException("bytes");
+            throw new IllegalArgumentException("bytes");
         }
         unpack(bytes);
     }
@@ -100,7 +100,7 @@ public class ObjectId {
 
     public static String toHexString(byte[] bytes) {
         if (bytes == null) {
-            throw new NullPointerException("bytes");
+            throw new IllegalArgumentException("bytes");
         }
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < bytes.length; i++) {
@@ -159,7 +159,7 @@ public class ObjectId {
 
     public void unpack(byte[] bytes) {
         if (bytes == null) {
-            throw new NullPointerException("bytes");
+            throw new IllegalArgumentException("bytes");
         }
         if (bytes.length != 12) {
             throw new IllegalArgumentException("Byte array must be 12 bytes long.");

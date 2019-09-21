@@ -19,6 +19,9 @@ public class ProcessingCommandMailbox {
 
     private final Object lockObj = new Object();
     private final Object asyncLock = new Object();
+    /**
+     * Sequence 对应 ProcessingCommand
+     */
     private ConcurrentHashMap<Long, ProcessingCommand> messageDict;
     private IProcessingCommandHandler messageHandler;
     private int batchSize;

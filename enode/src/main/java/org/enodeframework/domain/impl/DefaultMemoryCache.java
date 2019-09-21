@@ -70,10 +70,10 @@ public class DefaultMemoryCache implements IMemoryCache {
     @Override
     public CompletableFuture<IAggregateRoot> getAsync(Object aggregateRootId, Class aggregateRootType) {
         if (aggregateRootId == null) {
-            throw new NullPointerException("aggregateRootId");
+            throw new IllegalArgumentException("aggregateRootId");
         }
         if (aggregateRootType == null) {
-            throw new NullPointerException("aggregateRootType");
+            throw new IllegalArgumentException("aggregateRootType");
         }
         AggregateCacheInfo aggregateRootInfo = aggregateRootInfoDict.get(aggregateRootId.toString());
         if (aggregateRootInfo == null) {
@@ -115,7 +115,7 @@ public class DefaultMemoryCache implements IMemoryCache {
     @Override
     public CompletableFuture<IAggregateRoot> refreshAggregateFromEventStoreAsync(String aggregateRootTypeName, Object aggregateRootId) {
         if (aggregateRootTypeName == null) {
-            throw new NullPointerException("aggregateRootTypeName");
+            throw new IllegalArgumentException("aggregateRootTypeName");
         }
         Class aggregateRootType = typeNameProvider.getType(aggregateRootTypeName);
         if (aggregateRootType == null) {
@@ -128,10 +128,10 @@ public class DefaultMemoryCache implements IMemoryCache {
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> refreshAggregateFromEventStoreAsync(Class<T> aggregateRootType, Object aggregateRootId) {
         if (aggregateRootId == null) {
-            throw new NullPointerException("aggregateRootId");
+            throw new IllegalArgumentException("aggregateRootId");
         }
         if (aggregateRootType == null) {
-            throw new NullPointerException("aggregateRootType");
+            throw new IllegalArgumentException("aggregateRootType");
         }
         return aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString()).thenApply(aggregateRoot -> {
             if (aggregateRoot != null) {
@@ -157,7 +157,7 @@ public class DefaultMemoryCache implements IMemoryCache {
     private void resetAggregateRootCache(IAggregateRoot aggregateRoot) {
         synchronized (lockObj) {
             if (aggregateRoot == null) {
-                throw new NullPointerException("aggregateRoot");
+                throw new IllegalArgumentException("aggregateRoot");
             }
             AggregateCacheInfo cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.getUniqueId(), x -> {
                 if (logger.isDebugEnabled()) {

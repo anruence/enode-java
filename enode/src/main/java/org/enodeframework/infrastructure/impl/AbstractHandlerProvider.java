@@ -125,7 +125,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                 List<THandlerProxyInterface> handlers = handlerDict.computeIfAbsent(key, k -> new ArrayList<>());
                 IObjectContainer objectContainer = getObjectContainer();
                 if (objectContainer == null) {
-                    throw new NullPointerException("IObjectContainer is null");
+                    throw new IllegalArgumentException("IObjectContainer is null");
                 }
                 // prototype
                 THandlerProxyInterface handlerProxy = objectContainer.resolve(getHandlerProxyImplementationType());

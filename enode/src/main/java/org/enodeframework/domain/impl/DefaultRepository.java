@@ -22,10 +22,10 @@ public class DefaultRepository implements IRepository {
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, Object aggregateRootId) {
         if (aggregateRootType == null) {
-            throw new NullPointerException("aggregateRootType");
+            throw new IllegalArgumentException("aggregateRootType");
         }
         if (aggregateRootId == null) {
-            throw new NullPointerException("aggregateRootId");
+            throw new IllegalArgumentException("aggregateRootId");
         }
         CompletableFuture<T> future = memoryCache.getAsync(aggregateRootId, aggregateRootType);
         return future.thenCompose(aggregateRoot -> {

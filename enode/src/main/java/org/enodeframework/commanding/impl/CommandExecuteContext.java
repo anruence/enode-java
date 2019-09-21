@@ -62,7 +62,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     @Override
     public void add(IAggregateRoot aggregateRoot) {
         if (aggregateRoot == null) {
-            throw new NullPointerException("aggregateRoot");
+            throw new IllegalArgumentException("aggregateRoot");
         }
         if (trackingAggregateRootDict.containsKey(aggregateRoot.getUniqueId())) {
             throw new AggregateRootAlreadyExistException(aggregateRoot.getUniqueId(), aggregateRoot.getClass());
@@ -92,7 +92,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Object id, boolean firstFromCache, Class<T> aggregateRootType) {
         if (id == null) {
-            throw new NullPointerException("id");
+            throw new IllegalArgumentException("id");
         }
         String aggregateRootId = id.toString();
         T iAggregateRoot = (T) trackingAggregateRootDict.get(aggregateRootId);

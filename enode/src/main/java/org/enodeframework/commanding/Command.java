@@ -22,7 +22,7 @@ public class Command<TAggregateRootId> extends Message implements ICommand {
     public Command(TAggregateRootId aggregateRootId, Map<String, String> items) {
         super();
         if (aggregateRootId == null) {
-            throw new NullPointerException("aggregateRootId");
+            throw new IllegalArgumentException("aggregateRootId");
         }
         this.aggregateRootId = aggregateRootId;
         this.items = items;

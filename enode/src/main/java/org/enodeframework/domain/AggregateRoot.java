@@ -54,7 +54,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     protected void applyEvent(IDomainEvent<TAggregateRootId> domainEvent) {
         if (domainEvent == null) {
-            throw new NullPointerException("domainEvent");
+            throw new IllegalArgumentException("domainEvent");
         }
         if (id == null) {
             throw new RuntimeException("Aggregate root id cannot be null.");
