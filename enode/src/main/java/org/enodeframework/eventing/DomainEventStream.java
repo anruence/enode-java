@@ -1,6 +1,5 @@
 package org.enodeframework.eventing;
 
-import org.enodeframework.common.exception.ArgumentException;
 import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.utilities.Linq;
 import org.enodeframework.messaging.Message;
@@ -23,7 +22,7 @@ public class DomainEventStream extends Message {
 
     public DomainEventStream(String commandId, String aggregateRootId, String aggregateRootTypeName, Date timestamp, List<IDomainEvent> events, Map<String, String> items) {
         if (events == null || events.size() == 0) {
-            throw new ArgumentException("Parameter events cannot be null or empty.");
+            throw new IllegalArgumentException("Parameter events cannot be null or empty.");
         }
         this.commandId = commandId;
         this.aggregateRootId = aggregateRootId;

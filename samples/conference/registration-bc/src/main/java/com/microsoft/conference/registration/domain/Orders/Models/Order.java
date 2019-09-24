@@ -10,7 +10,6 @@ import com.microsoft.conference.registration.domain.Orders.Events.OrderSuccessed
 import com.microsoft.conference.registration.domain.Orders.IPricingService;
 import com.microsoft.conference.registration.domain.SeatAssigning.Models.OrderSeatAssignments;
 import com.microsoft.conference.registration.domain.SeatQuantity;
-import org.enodeframework.common.exception.ArgumentException;
 import org.enodeframework.common.exception.InvalidOperationException;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.common.utilities.ObjectId;
@@ -32,7 +31,7 @@ public class Order extends AggregateRoot<String> {
         Ensure.notNullOrEmpty(conferenceId, "conferenceId");
         Ensure.notNull(seats, "seats");
         Ensure.notNull(pricingService, "pricingService");
-        if (seats.isEmpty()) throw new ArgumentException("The seats of order cannot be empty.");
+        if (seats.isEmpty()) throw new IllegalArgumentException("The seats of order cannot be empty.");
         OrderTotal orderTotal = pricingService.CalculateTotal(conferenceId, seats);
 //        Date.UtcNow.add(ConfigSettings.ReservationAutoExpiration)
         applyEvent(new OrderPlaced(conferenceId, orderTotal, new Date(), ObjectId.generateNewStringId()));

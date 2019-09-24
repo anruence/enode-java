@@ -10,6 +10,7 @@ import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
 import org.enodeframework.ObjectContainer;
+import org.enodeframework.common.exception.VertxRuntimeException;
 import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.io.IOHelper;
@@ -312,41 +313,57 @@ public class MysqlEventStore implements IEventStore {
                 handler.handle(Future.failedFuture(getConnection.cause()));
             } else {
                 final SQLConnection conn = getConnection.result();
-                conn.batchWithParams(sql, params, closeAndHandleResult(conn, handler));
+                startTx(conn, begin -> conn.batchWithParams(sql, params, batch -> {
+                    if (batch.succeeded()) {
+                        endTx(conn, end -> {
+                            close(conn);
+                            handler.handle(Future.succeededFuture(batch.result()));
+                        });
+                    } else {
+                        rollbackTx(conn, rollback -> {
+                            close(conn);
+                            handler.handle(Future.failedFuture(batch.cause()));
+                        });
+                    }
+                }));
             }
         });
         return sqlClient;
     }
 
-    /**
-     * Returns a {@link Handler} for {@link AsyncResult} of a {@code SQL} result that regardless of the outcome will close
-     * the passed {@link SQLConnection}. If the {@code AsyncResult} is failed then the failure will be propagated
-     * to the delegate handler. If it was successful, the result will be propagated to the delegate handler. In any case
-     * the delegation to the handler will be done as part of closing the {@code connection}.
-     *
-     * @param conn    the connection to close
-     * @param handler the target handler of the result
-     * @return the new handler
-     */
-    <T> Handler<AsyncResult<T>> closeAndHandleResult(SQLConnection conn, Handler<AsyncResult<T>> handler) {
-        return ar -> {
-            if (ar.failed()) {
-                conn.close(close -> {
-                    if (close.failed()) {
-                        handler.handle(Future.failedFuture(close.cause()));
-                    } else {
-                        handler.handle(Future.failedFuture(ar.cause()));
-                    }
-                });
-            } else {
-                conn.close(close -> {
-                    if (close.failed()) {
-                        handler.handle(Future.failedFuture(close.cause()));
-                    } else {
-                        handler.handle(Future.succeededFuture(ar.result()));
-                    }
-                });
+    <T> void startTx(SQLConnection conn, Handler<T> done) {
+        conn.setAutoCommit(false, res -> {
+            if (res.failed()) {
+                throw new RuntimeException(res.cause());
             }
-        };
+            done.handle(null);
+        });
+    }
+
+    <T> void endTx(SQLConnection conn, Handler<T> done) {
+        conn.commit(res -> {
+            if (res.failed()) {
+                throw new VertxRuntimeException(res.cause());
+            }
+            done.handle(null);
+        });
+    }
+
+    <T> void rollbackTx(SQLConnection conn, Handler<T> done) {
+        conn.rollback(res -> {
+            if (res.failed()) {
+                throw new VertxRuntimeException(res.cause());
+            }
+            done.handle(null);
+        });
+    }
+
+    <T> void close(SQLConnection conn) {
+        // and close the connection
+        conn.close(done -> {
+            if (done.failed()) {
+                throw new VertxRuntimeException(done.cause());
+            }
+        });
     }
 }

@@ -4,7 +4,6 @@ import com.microsoft.conference.registration.domain.Orders.Models.OrderLine;
 import com.microsoft.conference.registration.domain.SeatAssigning.Events.OrderSeatAssignmentsCreated;
 import com.microsoft.conference.registration.domain.SeatAssigning.Events.SeatAssigned;
 import com.microsoft.conference.registration.domain.SeatAssigning.Events.SeatUnassigned;
-import org.enodeframework.common.exception.ArgumentException;
 import org.enodeframework.common.exception.ArgumentOutOfRangeException;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.common.utilities.Linq;
@@ -22,7 +21,7 @@ public class OrderSeatAssignments extends AggregateRoot<String> {
         super(ObjectId.generateNewStringId());
         Ensure.notNullOrEmpty(orderId, "orderId");
         Ensure.notNull(orderLines, "orderLines");
-        if (orderLines.isEmpty()) throw new ArgumentException("The seats of order cannot be empty.");
+        if (orderLines.isEmpty()) throw new IllegalArgumentException("The seats of order cannot be empty.");
         int position = 0;
         List<SeatAssignment> assignments = new ArrayList<>();
         for (OrderLine orderLine : orderLines) {

@@ -9,11 +9,11 @@ public interface IDomainEvent<TAggregateRootId> extends IMessage {
 
     String getAggregateRootStringId();
 
-    void setCommandId(String commandId);
+    void setAggregateRootStringId(String aggregateRootStringId);
 
     String getCommandId();
 
-    void setAggregateRootStringId(String aggregateRootStringId);
+    void setCommandId(String commandId);
 
     String getAggregateRootTypeName();
 

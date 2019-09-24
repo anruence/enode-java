@@ -3,8 +3,6 @@ package org.enodeframework.samples.eventhandlers;
 import com.google.common.collect.Lists;
 import com.zaxxer.hikari.HikariDataSource;
 import org.enodeframework.ENodeBootstrap;
-import org.enodeframework.eventing.impl.InMemoryEventStore;
-import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
 import org.enodeframework.mysql.MysqlEventStore;
 import org.enodeframework.mysql.MysqlPublishedVersionStore;
 import org.enodeframework.queue.command.CommandResultProcessor;

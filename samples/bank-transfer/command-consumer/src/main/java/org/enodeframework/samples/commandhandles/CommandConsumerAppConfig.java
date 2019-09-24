@@ -6,8 +6,6 @@ import org.enodeframework.ENodeBootstrap;
 import org.enodeframework.commanding.impl.DefaultCommandProcessor;
 import org.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import org.enodeframework.eventing.impl.DefaultEventCommittingService;
-import org.enodeframework.eventing.impl.InMemoryEventStore;
-import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
 import org.enodeframework.mysql.MysqlEventStore;
 import org.enodeframework.mysql.MysqlPublishedVersionStore;
 import org.springframework.context.annotation.Bean;
