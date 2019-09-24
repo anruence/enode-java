@@ -1,7 +1,6 @@
 package org.enodeframework.eventing.impl;
 
 import com.google.common.base.Strings;
-import org.enodeframework.common.exception.ArgumentException;
 import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.common.io.AsyncTaskStatus;
@@ -57,7 +56,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     public void process(ProcessingEvent processingEvent) {
         String aggregateRootId = processingEvent.getMessage().getAggregateRootId();
         if (Strings.isNullOrEmpty(aggregateRootId)) {
-            throw new ArgumentException("aggregateRootId of domain event stream cannot be null or empty, domainEventStreamId:" + processingEvent.getMessage().getId());
+            throw new IllegalArgumentException("aggregateRootId of domain event stream cannot be null or empty, domainEventStreamId:" + processingEvent.getMessage().getId());
         }
         synchronized (lockObj) {
             ProcessingEventMailBox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, key -> {
