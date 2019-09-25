@@ -311,54 +311,42 @@ public class MysqlEventStore implements IEventStore {
         sqlClient.getConnection(getConnection -> {
             if (getConnection.failed()) {
                 handler.handle(Future.failedFuture(getConnection.cause()));
-            } else {
-                final SQLConnection conn = getConnection.result();
-                startTx(conn, begin -> conn.batchWithParams(sql, params, batch -> {
+                return;
+            }
+            final SQLConnection conn = getConnection.result();
+            conn.setAutoCommit(false, autocommit -> {
+                if (autocommit.failed()) {
+                    handler.handle(Future.failedFuture(autocommit.cause()));
+                    close(conn);
+                    return;
+                }
+                conn.batchWithParams(sql, params, batch -> {
                     if (batch.succeeded()) {
-                        endTx(conn, end -> {
+                        conn.commit(commit -> {
+                            if (commit.succeeded()) {
+                                handler.handle(Future.succeededFuture(batch.result()));
+                            } else {
+                                handler.handle(Future.failedFuture(commit.cause()));
+                            }
                             close(conn);
-                            handler.handle(Future.succeededFuture(batch.result()));
                         });
                     } else {
-                        rollbackTx(conn, rollback -> {
+                        conn.rollback(rollback -> {
+                            if (rollback.succeeded()) {
+                                handler.handle(Future.failedFuture(batch.cause()));
+                            } else {
+                                handler.handle(Future.failedFuture(rollback.cause()));
+                            }
                             close(conn);
-                            handler.handle(Future.failedFuture(batch.cause()));
                         });
                     }
-                }));
-            }
+                });
+            });
         });
         return sqlClient;
     }
 
-    <T> void startTx(SQLConnection conn, Handler<T> done) {
-        conn.setAutoCommit(false, res -> {
-            if (res.failed()) {
-                throw new RuntimeException(res.cause());
-            }
-            done.handle(null);
-        });
-    }
-
-    <T> void endTx(SQLConnection conn, Handler<T> done) {
-        conn.commit(res -> {
-            if (res.failed()) {
-                throw new VertxRuntimeException(res.cause());
-            }
-            done.handle(null);
-        });
-    }
-
-    <T> void rollbackTx(SQLConnection conn, Handler<T> done) {
-        conn.rollback(res -> {
-            if (res.failed()) {
-                throw new VertxRuntimeException(res.cause());
-            }
-            done.handle(null);
-        });
-    }
-
-    <T> void close(SQLConnection conn) {
+    void close(SQLConnection conn) {
         // and close the connection
         conn.close(done -> {
             if (done.failed()) {
