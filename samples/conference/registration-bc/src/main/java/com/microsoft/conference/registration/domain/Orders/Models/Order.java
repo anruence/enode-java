@@ -31,7 +31,9 @@ public class Order extends AggregateRoot<String> {
         Ensure.notNullOrEmpty(conferenceId, "conferenceId");
         Ensure.notNull(seats, "seats");
         Ensure.notNull(pricingService, "pricingService");
-        if (seats.isEmpty()) throw new IllegalArgumentException("The seats of order cannot be empty.");
+        if (seats.isEmpty()) {
+            throw new IllegalArgumentException("The seats of order cannot be empty.");
+        }
         OrderTotal orderTotal = pricingService.CalculateTotal(conferenceId, seats);
 //        Date.UtcNow.add(ConfigSettings.ReservationAutoExpiration)
         applyEvent(new OrderPlaced(conferenceId, orderTotal, new Date(), ObjectId.generateNewStringId()));

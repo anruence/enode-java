@@ -1,6 +1,6 @@
 package org.enodeframework.common.exception;
 
-public class InvalidOperationException extends RuntimeException {
+public class InvalidOperationException extends ENodeRuntimeException {
     public InvalidOperationException() {
         super();
     }

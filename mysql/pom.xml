@@ -30,7 +30,6 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-jdbc-client</artifactId>
-            <version>3.8.0</version>
         </dependency>
     </dependencies>
 </project>

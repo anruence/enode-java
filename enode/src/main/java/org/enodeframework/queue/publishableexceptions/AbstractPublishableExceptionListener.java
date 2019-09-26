@@ -1,6 +1,6 @@
 package org.enodeframework.queue.publishableexceptions;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.InvalidOperationException;
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.infrastructure.ITypeNameProvider;
 import org.enodeframework.messaging.IMessageDispatcher;
@@ -33,7 +33,7 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
         try {
             exception = (IPublishableException) exceptionType.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new ENodeRuntimeException(e);
+            throw new InvalidOperationException(e);
         }
         exception.setId(exceptionMessage.getUniqueId());
         exception.setTimestamp(exceptionMessage.getTimestamp());

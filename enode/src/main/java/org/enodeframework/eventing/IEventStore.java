@@ -7,18 +7,19 @@ import java.util.concurrent.CompletableFuture;
 
 public interface IEventStore {
 
-    /// <summary>Batch append the given event streams to the event store async.
-    /// </summary>
+    /**
+     * Batch append the given event streams to the event store async.
+     */
     CompletableFuture<AsyncTaskResult<EventAppendResult>> batchAppendAsync(List<DomainEventStream> eventStreams);
 
-    /// <summary>Find a single event stream by aggregateRootId and version async.
-    /// </summary>
-    /// <returns></returns>
+    /**
+     * Find a single event stream by aggregateRootId and version async.
+     */
     CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, int version);
 
-    /// <summary>Find a single event stream by aggregateRootId and commandId async.
-    /// </summary>
-    /// <returns></returns>
+    /**
+     * Find a single event stream by aggregateRootId and commandId async.
+     */
     CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, String commandId);
 
     /**

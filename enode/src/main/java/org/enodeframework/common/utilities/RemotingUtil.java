@@ -16,9 +16,7 @@
  */
 package org.enodeframework.common.utilities;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.enodeframework.common.exception.RemotingException;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -30,8 +28,9 @@ import java.net.UnknownHostException;
  */
 public class RemotingUtil {
     public static final String OS_NAME = System.getProperty("os.name");
-    private static final Logger log = LoggerFactory.getLogger(RemotingUtil.class);
+
     private static boolean isLinuxPlatform = false;
+
     private static boolean isWindowsPlatform = false;
 
     static {
@@ -49,7 +48,7 @@ public class RemotingUtil {
 
     public static Address string2Address(final String addr) {
         String[] s = addr.split(":");
-        return new Address(s[0], Integer.valueOf(s[1]));
+        return new Address(s[0], Integer.parseInt(s[1]));
     }
 
     public static String parseAddress(InetSocketAddress socketAddress) {
@@ -59,7 +58,7 @@ public class RemotingUtil {
             try {
                 localAddress = Inet4Address.getLocalHost();
             } catch (UnknownHostException e) {
-                throw new ENodeRuntimeException("No local address found", e);
+                throw new RemotingException("No local address found", e);
             }
         }
         return String.format("%s:%d", localAddress.getHostAddress(), port);

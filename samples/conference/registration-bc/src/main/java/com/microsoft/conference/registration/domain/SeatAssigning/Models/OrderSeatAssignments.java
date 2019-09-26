@@ -21,7 +21,9 @@ public class OrderSeatAssignments extends AggregateRoot<String> {
         super(ObjectId.generateNewStringId());
         Ensure.notNullOrEmpty(orderId, "orderId");
         Ensure.notNull(orderLines, "orderLines");
-        if (orderLines.isEmpty()) throw new IllegalArgumentException("The seats of order cannot be empty.");
+        if (orderLines.isEmpty()) {
+            throw new IllegalArgumentException("The seats of order cannot be empty.");
+        }
         int position = 0;
         List<SeatAssignment> assignments = new ArrayList<>();
         for (OrderLine orderLine : orderLines) {
