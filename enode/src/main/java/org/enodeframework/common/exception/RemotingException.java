@@ -3,8 +3,9 @@ package org.enodeframework.common.exception;
 /**
  * @author anruence@gmail.com
  */
-public class RemotingException extends RuntimeException {
-    private static final long serialVersionUID = 2976713867727370181L;
+public class RemotingException extends ENodeRuntimeException {
+
+    private static final long serialVersionUID = 2514628822193223823L;
 
     public RemotingException() {
         super();
