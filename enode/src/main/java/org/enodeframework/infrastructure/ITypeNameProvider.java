@@ -10,7 +10,7 @@ public interface ITypeNameProvider {
     String getTypeName(Class type);
 
     /**
-     * 跟进name找Class
+     * 根据name找Class
      *
      * @param typeName
      * @return

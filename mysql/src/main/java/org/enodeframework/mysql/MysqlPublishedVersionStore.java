@@ -1,6 +1,7 @@
 package org.enodeframework.mysql;
 
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
 import org.enodeframework.ObjectContainer;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -94,8 +96,9 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
         sqlClient.queryWithParams(sql, array, x -> {
             if (x.succeeded()) {
                 int result = 0;
-                if (x.result().getNumRows() >= 1) {
-                    result = x.result().getRows().get(0).getInteger("Version");
+                Optional<JsonObject> first = x.result().getRows().stream().findFirst();
+                if (first.isPresent()) {
+                    result = first.get().getInteger("Version");
                 }
                 future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, result));
                 return;

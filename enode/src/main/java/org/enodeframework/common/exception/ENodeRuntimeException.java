@@ -5,15 +5,18 @@ package org.enodeframework.common.exception;
  * checked exception covert to non-checked exception
  */
 public class ENodeRuntimeException extends RuntimeException {
+
     private static final long serialVersionUID = -8951926710590746149L;
-    /**
-     * checked exception
-     */
+
     private Throwable exception;
 
-    public ENodeRuntimeException(Throwable e) {
-        super(e.getMessage());
-        exception = e instanceof ENodeRuntimeException ? ((ENodeRuntimeException) e).getException() : e;
+    public ENodeRuntimeException() {
+        super();
+    }
+
+    public ENodeRuntimeException(Throwable throwable) {
+        super(throwable.getMessage());
+        exception = throwable instanceof ENodeRuntimeException ? ((ENodeRuntimeException) throwable).getException() : throwable;
     }
 
     public ENodeRuntimeException(String msg) {

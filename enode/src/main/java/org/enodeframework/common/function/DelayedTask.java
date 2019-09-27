@@ -1,7 +1,7 @@
 package org.enodeframework.common.function;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.InvalidOperationException;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +27,7 @@ public class DelayedTask {
             try {
                 action.apply();
             } catch (InterruptedException e) {
-                throw new ENodeRuntimeException(e);
+                throw new InvalidOperationException(e);
             }
         }, duration.toMillis(), TimeUnit.MILLISECONDS);
     }

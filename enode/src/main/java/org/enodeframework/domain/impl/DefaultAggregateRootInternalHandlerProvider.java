@@ -1,7 +1,7 @@
 package org.enodeframework.domain.impl;
 
 import org.enodeframework.common.SysProperties;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.RegisterComponentException;
 import org.enodeframework.common.function.Action2;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IAggregateRootInternalHandlerProvider;
@@ -66,11 +66,11 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
                 try {
                     methodHandle.invoke(aggregateRoot, domainEvent);
                 } catch (Throwable throwable) {
-                    throw new ENodeRuntimeException(throwable);
+                    throw new RegisterComponentException(throwable);
                 }
             });
         } catch (IllegalAccessException e) {
-            throw new ENodeRuntimeException(e);
+            throw new RegisterComponentException(e);
         }
     }
 

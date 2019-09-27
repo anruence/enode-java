@@ -5,7 +5,7 @@ import org.enodeframework.annotation.Event;
 import org.enodeframework.annotation.Priority;
 import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.common.container.IObjectContainer;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.RegisterComponentException;
 import org.enodeframework.infrastructure.IAssemblyInitializer;
 import org.enodeframework.infrastructure.IObjectProxy;
 import org.enodeframework.infrastructure.MethodInvocation;
@@ -137,7 +137,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                 handlerProxy.setMethodHandle(handleMethod);
                 handlers.add(handlerProxy);
             } catch (Exception e) {
-                throw new ENodeRuntimeException(e);
+                throw new RegisterComponentException(e);
             }
         });
     }

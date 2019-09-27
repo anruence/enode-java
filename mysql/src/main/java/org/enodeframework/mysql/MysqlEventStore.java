@@ -6,11 +6,11 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
 import org.enodeframework.ObjectContainer;
-import org.enodeframework.common.exception.VertxRuntimeException;
 import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.io.IOHelper;
@@ -33,6 +33,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -126,8 +127,7 @@ public class MysqlEventStore implements IEventStore {
     private void tryFindEventByCommandIdAsync(String aggregateRootId, String commandId, BatchAggregateEventAppendResult batchAggregateEventAppendResult, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("TryFindEventByCommandIdAsync",
                 () -> findAsync(aggregateRootId, commandId),
-                result ->
-                {
+                result -> {
                     if (result.getData() != null) {
                         AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
                         appendResult.setEventAppendStatus(EventAppendStatus.DuplicateCommand);
@@ -225,11 +225,12 @@ public class MysqlEventStore implements IEventStore {
             array.add(version);
             sqlClient.queryWithParams(sql, array, x -> {
                 if (x.succeeded()) {
-                    StreamRecord record = null;
-                    if (x.result().getRows().size() >= 1) {
-                        record = x.result().getRows().get(0).mapTo(StreamRecord.class);
+                    DomainEventStream stream = null;
+                    Optional<JsonObject> first = x.result().getRows().stream().findFirst();
+                    if (first.isPresent()) {
+                        StreamRecord record = first.get().mapTo(StreamRecord.class);
+                        stream = convertFrom(record);
                     }
-                    DomainEventStream stream = record != null ? convertFrom(record) : null;
                     future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, stream));
                     return;
                 }
@@ -258,11 +259,12 @@ public class MysqlEventStore implements IEventStore {
             array.add(commandId);
             sqlClient.queryWithParams(sql, array, x -> {
                 if (x.succeeded()) {
-                    StreamRecord record = null;
-                    if (x.result().getRows().size() >= 1) {
-                        record = x.result().getRows().get(0).mapTo(StreamRecord.class);
+                    DomainEventStream stream = null;
+                    Optional<JsonObject> first = x.result().getRows().stream().findFirst();
+                    if (first.isPresent()) {
+                        StreamRecord record = first.get().mapTo(StreamRecord.class);
+                        stream = convertFrom(record);
                     }
-                    DomainEventStream stream = record != null ? convertFrom(record) : null;
                     future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, stream));
                     return;
                 }
@@ -317,7 +319,7 @@ public class MysqlEventStore implements IEventStore {
             conn.setAutoCommit(false, autocommit -> {
                 if (autocommit.failed()) {
                     handler.handle(Future.failedFuture(autocommit.cause()));
-                    close(conn);
+                    resetAutoCommitAndCloseConnection(conn);
                     return;
                 }
                 conn.batchWithParams(sql, params, batch -> {
@@ -328,7 +330,7 @@ public class MysqlEventStore implements IEventStore {
                             } else {
                                 handler.handle(Future.failedFuture(commit.cause()));
                             }
-                            close(conn);
+                            resetAutoCommitAndCloseConnection(conn);
                         });
                     } else {
                         conn.rollback(rollback -> {
@@ -337,7 +339,7 @@ public class MysqlEventStore implements IEventStore {
                             } else {
                                 handler.handle(Future.failedFuture(rollback.cause()));
                             }
-                            close(conn);
+                            resetAutoCommitAndCloseConnection(conn);
                         });
                     }
                 });
@@ -346,12 +348,13 @@ public class MysqlEventStore implements IEventStore {
         return sqlClient;
     }
 
-    void close(SQLConnection conn) {
-        // and close the connection
-        conn.close(done -> {
-            if (done.failed()) {
-                throw new VertxRuntimeException(done.cause());
+    private void resetAutoCommitAndCloseConnection(SQLConnection conn) {
+        conn.setAutoCommit(true, commit -> {
+            if (commit.failed()) {
+                logger.error("mysql driver set autocommit true failed", commit.cause());
             }
+            // close will put the connection into pool
+            conn.close();
         });
     }
 }
