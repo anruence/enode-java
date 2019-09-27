@@ -1,6 +1,9 @@
 package org.enodeframework.common.exception;
 
 public class ArgumentOutOfRangeException extends RuntimeException {
+
+    private static final long serialVersionUID = 2875478983753773571L;
+
     public ArgumentOutOfRangeException() {
         super();
     }

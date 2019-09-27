@@ -3,8 +3,9 @@ package org.enodeframework.common.exception;
 /**
  * @author anruence@gmail.com
  */
-public class RegisterComponentException extends RuntimeException {
-    private static final long serialVersionUID = 2976713867727370181L;
+public class RegisterComponentException extends ENodeRuntimeException {
+
+    private static final long serialVersionUID = -3652102021062999423L;
 
     public RegisterComponentException() {
         super();
