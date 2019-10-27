@@ -1,7 +1,6 @@
 package org.enodeframework.messaging.impl;
 
 import org.enodeframework.common.container.IObjectContainer;
-import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.messaging.IMessage;
 import org.enodeframework.messaging.IMessageHandlerProxy2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +22,9 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
     private Class<?>[] methodParameterTypes;
 
     @Override
-    public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message1, IMessage message2) {
+    public CompletableFuture<Void> handleAsync(IMessage message1, IMessage message2) {
         Object result;
-        CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
+        CompletableFuture future = new CompletableFuture<>();
         try {
             if (methodParameterTypes[0].isAssignableFrom(message1.getClass())) {
                 result = methodHandle.invoke(getInnerObject(), message1, message2);
@@ -33,9 +32,9 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
                 result = methodHandle.invoke(getInnerObject(), message2, message1);
             }
             if (result instanceof CompletableFuture) {
-                return (CompletableFuture<AsyncTaskResult>) result;
+                return (CompletableFuture<Void>) result;
             }
-            future.complete((AsyncTaskResult) result);
+            future.complete(null);
         } catch (Throwable throwable) {
             future.completeExceptionally(throwable);
         }

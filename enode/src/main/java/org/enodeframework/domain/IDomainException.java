@@ -1,10 +1,10 @@
-package org.enodeframework.publishableexception;
+package org.enodeframework.domain;
 
 import org.enodeframework.messaging.IMessage;
 
 import java.util.Map;
 
-public interface IPublishableException extends IMessage {
+public interface IDomainException extends IMessage {
     /**
      * Serialize the current exception info to the given dictionary.
      *

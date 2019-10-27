@@ -2,9 +2,6 @@ package org.enodeframework.tests.Mocks;
 
 import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
-import org.enodeframework.common.io.Task;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.EventAppendResult;
 import org.enodeframework.eventing.IEventStore;
@@ -37,7 +34,7 @@ public class MockEventStore implements IEventStore {
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<EventAppendResult>> batchAppendAsync(List<DomainEventStream> eventStreams) {
+    public CompletableFuture<EventAppendResult> batchAppendAsync(List<DomainEventStream> eventStreams) {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
@@ -45,14 +42,13 @@ public class MockEventStore implements IEventStore {
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("BatchAppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
-                return Task.fromResult(new AsyncTaskResult<EventAppendResult>(AsyncTaskStatus.Failed, "BatchAppendAsyncError" + _currentFailedCount));
             }
         }
         return _inMemoryEventStore.batchAppendAsync(eventStreams);
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, int version) {
+    public CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, int version) {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
@@ -60,19 +56,18 @@ public class MockEventStore implements IEventStore {
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
-                return Task.fromResult(new AsyncTaskResult<DomainEventStream>(AsyncTaskStatus.Failed, "AppendAsyncError" + _currentFailedCount));
             }
         }
         return _inMemoryEventStore.findAsync(aggregateRootId, version);
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, String commandId) {
+    public CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, String commandId) {
         return _inMemoryEventStore.findAsync(aggregateRootId, commandId);
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
+    public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
         throw new NotImplementedException();
     }
 }

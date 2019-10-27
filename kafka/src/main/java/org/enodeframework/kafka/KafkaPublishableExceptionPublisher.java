@@ -1,8 +1,7 @@
 package org.enodeframework.kafka;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.publishableexception.IPublishableException;
+import org.enodeframework.domain.IDomainException;
 import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.publishableexceptions.AbstractPublishableExceptionPublisher;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -24,11 +23,11 @@ public class KafkaPublishableExceptionPublisher extends AbstractPublishableExcep
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> publishAsync(IPublishableException exception) {
+    public CompletableFuture<Void> publishAsync(IDomainException exception) {
         return SendMessageService.sendMessageAsync(producer, buildKafkaMessage(exception));
     }
 
-    protected ProducerRecord<String, String> buildKafkaMessage(IPublishableException exception) {
+    protected ProducerRecord<String, String> buildKafkaMessage(IDomainException exception) {
         QueueMessage queueMessage = createExceptionMessage(exception);
         return KafkaTool.covertToProducerRecord(queueMessage);
     }

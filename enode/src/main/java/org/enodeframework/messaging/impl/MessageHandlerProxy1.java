@@ -1,7 +1,6 @@
 package org.enodeframework.messaging.impl;
 
 import org.enodeframework.common.container.IObjectContainer;
-import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.messaging.IMessage;
 import org.enodeframework.messaging.IMessageHandlerProxy1;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,14 +22,14 @@ public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
     private Method method;
 
     @Override
-    public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message) {
-        CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
+    public CompletableFuture<Void> handleAsync(IMessage message) {
+        CompletableFuture future = new CompletableFuture<>();
         try {
             Object result = methodHandle.invoke(getInnerObject(), message);
             if (result instanceof CompletableFuture) {
-                return (CompletableFuture<AsyncTaskResult>) result;
+                return (CompletableFuture<Void>) result;
             }
-            future.complete((AsyncTaskResult) result);
+            future.complete(null);
         } catch (Throwable throwable) {
             future.completeExceptionally(throwable);
         }

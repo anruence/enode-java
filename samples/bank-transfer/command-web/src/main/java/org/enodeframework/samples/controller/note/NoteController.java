@@ -1,17 +1,13 @@
 package org.enodeframework.samples.controller.note;
 
 import com.google.common.base.Strings;
-import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommandService;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.utilities.ObjectId;
 import org.enodeframework.samples.commands.note.ChangeNoteTitleCommand;
 import org.enodeframework.samples.commands.note.CreateNoteCommand;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,8 +31,7 @@ public class NoteController {
         if (!Strings.isNullOrEmpty(cid)) {
             createNoteCommand.setId(cid);
         }
-        AsyncTaskResult<CommandResult> asyncTaskResult = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
-        Assert.notNull(asyncTaskResult, "asyncTaskResult");
+        commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
         commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
         commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
         commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
@@ -67,11 +62,6 @@ public class NoteController {
                     future = commandService.sendAsync(command);
                 }
                 future.thenAccept(result -> {
-                    if (((AsyncTaskResult) result).getStatus() == AsyncTaskStatus.Success) {
-                        success.incrementAndGet();
-                    } else {
-                        failed.incrementAndGet();
-                    }
                     latch.countDown();
                 });
             } catch (Exception e) {

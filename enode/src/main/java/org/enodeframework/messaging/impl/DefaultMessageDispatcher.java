@@ -3,7 +3,6 @@ package org.enodeframework.messaging.impl;
 import com.google.common.collect.Lists;
 import org.enodeframework.common.function.Action2;
 import org.enodeframework.common.function.Action4;
-import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.infrastructure.IObjectProxy;
 import org.enodeframework.infrastructure.ITypeNameProvider;
@@ -63,19 +62,19 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> dispatchMessageAsync(IMessage message) {
+    public CompletableFuture<Void> dispatchMessageAsync(IMessage message) {
         return dispatchMessages(Lists.newArrayList(message));
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> dispatchMessagesAsync(List<? extends IMessage> messages) {
+    public CompletableFuture<Void> dispatchMessagesAsync(List<? extends IMessage> messages) {
         return dispatchMessages(messages);
     }
 
-    private CompletableFuture<AsyncTaskResult> dispatchMessages(List<? extends IMessage> messages) {
+    private CompletableFuture<Void> dispatchMessages(List<? extends IMessage> messages) {
         int messageCount = messages.size();
         if (messageCount == 0) {
-            return CompletableFuture.completedFuture(AsyncTaskResult.Success);
+            return CompletableFuture.completedFuture(null);
         }
         RootDispatching rootDispatching = new RootDispatching();
         //先对每个事件调用其Handler
@@ -155,7 +154,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
 
     private void handleSingleMessageAsync(SingleMessageDispatching singleMessageDispatching, IMessageHandlerProxy1 handlerProxy, String handlerTypeName, String messageTypeName, QueuedHandler<IMessageHandlerProxy1> queueHandler, int retryTimes) {
         IMessage message = singleMessageDispatching.getMessage();
-        IOHelper.tryAsyncActionRecursively("HandleSingleMessageAsync",
+        IOHelper.tryAsyncActionRecursivelyWithoutResult("HandleSingleMessageAsync",
                 () -> handlerProxy.handleAsync(message),
                 result -> {
                     singleMessageDispatching.removeHandledHandler(handlerTypeName);
@@ -167,8 +166,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                     }
                 },
                 () -> String.format("[messageId:%s, messageType:%s, handlerType:%s]", message.getId(), message.getClass().getName(), handlerProxy.getInnerObject().getClass().getName()),
-                errorMessage -> logger.error("Handle single message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
-                retryTimes, true);
+                null, retryTimes, true);
     }
 
     private void handleTwoMessageAsync(MultiMessageDisptaching multiMessageDispatching, IMessageHandlerProxy2 handlerProxy, String handlerTypeName, QueuedHandler<IMessageHandlerProxy2> queueHandler, int retryTimes) {
@@ -188,8 +186,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                     }
                 },
                 () -> String.format("[messages:%s, handlerType:%s]", String.join("|", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.toList())), handlerProxy.getInnerObject().getClass().getName()),
-                errorMessage -> logger.error("Handle two message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
-                retryTimes, true);
+                null, retryTimes, true);
     }
 
     private void handleThreeMessageAsync(
@@ -212,12 +209,11 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                     }
                 },
                 () -> String.format("[messages:%s, handlerType:%s]", Arrays.stream(messages).map(x -> String.format("id:%s,type:%s", x.getId(), x.getClass().getName())).collect(Collectors.joining("|")), handlerProxy.getInnerObject().getClass().getName()),
-                errorMessage -> logger.error("Handle three message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage),
-                retryTimes, true);
+                null, retryTimes, true);
     }
 
     class RootDispatching {
-        private CompletableFuture<AsyncTaskResult> taskCompletionSource;
+        private CompletableFuture<Void> taskCompletionSource;
         private ConcurrentMap<Object, Boolean> childDispatchingDict;
 
         public RootDispatching() {
@@ -225,7 +221,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
             childDispatchingDict = new ConcurrentHashMap<>();
         }
 
-        public CompletableFuture<AsyncTaskResult> getTaskCompletionSource() {
+        public CompletableFuture<Void> getTaskCompletionSource() {
             return taskCompletionSource;
         }
 
@@ -236,7 +232,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
         public void onChildDispatchingFinished(Object childDispatching) {
             if (childDispatchingDict.remove(childDispatching) != null) {
                 if (childDispatchingDict.isEmpty()) {
-                    taskCompletionSource.complete(AsyncTaskResult.Success);
+                    taskCompletionSource.complete(null);
                 }
             }
         }

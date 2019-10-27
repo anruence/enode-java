@@ -77,7 +77,7 @@ public class DefaultMemoryCache implements IMemoryCache {
         }
         AggregateCacheInfo aggregateRootInfo = aggregateRootInfoDict.get(aggregateRootId.toString());
         if (aggregateRootInfo == null) {
-            return Task.completedFuture(null);
+            return CompletableFuture.completedFuture(null);
         }
         IAggregateRoot aggregateRoot = aggregateRootInfo.getAggregateRoot();
         if (aggregateRoot.getClass() != aggregateRootType) {
@@ -114,24 +114,35 @@ public class DefaultMemoryCache implements IMemoryCache {
 
     @Override
     public CompletableFuture<IAggregateRoot> refreshAggregateFromEventStoreAsync(String aggregateRootTypeName, Object aggregateRootId) {
+        CompletableFuture<IAggregateRoot> future = new CompletableFuture<>();
         if (aggregateRootTypeName == null) {
-            throw new IllegalArgumentException("aggregateRootTypeName");
+            future.completeExceptionally(new IllegalArgumentException("aggregateRootTypeName"));
+            return future;
         }
-        Class aggregateRootType = typeNameProvider.getType(aggregateRootTypeName);
-        if (aggregateRootType == null) {
-            logger.error("Could not find aggregate root type by aggregate root type name [{}].", aggregateRootTypeName);
-            return Task.completedFuture(null);
+        try {
+            Class aggregateRootType = typeNameProvider.getType(aggregateRootTypeName);
+            if (aggregateRootType == null) {
+                logger.error("Could not find aggregate root type by aggregate root type name [{}].", aggregateRootTypeName);
+                future.complete(null);
+                return future;
+            }
+            return refreshAggregateFromEventStoreAsync(aggregateRootType, aggregateRootId);
+        } catch (Exception e) {
+            future.completeExceptionally(e);
+            return future;
         }
-        return refreshAggregateFromEventStoreAsync(aggregateRootType, aggregateRootId);
     }
 
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> refreshAggregateFromEventStoreAsync(Class<T> aggregateRootType, Object aggregateRootId) {
+        CompletableFuture<T> future = new CompletableFuture<>();
         if (aggregateRootId == null) {
-            throw new IllegalArgumentException("aggregateRootId");
+            future.completeExceptionally(new IllegalArgumentException("aggregateRootId"));
+            return future;
         }
         if (aggregateRootType == null) {
-            throw new IllegalArgumentException("aggregateRootType");
+            future.completeExceptionally(new IllegalArgumentException("aggregateRootType"));
+            return future;
         }
         return aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString()).thenApply(aggregateRoot -> {
             if (aggregateRoot != null) {

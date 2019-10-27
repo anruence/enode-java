@@ -1,4 +1,4 @@
-package org.enodeframework.messaging;
+package org.enodeframework.eventing;
 
 /**
  * Represents the event processing context.

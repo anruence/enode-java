@@ -4,7 +4,7 @@ import org.enodeframework.common.exception.InvalidOperationException;
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.infrastructure.ITypeNameProvider;
 import org.enodeframework.messaging.IMessageDispatcher;
-import org.enodeframework.publishableexception.IPublishableException;
+import org.enodeframework.domain.IDomainException;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;
@@ -29,9 +29,9 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
     public void handle(QueueMessage queueMessage, IMessageContext context) {
         PublishableExceptionMessage exceptionMessage = JsonTool.deserialize(queueMessage.getBody(), PublishableExceptionMessage.class);
         Class exceptionType = typeNameProvider.getType(exceptionMessage.getExceptionType());
-        IPublishableException exception;
+        IDomainException exception;
         try {
-            exception = (IPublishableException) exceptionType.getDeclaredConstructor().newInstance();
+            exception = (IDomainException) exceptionType.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new InvalidOperationException(e);
         }

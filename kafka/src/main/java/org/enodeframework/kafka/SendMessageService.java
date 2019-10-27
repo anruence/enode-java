@@ -1,8 +1,7 @@
 package org.enodeframework.kafka;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
+import org.enodeframework.common.exception.IORuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,28 +16,23 @@ import java.util.concurrent.CompletableFuture;
 public class SendMessageService {
     private static Logger logger = LoggerFactory.getLogger(SendMessageService.class);
 
-    public static CompletableFuture<AsyncTaskResult> sendMessageAsync(KafkaTemplate<String, String> producer, ProducerRecord<String, String> message) {
-        CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
-        try {
-            producer.send(message).addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-                @Override
-                public void onFailure(Throwable throwable) {
-                    future.complete(new AsyncTaskResult(AsyncTaskStatus.IOException));
-                    logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, throwable);
-                }
+    public static CompletableFuture<Void> sendMessageAsync(KafkaTemplate<String, String> producer, ProducerRecord<String, String> message) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        producer.send(message).addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+                logger.error("ENode message async send has exception, message: {}", message, throwable);
+                future.completeExceptionally(new IORuntimeException(throwable));
+            }
 
-                @Override
-                public void onSuccess(SendResult<String, String> result) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("ENode message async send success, sendResult: {}, message: {}", result, message);
-                    }
-                    future.complete(AsyncTaskResult.Success);
+            @Override
+            public void onSuccess(SendResult<String, String> result) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("ENode message async send success, sendResult: {}, message: {}", result, message);
                 }
-            });
-        } catch (Exception ex) {
-            future.complete(new AsyncTaskResult(AsyncTaskStatus.IOException));
-            logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, ex);
-        }
+                future.complete(null);
+            }
+        });
         return future;
     }
 }

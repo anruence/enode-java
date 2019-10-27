@@ -2,8 +2,6 @@ package org.enodeframework.tests.TestClasses;
 
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandStatus;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.utilities.ObjectId;
 import org.enodeframework.tests.Commands.AsyncHandlerCommand;
@@ -19,10 +17,10 @@ public class ApplicationMessagePublisherFailedTest extends AbstractTest {
         AsyncHandlerCommand command = new AsyncHandlerCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setShouldGenerateApplicationMessage(true);
-        AsyncTaskResult<CommandResult> asyncResult = Task.await(_commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(_commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
-        Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
-        CommandResult commandResult = asyncResult.getData();
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         ((MockApplicationMessagePublisher) _applicationMessagePublisher).Reset();
@@ -32,8 +30,8 @@ public class ApplicationMessagePublisherFailedTest extends AbstractTest {
         command1.setShouldGenerateApplicationMessage(true);
         asyncResult = Task.await(_commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
-        Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
-        commandResult = asyncResult.getData();
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         ((MockApplicationMessagePublisher) _applicationMessagePublisher).Reset();
@@ -43,8 +41,8 @@ public class ApplicationMessagePublisherFailedTest extends AbstractTest {
         command2.setShouldGenerateApplicationMessage(true);
         asyncResult = Task.await(_commandService.executeAsync(command2));
         Assert.assertNotNull(asyncResult);
-        Assert.assertEquals(AsyncTaskStatus.Success, asyncResult.getStatus());
-        commandResult = asyncResult.getData();
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         ((MockApplicationMessagePublisher) _applicationMessagePublisher).Reset();

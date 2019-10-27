@@ -23,6 +23,9 @@ public class ProcessingCommandMailbox {
      * Sequence 对应 ProcessingCommand
      */
     private ConcurrentHashMap<Long, ProcessingCommand> messageDict;
+
+    private ConcurrentHashMap<String, Byte> _duplicateCommandIdDict;
+
     private IProcessingCommandHandler messageHandler;
     private int batchSize;
 
@@ -36,6 +39,7 @@ public class ProcessingCommandMailbox {
 
     public ProcessingCommandMailbox(String aggregateRootId, IProcessingCommandHandler messageHandler, int batchSize) {
         this.messageDict = new ConcurrentHashMap<>();
+        this._duplicateCommandIdDict = new ConcurrentHashMap<>();
         this.messageHandler = messageHandler;
         this.batchSize = batchSize;
         this.aggregateRootId = aggregateRootId;
@@ -163,6 +167,10 @@ public class ProcessingCommandMailbox {
         }
     }
 
+    public void addDuplicateCommandId(String commandId) {
+        _duplicateCommandIdDict.putIfAbsent(commandId, (byte) 1);
+    }
+
     public void resetConsumingSequence(long consumingSequence) {
         this.consumingSequence = consumingSequence;
         lastActiveTime = new Date();
@@ -182,6 +190,7 @@ public class ProcessingCommandMailbox {
         try {
             ProcessingCommand removed = messageDict.remove(message.getSequence());
             if (removed != null) {
+                _duplicateCommandIdDict.remove(message.getMessage().getId());
                 lastActiveTime = new Date();
                 return message.completeAsync(result);
             }

@@ -1,4 +1,4 @@
-package org.enodeframework.applicationmessage;
+package org.enodeframework.messaging;
 
 import org.enodeframework.messaging.IMessage;
 

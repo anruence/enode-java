@@ -1,18 +1,23 @@
 package org.enodeframework.common.io;
 
 import com.ea.async.Async;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.ENodeInterruptException;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author anruence@gmail.com
  */
-public class Task extends CompletableFuture {
+public class Task {
     public static CompletableFuture<Void> completedTask = CompletableFuture.completedFuture(null);
 
-    public static <T> CompletableFuture<T> fromResult(T o) {
-        return Task.completedFuture(o);
+    public static void await(CountDownLatch latch) {
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new ENodeInterruptException(e);
+        }
     }
 
     /**
@@ -33,7 +38,7 @@ public class Task extends CompletableFuture {
         try {
             Thread.sleep(sleepMilliseconds);
         } catch (InterruptedException e) {
-            throw new ENodeRuntimeException(e);
+            throw new ENodeInterruptException(e);
         }
     }
 }

@@ -3,7 +3,7 @@ package org.enodeframework.common.exception;
 /**
  * @author anruence@gmail.com
  */
-public class DuplicateRegisterException extends ENodeRuntimeException {
+public class DuplicateRegisterException extends RuntimeException {
 
     private static final long serialVersionUID = -3707822511264547141L;
 

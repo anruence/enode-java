@@ -3,7 +3,6 @@ package org.enodeframework.samples.eventhandlers.bank.processmanagers;
 import org.enodeframework.annotation.Event;
 import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.commanding.ICommandService;
-import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.samples.commands.bank.AddTransactionPreparationCommand;
 import org.enodeframework.samples.commands.bank.CommitTransactionPreparationCommand;
@@ -26,11 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Event
 public class DepositTransactionProcessManager {
+
     @Autowired
     private ICommandService _commandService;
 
     @Subscribe
-    public AsyncTaskResult handleAsync(DepositTransactionStartedEvent evnt) {
+    public void handleAsync(DepositTransactionStartedEvent evnt) {
         AddTransactionPreparationCommand command = new AddTransactionPreparationCommand(
                 evnt.AccountId,
                 evnt.getAggregateRootId(),
@@ -38,35 +38,33 @@ public class DepositTransactionProcessManager {
                 PreparationType.CreditPreparation,
                 evnt.Amount);
         command.setId(evnt.getId());
-        return Task.await(_commandService.sendAsync(command));
+        Task.await(_commandService.sendAsync(command));
     }
 
     @Subscribe
-    public AsyncTaskResult handleAsync(TransactionPreparationAddedEvent evnt) {
+    public void handleAsync(TransactionPreparationAddedEvent evnt) {
         if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction
                 && evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
             ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.TransactionPreparation.TransactionId);
             command.setId(evnt.getId());
-            return Task.await(_commandService.sendAsync(command));
+            Task.await(_commandService.sendAsync(command));
         }
-        return AsyncTaskResult.Success;
     }
 
     @Subscribe
-    public AsyncTaskResult handleAsync(DepositTransactionPreparationCompletedEvent evnt) {
+    public void handleAsync(DepositTransactionPreparationCompletedEvent evnt) {
         CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.AccountId, evnt.getAggregateRootId());
         command.setId(evnt.getId());
-        return Task.await(_commandService.sendAsync(command));
+        Task.await(_commandService.sendAsync(command));
     }
 
     @Subscribe
-    public AsyncTaskResult handleAsync(TransactionPreparationCommittedEvent evnt) {
+    public void handleAsync(TransactionPreparationCommittedEvent evnt) {
         if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction &&
                 evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
             ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.TransactionPreparation.TransactionId);
             command.setId(evnt.getId());
-            return Task.await(_commandService.sendAsync(command));
+            Task.await(_commandService.sendAsync(command));
         }
-        return AsyncTaskResult.Success;
     }
 }

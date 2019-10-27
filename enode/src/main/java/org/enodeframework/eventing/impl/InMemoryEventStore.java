@@ -1,9 +1,5 @@
 package org.enodeframework.eventing.impl;
 
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
-import org.enodeframework.common.io.Task;
-import org.enodeframework.common.utilities.Linq;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.EventAppendResult;
 import org.enodeframework.eventing.IEventStore;
@@ -11,6 +7,7 @@ import org.enodeframework.eventing.IEventStore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -46,28 +43,30 @@ public class InMemoryEventStore implements IEventStore {
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<EventAppendResult>> batchAppendAsync(List<DomainEventStream> eventStreams) {
+    public CompletableFuture<EventAppendResult> batchAppendAsync(List<DomainEventStream> eventStreams) {
         Map<String, List<DomainEventStream>> eventStreamDict = eventStreams.stream().distinct().collect(Collectors.groupingBy(DomainEventStream::getAggregateRootId));
         EventAppendResult eventAppendResult = new EventAppendResult();
+        CompletableFuture<EventAppendResult> future = new CompletableFuture<>();
         for (Map.Entry<String, List<DomainEventStream>> entry : eventStreamDict.entrySet()) {
             batchAppend(entry.getKey(), entry.getValue(), eventAppendResult);
         }
-        return Task.fromResult(new AsyncTaskResult<>(AsyncTaskStatus.Success, eventAppendResult));
+        future.complete(eventAppendResult);
+        return future;
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, int version) {
-        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, null, find(aggregateRootId, version)));
+    public CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, int version) {
+        return CompletableFuture.completedFuture(find(aggregateRootId, version));
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<DomainEventStream>> findAsync(String aggregateRootId, String commandId) {
-        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, null, find(aggregateRootId, commandId)));
+    public CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, String commandId) {
+        return CompletableFuture.completedFuture(find(aggregateRootId, commandId));
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<List<DomainEventStream>>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
-        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, null, queryAggregateEvents(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion)));
+    public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
+        return CompletableFuture.completedFuture(queryAggregateEvents(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion));
     }
 
     private DomainEventStream find(String aggregateRootId, int version) {
@@ -89,14 +88,14 @@ public class InMemoryEventStore implements IEventStore {
     private void batchAppend(String aggregateRootId, List<DomainEventStream> eventStreamList, EventAppendResult eventAppendResult) {
         synchronized (lockObj) {
             AggregateInfo aggregateInfo = aggregateInfoDict.computeIfAbsent(aggregateRootId, x -> new AggregateInfo());
-            DomainEventStream firstEventStream = Linq.first(eventStreamList);
-
-            //检查提交过来的第一个事件的版本号是否是当前聚合根的当前版本号的下一个版本号
-            if (firstEventStream.getVersion() != aggregateInfo.getCurrentVersion() + 1) {
-                if (!eventAppendResult.getDuplicateEventAggregateRootIdList().contains(aggregateRootId)) {
+            Optional<DomainEventStream> optionalDomainEventStream = eventStreamList.stream().findFirst();
+            if (optionalDomainEventStream.isPresent()) {
+                DomainEventStream firstEventStream = optionalDomainEventStream.get();
+                //检查提交过来的第一个事件的版本号是否是当前聚合根的当前版本号的下一个版本号
+                if (firstEventStream.getVersion() != aggregateInfo.getCurrentVersion() + 1) {
                     eventAppendResult.addDuplicateEventAggregateRootId(aggregateRootId);
+                    return;
                 }
-                return;
             }
             //检查提交过来的事件本身是否满足版本号的递增关系
             for (int i = 0; i < eventStreamList.size() - 1; i++) {
@@ -107,14 +106,15 @@ public class InMemoryEventStore implements IEventStore {
             }
 
             //检查重复处理的命令ID
+            List<String> duplicateCommandIds = new ArrayList<>();
+
             for (DomainEventStream eventStream : eventStreamList) {
                 if (aggregateInfo.getCommandDict().containsKey(eventStream.getCommandId())) {
-                    if (!eventAppendResult.getDuplicateCommandIdList().contains(eventStream.getCommandId())) {
-                        eventAppendResult.addDuplicateCommandId(eventStream.getCommandId());
-                    }
+                    duplicateCommandIds.add(eventStream.getCommandId());
                 }
             }
-            if (eventAppendResult.getDuplicateCommandIdList().size() > 0) {
+            if (duplicateCommandIds.size() > 0) {
+                eventAppendResult.addDuplicateCommandIds(aggregateRootId, duplicateCommandIds);
                 return;
             }
 

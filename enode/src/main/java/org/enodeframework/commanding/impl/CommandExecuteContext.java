@@ -1,6 +1,7 @@
 package org.enodeframework.commanding.impl;
 
 import com.google.common.base.Strings;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.commanding.AggregateRootAlreadyExistException;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
@@ -32,6 +33,8 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     private String result;
     private IMessageContext messageContext;
     private CommandMessage commandMessage;
+
+    private IApplicationMessage applicationMessage;
 
     public CommandExecuteContext(
             IRepository repository,
@@ -138,5 +141,23 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     @Override
     public void setResult(String result) {
         this.result = result;
+    }
+
+    /**
+     * Get an application message.
+     */
+    @Override
+    public IApplicationMessage getApplicationMessage() {
+        return applicationMessage;
+    }
+
+    /**
+     * Set an application message.
+     *
+     * @param applicationMessage
+     */
+    @Override
+    public void setApplicationMessage(IApplicationMessage applicationMessage) {
+        this.applicationMessage = applicationMessage;
     }
 }

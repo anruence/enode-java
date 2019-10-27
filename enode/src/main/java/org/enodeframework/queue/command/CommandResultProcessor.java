@@ -13,8 +13,6 @@ import org.enodeframework.commanding.CommandStatus;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.common.SysProperties;
 import org.enodeframework.common.exception.DuplicateRegisterException;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.scheduling.Worker;
 import org.enodeframework.common.utilities.RemoteReply;
 import org.enodeframework.queue.domainevent.DomainEventHandledMessage;
@@ -78,7 +76,7 @@ public class CommandResultProcessor {
         });
     }
 
-    public void registerProcessingCommand(ICommand command, CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
+    public void registerProcessingCommand(ICommand command, CommandReturnType commandReturnType, CompletableFuture<CommandResult> taskCompletionSource) {
         if (commandTaskDict.asMap().containsKey(command.getId())) {
             throw new DuplicateRegisterException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.getId()));
         }
@@ -140,7 +138,7 @@ public class CommandResultProcessor {
         }
         if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.CommandExecuted)) {
             commandTaskDict.asMap().remove(commandResult.getCommandId());
-            if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
+            if (commandTaskCompletionSource.getTaskCompletionSource().complete(commandResult)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Command result return CommandExecuted, {}", commandResult);
                 }
@@ -148,7 +146,7 @@ public class CommandResultProcessor {
         } else if (commandTaskCompletionSource.getCommandReturnType().equals(CommandReturnType.EventHandled)) {
             if (commandResult.getStatus().equals(CommandStatus.Failed) || commandResult.getStatus().equals(CommandStatus.NothingChanged)) {
                 commandTaskDict.asMap().remove(commandResult.getCommandId());
-                if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
+                if (commandTaskCompletionSource.getTaskCompletionSource().complete(commandResult)) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Command result return EventHandled, {}", commandResult);
                     }
@@ -162,7 +160,7 @@ public class CommandResultProcessor {
             logger.error("Wait command notify timeout, commandId:{}", commandId);
             CommandResult commandResult = new CommandResult(CommandStatus.Failed, commandId, commandTaskCompletionSource.getAggregateRootId(), "Wait command notify timeout.", String.class.getName());
             // 任务超时失败
-            commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Failed, commandResult));
+            commandTaskCompletionSource.getTaskCompletionSource().complete(commandResult);
         }
     }
 
@@ -171,7 +169,7 @@ public class CommandResultProcessor {
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Failed, command.getId(), command.getAggregateRootId(), "Failed to send the command.", String.class.getName());
             // 发送失败消息
-            commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult));
+            commandTaskCompletionSource.getTaskCompletionSource().complete(commandResult);
         }
     }
 
@@ -179,7 +177,7 @@ public class CommandResultProcessor {
         CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().remove(message.getCommandId());
         if (commandTaskCompletionSource != null) {
             CommandResult commandResult = new CommandResult(CommandStatus.Success, message.getCommandId(), message.getAggregateRootId(), message.getCommandResult(), message.getCommandResult() != null ? String.class.getName() : null);
-            if (commandTaskCompletionSource.getTaskCompletionSource().complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, commandResult))) {
+            if (commandTaskCompletionSource.getTaskCompletionSource().complete(commandResult)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Command result return, {}", commandResult);
                 }

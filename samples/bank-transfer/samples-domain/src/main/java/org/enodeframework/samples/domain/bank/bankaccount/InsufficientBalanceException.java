@@ -1,10 +1,10 @@
 package org.enodeframework.samples.domain.bank.bankaccount;
 
-import org.enodeframework.publishableexception.PublishableException;
+import org.enodeframework.domain.DomainException;
 
 import java.util.Map;
 
-public class InsufficientBalanceException extends PublishableException {
+public class InsufficientBalanceException extends DomainException {
     /// <summary>账户ID
     /// </summary>
     public String AccountId;

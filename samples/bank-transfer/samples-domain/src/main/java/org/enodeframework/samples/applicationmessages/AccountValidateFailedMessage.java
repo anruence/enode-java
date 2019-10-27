@@ -1,6 +1,6 @@
 package org.enodeframework.samples.applicationmessages;
 
-import org.enodeframework.applicationmessage.ApplicationMessage;
+import org.enodeframework.messaging.ApplicationMessage;
 
 /// <summary>账户验证未通过
 /// </summary>

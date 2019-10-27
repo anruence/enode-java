@@ -2,7 +2,7 @@ package org.enodeframework.tests.TestClasses;
 
 import org.enodeframework.common.threading.ManualResetEvent;
 import org.enodeframework.eventing.DomainEventStreamMessage;
-import org.enodeframework.messaging.IEventProcessContext;
+import org.enodeframework.eventing.IEventProcessContext;
 
 import java.util.List;
 

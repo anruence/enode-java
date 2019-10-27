@@ -4,7 +4,7 @@ package com.microsoft.conference.registration.readmodel;
  *
  */
 public class OrderViewModelGenerator {
-//    public AsyncTaskResult HandleAsync(OrderPlaced evnt) {
+//    public void HandleAsync(OrderPlaced evnt) {
 //        return TryTransactionAsync((connection, transaction) =>
 //        {
 //            var tasks = new List<Task>();
@@ -39,7 +39,7 @@ public class OrderViewModelGenerator {
 //        });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderRegistrantAssigned evnt) {
+//    public void HandleAsync(OrderRegistrantAssigned evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -56,7 +56,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderReservationConfirmed evnt) {
+//    public void HandleAsync(OrderReservationConfirmed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -71,7 +71,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderPaymentConfirmed evnt) {
+//    public void HandleAsync(OrderPaymentConfirmed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -86,7 +86,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderExpired evnt) {
+//    public void HandleAsync(OrderExpired evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -101,7 +101,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderClosed evnt) {
+//    public void HandleAsync(OrderClosed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -116,7 +116,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public AsyncTaskResult HandleAsync(OrderSuccessed evnt) {
+//    public void HandleAsync(OrderSuccessed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -131,17 +131,17 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    private async AsyncTaskResult
+//    private async void
 //
 //    TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action) {
 //        using(var connection = GetConnection())
 //        {
 //            await action (connection);
-//            return AsyncTaskResult.Success;
+//            return void.Success;
 //        }
 //    }
 //
-//    private async AsyncTaskResult
+//    private async void
 //
 //    TryTransactionAsync(Func<IDbConnection, IDbTransaction, List<Task>> actions) {
 //        using(var connection = GetConnection())
@@ -152,7 +152,7 @@ public class OrderViewModelGenerator {
 //            try {
 //                await Task.WhenAll(actions(connection, transaction)).ConfigureAwait(false);
 //                await Task.Run(() = > transaction.Commit()).ConfigureAwait(false);
-//                return AsyncTaskResult.Success;
+//                return void.Success;
 //            } catch
 //            {
 //                transaction.Rollback();

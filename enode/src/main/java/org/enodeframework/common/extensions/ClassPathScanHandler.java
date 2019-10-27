@@ -124,7 +124,7 @@ public class ClassPathScanHandler {
                 }
             }
         } catch (IOException e) {
-            LOGGER.error("ignore this IOException error:", e);
+            LOGGER.error("ignore this IOException", e);
         }
         TreeSet<Class<?>> sortedClasses = new TreeSet<>(new ClassNameComparator());
         sortedClasses.addAll(classes);

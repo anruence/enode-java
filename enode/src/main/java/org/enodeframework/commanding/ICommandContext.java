@@ -1,5 +1,6 @@
 package org.enodeframework.commanding;
 
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.domain.IAggregateRoot;
 
 import java.util.concurrent.CompletableFuture;
@@ -35,4 +36,15 @@ public interface ICommandContext {
     String getResult();
 
     void setResult(String result);
+
+    /**
+     * Get an application message.
+     */
+    IApplicationMessage getApplicationMessage();
+
+    /**
+     * Set an application message.
+     */
+    void setApplicationMessage(IApplicationMessage applicationMessage);
+
 }

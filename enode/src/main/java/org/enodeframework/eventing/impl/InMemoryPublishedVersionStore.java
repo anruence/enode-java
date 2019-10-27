@@ -1,7 +1,5 @@
 package org.enodeframework.eventing.impl;
 
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.eventing.IPublishedVersionStore;
 
 import java.util.concurrent.CompletableFuture;
@@ -12,19 +10,21 @@ import java.util.concurrent.ConcurrentMap;
  * @author anruence@gmail.com
  */
 public class InMemoryPublishedVersionStore implements IPublishedVersionStore {
-    private final CompletableFuture<AsyncTaskResult> successTask = CompletableFuture.completedFuture(AsyncTaskResult.Success);
+
+    private final CompletableFuture<Void> successTask = CompletableFuture.completedFuture(null);
+
     private final ConcurrentMap<String, Integer> versionDict = new ConcurrentHashMap<>();
 
     @Override
-    public CompletableFuture<AsyncTaskResult> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
+    public CompletableFuture<Void> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
         versionDict.put(buildKey(processorName, aggregateRootId), publishedVersion);
         return successTask;
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<Integer>> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
+    public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
         int publishedVersion = versionDict.getOrDefault(buildKey(processorName, aggregateRootId), 0);
-        return CompletableFuture.completedFuture(new AsyncTaskResult<>(AsyncTaskStatus.Success, publishedVersion));
+        return CompletableFuture.completedFuture(publishedVersion);
     }
 
     private String buildKey(String eventProcessorName, String aggregateRootId) {

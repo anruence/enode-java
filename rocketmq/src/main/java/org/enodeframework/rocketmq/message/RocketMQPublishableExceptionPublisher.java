@@ -2,8 +2,7 @@ package org.enodeframework.rocketmq.message;
 
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.message.Message;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.publishableexception.IPublishableException;
+import org.enodeframework.domain.IDomainException;
 import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.publishableexceptions.AbstractPublishableExceptionPublisher;
 
@@ -24,7 +23,7 @@ public class RocketMQPublishableExceptionPublisher extends AbstractPublishableEx
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> publishAsync(IPublishableException exception) {
+    public CompletableFuture<Void> publishAsync(IDomainException exception) {
         QueueMessage queueMessage = createExceptionMessage(exception);
         Message message = RocketMQTool.covertToProducerRecord(queueMessage);
         return SendRocketMQService.sendMessageAsync(producer, message, queueMessage.getRouteKey());

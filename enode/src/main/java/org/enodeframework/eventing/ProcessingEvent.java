@@ -1,7 +1,5 @@
 package org.enodeframework.eventing;
 
-import org.enodeframework.messaging.IEventProcessContext;
-
 /**
  * @author anruence@gmail.com
  */

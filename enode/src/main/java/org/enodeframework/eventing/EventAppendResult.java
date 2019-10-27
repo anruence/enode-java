@@ -1,14 +1,21 @@
 package org.enodeframework.eventing;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import java.util.List;
+import java.util.Map;
 
 public class EventAppendResult {
 
+    private Object lockObj = new Object();
+
     private List<String> successAggregateRootIdList = Lists.newArrayList();
+
     private List<String> duplicateEventAggregateRootIdList = Lists.newArrayList();
-    private List<String> duplicateCommandIdList = Lists.newArrayList();
+
+    private Map<String, List<String>> duplicateCommandAggregateRootIdList = Maps.newHashMap();
+
 
     public List<String> getSuccessAggregateRootIdList() {
         return successAggregateRootIdList;
@@ -26,31 +33,36 @@ public class EventAppendResult {
         this.duplicateEventAggregateRootIdList = duplicateEventAggregateRootIdList;
     }
 
-    public List<String> getDuplicateCommandIdList() {
-        return duplicateCommandIdList;
+
+    public Map<String, List<String>> getDuplicateCommandAggregateRootIdList() {
+        return duplicateCommandAggregateRootIdList;
     }
 
-    public void setDuplicateCommandIdList(List<String> duplicateCommandIdList) {
-        this.duplicateCommandIdList = duplicateCommandIdList;
+    public void setDuplicateCommandAggregateRootIdList(Map<String, List<String>> duplicateCommandAggregateRootIdList) {
+        this.duplicateCommandAggregateRootIdList = duplicateCommandAggregateRootIdList;
     }
-
 
     public void addSuccessAggregateRootId(String aggregateRootId) {
-        if (!successAggregateRootIdList.contains(aggregateRootId)) {
-            successAggregateRootIdList.add(aggregateRootId);
+        synchronized (lockObj) {
+            if (!successAggregateRootIdList.contains(aggregateRootId)) {
+                successAggregateRootIdList.add(aggregateRootId);
+            }
         }
     }
 
     public void addDuplicateEventAggregateRootId(String aggregateRootId) {
-        if (!duplicateEventAggregateRootIdList.contains(aggregateRootId)) {
-            duplicateEventAggregateRootIdList.add(aggregateRootId);
+        synchronized (lockObj) {
+            if (!duplicateEventAggregateRootIdList.contains(aggregateRootId)) {
+                duplicateEventAggregateRootIdList.add(aggregateRootId);
+            }
         }
     }
 
-    public void addDuplicateCommandId(String commandId) {
-        if (!duplicateCommandIdList.contains(commandId)) {
-            duplicateCommandIdList.add(commandId);
+    public void addDuplicateCommandIds(String aggregateRootId, List<String> aggregateDuplicateCommandIdList) {
+        synchronized (lockObj) {
+            if (!duplicateCommandAggregateRootIdList.containsKey(aggregateRootId)) {
+                duplicateCommandAggregateRootIdList.put(aggregateRootId, aggregateDuplicateCommandIdList);
+            }
         }
     }
-
 }

@@ -5,8 +5,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
 import org.enodeframework.ObjectContainer;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
+import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.configurations.DataSourceKey;
 import org.enodeframework.configurations.DefaultDBConfigurationSetting;
@@ -46,8 +46,8 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
-        CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
+    public CompletableFuture<Void> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
         String sql = "";
         JsonArray array = new JsonArray();
         if (publishedVersion == 1) {
@@ -67,7 +67,7 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
         }
         sqlClient.updateWithParams(sql, array, x -> {
             if (x.succeeded()) {
-                future.complete(AsyncTaskResult.Success);
+                future.complete(null);
                 return;
             }
             future.completeExceptionally(x.cause());
@@ -76,19 +76,20 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
             if (throwable instanceof SQLException) {
                 SQLException ex = (SQLException) throwable;
                 if (ex.getErrorCode() == 1062 && ex.getMessage().contains(uniqueIndexName)) {
-                    future.complete(AsyncTaskResult.Success);
+                    future.complete(null);
                 }
                 logger.error("Insert or update aggregate published version has sql exception.", ex);
-                return new AsyncTaskResult(AsyncTaskStatus.IOException, ex.getMessage());
+                throw new IORuntimeException(throwable);
             }
             logger.error("Insert or update aggregate published version has unknown exception.", throwable);
-            return new AsyncTaskResult(AsyncTaskStatus.Failed, throwable.getMessage());
+            throw new ENodeRuntimeException(throwable);
+
         });
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<Integer>> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
-        CompletableFuture<AsyncTaskResult<Integer>> future = new CompletableFuture<>();
+    public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
+        CompletableFuture<Integer> future = new CompletableFuture<>();
         String sql = String.format("SELECT Version FROM %s WHERE ProcessorName=? AND AggregateRootId=?", tableName);
         JsonArray array = new JsonArray();
         array.add(processorName);
@@ -100,7 +101,7 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
                 if (first.isPresent()) {
                     result = first.get().getInteger("Version");
                 }
-                future.complete(new AsyncTaskResult<>(AsyncTaskStatus.Success, result));
+                future.complete(result);
                 return;
             }
             future.completeExceptionally(x.cause());
@@ -109,10 +110,10 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
             if (throwable instanceof SQLException) {
                 SQLException ex = (SQLException) throwable;
                 logger.error("Get aggregate published version has sql exception.", ex);
-                return new AsyncTaskResult<>(AsyncTaskStatus.IOException, ex.getMessage());
+                throw new IORuntimeException(throwable);
             }
             logger.error("Get aggregate published version has unknown exception.", throwable);
-            return new AsyncTaskResult<>(AsyncTaskStatus.Failed, throwable.getMessage());
+            throw new ENodeRuntimeException(throwable);
         });
     }
 }

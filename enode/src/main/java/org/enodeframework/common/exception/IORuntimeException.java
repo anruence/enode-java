@@ -1,6 +1,8 @@
 package org.enodeframework.common.exception;
 
 /**
+ * Retry Exception
+ *
  * @author anruence@gmail.com
  */
 public class IORuntimeException extends RuntimeException {
