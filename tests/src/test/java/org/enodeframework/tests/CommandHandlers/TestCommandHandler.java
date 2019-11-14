@@ -2,10 +2,7 @@ package org.enodeframework.tests.CommandHandlers;
 
 import org.enodeframework.annotation.Command;
 import org.enodeframework.annotation.Subscribe;
-import org.enodeframework.applicationmessage.IApplicationMessage;
 import org.enodeframework.commanding.ICommandContext;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.tests.Commands.AggregateThrowExceptionCommand;
 import org.enodeframework.tests.Commands.AsyncHandlerBaseCommand;
@@ -108,22 +105,22 @@ public class TestCommandHandler {
     }
 
     @Subscribe
-    public AsyncTaskResult<IApplicationMessage> HandleAsync(NotCheckAsyncHandlerExistCommand command) {
-        return new AsyncTaskResult<IApplicationMessage>(AsyncTaskStatus.Success);
+    public void HandleAsync(ICommandContext context, NotCheckAsyncHandlerExistCommand command) {
+
     }
 
     @Subscribe
-    public AsyncTaskResult<IApplicationMessage> HandleAsync(NotCheckAsyncHandlerExistWithResultCommand command) {
-        return new AsyncTaskResult<IApplicationMessage>(AsyncTaskStatus.Success, new TestApplicationMessage(command.getAggregateRootId()));
+    public void HandleAsync(ICommandContext context, NotCheckAsyncHandlerExistWithResultCommand command) {
+        context.setApplicationMessage(new TestApplicationMessage(command.getAggregateRootId()));
     }
 
     @Subscribe
-    public AsyncTaskResult<IApplicationMessage> HandleAsync(AsyncHandlerBaseCommand command) {
-        return new AsyncTaskResult<IApplicationMessage>(AsyncTaskStatus.Success);
+    public void HandleAsync(ICommandContext context, AsyncHandlerBaseCommand command) {
+
     }
 
     @Subscribe
-    public AsyncTaskResult<IApplicationMessage> HandleAsync(AsyncHandlerChildCommand command) {
-        return new AsyncTaskResult<IApplicationMessage>(AsyncTaskStatus.Success);
+    public void HandleAsync(ICommandContext context, AsyncHandlerChildCommand command) {
+
     }
 }

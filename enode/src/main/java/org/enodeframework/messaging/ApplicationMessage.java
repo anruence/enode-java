@@ -1,6 +1,4 @@
-package org.enodeframework.applicationmessage;
-
-import org.enodeframework.messaging.Message;
+package org.enodeframework.messaging;
 
 /**
  * Represents an abstract application message.

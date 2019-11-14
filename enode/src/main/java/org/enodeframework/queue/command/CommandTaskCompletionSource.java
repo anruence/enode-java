@@ -2,16 +2,15 @@ package org.enodeframework.queue.command;
 
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
-import org.enodeframework.common.io.AsyncTaskResult;
 
 import java.util.concurrent.CompletableFuture;
 
 public class CommandTaskCompletionSource {
     private String aggregateRootId;
     private CommandReturnType commandReturnType;
-    private CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource;
+    private CompletableFuture<CommandResult> taskCompletionSource;
 
-    public CommandTaskCompletionSource(String aggregateRootId, CommandReturnType commandReturnType, CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
+    public CommandTaskCompletionSource(String aggregateRootId, CommandReturnType commandReturnType, CompletableFuture<CommandResult> taskCompletionSource) {
         this.aggregateRootId = aggregateRootId;
         this.commandReturnType = commandReturnType;
         this.taskCompletionSource = taskCompletionSource;
@@ -25,11 +24,11 @@ public class CommandTaskCompletionSource {
         this.commandReturnType = commandReturnType;
     }
 
-    public CompletableFuture<AsyncTaskResult<CommandResult>> getTaskCompletionSource() {
+    public CompletableFuture<CommandResult> getTaskCompletionSource() {
         return taskCompletionSource;
     }
 
-    public void setTaskCompletionSource(CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource) {
+    public void setTaskCompletionSource(CompletableFuture<CommandResult> taskCompletionSource) {
         this.taskCompletionSource = taskCompletionSource;
     }
 

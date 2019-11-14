@@ -3,7 +3,7 @@ package org.enodeframework.queue.publishableexceptions;
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.messaging.IMessagePublisher;
-import org.enodeframework.publishableexception.IPublishableException;
+import org.enodeframework.domain.IDomainException;
 import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.QueueMessageTypeCode;
 import org.enodeframework.queue.TopicData;
@@ -11,7 +11,7 @@ import org.enodeframework.queue.TopicData;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractPublishableExceptionPublisher implements IMessagePublisher<IPublishableException> {
+public abstract class AbstractPublishableExceptionPublisher implements IMessagePublisher<IDomainException> {
     private TopicData topicData;
 
     public TopicData getTopicData() {
@@ -22,7 +22,7 @@ public abstract class AbstractPublishableExceptionPublisher implements IMessageP
         this.topicData = topicData;
     }
 
-    protected QueueMessage createExceptionMessage(IPublishableException exception) {
+    protected QueueMessage createExceptionMessage(IDomainException exception) {
         Ensure.notNull(topicData, "topicData");
         Map<String, String> serializableInfo = new HashMap<>();
         exception.serializeTo(serializableInfo);

@@ -4,8 +4,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommand;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.command.AbstractCommandService;
@@ -28,35 +26,30 @@ public class KafkaCommandService extends AbstractCommandService {
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> sendAsync(ICommand command) {
+    public CompletableFuture<Void> sendAsync(ICommand command) {
         return SendMessageService.sendMessageAsync(producer, buildKafkaMessage(command, false));
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<CommandResult>> executeAsync(ICommand command) {
+    public CompletableFuture<CommandResult> executeAsync(ICommand command) {
         return executeAsync(command, CommandReturnType.CommandExecuted);
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult<CommandResult>> executeAsync(ICommand command, CommandReturnType commandReturnType) {
-        CompletableFuture<AsyncTaskResult<CommandResult>> taskCompletionSource = new CompletableFuture<>();
+    public CompletableFuture<CommandResult> executeAsync(ICommand command, CommandReturnType commandReturnType) {
+        CompletableFuture<CommandResult> taskCompletionSource = new CompletableFuture<>();
         try {
             Ensure.notNull(commandResultProcessor, "commandResultProcessor");
             commandResultProcessor.registerProcessingCommand(command, commandReturnType, taskCompletionSource);
-            CompletableFuture<AsyncTaskResult> sendMessageAsync = SendMessageService.sendMessageAsync(producer, buildKafkaMessage(command, true));
+            CompletableFuture<Void> sendMessageAsync = SendMessageService.sendMessageAsync(producer, buildKafkaMessage(command, true));
             sendMessageAsync.thenAccept(sendResult -> {
-                if (sendResult.getStatus().equals(AsyncTaskStatus.Success)) {
-                    //commandResultProcessor中会继续等命令或事件处理完成的状态
-                } else {
-                    taskCompletionSource.complete(new AsyncTaskResult<>(sendResult.getStatus(), sendResult.getErrorMessage()));
-                    commandResultProcessor.processFailedSendingCommand(command);
-                }
             }).exceptionally(ex -> {
-                taskCompletionSource.complete(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
+                commandResultProcessor.processFailedSendingCommand(command);
+                taskCompletionSource.completeExceptionally(ex);
                 return null;
             });
         } catch (Exception ex) {
-            taskCompletionSource.complete(new AsyncTaskResult<>(AsyncTaskStatus.Failed, ex.getMessage()));
+            taskCompletionSource.completeExceptionally(ex);
         }
         return taskCompletionSource;
     }

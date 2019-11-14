@@ -2,8 +2,6 @@ package org.enodeframework.eventing.impl;
 
 import com.google.common.base.Strings;
 import org.enodeframework.common.exception.ENodeRuntimeException;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
@@ -78,26 +76,19 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     }
 
     private void dispatchProcessingMessageAsync(ProcessingEvent processingEvent, int retryTimes) {
-        IOHelper.tryAsyncActionRecursively("DispatchProcessingMessageAsync",
+        IOHelper.tryAsyncActionRecursivelyWithoutResult("DispatchProcessingMessageAsync",
                 () -> dispatcher.dispatchMessagesAsync(processingEvent.getMessage().getEvents()),
                 result -> {
                     updatePublishedVersionAsync(processingEvent, 0);
                 },
                 () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", processingEvent.getMessage().getId(), processingEvent.getMessage().getClass().getName(), processingEvent.getMessage().getAggregateRootId(), processingEvent.getMessage().getVersion()),
-                errorMessage -> {
-                    logger.error("Dispatching message has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage);
-                },
+                null,
                 retryTimes, true);
     }
 
     private int getAggregateRootLatestHandledEventVersion(String aggregateRootType, String aggregateRootId) {
         try {
-            AsyncTaskResult<Integer> task = Task.await(publishedVersionStore.getPublishedVersionAsync(processorName, aggregateRootType, aggregateRootId));
-            if (task.getStatus() == AsyncTaskStatus.Success) {
-                return task.getData();
-            } else {
-                throw new Exception("_publishedVersionStore.GetPublishedVersionAsync has unknown exception, errorMessage: " + task.getErrorMessage());
-            }
+            return Task.await(publishedVersionStore.getPublishedVersionAsync(processorName, aggregateRootType, aggregateRootId));
         } catch (Exception ex) {
             throw new ENodeRuntimeException("_publishedVersionStore.GetPublishedVersionAsync has unknown exception.", ex);
         }
@@ -105,15 +96,13 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     private void updatePublishedVersionAsync(ProcessingEvent processingEvent, int retryTimes) {
         DomainEventStreamMessage message = processingEvent.getMessage();
-        IOHelper.tryAsyncActionRecursively("UpdatePublishedVersionAsync",
+        IOHelper.tryAsyncActionRecursivelyWithoutResult("UpdatePublishedVersionAsync",
                 () -> publishedVersionStore.updatePublishedVersionAsync(processorName, message.getAggregateRootTypeName(), message.getAggregateRootId(), message.getVersion()),
                 result -> {
                     processingEvent.complete();
                 },
                 () -> String.format("DomainEventStreamMessage [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", message.getId(), message.getClass().getName(), message.getAggregateRootId(), message.getVersion()),
-                errorMessage -> {
-                    logger.error("Update published version has unknown exception, the code should not be run to here, errorMessage: {}", errorMessage);
-                }, retryTimes, true);
+                null, retryTimes, true);
     }
 
 

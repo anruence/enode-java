@@ -2,8 +2,7 @@ package org.enodeframework.rocketmq.message;
 
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.message.Message;
-import org.enodeframework.applicationmessage.IApplicationMessage;
-import org.enodeframework.common.io.AsyncTaskResult;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.applicationmessage.AbstractApplicationMessagePublisher;
 
@@ -24,7 +23,7 @@ public class RocketMQApplicationMessagePublisher extends AbstractApplicationMess
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> publishAsync(IApplicationMessage message) {
+    public CompletableFuture<Void> publishAsync(IApplicationMessage message) {
         QueueMessage queueMessage = createApplicationMessage(message);
         Message msg = RocketMQTool.covertToProducerRecord(queueMessage);
         return SendRocketMQService.sendMessageAsync(producer, msg, queueMessage.getRouteKey());

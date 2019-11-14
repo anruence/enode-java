@@ -1,6 +1,5 @@
 package org.enodeframework.domain.impl;
 
-import org.enodeframework.common.io.Task;
 import org.enodeframework.domain.IAggregateRepositoryProvider;
 import org.enodeframework.domain.IAggregateRepositoryProxy;
 import org.enodeframework.domain.IAggregateRoot;
@@ -13,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class DefaultAggregateSnapshotter implements IAggregateSnapshotter {
+
     @Autowired
     private IAggregateRepositoryProvider aggregateRepositoryProvider;
 
@@ -23,9 +23,11 @@ public class DefaultAggregateSnapshotter implements IAggregateSnapshotter {
 
     @Override
     public CompletableFuture<IAggregateRoot> restoreFromSnapshotAsync(Class aggregateRootType, String aggregateRootId) {
+        CompletableFuture<IAggregateRoot> future = new CompletableFuture<>();
         IAggregateRepositoryProxy aggregateRepository = aggregateRepositoryProvider.getRepository(aggregateRootType);
         if (aggregateRepository == null) {
-            return Task.completedFuture(null);
+            future.complete(null);
+            return future;
         }
         return aggregateRepository.getAsync(aggregateRootId);
     }

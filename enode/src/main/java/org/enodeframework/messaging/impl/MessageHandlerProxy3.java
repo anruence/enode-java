@@ -1,7 +1,6 @@
 package org.enodeframework.messaging.impl;
 
 import org.enodeframework.common.container.IObjectContainer;
-import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.messaging.IMessage;
 import org.enodeframework.messaging.IMessageHandlerProxy3;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +26,8 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
     private Class<?>[] methodParameterTypes;
 
     @Override
-    public CompletableFuture<AsyncTaskResult> handleAsync(IMessage message1, IMessage message2, IMessage message3) {
-        CompletableFuture<AsyncTaskResult> future = new CompletableFuture<>();
+    public CompletableFuture<Void> handleAsync(IMessage message1, IMessage message2, IMessage message3) {
+        CompletableFuture future = new CompletableFuture<>();
         List<Class<?>> parameterTypes = Arrays.asList(methodParameterTypes);
         List<IMessage> params = new ArrayList<>();
         params.add(message1);
@@ -41,9 +40,9 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
             //参数按照方法定义参数类型列表传递
             Object result = methodHandle.invoke(getInnerObject(), params.get(0), params.get(1), params.get(2));
             if (result instanceof CompletableFuture) {
-                return (CompletableFuture<AsyncTaskResult>) result;
+                return (CompletableFuture<Void>) result;
             }
-            future.complete((AsyncTaskResult) result);
+            future.complete(result);
         } catch (Throwable throwable) {
             future.completeExceptionally(throwable);
         }

@@ -17,7 +17,7 @@ public class DefaultTypeNameProvider implements ITypeNameProvider {
         try {
             return Class.forName(typeName);
         } catch (ClassNotFoundException e) {
-            throw new ENodeRuntimeException(String.format("ClassNotFound:%s", typeName), e);
+            throw new ENodeRuntimeException(e);
         }
     }
 }

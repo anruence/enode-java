@@ -7,7 +7,7 @@ import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.eventing.IProcessingEventProcessor;
 import org.enodeframework.eventing.ProcessingEvent;
-import org.enodeframework.messaging.IEventProcessContext;
+import org.enodeframework.eventing.IEventProcessContext;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;

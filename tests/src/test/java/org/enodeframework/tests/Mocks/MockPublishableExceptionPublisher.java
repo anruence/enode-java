@@ -2,16 +2,13 @@ package org.enodeframework.tests.Mocks;
 
 import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
-import org.enodeframework.common.io.Task;
+import org.enodeframework.domain.IDomainException;
 import org.enodeframework.messaging.IMessagePublisher;
-import org.enodeframework.publishableexception.IPublishableException;
 
 import java.util.concurrent.CompletableFuture;
 
-public class MockPublishableExceptionPublisher implements IMessagePublisher<IPublishableException> {
-    private static CompletableFuture<AsyncTaskResult> _successResultTask = Task.fromResult(AsyncTaskResult.Success);
+public class MockPublishableExceptionPublisher implements IMessagePublisher<IDomainException> {
+    private static CompletableFuture<Void> _successResultTask = CompletableFuture.completedFuture(null);
     private int _expectFailedCount = 0;
     private int _currentFailedCount = 0;
     private FailedType _failedType;
@@ -28,7 +25,7 @@ public class MockPublishableExceptionPublisher implements IMessagePublisher<IPub
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> publishAsync(IPublishableException message) {
+    public CompletableFuture<Void> publishAsync(IDomainException message) {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
@@ -36,7 +33,7 @@ public class MockPublishableExceptionPublisher implements IMessagePublisher<IPub
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("PublishPublishableExceptionAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
-                return Task.fromResult(new AsyncTaskResult(AsyncTaskStatus.Failed, "PublishPublishableExceptionAsyncError" + _currentFailedCount));
+                throw new ENodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
             }
         }
         return _successResultTask;

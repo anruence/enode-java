@@ -1,8 +1,7 @@
 package org.enodeframework.kafka;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.enodeframework.applicationmessage.IApplicationMessage;
-import org.enodeframework.common.io.AsyncTaskResult;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.applicationmessage.AbstractApplicationMessagePublisher;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -24,7 +23,7 @@ public class KafkaApplicationMessagePublisher extends AbstractApplicationMessage
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> publishAsync(IApplicationMessage message) {
+    public CompletableFuture<Void> publishAsync(IApplicationMessage message) {
         return SendMessageService.sendMessageAsync(producer, buildKafkaMessage(message));
     }
 

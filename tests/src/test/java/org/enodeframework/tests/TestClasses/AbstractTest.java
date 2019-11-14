@@ -1,7 +1,7 @@
 package org.enodeframework.tests.TestClasses;
 
 import org.enodeframework.ENodeAutoConfiguration;
-import org.enodeframework.applicationmessage.IApplicationMessage;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.domain.IMemoryCache;
 import org.enodeframework.eventing.DomainEventStreamMessage;
@@ -9,7 +9,7 @@ import org.enodeframework.eventing.IEventStore;
 import org.enodeframework.eventing.IProcessingEventProcessor;
 import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.messaging.IMessagePublisher;
-import org.enodeframework.publishableexception.IPublishableException;
+import org.enodeframework.domain.IDomainException;
 import org.enodeframework.tests.EnodeExtensionConfig;
 import org.enodeframework.tests.KafkaEventConfig;
 import org.junit.runner.RunWith;
@@ -33,7 +33,7 @@ public abstract class AbstractTest {
     @Autowired
     protected IMessagePublisher<IApplicationMessage> _applicationMessagePublisher;
     @Autowired
-    protected IMessagePublisher<IPublishableException> _publishableExceptionPublisher;
+    protected IMessagePublisher<IDomainException> _publishableExceptionPublisher;
     @Autowired
     protected IProcessingEventProcessor processor;
 }

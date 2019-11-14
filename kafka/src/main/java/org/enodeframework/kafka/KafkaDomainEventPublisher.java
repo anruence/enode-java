@@ -1,7 +1,6 @@
 package org.enodeframework.kafka;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.enodeframework.common.io.AsyncTaskResult;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.domainevent.AbstractDomainEventPublisher;
@@ -24,7 +23,7 @@ public class KafkaDomainEventPublisher extends AbstractDomainEventPublisher {
     }
 
     @Override
-    public CompletableFuture<AsyncTaskResult> publishAsync(DomainEventStreamMessage eventStream) {
+    public CompletableFuture<Void> publishAsync(DomainEventStreamMessage eventStream) {
         return SendMessageService.sendMessageAsync(producer, buildKafkaMessage(eventStream));
     }
 

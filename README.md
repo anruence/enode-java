@@ -46,7 +46,7 @@ aggregateRootType.getDeclaredConstructor().newInstance();
 ### 消息
 发送命令代码
 ```java
-        CompletableFuture<AsyncTaskResult<CommandResult>> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
+        CompletableFuture<CommandResult> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
 ```
 消费命令消息
 ```java

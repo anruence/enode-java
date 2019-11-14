@@ -1,6 +1,6 @@
 package org.enodeframework.tests.CommandHandlers;
 
-import org.enodeframework.applicationmessage.ApplicationMessage;
+import org.enodeframework.messaging.ApplicationMessage;
 
 public class TestApplicationMessage extends ApplicationMessage {
     public String AggregateRootId;

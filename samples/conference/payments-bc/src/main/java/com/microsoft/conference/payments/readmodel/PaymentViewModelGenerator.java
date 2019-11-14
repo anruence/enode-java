@@ -3,10 +3,9 @@ package com.microsoft.conference.payments.readmodel;
 import com.microsoft.conference.payments.domain.Events.PaymentCompleted;
 import com.microsoft.conference.payments.domain.Events.PaymentInitiated;
 import com.microsoft.conference.payments.domain.Events.PaymentRejected;
-import org.enodeframework.common.io.AsyncTaskResult;
 
 public class PaymentViewModelGenerator {
-    public AsyncTaskResult HandleAsync(PaymentInitiated evnt) {
+    public void HandleAsync(PaymentInitiated evnt) {
 //            return TryTransactionAsync((connection, transaction) =>
 //            {
 //                var tasks = new List<Task>();
@@ -31,10 +30,9 @@ public class PaymentViewModelGenerator {
 //                }
 //                return tasks;
 //            });
-        return null;
     }
 
-    public AsyncTaskResult HandleAsync(PaymentCompleted evnt) {
+    public void HandleAsync(PaymentCompleted evnt) {
 //            return TryUpdateRecordAsync(connection =>
 //            {
 //                return connection.UpdateAsync(new
@@ -47,10 +45,9 @@ public class PaymentViewModelGenerator {
 //                    Version = evnt.Version - 1
 //                }, ConfigSettings.PaymentTable);
 //            });
-        return null;
     }
 
-    public AsyncTaskResult HandleAsync(PaymentRejected evnt) {
+    public void HandleAsync(PaymentRejected evnt) {
 //            return TryUpdateRecordAsync(connection =>
 //            {
 //                return connection.UpdateAsync(new
@@ -63,17 +60,16 @@ public class PaymentViewModelGenerator {
 //                    Version = evnt.Version - 1
 //                }, ConfigSettings.PaymentTable);
 //            });
-        return null;
     }
-//        private async AsyncTaskResult TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action)
+//        private async void TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action)
 //        {
 //            using (var connection = GetConnection())
 //            {
 //                await action(connection);
-//                return AsyncTaskResult.Success;
+//                return void.Success;
 //            }
 //        }
-//        private async AsyncTaskResult TryTransactionAsync(Func<IDbConnection, IDbTransaction, List<Task>> actions)
+//        private async void TryTransactionAsync(Func<IDbConnection, IDbTransaction, List<Task>> actions)
 //        {
 //            using (var connection = GetConnection())
 //            {
@@ -83,7 +79,7 @@ public class PaymentViewModelGenerator {
 //                {
 //                    await Task.WhenAll(actions(connection, transaction)).ConfigureAwait(false);
 //                    await Task.Run(() => transaction.Commit()).ConfigureAwait(false);
-//                    return AsyncTaskResult.Success;
+//                    return void.Success;
 //                }
 //                catch
 //                {

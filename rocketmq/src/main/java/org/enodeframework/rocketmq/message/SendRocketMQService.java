@@ -7,8 +7,7 @@ import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.exception.RemotingException;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
+import org.enodeframework.common.exception.IORuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +18,11 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class SendRocketMQService {
-    private static Logger logger = LoggerFactory.getLogger(SendRocketMQService.class);
 
-    public static CompletableFuture<AsyncTaskResult> sendMessageAsync(DefaultMQProducer producer, Message message, String routingKey) {
-        CompletableFuture<AsyncTaskResult> promise = new CompletableFuture<>();
+    private static final Logger logger = LoggerFactory.getLogger(SendRocketMQService.class);
+
+    public static CompletableFuture<Void> sendMessageAsync(DefaultMQProducer producer, Message message, String routingKey) {
+        CompletableFuture<Void> promise = new CompletableFuture<>();
         try {
             producer.send(message, SendRocketMQService::messageQueueSelect, routingKey, new SendCallback() {
                 @Override
@@ -30,17 +30,17 @@ public class SendRocketMQService {
                     if (logger.isDebugEnabled()) {
                         logger.debug("ENode message async send success, sendResult: {}, message: {}", result, message);
                     }
-                    promise.complete(AsyncTaskResult.Success);
+                    promise.complete(null);
                 }
 
                 @Override
                 public void onException(Throwable ex) {
-                    promise.complete(new AsyncTaskResult(AsyncTaskStatus.IOException, ex.getMessage()));
+                    promise.completeExceptionally(new IORuntimeException(ex));
                     logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, routingKey, ex);
                 }
             });
         } catch (MQClientException | RemotingException | InterruptedException ex) {
-            promise.complete(new AsyncTaskResult(AsyncTaskStatus.IOException, ex.getMessage()));
+            promise.completeExceptionally(new IORuntimeException(ex));
             logger.error("ENode message async send has exception, message: {}, routingKey: {}", message, routingKey, ex);
         }
         return promise;

@@ -1,4 +1,4 @@
-package org.enodeframework.publishableexception;
+package org.enodeframework.domain;
 
 import org.enodeframework.common.utilities.ObjectId;
 
@@ -6,13 +6,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class PublishableException extends RuntimeException implements IPublishableException {
+public abstract class DomainException extends RuntimeException implements IDomainException {
     private static final long serialVersionUID = 2099914413380872726L;
     private String id;
     private Date timestamp;
     private Map<String, String> items;
 
-    public PublishableException() {
+    public DomainException() {
         id = ObjectId.generateNewStringId();
         timestamp = new Date();
         items = new HashMap<>();

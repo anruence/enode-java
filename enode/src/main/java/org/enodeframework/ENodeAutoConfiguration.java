@@ -1,8 +1,6 @@
 package org.enodeframework;
 
-import org.enodeframework.commanding.impl.CommandAsyncHandlerProxy;
 import org.enodeframework.commanding.impl.CommandHandlerProxy;
-import org.enodeframework.commanding.impl.DefaultCommandAsyncHandlerProvider;
 import org.enodeframework.commanding.impl.DefaultCommandHandlerProvider;
 import org.enodeframework.common.container.SpringObjectContainer;
 import org.enodeframework.common.scheduling.ScheduleService;
@@ -61,12 +59,6 @@ public class ENodeAutoConfiguration {
     @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public CommandHandlerProxy commandHandlerProxy() {
         return new CommandHandlerProxy();
-    }
-
-    @Bean
-    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public CommandAsyncHandlerProxy commandAsyncHandlerProxy() {
-        return new CommandAsyncHandlerProxy();
     }
 
     @Bean
@@ -135,11 +127,6 @@ public class ENodeAutoConfiguration {
     @Bean
     public DefaultMessageHandlerProvider messageHandlerProvider() {
         return new DefaultMessageHandlerProvider();
-    }
-
-    @Bean
-    public DefaultCommandAsyncHandlerProvider commandAsyncHandlerProvider() {
-        return new DefaultCommandAsyncHandlerProvider();
     }
 
     @Bean

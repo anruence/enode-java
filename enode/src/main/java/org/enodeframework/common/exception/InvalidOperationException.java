@@ -3,7 +3,7 @@ package org.enodeframework.common.exception;
 /**
  * @author anruence@gmail.com
  */
-public class InvalidOperationException extends ENodeRuntimeException {
+public class InvalidOperationException extends RuntimeException {
 
     private static final long serialVersionUID = 6201111149059858558L;
 

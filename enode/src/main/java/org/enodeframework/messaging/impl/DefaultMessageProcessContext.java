@@ -1,6 +1,6 @@
 package org.enodeframework.messaging.impl;
 
-import org.enodeframework.messaging.IEventProcessContext;
+import org.enodeframework.eventing.IEventProcessContext;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.QueueMessage;
 

@@ -2,10 +2,8 @@ package org.enodeframework.samples.commandhandles.bank;
 
 import org.enodeframework.annotation.Command;
 import org.enodeframework.annotation.Subscribe;
-import org.enodeframework.applicationmessage.IApplicationMessage;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.commanding.ICommandContext;
-import org.enodeframework.common.io.AsyncTaskResult;
-import org.enodeframework.common.io.AsyncTaskStatus;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.samples.applicationmessages.AccountValidateFailedMessage;
 import org.enodeframework.samples.applicationmessages.AccountValidatePassedMessage;
@@ -51,13 +49,13 @@ public class BankAccountCommandHandler {
      * @return
      */
     @Subscribe
-    public AsyncTaskResult<IApplicationMessage> handleAsync(ValidateAccountCommand command) {
+    public IApplicationMessage handleAsync(ValidateAccountCommand command) {
         IApplicationMessage applicationMessage = new AccountValidatePassedMessage(command.getAggregateRootId(), command.TransactionId);
         //此处应该会调用外部接口验证账号是否合法，这里仅仅简单通过账号是否以INVALID字符串开头来判断是否合法；根据账号的合法性，返回不同的应用层消息
         if (command.getAggregateRootId().startsWith("INVALID")) {
             applicationMessage = new AccountValidateFailedMessage(command.getAggregateRootId(), command.TransactionId, "账户不合法.");
         }
-        return new AsyncTaskResult<>(AsyncTaskStatus.Success, applicationMessage);
+        return applicationMessage;
     }
 
     /**
