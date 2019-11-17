@@ -1,7 +1,6 @@
 package org.enodeframework.commanding.impl;
 
 import com.google.common.base.Strings;
-import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandStatus;
 import org.enodeframework.commanding.ICommand;
@@ -15,6 +14,7 @@ import org.enodeframework.common.io.Task;
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.common.utilities.Linq;
 import org.enodeframework.domain.IAggregateRoot;
+import org.enodeframework.domain.IDomainException;
 import org.enodeframework.domain.IMemoryCache;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.EventCommittingContext;
@@ -23,9 +23,9 @@ import org.enodeframework.eventing.IEventCommittingService;
 import org.enodeframework.eventing.IEventStore;
 import org.enodeframework.infrastructure.IObjectProxy;
 import org.enodeframework.infrastructure.ITypeNameProvider;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.messaging.MessageHandlerData;
-import org.enodeframework.domain.IDomainException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
 package org.enodeframework.queue.applicationmessage;
 
-import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.infrastructure.ITypeNameProvider;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessageDispatcher;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.IMessageHandler;

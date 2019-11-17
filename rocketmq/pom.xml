@@ -6,16 +6,16 @@
     <parent>
         <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
-        <version>1.0.0</version>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>enode-rocketmq</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>0.0.1-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>org.enodeframework</groupId>
             <artifactId>enode</artifactId>
-            <version>1.0.0</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>

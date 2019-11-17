@@ -97,9 +97,6 @@ public class DefaultMemoryCache implements IMemoryCache {
 
     /**
      * Get an aggregate from memory cache.
-     *
-     * @param aggregateRootId
-     * @return
      */
     @Override
     public CompletableFuture<IAggregateRoot> getAsync(Object aggregateRootId) {

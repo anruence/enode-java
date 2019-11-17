@@ -6,10 +6,6 @@ package org.enodeframework.domain;
 public interface IAggregateRootFactory {
     /**
      * Create an empty aggregate root with the given type.
-     *
-     * @param aggregateRootType
-     * @param <T>
-     * @return
      */
     <T extends IAggregateRoot> T createAggregateRoot(Class<T> aggregateRootType);
 }

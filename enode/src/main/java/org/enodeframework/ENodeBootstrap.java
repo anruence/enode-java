@@ -32,7 +32,7 @@ public class ENodeBootstrap {
     }
 
     /**
-     * @param classSet
+     *
      */
     private void registerBeans(Set<Class<?>> classSet) {
         objectContainer.resolveAll(IAssemblyInitializer.class).values().forEach(provider -> {

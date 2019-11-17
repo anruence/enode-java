@@ -1,7 +1,6 @@
 package org.enodeframework.commanding.impl;
 
 import com.google.common.base.Strings;
-import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.commanding.AggregateRootAlreadyExistException;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
@@ -10,6 +9,7 @@ import org.enodeframework.common.io.Task;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IAggregateStorage;
 import org.enodeframework.domain.IRepository;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.SendReplyService;
@@ -75,9 +75,6 @@ public class CommandExecuteContext implements ICommandExecuteContext {
 
     /**
      * Add a new aggregate into the current command context synchronously, and then return a completed task object.
-     *
-     * @param aggregateRoot
-     * @return
      */
     @Override
     public CompletableFuture<Void> addAsync(IAggregateRoot aggregateRoot) {
@@ -87,10 +84,6 @@ public class CommandExecuteContext implements ICommandExecuteContext {
 
     /**
      * Get an aggregate from the current command context.
-     *
-     * @param id
-     * @param firstFromCache
-     * @return
      */
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Object id, boolean firstFromCache, Class<T> aggregateRootType) {
@@ -153,8 +146,6 @@ public class CommandExecuteContext implements ICommandExecuteContext {
 
     /**
      * Set an application message.
-     *
-     * @param applicationMessage
      */
     @Override
     public void setApplicationMessage(IApplicationMessage applicationMessage) {

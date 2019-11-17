@@ -38,9 +38,6 @@ public class DefaultRepository implements IRepository {
 
     /**
      * Get an aggregate from memory cache, if not exist, get it from event store.
-     *
-     * @param aggregateRootId
-     * @return
      */
     @Override
     public CompletableFuture<IAggregateRoot> getAsync(Object aggregateRootId) {

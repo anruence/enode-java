@@ -6,9 +6,6 @@ package org.enodeframework.domain;
 public interface IAggregateRepositoryProvider {
     /**
      * Get the aggregateRepository for the given aggregate type.
-     *
-     * @param aggregateRootType
-     * @return
      */
     IAggregateRepositoryProxy getRepository(Class<? extends IAggregateRoot> aggregateRootType);
 }

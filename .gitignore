@@ -11,3 +11,4 @@ logs/
 *.iml
 target/
 .sts4-cache/
+.flattened-pom.xml

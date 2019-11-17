@@ -108,8 +108,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
     }
 
     /**
-     * @param method
-     * @return
+     *
      */
     protected boolean isMethodAnnotationSubscribe(Method method) {
         return method.isAnnotationPresent(Subscribe.class);
