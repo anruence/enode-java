@@ -2,9 +2,9 @@ package org.enodeframework.queue.publishableexceptions;
 
 import org.enodeframework.common.exception.InvalidOperationException;
 import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.domain.IDomainException;
 import org.enodeframework.infrastructure.ITypeNameProvider;
 import org.enodeframework.messaging.IMessageDispatcher;
-import org.enodeframework.domain.IDomainException;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;

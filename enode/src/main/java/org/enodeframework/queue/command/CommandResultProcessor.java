@@ -123,8 +123,6 @@ public class CommandResultProcessor {
      * The reason for this is as follows: if we wanted to perform Cache maintenance continuously, we would need
      * to create a thread, and its operations would be competing with user operations for shared locks.
      * Additionally, some environments restrict the creation of threads, which would make CacheBuilder unusable in that environment.
-     *
-     * @param commandResult
      */
     private void processExecutedCommandMessage(CommandResult commandResult) {
         CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().get(commandResult.getCommandId());

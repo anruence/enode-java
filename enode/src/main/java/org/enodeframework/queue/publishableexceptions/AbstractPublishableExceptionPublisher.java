@@ -2,8 +2,8 @@ package org.enodeframework.queue.publishableexceptions;
 
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.common.utilities.Ensure;
-import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.domain.IDomainException;
+import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.QueueMessageTypeCode;
 import org.enodeframework.queue.TopicData;

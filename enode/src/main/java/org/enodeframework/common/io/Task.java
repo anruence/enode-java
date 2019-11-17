@@ -22,9 +22,6 @@ public class Task {
 
     /**
      * async await operation
-     *
-     * @param future
-     * @return
      */
     public static <T> CompletableFuture<T> handle(CompletableFuture<T> future) {
         return CompletableFuture.completedFuture(Async.await(future));

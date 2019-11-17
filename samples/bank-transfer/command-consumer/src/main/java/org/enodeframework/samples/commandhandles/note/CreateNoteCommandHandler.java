@@ -10,10 +10,6 @@ import org.enodeframework.samples.domain.note.Note;
 public class CreateNoteCommandHandler {
     /**
      * Handle the given aggregate command.
-     *
-     * @param context
-     * @param command
-     * @return
      */
     @Subscribe
     public void handleAsync(ICommandContext context, CreateNoteCommand command) {

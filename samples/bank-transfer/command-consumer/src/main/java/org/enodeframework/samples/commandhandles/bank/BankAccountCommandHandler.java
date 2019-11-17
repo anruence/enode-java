@@ -2,9 +2,9 @@ package org.enodeframework.samples.commandhandles.bank;
 
 import org.enodeframework.annotation.Command;
 import org.enodeframework.annotation.Subscribe;
-import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.commanding.ICommandContext;
 import org.enodeframework.common.io.Task;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.samples.applicationmessages.AccountValidateFailedMessage;
 import org.enodeframework.samples.applicationmessages.AccountValidatePassedMessage;
 import org.enodeframework.samples.commands.bank.AddTransactionPreparationCommand;
@@ -44,9 +44,6 @@ public class BankAccountCommandHandler {
 
     /**
      * 验证账户是否合法
-     *
-     * @param command
-     * @return
      */
     @Subscribe
     public IApplicationMessage handleAsync(ValidateAccountCommand command) {
@@ -60,10 +57,6 @@ public class BankAccountCommandHandler {
 
     /**
      * 提交预操作
-     *
-     * @param context
-     * @param command
-     * @return
      */
     @Subscribe
     public void handleAsync(ICommandContext context, CommitTransactionPreparationCommand command) {

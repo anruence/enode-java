@@ -87,7 +87,7 @@ public class ClassPathScanHandler {
      * get all the sub classes with the specific parent class.
      *
      * @param parent the parent class.
-     * @param <T>    sub class's type.
+     *               sub class's type.
      * @return the set of the sub classes found.
      */
     public <T> Set<Class<? extends T>> getAllSubClassesByParent(Class<T> parent) {

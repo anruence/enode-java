@@ -30,12 +30,6 @@ public class CommandResult {
 
     /**
      * Parameterized constructor.
-     *
-     * @param status
-     * @param commandId
-     * @param aggregateRootId
-     * @param result
-     * @param resultType
      */
     public CommandResult(CommandStatus status, String commandId, String aggregateRootId, String result, String resultType) {
         this.status = status;

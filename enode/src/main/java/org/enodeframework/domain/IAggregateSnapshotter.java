@@ -8,11 +8,6 @@ import java.util.concurrent.CompletableFuture;
 public interface IAggregateSnapshotter {
     /**
      * Restore the aggregate from snapshot storage.
-     *
-     * @param aggregateRootType
-     * @param aggregateRootId
-     * @param <T>
-     * @return
      */
     <T extends IAggregateRoot> CompletableFuture<T> restoreFromSnapshotAsync(Class<T> aggregateRootType, String aggregateRootId);
 }

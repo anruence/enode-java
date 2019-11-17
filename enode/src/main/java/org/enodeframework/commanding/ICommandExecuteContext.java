@@ -8,9 +8,6 @@ import java.util.concurrent.CompletableFuture;
 public interface ICommandExecuteContext extends ICommandContext, ITrackingContext {
     /**
      * Notify the given command is executed.
-     *
-     * @param commandResult
-     * @return
      */
     CompletableFuture<Void> onCommandExecutedAsync(CommandResult commandResult);
 }

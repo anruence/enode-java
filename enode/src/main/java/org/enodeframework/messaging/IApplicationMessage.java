@@ -1,7 +1,5 @@
 package org.enodeframework.messaging;
 
-import org.enodeframework.messaging.IMessage;
-
 /**
  * Represents an application message.
  */

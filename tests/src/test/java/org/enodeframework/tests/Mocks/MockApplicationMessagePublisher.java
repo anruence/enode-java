@@ -1,8 +1,8 @@
 package org.enodeframework.tests.Mocks;
 
-import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
+import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 
 import java.util.concurrent.CompletableFuture;

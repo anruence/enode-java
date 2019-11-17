@@ -28,8 +28,6 @@ public interface IMessage {
 
     /**
      * Merge the givens key/values into the current Items.
-     *
-     * @param items
      */
     void mergeItems(Map<String, String> items);
 }
