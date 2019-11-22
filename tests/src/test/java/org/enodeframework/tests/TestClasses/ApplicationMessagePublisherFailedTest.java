@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ApplicationMessagePublisherFailedTest extends AbstractTest {
-    @Test
     public void async_command_application_message_publish_failed_test() {
         ((MockApplicationMessagePublisher) _applicationMessagePublisher).SetExpectFailedCount(FailedType.UnKnownException, 5);
         AsyncHandlerCommand command = new AsyncHandlerCommand();
@@ -46,5 +45,10 @@ public class ApplicationMessagePublisherFailedTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         ((MockApplicationMessagePublisher) _applicationMessagePublisher).Reset();
+    }
+
+    @Test
+    public void test() {
+
     }
 }

@@ -12,7 +12,6 @@ import org.junit.Test;
 
 public class EventStoreFailedTest extends AbstractTest {
 
-    @Test
     public void event_store_failed_test() {
         MockEventStore mockEventStore = (MockEventStore) _eventStore;
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
@@ -50,31 +49,21 @@ public class EventStoreFailedTest extends AbstractTest {
         mockEventStore.Reset();
     }
 
-    @Test
     public void esfindAsync() {
         String aId = "5d3acc9dd1fcfe66c9b0b324";
-        try {
-            _eventStore.findAsync(aId, 1).thenAccept(x -> {
-
-            }).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        _eventStore.findAsync(aId, 1).thenAccept(x -> {
+        });
     }
 
-    @Test
     public void esfindAsyncWithCommand() {
         String aId = "5d3acc9dd1fcfe66c9b0b324";
         String cid = "5d3acc9ed1fcfe66c9b0b346";
-        try {
-            _eventStore.findAsync(aId, cid).thenAccept(x -> {
-            }).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        _eventStore.findAsync(aId, cid).thenAccept(x -> {
+        });
+    }
+
+    @Test
+    public void test() {
+
     }
 }

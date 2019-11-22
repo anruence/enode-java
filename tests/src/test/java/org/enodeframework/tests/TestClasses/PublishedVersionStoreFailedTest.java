@@ -9,9 +9,16 @@ import org.enodeframework.tests.Commands.CreateTestAggregateCommand;
 import org.enodeframework.tests.Mocks.FailedType;
 import org.enodeframework.tests.Mocks.MockPublishedVersionStore;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class PublishedVersionStoreFailedTest extends AbstractTest {
+
+    @Before
+    public void initPublishedVersionStore() {
+        _publishedVersionStore = new MockPublishedVersionStore();
+    }
+
     @Test
     public void published_version_store_failed_test() {
         MockPublishedVersionStore mockPublishedVersionStore = (MockPublishedVersionStore) _publishedVersionStore;
@@ -48,5 +55,10 @@ public class PublishedVersionStoreFailedTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         mockPublishedVersionStore.Reset();
+    }
+
+    @Test
+    public void test() {
+
     }
 }

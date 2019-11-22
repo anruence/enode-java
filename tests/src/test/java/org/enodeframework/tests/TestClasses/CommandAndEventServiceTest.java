@@ -63,7 +63,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CommandAndEventServiceTest extends AbstractTest {
     public static ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
 
-    private static Logger _logger = LoggerFactory.getLogger(CommandAndEventServiceTest.class);
+    private static final Logger _logger = LoggerFactory.getLogger(CommandAndEventServiceTest.class);
 
     @Test
     public void create_and_update_aggregate_test() {

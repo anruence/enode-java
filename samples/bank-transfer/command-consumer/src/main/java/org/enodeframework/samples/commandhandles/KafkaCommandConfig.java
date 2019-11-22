@@ -47,6 +47,7 @@ public class KafkaCommandConfig {
         properties.setGroupId(DEFAULT_CONSUMER_GROUP);
         RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(commandListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
+        properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
