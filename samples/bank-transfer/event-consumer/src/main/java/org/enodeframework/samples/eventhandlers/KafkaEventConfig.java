@@ -97,6 +97,7 @@ public class KafkaEventConfig {
         properties.setGroupId(QueueProperties.DEFAULT_PRODUCER_GROUP);
         RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(domainEventListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
+        properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
@@ -107,6 +108,7 @@ public class KafkaEventConfig {
         properties.setGroupId(QueueProperties.DEFAULT_PRODUCER_GROUP);
         RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(applicationMessageListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
+        properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
@@ -117,6 +119,7 @@ public class KafkaEventConfig {
         properties.setGroupId(QueueProperties.DEFAULT_PRODUCER_GROUP);
         RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(publishableExceptionListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
+        properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }

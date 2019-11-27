@@ -12,7 +12,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class PublishableExceptionPublisherFailedTest extends AbstractTest {
-    @Test
     public void publishable_exception_publisher_throw_exception_test() {
         String aggregateId = ObjectId.generateNewStringId();
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
@@ -46,5 +45,10 @@ public class PublishableExceptionPublisherFailedTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
         ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).Reset();
+    }
+
+    @Test
+    public void test() {
+
     }
 }

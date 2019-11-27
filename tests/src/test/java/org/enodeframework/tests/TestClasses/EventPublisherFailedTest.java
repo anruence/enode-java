@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class EventPublisherFailedTest extends AbstractTest {
-    @Test
     public void event_publisher_failed_test() {
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
@@ -46,5 +45,10 @@ public class EventPublisherFailedTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         ((MockDomainEventPublisher) _domainEventPublisher).Reset();
+    }
+
+    @Test
+    public void test() {
+
     }
 }
