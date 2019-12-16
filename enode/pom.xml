@@ -9,6 +9,7 @@
         <version>1.0.0</version>
     </parent>
     <artifactId>enode</artifactId>
+    <name>enode</name>
     <version>1.0.0</version>
     <dependencies>
         <dependency>

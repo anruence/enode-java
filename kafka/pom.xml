@@ -9,6 +9,7 @@
         <version>1.0.0</version>
     </parent>
     <artifactId>enode-kafka</artifactId>
+    <name>enode-kafka</name>
     <packaging>jar</packaging>
     <version>1.0.0</version>
     <dependencies>
