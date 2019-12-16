@@ -9,6 +9,8 @@
         <version>1.0.0</version>
     </parent>
     <artifactId>enode-mysql</artifactId>
+    <name>enode-mysql</name>
+    <description>enode eventstore mysql driver</description>
     <packaging>jar</packaging>
     <version>1.0.0</version>
     <dependencies>
