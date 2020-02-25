@@ -782,7 +782,6 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Assert.assertEquals("Changed Note2", note.getTitle());
     }
 
-
     @Test
     public void event_handler_priority_test() {
         String noteId = ObjectId.generateNewStringId();

@@ -10,47 +10,105 @@ import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ProcessingEventMailBox {
     private final static Logger logger = LoggerFactory.getLogger(ProcessingEventMailBox.class);
     private final Object lockObj = new Object();
     private String aggregateRootId;
-    private Date lastActiveTime;
-    private boolean running;
-    private int latestHandledEventVersion;
-    private ConcurrentHashMap<Integer, ProcessingEvent> waitingMessageDict = new ConcurrentHashMap<>();
-    private ConcurrentLinkedQueue<ProcessingEvent> messageQueue;
-    private Action1<ProcessingEvent> handleMessageAction;
 
-    public ProcessingEventMailBox(String aggregateRootId, int latestHandledEventVersion, Action1<ProcessingEvent> handleMessageAction) {
-        messageQueue = new ConcurrentLinkedQueue<>();
+    public String getAggregateRootTypeName() {
+        return aggregateRootTypeName;
+    }
+
+    private String aggregateRootTypeName;
+
+    private Date lastActiveTime;
+
+    private int nextExpectingEventVersion;
+
+    private AtomicInteger isUsing = new AtomicInteger(0);
+    private AtomicInteger isRemoved = new AtomicInteger(0);
+    private AtomicInteger isRunning = new AtomicInteger(0);
+
+    private ConcurrentHashMap<Integer, ProcessingEvent> waitingProcessingEventDict = new ConcurrentHashMap<>();
+    private ConcurrentLinkedQueue<ProcessingEvent> processingEventQueue;
+    private Action1<ProcessingEvent> handleProcessingEventAction;
+
+    public ProcessingEventMailBox(String aggregateRootTypeName, String aggregateRootId, int nextExpectingEventVersion, Action1<ProcessingEvent> handleProcessingEventAction) {
+        processingEventQueue = new ConcurrentLinkedQueue<>();
         this.aggregateRootId = aggregateRootId;
-        this.latestHandledEventVersion = latestHandledEventVersion;
-        this.handleMessageAction = handleMessageAction;
+        this.aggregateRootTypeName = aggregateRootTypeName;
+        this.nextExpectingEventVersion = nextExpectingEventVersion;
+        this.handleProcessingEventAction = handleProcessingEventAction;
         lastActiveTime = new Date();
     }
+
 
     public String getAggregateRootId() {
         return aggregateRootId;
     }
 
-    public boolean isRunning() {
-        return running;
+
+    private void tryEnqueueWaitingMessage() {
+        boolean removed = true;
+        while (removed) {
+            ProcessingEvent nextProcessingEvent = waitingProcessingEventDict.remove(nextExpectingEventVersion);
+            if (nextProcessingEvent == null) {
+                removed = false;
+            } else {
+                enqueueEventStream(nextProcessingEvent);
+            }
+        }
     }
 
     public long getTotalUnHandledMessageCount() {
-        return messageQueue.size();
+        return processingEventQueue.size();
     }
 
-    public void enqueueMessage(ProcessingEvent message) {
+    public void setNextExpectingEventVersion(int nextExpectingEventVersion) {
         synchronized (lockObj) {
-            DomainEventStreamMessage eventStream = message.getMessage();
-            if (eventStream.getVersion() == latestHandledEventVersion + 1) {
-                message.setMailbox(this);
-                messageQueue.add(message);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{} enqueued new message, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}",
+            if (nextExpectingEventVersion > this.nextExpectingEventVersion) {
+                this.nextExpectingEventVersion = nextExpectingEventVersion;
+                logger.info("{} refreshed next expecting event version, aggregateRootId: {}, aggregateRootTypeName: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName);
+                tryEnqueueWaitingMessage();
+            }
+        }
+    }
+
+    private void enqueueEventStream(ProcessingEvent processingEvent) {
+        synchronized (lockObj) {
+            processingEvent.setMailbox(this);
+            processingEventQueue.add(processingEvent);
+            nextExpectingEventVersion = processingEvent.getMessage().getVersion() + 1;
+            if (logger.isDebugEnabled()) {
+                logger.debug("{} enqueued new message, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}",
+                        getClass().getName(),
+                        processingEvent.getMessage().getAggregateRootTypeName(),
+                        processingEvent.getMessage().getAggregateRootId(),
+                        processingEvent.getMessage().getCommandId(),
+                        processingEvent.getMessage().getVersion(),
+                        processingEvent.getMessage().getId(),
+                        String.join("|", processingEvent.getMessage().getEvents().stream().map(x -> x.getClass().getName()).collect(Collectors.toList())),
+                        String.join("|", processingEvent.getMessage().getEvents().stream().map(x -> x.getId()).collect(Collectors.toList()))
+                );
+            }
+        }
+    }
+
+    public EnqueueMessageResult enqueueMessage(ProcessingEvent processingEvent) {
+        synchronized (lockObj) {
+            DomainEventStreamMessage eventStream = processingEvent.getMessage();
+            if (eventStream.getVersion() == nextExpectingEventVersion) {
+                enqueueEventStream(processingEvent);
+                tryEnqueueWaitingMessage();
+                lastActiveTime = new Date();
+                tryRun();
+                return EnqueueMessageResult.Success;
+            } else if (eventStream.getVersion() > nextExpectingEventVersion) {
+                if (waitingProcessingEventDict.putIfAbsent(eventStream.getVersion(), processingEvent) != null) {
+                    logger.warn("{} later version of message arrived, added it to the waiting list, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}, _nextExpectingEventVersion: {}",
                             getClass().getName(),
                             eventStream.getAggregateRootTypeName(),
                             eventStream.getAggregateRootId(),
@@ -58,35 +116,13 @@ public class ProcessingEventMailBox {
                             eventStream.getVersion(),
                             eventStream.getId(),
                             eventStream.getEvents().stream().map(x -> x.getClass().getName()).collect(Collectors.joining("|")),
-                            eventStream.getEvents().stream().map(IMessage::getId).collect(Collectors.joining("|"))
+                            eventStream.getEvents().stream().map(IMessage::getId).collect(Collectors.joining("|")),
+                            nextExpectingEventVersion
                     );
                 }
-                latestHandledEventVersion = eventStream.getVersion();
-                int nextVersion = eventStream.getVersion() + 1;
-                while (waitingMessageDict.containsKey(nextVersion)) {
-                    ProcessingEvent nextMessage = waitingMessageDict.remove(nextVersion);
-                    DomainEventStreamMessage nextEventStream = nextMessage.getMessage();
-                    nextMessage.setMailbox(this);
-                    messageQueue.add(nextMessage);
-                    latestHandledEventVersion = nextEventStream.getVersion();
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("{} enqueued new message, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}",
-                                getClass().getName(),
-                                eventStream.getAggregateRootTypeName(),
-                                nextEventStream.getAggregateRootId(),
-                                nextEventStream.getCommandId(),
-                                nextEventStream.getVersion(),
-                                nextEventStream.getId(),
-                                eventStream.getEvents().stream().map(x -> x.getClass().getName()).collect(Collectors.joining("|")),
-                                eventStream.getEvents().stream().map(IMessage::getId).collect(Collectors.joining("|")));
-                    }
-                    nextVersion++;
-                }
-                lastActiveTime = new Date();
-                tryRun();
-            } else if (eventStream.getVersion() > latestHandledEventVersion + 1) {
-                waitingMessageDict.put(eventStream.getVersion(), message);
+                return EnqueueMessageResult.AddToWaitingList;
             }
+            return EnqueueMessageResult.Ignored;
         }
     }
 
@@ -125,11 +161,11 @@ public class ProcessingEventMailBox {
     }
 
     private void processMessages() {
-        ProcessingEvent message = messageQueue.poll();
+        ProcessingEvent message = processingEventQueue.poll();
         if (message != null) {
             lastActiveTime = new Date();
             try {
-                handleMessageAction.apply(message);
+                handleProcessingEventAction.apply(message);
             } catch (Exception ex) {
                 logger.error("{} run has unknown exception, aggregateRootId: {}", getClass().getName(), aggregateRootId, ex);
                 Task.sleep(1);
@@ -140,16 +176,36 @@ public class ProcessingEventMailBox {
         }
     }
 
-    private void setAsRunning() {
-        running = true;
+    public boolean tryUsing() {
+        return isUsing.compareAndSet(0, 1);
     }
 
+    public void exitUsing() {
+        isUsing.set(0);
+    }
+
+    public void markAsRemoved() {
+        isRemoved.set(1);
+    }
+
+    private void setAsRunning() {
+        isRunning.set(1);
+    }
+
+    public boolean isRunning() {
+        return isRunning.get() == 1;
+    }
+
+    public boolean isRemoved() {
+        return isRemoved.get() == 1;
+    }
+    
     private void setAsNotRunning() {
-        running = false;
+        isRunning.set(0);
     }
 
     public int getWaitingMessageCount() {
-        return waitingMessageDict.size();
+        return waitingProcessingEventDict.size();
     }
 }
 

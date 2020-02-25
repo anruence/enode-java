@@ -127,6 +127,9 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
         CompletableFuture<Void> taskSource = new CompletableFuture<>();
         commandContext.clear();
+        if (processingCommand.isDuplicated()) {
+            return republishCommandEvents(processingCommand, 0);
+        }
 
         IOHelper.tryAsyncActionRecursivelyWithoutResult("HandleCommandAsync",
                 () -> {
@@ -199,7 +202,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         //所以，我们要考虑到这种情况，尝试再次发布该命令产生的事件到MQ；
         //否则，如果我们直接将当前command设置为完成，即对MQ进行ack操作，那该command的事件就永远不会再发布到MQ了，这样就无法保证CQRS数据的最终一致性了。
         if (dirtyAggregateRootCount == 0 || changedEvents.size() == 0) {
-            return processIfNoEventsOfCommand(processingCommand, 0);
+            return republishCommandEvents(processingCommand, 0);
         }
         //接受聚合根的最新修改
         dirtyAggregateRoot.acceptChanges();
@@ -224,7 +227,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         });
     }
 
-    private CompletableFuture<Void> processIfNoEventsOfCommand(ProcessingCommand processingCommand, int retryTimes) {
+    private CompletableFuture<Void> republishCommandEvents(ProcessingCommand processingCommand, int retryTimes) {
         CompletableFuture<Void> future = new CompletableFuture<>();
         ICommand command = processingCommand.getMessage();
         IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
@@ -261,12 +264,12 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         //到这里，说明当前command执行遇到异常，然后当前command之前也没执行过，是第一次被执行。
                         //那就判断当前异常是否是需要被发布出去的异常，如果是，则发布该异常给所有消费者；
                         //否则，就记录错误日志，然后认为该command处理失败即可；
-                        IDomainException domainException = tryGetDomainException(exception);
-                        if (domainException != null) {
-                            publishExceptionAsync(processingCommand, domainException, 0)
+                        Throwable realException = getRealException(exception);
+                        if (realException instanceof IDomainException) {
+                            publishExceptionAsync(processingCommand, (IDomainException) realException, 0)
                                     .thenAccept(x -> future.complete(null));
                         } else {
-                            completeCommand(processingCommand, CommandStatus.Failed, exception.getClass().getName(), exception.getMessage())
+                            completeCommand(processingCommand, CommandStatus.Failed, realException.getClass().getName(), exception.getMessage())
                                     .thenAccept(x -> future.complete(null));
                         }
                     }
@@ -277,19 +280,15 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         return future;
     }
 
-    private IDomainException tryGetDomainException(Throwable exception) {
-        if (exception == null) {
-            return null;
-        } else if (exception instanceof IDomainException) {
-            return (IDomainException) exception;
-        } else if (exception instanceof CompletionException) {
+    private Throwable getRealException(Throwable exception) {
+        if (exception instanceof CompletionException) {
             CompletionException completionException = (CompletionException) exception;
-            return (IDomainException) Arrays.stream(completionException.getSuppressed())
+            return Arrays.stream(completionException.getSuppressed())
                     .filter(x -> x instanceof IDomainException)
                     .findFirst()
-                    .orElse(null);
+                    .orElse(exception);
         }
-        return null;
+        return exception;
     }
 
     private CompletableFuture<Void> publishExceptionAsync(ProcessingCommand processingCommand, IDomainException exception, int retryTimes) {
