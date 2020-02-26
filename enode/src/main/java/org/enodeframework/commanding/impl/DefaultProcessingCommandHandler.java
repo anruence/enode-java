@@ -124,7 +124,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     private CompletableFuture<Void> handleCommandInternal(ProcessingCommand processingCommand, ICommandHandlerProxy commandHandler, int retryTimes) {
         ICommand command = processingCommand.getMessage();
         ICommandExecuteContext commandContext = processingCommand.getCommandExecuteContext();
-
         CompletableFuture<Void> taskSource = new CompletableFuture<>();
         commandContext.clear();
         if (processingCommand.isDuplicated()) {

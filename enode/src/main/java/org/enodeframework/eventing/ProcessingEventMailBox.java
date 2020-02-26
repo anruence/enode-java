@@ -18,9 +18,6 @@ public class ProcessingEventMailBox {
     private final Object lockObj = new Object();
     private String aggregateRootId;
 
-    public String getAggregateRootTypeName() {
-        return aggregateRootTypeName;
-    }
 
     private String aggregateRootTypeName;
 
@@ -45,21 +42,10 @@ public class ProcessingEventMailBox {
         lastActiveTime = new Date();
     }
 
-
-    public String getAggregateRootId() {
-        return aggregateRootId;
-    }
-
-
     private void tryEnqueueWaitingMessage() {
-        boolean removed = true;
-        while (removed) {
+        while (waitingProcessingEventDict.containsKey(nextExpectingEventVersion)) {
             ProcessingEvent nextProcessingEvent = waitingProcessingEventDict.remove(nextExpectingEventVersion);
-            if (nextProcessingEvent == null) {
-                removed = false;
-            } else {
-                enqueueEventStream(nextProcessingEvent);
-            }
+            enqueueEventStream(nextProcessingEvent);
         }
     }
 
@@ -67,10 +53,10 @@ public class ProcessingEventMailBox {
         return processingEventQueue.size();
     }
 
-    public void setNextExpectingEventVersion(int nextExpectingEventVersion) {
+    public void setNextExpectingEventVersion(int version) {
         synchronized (lockObj) {
-            if (nextExpectingEventVersion > this.nextExpectingEventVersion) {
-                this.nextExpectingEventVersion = nextExpectingEventVersion;
+            if (version > this.nextExpectingEventVersion) {
+                this.nextExpectingEventVersion = version;
                 logger.info("{} refreshed next expecting event version, aggregateRootId: {}, aggregateRootTypeName: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName);
                 tryEnqueueWaitingMessage();
             }
@@ -80,8 +66,8 @@ public class ProcessingEventMailBox {
     private void enqueueEventStream(ProcessingEvent processingEvent) {
         synchronized (lockObj) {
             processingEvent.setMailbox(this);
-            processingEventQueue.add(processingEvent);
-            nextExpectingEventVersion = processingEvent.getMessage().getVersion() + 1;
+            this.processingEventQueue.add(processingEvent);
+            this.nextExpectingEventVersion = processingEvent.getMessage().getVersion() + 1;
             if (logger.isDebugEnabled()) {
                 logger.debug("{} enqueued new message, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}",
                         getClass().getName(),
@@ -107,7 +93,7 @@ public class ProcessingEventMailBox {
                 tryRun();
                 return EnqueueMessageResult.Success;
             } else if (eventStream.getVersion() > nextExpectingEventVersion) {
-                if (waitingProcessingEventDict.putIfAbsent(eventStream.getVersion(), processingEvent) != null) {
+                if (waitingProcessingEventDict.putIfAbsent(eventStream.getVersion(), processingEvent) == null) {
                     logger.warn("{} later version of message arrived, added it to the waiting list, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}, _nextExpectingEventVersion: {}",
                             getClass().getName(),
                             eventStream.getAggregateRootTypeName(),
@@ -176,6 +162,14 @@ public class ProcessingEventMailBox {
         }
     }
 
+    public String getAggregateRootTypeName() {
+        return aggregateRootTypeName;
+    }
+
+    public String getAggregateRootId() {
+        return aggregateRootId;
+    }
+
     public boolean tryUsing() {
         return isUsing.compareAndSet(0, 1);
     }
@@ -199,7 +193,7 @@ public class ProcessingEventMailBox {
     public boolean isRemoved() {
         return isRemoved.get() == 1;
     }
-    
+
     private void setAsNotRunning() {
         isRunning.set(0);
     }

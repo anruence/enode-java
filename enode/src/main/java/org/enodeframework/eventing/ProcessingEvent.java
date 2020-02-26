@@ -6,7 +6,7 @@ package org.enodeframework.eventing;
 public class ProcessingEvent {
     private DomainEventStreamMessage message;
     private ProcessingEventMailBox mailbox;
-    public IEventProcessContext processContext;
+    private IEventProcessContext processContext;
 
     public ProcessingEvent(DomainEventStreamMessage message, IEventProcessContext processContext) {
         this.message = message;
@@ -26,6 +26,10 @@ public class ProcessingEvent {
         if (mailbox != null) {
             mailbox.completeRun();
         }
+    }
+
+    public IEventProcessContext getProcessContext() {
+        return processContext;
     }
 
     public DomainEventStreamMessage getMessage() {

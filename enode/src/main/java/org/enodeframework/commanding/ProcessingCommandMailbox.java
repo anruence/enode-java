@@ -107,6 +107,8 @@ public class ProcessingCommandMailbox {
                 }
                 lastActiveTime = new Date();
                 tryRun();
+            } else {
+                logger.error("{} enqueue command failed, aggregateRootId: {}, messageId: {}, messageSequence: {}", getClass().getName(), aggregateRootId, message.getMessage().getId(), message.getSequence());
             }
         }
     }
@@ -211,7 +213,7 @@ public class ProcessingCommandMailbox {
                     ProcessingCommand message = getMessage(consumingSequence);
                     if (message != null) {
                         if (duplicateCommandIdDict.containsKey(message.getMessage().getId())) {
-                            message.duplicated = true;
+                            message.setDuplicated(true);
                         }
                         await(messageHandler.handleAsync(message));
                     }

@@ -6,23 +6,21 @@
     <parent>
         <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </parent>
     <artifactId>enode-mysql</artifactId>
     <name>enode-mysql</name>
-    <description>enode eventstore mysql driver</description>
+    <description>enodeframework eventstore driver for MySQL and TiDB</description>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <dependencies>
         <dependency>
             <groupId>org.enodeframework</groupId>
             <artifactId>enode</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.18</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>

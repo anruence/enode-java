@@ -5,9 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.enodeframework</groupId>
     <artifactId>enode-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <modules>
         <module>enode</module>
+        <module>bom</module>
         <module>mysql</module>
         <module>kafka</module>
         <module>rocketmq</module>
@@ -17,11 +18,14 @@
     <packaging>pom</packaging>
 
     <properties>
-        <enode.version>1.0.0</enode.version>
+        <enode.version>${version}</enode.version>
+        <springboot.version>2.2.4.RELEASE</springboot.version>
+        <vertx.version>3.8.5</vertx.version>
+        <slfj4.version>1.7.30</slfj4.version>
     </properties>
 
     <name>enode</name>
-    <description>enode is a ddd framework</description>
+    <description>The enodeframework is devoted to helping engineers develop scalable applications.</description>
     <url>http://www.enodeframework.org</url>
 
     <licenses>
@@ -59,26 +63,33 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.2.1.RELEASE</version>
+                <version>${springboot.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-stack-depchain</artifactId>
-                <version>3.8.3</version>
+                <version>${vertx.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-dependencies-bom</artifactId>
+                <version>${enode.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
                 <groupId>org.reflections</groupId>
                 <artifactId>reflections</artifactId>
-                <version>0.9.11</version>
+                <version>0.9.12</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.29</version>
+                <version>${slfj4.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -88,7 +99,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>28.0-jre</version>
+                <version>28.2-jre</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
@@ -99,6 +110,16 @@
                 <groupId>com.ea.async</groupId>
                 <artifactId>ea-async</artifactId>
                 <version>1.2.3</version>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>8.0.19</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-client</artifactId>
+                <version>4.6.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

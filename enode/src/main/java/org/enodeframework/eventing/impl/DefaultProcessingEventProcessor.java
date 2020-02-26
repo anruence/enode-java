@@ -84,7 +84,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
         }
         EnqueueMessageResult enqueueResult = mailbox.enqueueMessage(processingMessage);
         if (enqueueResult == EnqueueMessageResult.Ignored) {
-            processingMessage.processContext.notifyEventProcessed();
+            processingMessage.getProcessContext().notifyEventProcessed();
         } else if (enqueueResult == EnqueueMessageResult.AddToWaitingList) {
             addProblemAggregateMailBoxToDict(mailbox);
         }

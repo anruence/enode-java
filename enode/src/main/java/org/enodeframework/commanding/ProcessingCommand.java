@@ -14,7 +14,7 @@ public class ProcessingCommand {
     private ProcessingCommandMailbox mailBox;
     private long sequence;
 
-    public boolean duplicated;
+    private boolean duplicated;
 
     public ProcessingCommand(ICommand command, ICommandExecuteContext commandExecuteContext, Map<String, String> items) {
         this.message = command;

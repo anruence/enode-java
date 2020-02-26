@@ -74,8 +74,6 @@ public class DefaultCommandProcessor implements ICommandProcessor {
             throw new IllegalArgumentException("aggregateRootId of command cannot be null or empty, commandId:" + processingCommand.getMessage().getId());
         }
         ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize));
-        mailbox.enqueueMessage(processingCommand);
-
         long mailboxTryUsingCount = 0L;
         while (!mailbox.tryUsing()) {
             Task.sleep(1);
