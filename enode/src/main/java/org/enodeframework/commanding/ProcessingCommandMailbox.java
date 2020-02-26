@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.enodeframework.common.io.Task.await;
 
@@ -34,6 +35,10 @@ public class ProcessingCommandMailbox {
     private boolean running;
     private boolean pauseRequested;
     private boolean paused;
+
+    private AtomicInteger isUsing = new AtomicInteger(0);
+    private AtomicInteger isRemoved = new AtomicInteger(0);
+
     private long nextSequence;
     private long consumingSequence;
 
@@ -102,6 +107,8 @@ public class ProcessingCommandMailbox {
                 }
                 lastActiveTime = new Date();
                 tryRun();
+            } else {
+                logger.error("{} enqueue command failed, aggregateRootId: {}, messageId: {}, messageSequence: {}", getClass().getName(), aggregateRootId, message.getMessage().getId(), message.getSequence());
             }
         }
     }
@@ -179,13 +186,6 @@ public class ProcessingCommandMailbox {
         }
     }
 
-    public void clear() {
-        messageDict.clear();
-        nextSequence = 0;
-        consumingSequence = 0;
-        lastActiveTime = new Date();
-    }
-
     public CompletableFuture<Void> completeMessage(ProcessingCommand message, CommandResult result) {
         try {
             ProcessingCommand removed = messageDict.remove(message.getSequence());
@@ -212,6 +212,9 @@ public class ProcessingCommandMailbox {
                 while (getTotalUnHandledMessageCount() > 0 && scannedCount < batchSize && !pauseRequested) {
                     ProcessingCommand message = getMessage(consumingSequence);
                     if (message != null) {
+                        if (duplicateCommandIdDict.containsKey(message.getMessage().getId())) {
+                            message.setDuplicated(true);
+                        }
                         await(messageHandler.handleAsync(message));
                     }
                     scannedCount++;
@@ -233,6 +236,26 @@ public class ProcessingCommandMailbox {
 
     private void setAsRunning() {
         running = true;
+    }
+
+    public boolean tryUsing() {
+        return isUsing.compareAndSet(0, 1);
+    }
+
+    public void exitUsing() {
+        isUsing.set(0);
+    }
+
+    public void markAsRemoved() {
+        isRemoved.set(1);
+    }
+
+    public boolean isUsing() {
+        return isUsing.get() == 1;
+    }
+
+    public boolean isRemoved() {
+        return isRemoved.get() == 1;
     }
 
     private void setAsNotRunning() {

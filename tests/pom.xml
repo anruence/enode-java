@@ -6,32 +6,28 @@
     <parent>
         <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </parent>
     <artifactId>enode-tests</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
-    <description>enode test cases</description>
+    <version>1.0.1</version>
+    <description>enodeframework test cases</description>
     <dependencies>
         <dependency>
             <groupId>org.enodeframework</groupId>
             <artifactId>enode</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.enodeframework</groupId>
             <artifactId>enode-kafka</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.enodeframework</groupId>
             <artifactId>enode-rocketmq</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.enodeframework</groupId>
             <artifactId>enode-mysql</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -48,7 +44,14 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
         </dependency>
     </dependencies>
     <build>

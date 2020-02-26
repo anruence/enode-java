@@ -28,6 +28,10 @@ public class ProcessingEvent {
         }
     }
 
+    public IEventProcessContext getProcessContext() {
+        return processContext;
+    }
+
     public DomainEventStreamMessage getMessage() {
         return message;
     }

@@ -5,6 +5,7 @@ import org.enodeframework.commanding.ICommandProcessor;
 import org.enodeframework.commanding.IProcessingCommandHandler;
 import org.enodeframework.commanding.ProcessingCommand;
 import org.enodeframework.commanding.ProcessingCommandMailbox;
+import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,11 +73,21 @@ public class DefaultCommandProcessor implements ICommandProcessor {
         if (Strings.isNullOrEmpty(aggregateRootId)) {
             throw new IllegalArgumentException("aggregateRootId of command cannot be null or empty, commandId:" + processingCommand.getMessage().getId());
         }
-        synchronized (lockObj) {
-            ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize));
-            mailbox.enqueueMessage(processingCommand);
+        ProcessingCommandMailbox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, x -> new ProcessingCommandMailbox(x, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize));
+        long mailboxTryUsingCount = 0L;
+        while (!mailbox.tryUsing()) {
+            Task.sleep(1);
+            mailboxTryUsingCount++;
+            if (mailboxTryUsingCount % 10000 == 0) {
+                logger.warn("Command mailbox try using count: {}, aggregateRootId: {}", mailboxTryUsingCount, mailbox.getAggregateRootId());
+            }
         }
-
+        if (mailbox.isRemoved()) {
+            mailbox = new ProcessingCommandMailbox(aggregateRootId, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize);
+            mailboxDict.putIfAbsent(aggregateRootId, mailbox);
+        }
+        mailbox.enqueueMessage(processingCommand);
+        mailbox.exitUsing();
     }
 
     @Override
@@ -91,20 +102,20 @@ public class DefaultCommandProcessor implements ICommandProcessor {
         scheduleService.stopTask(taskName);
     }
 
+    private boolean isMailBoxAllowRemove(ProcessingCommandMailbox mailbox) {
+        return mailbox.isInactive(timeoutSeconds) && !mailbox.isRunning() && mailbox.getTotalUnHandledMessageCount() == 0;
+    }
+
     private void cleanInactiveMailbox() {
         List<Map.Entry<String, ProcessingCommandMailbox>> inactiveList = mailboxDict.entrySet().stream()
-                .filter(entry -> entry.getValue().isInactive(timeoutSeconds)
-                        && !entry.getValue().isRunning()
-                        && entry.getValue().getTotalUnHandledMessageCount() == 0)
+                .filter(entry -> isMailBoxAllowRemove(entry.getValue()))
                 .collect(Collectors.toList());
         inactiveList.forEach(entry -> {
-            synchronized (lockObj) {
-                if (entry.getValue().isInactive(timeoutSeconds)
-                        && !entry.getValue().isRunning()
-                        && entry.getValue().getTotalUnHandledMessageCount() == 0) {
-                    if (mailboxDict.remove(entry.getKey()) != null) {
-                        logger.info("Removed inactive command mailbox, aggregateRootId: {}", entry.getKey());
-                    }
+            if (isMailBoxAllowRemove(entry.getValue())) {
+                ProcessingCommandMailbox removed = mailboxDict.remove(entry.getKey());
+                if (removed != null) {
+                    removed.markAsRemoved();
+                    logger.info("Removed inactive command mailbox, aggregateRootId: {}", entry.getKey());
                 }
             }
         });

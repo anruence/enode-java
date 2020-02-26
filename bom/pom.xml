@@ -4,24 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.enodeframework</groupId>
-    <artifactId>enode-parent</artifactId>
+    <artifactId>enode-dependencies-bom</artifactId>
     <version>1.0.1</version>
-    <modules>
-        <module>enode</module>
-        <module>bom</module>
-        <module>mysql</module>
-        <module>kafka</module>
-        <module>rocketmq</module>
-        <module>tests</module>
-        <module>samples</module>
-    </modules>
     <packaging>pom</packaging>
-
     <properties>
-        <enode.version>${version}</enode.version>
-        <springboot.version>2.2.4.RELEASE</springboot.version>
-        <vertx.version>3.8.5</vertx.version>
-        <slfj4.version>1.7.30</slfj4.version>
+        <enode.version>1.0.1</enode.version>
     </properties>
 
     <name>enode</name>
@@ -61,65 +48,24 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${springboot.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-stack-depchain</artifactId>
-                <version>${vertx.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode</artifactId>
+                <version>${enode.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.enodeframework</groupId>
-                <artifactId>enode-dependencies-bom</artifactId>
+                <artifactId>enode-mysql</artifactId>
                 <version>${enode.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.reflections</groupId>
-                <artifactId>reflections</artifactId>
-                <version>0.9.12</version>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-rocketmq</artifactId>
+                <version>${enode.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slfj4.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.13</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>28.2-jre</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.code.gson</groupId>
-                <artifactId>gson</artifactId>
-                <version>2.8.6</version>
-            </dependency>
-            <dependency>
-                <groupId>com.ea.async</groupId>
-                <artifactId>ea-async</artifactId>
-                <version>1.2.3</version>
-            </dependency>
-            <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>8.0.19</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.rocketmq</groupId>
-                <artifactId>rocketmq-client</artifactId>
-                <version>4.6.1</version>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-kafka</artifactId>
+                <version>${enode.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

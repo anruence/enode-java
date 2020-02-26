@@ -1,11 +1,13 @@
 package org.enodeframework.eventing.impl;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
 import org.enodeframework.eventing.DomainEventStreamMessage;
+import org.enodeframework.eventing.EnqueueMessageResult;
 import org.enodeframework.eventing.IProcessingEventProcessor;
 import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.eventing.ProcessingEvent;
@@ -26,10 +28,18 @@ import java.util.stream.Collectors;
  */
 public class DefaultProcessingEventProcessor implements IProcessingEventProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingEventProcessor.class);
-    private final Object lockObj = new Object();
+
     private int timeoutSeconds = 3600 * 24 * 3;
+
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
-    private String taskName;
+
+    private String scanInactiveMailBoxTaskName;
+
+    private String processProblemAggregateTaskName;
+
+    private int processProblemAggregateIntervalMilliseconds = 5000;
+
+    private ConcurrentHashMap<String, ProcessingEventMailBox> problemAggregateRootMailBoxDict;
 
     private String processorName = "DefaultEventProcessor";
 
@@ -46,33 +56,60 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     public DefaultProcessingEventProcessor() {
         mailboxDict = new ConcurrentHashMap<>();
-        taskName = "CleanInactiveProcessingEventMailBoxes_" + System.nanoTime() + new Random().nextInt(10000);
+        problemAggregateRootMailBoxDict = new ConcurrentHashMap<>();
+        scanInactiveMailBoxTaskName = "CleanInactiveProcessingEventMailBoxes_" + System.currentTimeMillis() + new Random().nextInt(10000);
+        processProblemAggregateTaskName = "ProcessProblemAggregate_" + System.currentTimeMillis() + new Random().nextInt(10000);
+
     }
 
 
     @Override
-    public void process(ProcessingEvent processingEvent) {
-        String aggregateRootId = processingEvent.getMessage().getAggregateRootId();
+    public void process(ProcessingEvent processingMessage) {
+        String aggregateRootId = processingMessage.getMessage().getAggregateRootId();
         if (Strings.isNullOrEmpty(aggregateRootId)) {
-            throw new IllegalArgumentException("aggregateRootId of domain event stream cannot be null or empty, domainEventStreamId:" + processingEvent.getMessage().getId());
+            throw new IllegalArgumentException("aggregateRootId of domain event stream cannot be null or empty, domainEventStreamId:" + processingMessage.getMessage().getId());
         }
-        synchronized (lockObj) {
-            ProcessingEventMailBox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, key -> {
-                int latestHandledEventVersion = getAggregateRootLatestHandledEventVersion(processingEvent.getMessage().getAggregateRootTypeName(), aggregateRootId);
-                return new ProcessingEventMailBox(aggregateRootId, latestHandledEventVersion, y -> dispatchProcessingMessageAsync(y, 0));
-            });
-            mailbox.enqueueMessage(processingEvent);
+        ProcessingEventMailBox mailbox = mailboxDict.computeIfAbsent(aggregateRootId, key -> buildProcessingEventMailBox(processingMessage));
+        long mailboxTryUsingCount = 0L;
+        while (!mailbox.tryUsing()) {
+            Task.sleep(1);
+            mailboxTryUsingCount++;
+            if (mailboxTryUsingCount % 10000 == 0) {
+                logger.warn("Event mailbox try using count: {}, aggregateRootId: {}, aggregateRootTypeName: {}", mailboxTryUsingCount, mailbox.getAggregateRootId(), mailbox.getAggregateRootTypeName());
+            }
         }
+        if (mailbox.isRemoved()) {
+            mailbox = buildProcessingEventMailBox(processingMessage);
+            mailboxDict.putIfAbsent(aggregateRootId, mailbox);
+        }
+        EnqueueMessageResult enqueueResult = mailbox.enqueueMessage(processingMessage);
+        if (enqueueResult == EnqueueMessageResult.Ignored) {
+            processingMessage.getProcessContext().notifyEventProcessed();
+        } else if (enqueueResult == EnqueueMessageResult.AddToWaitingList) {
+            addProblemAggregateMailBoxToDict(mailbox);
+        }
+        mailbox.exitUsing();
+
+    }
+
+    private void addProblemAggregateMailBoxToDict(ProcessingEventMailBox mailbox) {
+        problemAggregateRootMailBoxDict.putIfAbsent(mailbox.getAggregateRootId(), mailbox);
+    }
+
+    private ProcessingEventMailBox buildProcessingEventMailBox(ProcessingEvent processingMessage) {
+        int latestHandledEventVersion = getAggregateRootLatestHandledEventVersion(processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootId());
+        return new ProcessingEventMailBox(processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootId(), latestHandledEventVersion + 1, y -> dispatchProcessingMessageAsync(y, 0));
     }
 
     @Override
     public void start() {
-        scheduleService.startTask(taskName, this::cleanInactiveMailbox, scanExpiredAggregateIntervalMilliseconds, scanExpiredAggregateIntervalMilliseconds);
+        scheduleService.startTask(scanInactiveMailBoxTaskName, this::cleanInactiveMailbox, scanExpiredAggregateIntervalMilliseconds, scanExpiredAggregateIntervalMilliseconds);
+        scheduleService.startTask(processProblemAggregateTaskName, this::processProblemAggregates, processProblemAggregateIntervalMilliseconds, processProblemAggregateIntervalMilliseconds);
     }
 
     @Override
     public void stop() {
-        scheduleService.stopTask(taskName);
+        scheduleService.stopTask(scanInactiveMailBoxTaskName);
     }
 
     private void dispatchProcessingMessageAsync(ProcessingEvent processingEvent, int retryTimes) {
@@ -106,22 +143,46 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     }
 
 
+    private void processProblemAggregates() {
+        List<ProcessingEventMailBox> problemMailboxList = Lists.newArrayList();
+        List<ProcessingEventMailBox> recoveredMailboxList = Lists.newArrayList();
+        problemAggregateRootMailBoxDict.values().forEach(aggregateRootMailBox -> {
+            if (aggregateRootMailBox.getWaitingMessageCount() > 0) {
+                problemMailboxList.add(aggregateRootMailBox);
+            } else {
+                recoveredMailboxList.add(aggregateRootMailBox);
+            }
+        });
+        for (ProcessingEventMailBox problemMailbox : problemMailboxList) {
+            int latestHandledEventVersion = getAggregateRootLatestHandledEventVersion(problemMailbox.getAggregateRootTypeName(), problemMailbox.getAggregateRootId());
+            problemMailbox.setNextExpectingEventVersion(latestHandledEventVersion + 1);
+        }
+        for (ProcessingEventMailBox recoveredMailbox : recoveredMailboxList) {
+            problemAggregateRootMailBoxDict.remove(recoveredMailbox.getAggregateRootId());
+        }
+    }
+
     private void cleanInactiveMailbox() {
         List<Map.Entry<String, ProcessingEventMailBox>> inactiveList = mailboxDict.entrySet().stream()
-                .filter(entry -> entry.getValue().isInactive(timeoutSeconds)
-                        && !entry.getValue().isRunning()
-                        && entry.getValue().getTotalUnHandledMessageCount() == 0)
+                .filter(x -> isMailBoxAllowRemove(x.getValue()))
                 .collect(Collectors.toList());
         inactiveList.forEach(entry -> {
-            synchronized (lockObj) {
-                if (entry.getValue().isInactive(timeoutSeconds)
-                        && !entry.getValue().isRunning()
-                        && entry.getValue().getTotalUnHandledMessageCount() == 0) {
-                    if (mailboxDict.remove(entry.getKey()) != null) {
+            if (entry.getValue().tryUsing()) {
+                if (isMailBoxAllowRemove(entry.getValue())) {
+                    ProcessingEventMailBox removed = mailboxDict.remove(entry.getKey());
+                    if (removed != null) {
+                        removed.markAsRemoved();
                         logger.info("Removed inactive domain event stream mailbox, aggregateRootId: {}", entry.getKey());
                     }
                 }
             }
         });
+    }
+
+    private boolean isMailBoxAllowRemove(ProcessingEventMailBox mailbox) {
+        return mailbox.isInactive(timeoutSeconds)
+                && !mailbox.isRunning()
+                && mailbox.getTotalUnHandledMessageCount() == 0
+                && mailbox.getWaitingMessageCount() == 0;
     }
 }
