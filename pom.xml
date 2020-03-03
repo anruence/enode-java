@@ -18,7 +18,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <enode.version>${version}</enode.version>
+        <enode.version>1.0.1</enode.version>
         <springboot.version>2.2.4.RELEASE</springboot.version>
         <vertx.version>3.8.5</vertx.version>
         <slfj4.version>1.7.30</slfj4.version>
