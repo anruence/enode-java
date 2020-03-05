@@ -1,6 +1,5 @@
 package org.enodeframework;
 
-import com.ea.async.Async;
 import org.enodeframework.common.container.IObjectContainer;
 import org.enodeframework.common.extensions.ClassNameComparator;
 import org.enodeframework.common.extensions.ClassPathScanHandler;
@@ -22,11 +21,11 @@ import java.util.TreeSet;
 public class ENodeBootstrap {
     private static Logger logger = LoggerFactory.getLogger(ENodeBootstrap.class);
     private List<String> packages;
+
     @Autowired
     private IObjectContainer objectContainer;
 
     public void init() {
-        Async.init();
         Set<Class<?>> classSet = scanConfiguredPackages();
         registerBeans(classSet);
     }

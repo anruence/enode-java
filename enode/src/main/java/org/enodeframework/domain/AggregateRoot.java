@@ -6,6 +6,7 @@ import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.function.Action2;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.IDomainEvent;
+import org.enodeframework.infrastructure.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +82,14 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
             throw new ENodeRuntimeException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
         }
         if (this.id == null && domainEvent.getVersion() == 1) {
-            //TODO 此处不可以强制转换，Long.parseLong
+            // 获取泛型类型
+            Class genericType = TypeUtils.getGenericType(this.getClass());
+            if (Long.class.equals(genericType)) {
+                this.id = (TAggregateRootId) Long.valueOf(domainEvent.getAggregateRootStringId());
+            }
+            if (Integer.class.equals(genericType)) {
+                this.id = (TAggregateRootId) Integer.valueOf(domainEvent.getAggregateRootStringId());
+            }
             this.id = (TAggregateRootId) domainEvent.getAggregateRootStringId();
         }
         handler.apply(this, domainEvent);

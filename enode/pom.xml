@@ -6,11 +6,12 @@
     <parent>
         <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
-        <version>1.0.1</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>enode</artifactId>
-    <name>enode</name>
-    <version>1.0.1</version>
+    <name>${project.artifactId}</name>
+    <version>${revision}</version>
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -29,16 +30,8 @@
             <artifactId>vertx-sync</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.ea.async</groupId>
-            <artifactId>ea-async</artifactId>
         </dependency>
     </dependencies>
 </project>

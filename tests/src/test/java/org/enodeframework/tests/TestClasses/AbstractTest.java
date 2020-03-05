@@ -21,19 +21,19 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(classes = {ENodeAutoConfiguration.class, KafkaEventConfig.class, EnodeExtensionConfig.class})
 public abstract class AbstractTest {
     @Autowired
-    protected ICommandService _commandService;
+    protected ICommandService commandService;
     @Autowired
-    protected IMemoryCache _memoryCache;
+    protected IMemoryCache memoryCache;
     @Autowired
-    protected IEventStore _eventStore;
+    protected IEventStore eventStore;
     @Autowired
-    protected IPublishedVersionStore _publishedVersionStore;
+    protected IPublishedVersionStore publishedVersionStore;
     @Autowired
-    protected IMessagePublisher<DomainEventStreamMessage> _domainEventPublisher;
+    protected IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
     @Autowired
-    protected IMessagePublisher<IApplicationMessage> _applicationMessagePublisher;
+    protected IMessagePublisher<IApplicationMessage> applicationMessagePublisher;
     @Autowired
-    protected IMessagePublisher<IDomainException> _publishableExceptionPublisher;
+    protected IMessagePublisher<IDomainException> publishableExceptionPublisher;
     @Autowired
     protected IProcessingEventProcessor processor;
 }

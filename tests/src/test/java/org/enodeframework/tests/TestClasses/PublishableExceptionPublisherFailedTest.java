@@ -17,34 +17,34 @@ public class PublishableExceptionPublisherFailedTest extends AbstractTest {
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
-        Task.await(_commandService.executeAsync(command));
+        Task.await(commandService.executeAsync(command));
         AggregateThrowExceptionCommand command1 = new AggregateThrowExceptionCommand();
         command1.aggregateRootId = aggregateId;
         command1.setPublishableException(true);
-        ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).SetExpectFailedCount(FailedType.UnKnownException, 5);
-        CommandResult asyncResult = Task.await(_commandService.executeAsync(command1));
+        ((MockPublishableExceptionPublisher) publishableExceptionPublisher).SetExpectFailedCount(FailedType.UnKnownException, 5);
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
 
         CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
-        ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).Reset();
-        ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).SetExpectFailedCount(FailedType.IOException, 5);
-        asyncResult = Task.await(_commandService.executeAsync(command1));
+        ((MockPublishableExceptionPublisher) publishableExceptionPublisher).Reset();
+        ((MockPublishableExceptionPublisher) publishableExceptionPublisher).SetExpectFailedCount(FailedType.IOException, 5);
+        asyncResult = Task.await(commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
 
         commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
-        ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).Reset();
-        ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).SetExpectFailedCount(FailedType.TaskIOException, 5);
-        asyncResult = Task.await(_commandService.executeAsync(command1));
+        ((MockPublishableExceptionPublisher) publishableExceptionPublisher).Reset();
+        ((MockPublishableExceptionPublisher) publishableExceptionPublisher).SetExpectFailedCount(FailedType.TaskIOException, 5);
+        asyncResult = Task.await(commandService.executeAsync(command1));
         Assert.assertNotNull(asyncResult);
 
         commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
-        ((MockPublishableExceptionPublisher) _publishableExceptionPublisher).Reset();
+        ((MockPublishableExceptionPublisher) publishableExceptionPublisher).Reset();
     }
 
     @Test

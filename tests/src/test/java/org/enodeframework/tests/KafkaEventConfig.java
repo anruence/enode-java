@@ -85,8 +85,8 @@ public class KafkaEventConfig {
      * kafkaTemplate实现了Kafka发送接收等功能
      */
     @Bean
-    public KafkaTemplate kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public KafkaTemplate kafkaTemplate(ProducerFactory producerFactory) {
+        return new KafkaTemplate<>(producerFactory);
     }
 
     @Bean
@@ -110,42 +110,42 @@ public class KafkaEventConfig {
     }
 
     @Bean
-    public KafkaMessageListenerContainer commandListenerContainer(KafkaCommandListener commandListener) {
+    public KafkaMessageListenerContainer commandListenerContainer(KafkaCommandListener commandListener, ConsumerFactory consumerFactory) {
         ContainerProperties properties = new ContainerProperties(Constants.COMMAND_TOPIC);
         properties.setGroupId(Constants.DEFAULT_CONSUMER_GROUP);
         properties.setMessageListener(commandListener);
         properties.setMissingTopicsFatal(false);
-        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
+        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
     }
 
     @Bean
-    public KafkaMessageListenerContainer domainEventListenerContainer(KafkaDomainEventListener domainEventListener) {
+    public KafkaMessageListenerContainer domainEventListenerContainer(KafkaDomainEventListener domainEventListener, ConsumerFactory consumerFactory) {
         ContainerProperties properties = new ContainerProperties(Constants.EVENT_TOPIC);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(domainEventListener);
         properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
+        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
     }
 
     @Bean
-    public KafkaMessageListenerContainer applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener) {
+    public KafkaMessageListenerContainer applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, ConsumerFactory consumerFactory) {
         ContainerProperties properties = new ContainerProperties(Constants.APPLICATION_TOPIC);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(applicationMessageListener);
         properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
+        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
     }
 
     @Bean
-    public KafkaMessageListenerContainer publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener) {
+    public KafkaMessageListenerContainer publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, ConsumerFactory consumerFactory) {
         ContainerProperties properties = new ContainerProperties(Constants.EXCEPTION_TOPIC);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(publishableExceptionListener);
         properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
+        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
     }
 
     @Bean

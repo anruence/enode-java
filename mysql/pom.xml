@@ -6,13 +6,13 @@
     <parent>
         <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
-        <version>1.0.1</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>enode-mysql</artifactId>
-    <name>enode-mysql</name>
+    <name>${project.artifactId}</name>
     <description>enodeframework eventstore driver for MySQL and TiDB</description>
     <packaging>jar</packaging>
-    <version>1.0.1</version>
     <dependencies>
         <dependency>
             <groupId>org.enodeframework</groupId>
