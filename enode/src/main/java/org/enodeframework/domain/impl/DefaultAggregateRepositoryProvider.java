@@ -9,9 +9,9 @@ import org.enodeframework.infrastructure.IAssemblyInitializer;
 import org.enodeframework.infrastructure.TypeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -36,21 +36,24 @@ public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryP
 
     @Override
     public void initialize(Set<Class<?>> componentTypes) {
-        componentTypes.stream().filter(this::isAggregateRepositoryType).forEach(this::registerAggregateRepository);
+        componentTypes.stream().filter(TypeUtils::isAggregateRepositoryType).forEach(this::registerAggregateRepository);
     }
 
+    /**
+     * 获取继承AggregateRoot的class，IAggregateRepository接口的泛型
+     *
+     * @param aggregateRepositoryType
+     */
     private void registerAggregateRepository(Class aggregateRepositoryType) {
-        Type superGenericInterface = TypeUtils.getSuperGenericInterface(aggregateRepositoryType, IAggregateRepository.class);
-        if (superGenericInterface instanceof Class) {
-            return;
-        }
-        ParameterizedType superGenericInterfaceType = (ParameterizedType) superGenericInterface;
-        IAggregateRepository resolve = (IAggregateRepository) objectContainer.resolve(aggregateRepositoryType);
-        AggregateRepositoryProxy aggregateRepositoryProxy = new AggregateRepositoryProxy(resolve);
-        repositoryDict.put((Class) superGenericInterfaceType.getActualTypeArguments()[0], aggregateRepositoryProxy);
-    }
-
-    private boolean isAggregateRepositoryType(Class type) {
-        return type != null && !Modifier.isAbstract(type.getModifiers()) && IAggregateRepository.class.isAssignableFrom(type);
+        Type[] genericInterfaces = aggregateRepositoryType.getGenericInterfaces();
+        Arrays.stream(genericInterfaces).forEach(x -> {
+            ParameterizedType superGenericInterfaceType = (ParameterizedType) x;
+            if (!IAggregateRepository.class.equals(superGenericInterfaceType.getRawType())) {
+                return;
+            }
+            IAggregateRepository resolve = (IAggregateRepository) objectContainer.resolve(aggregateRepositoryType);
+            AggregateRepositoryProxy aggregateRepositoryProxy = new AggregateRepositoryProxy(resolve);
+            repositoryDict.put((Class) superGenericInterfaceType.getActualTypeArguments()[0], aggregateRepositoryProxy);
+        });
     }
 }

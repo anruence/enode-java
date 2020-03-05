@@ -13,12 +13,12 @@ import org.junit.Test;
 public class EventStoreFailedTest extends AbstractTest {
 
     public void event_store_failed_test() {
-        MockEventStore mockEventStore = (MockEventStore) _eventStore;
+        MockEventStore mockEventStore = (MockEventStore) eventStore;
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockEventStore.SetExpectFailedCount(FailedType.UnKnownException, 5);
-        CommandResult asyncResult = Task.await(_commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
 
         CommandResult commandResult = asyncResult;
@@ -29,7 +29,7 @@ public class EventStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockEventStore.SetExpectFailedCount(FailedType.IOException, 5);
-        asyncResult = Task.await(_commandService.executeAsync(command));
+        asyncResult = Task.await(commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
 
         commandResult = asyncResult;
@@ -40,7 +40,7 @@ public class EventStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockEventStore.SetExpectFailedCount(FailedType.TaskIOException, 5);
-        asyncResult = Task.await(_commandService.executeAsync(command));
+        asyncResult = Task.await(commandService.executeAsync(command));
         Assert.assertNotNull(asyncResult);
 
         commandResult = asyncResult;
@@ -51,14 +51,14 @@ public class EventStoreFailedTest extends AbstractTest {
 
     public void esfindAsync() {
         String aId = "5d3acc9dd1fcfe66c9b0b324";
-        _eventStore.findAsync(aId, 1).thenAccept(x -> {
+        eventStore.findAsync(aId, 1).thenAccept(x -> {
         });
     }
 
     public void esfindAsyncWithCommand() {
         String aId = "5d3acc9dd1fcfe66c9b0b324";
         String cid = "5d3acc9ed1fcfe66c9b0b346";
-        _eventStore.findAsync(aId, cid).thenAccept(x -> {
+        eventStore.findAsync(aId, cid).thenAccept(x -> {
         });
     }
 

@@ -6,12 +6,13 @@
     <parent>
         <groupId>org.enodeframework</groupId>
         <artifactId>enode-parent</artifactId>
-        <version>1.0.1</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>enode-kafka</artifactId>
-    <name>enode-kafka</name>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
-    <version>1.0.1</version>
+    <version>${revision}</version>
     <dependencies>
         <dependency>
             <groupId>org.enodeframework</groupId>

@@ -16,17 +16,17 @@ public class PublishedVersionStoreFailedTest extends AbstractTest {
 
     @Before
     public void initPublishedVersionStore() {
-        _publishedVersionStore = new MockPublishedVersionStore();
+        publishedVersionStore = new MockPublishedVersionStore();
     }
 
     @Test
     public void published_version_store_failed_test() {
-        MockPublishedVersionStore mockPublishedVersionStore = (MockPublishedVersionStore) _publishedVersionStore;
+        MockPublishedVersionStore mockPublishedVersionStore = (MockPublishedVersionStore) publishedVersionStore;
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockPublishedVersionStore.SetExpectFailedCount(FailedType.UnKnownException, 5);
-        CommandResult asyncResult = Task.await(_commandService.executeAsync(command, CommandReturnType.EventHandled));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);
 
         CommandResult commandResult = asyncResult;
@@ -37,7 +37,7 @@ public class PublishedVersionStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockPublishedVersionStore.SetExpectFailedCount(FailedType.IOException, 5);
-        asyncResult = Task.await(_commandService.executeAsync(command, CommandReturnType.EventHandled));
+        asyncResult = Task.await(commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);
 
         commandResult = asyncResult;
@@ -48,7 +48,7 @@ public class PublishedVersionStoreFailedTest extends AbstractTest {
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
         mockPublishedVersionStore.SetExpectFailedCount(FailedType.TaskIOException, 5);
-        asyncResult = Task.await(_commandService.executeAsync(command, CommandReturnType.EventHandled));
+        asyncResult = Task.await(commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(asyncResult);
 
         commandResult = asyncResult;
