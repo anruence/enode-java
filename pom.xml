@@ -18,7 +18,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>1.0.2-SNAPSHOT</revision>
+        <revision>1.0.2</revision>
         <maven.skip.deploy>false</maven.skip.deploy>
         <maven.jar.version>3.0.2</maven.jar.version>
         <maven.surefire.version>3.0.0-M4</maven.surefire.version>
@@ -35,7 +35,7 @@
     </properties>
 
     <name>${project.artifactId}</name>
-    <description>The enodeframework is devoted to helping engineers develop scalable applications.</description>
+    <description>The enodeframework is devoted to helping engineers developing scalable applications.</description>
     <url>http://www.enodeframework.org</url>
 
     <licenses>
