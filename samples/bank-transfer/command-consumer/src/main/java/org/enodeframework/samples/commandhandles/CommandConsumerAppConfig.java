@@ -2,14 +2,19 @@ package org.enodeframework.samples.commandhandles;
 
 import com.google.common.collect.Lists;
 import com.zaxxer.hikari.HikariDataSource;
+import io.vertx.core.Vertx;
 import org.enodeframework.ENodeBootstrap;
 import org.enodeframework.commanding.impl.DefaultCommandProcessor;
 import org.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import org.enodeframework.eventing.impl.DefaultEventCommittingService;
 import org.enodeframework.mysql.MysqlEventStore;
 import org.enodeframework.mysql.MysqlPublishedVersionStore;
+import org.enodeframework.queue.command.CommandResultProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
 
 import static org.enodeframework.samples.QueueProperties.JDBC_URL;
 
@@ -68,5 +73,30 @@ public class CommandConsumerAppConfig {
         dataSource.setPassword("root");
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
+    }
+
+    private Vertx vertx;
+
+    @Autowired
+    private MysqlEventStore mysqlEventStore;
+
+    @Autowired
+    private MysqlPublishedVersionStore publishedVersionStore;
+
+    @Autowired
+    private CommandResultProcessor commandResultProcessor;
+
+    @PostConstruct
+    public void deployVerticle() {
+        vertx = Vertx.vertx();
+        vertx.deployVerticle(commandResultProcessor, res -> {
+
+        });
+        vertx.deployVerticle(mysqlEventStore, res -> {
+
+        });
+        vertx.deployVerticle(publishedVersionStore, res -> {
+
+        });
     }
 }

@@ -1,10 +1,10 @@
 package org.enodeframework.mysql;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
-import org.enodeframework.ObjectContainer;
 import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.utilities.Ensure;
@@ -24,11 +24,13 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author anruence@gmail.com
  */
-public class MysqlPublishedVersionStore implements IPublishedVersionStore {
+public class MysqlPublishedVersionStore extends AbstractVerticle implements IPublishedVersionStore {
     private static final Logger logger = LoggerFactory.getLogger(MysqlPublishedVersionStore.class);
-    private final SQLClient sqlClient;
     private final String tableName;
     private final String uniqueIndexName;
+    private DataSource ds;
+    private SQLClient sqlClient;
+
 
     public MysqlPublishedVersionStore(DataSource ds, OptionSetting optionSetting) {
         Ensure.notNull(ds, "ds");
@@ -42,7 +44,10 @@ public class MysqlPublishedVersionStore implements IPublishedVersionStore {
         }
         Ensure.notNull(tableName, "tableName");
         Ensure.notNull(uniqueIndexName, "uniqueIndexName");
-        sqlClient = JDBCClient.create(ObjectContainer.vertx, ds);
+    }
+
+    public void start() throws Exception {
+        sqlClient = JDBCClient.create(vertx, ds);
     }
 
     @Override

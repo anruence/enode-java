@@ -2,6 +2,7 @@ package org.enodeframework.mysql;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -10,7 +11,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
-import org.enodeframework.ObjectContainer;
 import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.io.IOHelper;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 /**
  * @author anruence@gmail.com
  */
-public class MysqlEventStore implements IEventStore {
+public class MysqlEventStore extends AbstractVerticle implements IEventStore {
     private static final Logger logger = LoggerFactory.getLogger(MysqlEventStore.class);
     private static final String EVENT_TABLE_NAME_FORMAT = "%s_%s";
 
@@ -54,7 +54,8 @@ public class MysqlEventStore implements IEventStore {
     private final String commandIndexName;
     private final int bulkCopyBatchSize;
     private final int bulkCopyTimeout;
-    private final SQLClient sqlClient;
+    private DataSource ds;
+    private SQLClient sqlClient;
 
     private final String INSERT_EVENT_SQL = "INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)";
 
@@ -84,7 +85,11 @@ public class MysqlEventStore implements IEventStore {
         Ensure.notNull(commandIndexName, "commandIndexName");
         Ensure.positive(bulkCopyBatchSize, "bulkCopyBatchSize");
         Ensure.positive(bulkCopyTimeout, "bulkCopyTimeout");
-        sqlClient = JDBCClient.create(ObjectContainer.vertx, ds);
+        this.ds = ds;
+    }
+
+    public void start() throws Exception {
+        sqlClient = JDBCClient.create(vertx, ds);
     }
 
     @Override
