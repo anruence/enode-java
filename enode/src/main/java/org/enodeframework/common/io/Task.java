@@ -1,6 +1,5 @@
 package org.enodeframework.common.io;
 
-import io.vertx.ext.sync.Sync;
 import org.enodeframework.common.exception.ENodeInterruptException;
 
 import java.util.concurrent.CompletableFuture;
