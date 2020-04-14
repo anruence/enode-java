@@ -4,9 +4,9 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalListener;
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.parsetools.RecordParser;
-import org.enodeframework.ObjectContainer;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.CommandStatus;
@@ -28,9 +28,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author anruence@gmail.com
  */
-public class CommandResultProcessor {
+public class CommandResultProcessor extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(CommandResultProcessor.class);
     private InetSocketAddress bindAddress;
+    private int port = SysProperties.PORT;
+    private int completionSourceTimeout = SysProperties.COMPLETION_SOURCE_TIMEOUT;
     private NetServer netServer;
     private Cache<String, CommandTaskCompletionSource> commandTaskDict;
     private BlockingQueue<CommandResult> commandExecutedMessageLocalQueue;
@@ -40,15 +42,18 @@ public class CommandResultProcessor {
     private boolean started;
 
     public CommandResultProcessor() {
-        this(SysProperties.PORT, SysProperties.COMPLETION_SOURCE_TIMEOUT);
     }
 
     public CommandResultProcessor(int port) {
-        this(port, SysProperties.COMPLETION_SOURCE_TIMEOUT);
+        this.port = port;
     }
 
-    public CommandResultProcessor(int port, int completionSourceTimeout) {
-        netServer = ObjectContainer.vertx.createNetServer();
+    public void setCompletionSourceTimeout(int completionSourceTimeout) {
+        this.completionSourceTimeout = completionSourceTimeout;
+    }
+
+    public void startServer(int port, int completionSourceTimeout) {
+        netServer = vertx.createNetServer();
         netServer.connectHandler(sock -> {
             RecordParser parser = RecordParser.newDelimited(SysProperties.DELIMITED, sock);
             parser.endHandler(v -> sock.close()).exceptionHandler(t -> {
@@ -87,12 +92,13 @@ public class CommandResultProcessor {
         if (started) {
             return;
         }
+        startServer(port, completionSourceTimeout);
         commandExecutedMessageWorker.start();
         domainEventHandledMessageWorker.start();
         started = true;
     }
 
-    public void shutdown() {
+    public void stop() {
         commandExecutedMessageWorker.stop();
         domainEventHandledMessageWorker.stop();
         netServer.close();

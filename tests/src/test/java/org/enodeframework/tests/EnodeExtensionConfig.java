@@ -13,13 +13,14 @@ import org.enodeframework.mysql.MysqlPublishedVersionStore;
 import org.enodeframework.queue.command.CommandResultProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 import static org.enodeframework.tests.Constants.JDBC_URL;
 
 @ComponentScan(value = "org.enodeframework")
 public class EnodeExtensionConfig {
 
-    @Bean(initMethod = "start", destroyMethod = "shutdown")
+    @Bean
     public CommandResultProcessor commandResultProcessor() {
         CommandResultProcessor processor = new CommandResultProcessor();
         return processor;
