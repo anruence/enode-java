@@ -47,7 +47,7 @@ public class ENodeAutoConfiguration {
         return objectContainer;
     }
 
-    @Bean
+    @Bean(initMethod = "start", destroyMethod = "stop")
     public DefaultProcessingEventProcessor defaultProcessingDomainEventStreamMessageProcessor() {
         return new DefaultProcessingEventProcessor();
     }

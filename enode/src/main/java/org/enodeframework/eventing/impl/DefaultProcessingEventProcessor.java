@@ -37,11 +37,11 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     private String processProblemAggregateTaskName;
 
-    private int processProblemAggregateIntervalMilliseconds = 5000;
+    private int processProblemAggregateIntervalMilliseconds = 1000;
 
     private ConcurrentHashMap<String, ProcessingEventMailBox> problemAggregateRootMailBoxDict;
 
-    private String processorName = "DefaultEventProcessor";
+    private String name = "DefaultEventProcessor";
 
     private ConcurrentHashMap<String, ProcessingEventMailBox> mailboxDict;
 
@@ -93,7 +93,9 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     }
 
     private void addProblemAggregateMailBoxToDict(ProcessingEventMailBox mailbox) {
-        problemAggregateRootMailBoxDict.putIfAbsent(mailbox.getAggregateRootId(), mailbox);
+        if (problemAggregateRootMailBoxDict.putIfAbsent(mailbox.getAggregateRootId(), mailbox) == null) {
+            logger.warn("Added problem aggregate mailbox, aggregateRootTypeName: {}, aggregateRootId: {}", mailbox.getAggregateRootTypeName(), mailbox.getAggregateRootId());
+        }
     }
 
     private ProcessingEventMailBox buildProcessingEventMailBox(ProcessingEvent processingMessage) {
@@ -112,6 +114,14 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
         scheduleService.stopTask(scanInactiveMailBoxTaskName);
     }
 
+    /**
+     * The name of the processor
+     */
+    @Override
+    public String getName() {
+        return name;
+    }
+
     private void dispatchProcessingMessageAsync(ProcessingEvent processingEvent, int retryTimes) {
         IOHelper.tryAsyncActionRecursivelyWithoutResult("DispatchProcessingMessageAsync",
                 () -> dispatcher.dispatchMessagesAsync(processingEvent.getMessage().getEvents()),
@@ -125,7 +135,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     private int getAggregateRootLatestHandledEventVersion(String aggregateRootType, String aggregateRootId) {
         try {
-            return Task.await(publishedVersionStore.getPublishedVersionAsync(processorName, aggregateRootType, aggregateRootId));
+            return Task.await(publishedVersionStore.getPublishedVersionAsync(name, aggregateRootType, aggregateRootId));
         } catch (Exception ex) {
             throw new ENodeRuntimeException("_publishedVersionStore.GetPublishedVersionAsync has unknown exception.", ex);
         }
@@ -134,7 +144,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     private void updatePublishedVersionAsync(ProcessingEvent processingEvent, int retryTimes) {
         DomainEventStreamMessage message = processingEvent.getMessage();
         IOHelper.tryAsyncActionRecursivelyWithoutResult("UpdatePublishedVersionAsync",
-                () -> publishedVersionStore.updatePublishedVersionAsync(processorName, message.getAggregateRootTypeName(), message.getAggregateRootId(), message.getVersion()),
+                () -> publishedVersionStore.updatePublishedVersionAsync(name, message.getAggregateRootTypeName(), message.getAggregateRootId(), message.getVersion()),
                 result -> {
                     processingEvent.complete();
                 },
@@ -158,7 +168,10 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
             problemMailbox.setNextExpectingEventVersion(latestHandledEventVersion + 1);
         }
         for (ProcessingEventMailBox recoveredMailbox : recoveredMailboxList) {
-            problemAggregateRootMailBoxDict.remove(recoveredMailbox.getAggregateRootId());
+            ProcessingEventMailBox removed = problemAggregateRootMailBoxDict.remove(recoveredMailbox.getAggregateRootId());
+            if (removed != null) {
+                logger.info("Removed problem aggregate mailbox, aggregateRootTypeName: {}, aggregateRootId: {}", removed.getAggregateRootTypeName(), removed.getAggregateRootId());
+            }
         }
     }
 
@@ -172,7 +185,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
                     ProcessingEventMailBox removed = mailboxDict.remove(entry.getKey());
                     if (removed != null) {
                         removed.markAsRemoved();
-                        logger.info("Removed inactive domain event stream mailbox, aggregateRootId: {}", entry.getKey());
+                        logger.info("Removed inactive domain event stream mailbox, aggregateRootTypeName: {}, aggregateRootId: {}", removed.getAggregateRootTypeName(), removed.getAggregateRootId());
                     }
                 }
             }
