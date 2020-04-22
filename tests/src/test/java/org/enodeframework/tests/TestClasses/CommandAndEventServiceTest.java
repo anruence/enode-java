@@ -827,6 +827,41 @@ public class CommandAndEventServiceTest extends AbstractTest {
         }
     }
 
+    @Test
+    public void sequence_domain_event_process_test2() {
+        TestAggregate note = new TestAggregate(ObjectId.generateNewStringId(), "initial title");
+        IAggregateRoot aggregate = note;
+        DomainEventStreamMessage message1 = createMessage(aggregate);
+
+        aggregate.acceptChanges();
+        note.ChangeTitle("title1");
+        DomainEventStreamMessage message2 = createMessage(aggregate);
+
+        aggregate.acceptChanges();
+        note.ChangeTitle("title2");
+        DomainEventStreamMessage message3 = createMessage(aggregate);
+
+        ManualResetEvent waitHandle = new ManualResetEvent(false);
+        List<Integer> versionList = new ArrayList<>();
+
+        //模拟从publishedVersionStore中取到的publishedVersion不是最新的场景
+        processor.process(new ProcessingEvent(message1, new DomainEventStreamProcessContext(message1, waitHandle, versionList)));
+        processor.process(new ProcessingEvent(message3, new DomainEventStreamProcessContext(message3, waitHandle, versionList)));
+
+        //等待5秒后更新publishedVersion为2
+        Task.sleep(5000);
+        Task.await(publishedVersionStore.updatePublishedVersionAsync(processor.getName(), TestAggregate.class.getName(), aggregate.getUniqueId(), 2));
+
+        //等待ENode内部自动检测到最新的publishedVersion，并继续处理mailbox waitingList中的version=3的事件
+        waitHandle.waitOne();
+
+        Assert.assertEquals(1, versionList.get(0).intValue());
+        Assert.assertEquals(3, versionList.get(1).intValue());
+
+        //再等待3秒，等待ENode内部异步打印Removed problem aggregate的日志
+        Task.sleep(3000);
+    }
+
     private DomainEventStreamMessage createMessage(IAggregateRoot aggregateRoot) {
         return new DomainEventStreamMessage(
                 ObjectId.generateNewStringId(),

@@ -45,7 +45,10 @@ public class ProcessingEventMailBox {
     private void tryEnqueueWaitingMessage() {
         while (waitingProcessingEventDict.containsKey(nextExpectingEventVersion)) {
             ProcessingEvent nextProcessingEvent = waitingProcessingEventDict.remove(nextExpectingEventVersion);
-            enqueueEventStream(nextProcessingEvent);
+            if (nextProcessingEvent != null) {
+                enqueueEventStream(nextProcessingEvent);
+                logger.info("{} enqueued waiting processingEvent, aggregateRootId: {}, aggregateRootTypeName: {}, eventVersion: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, nextProcessingEvent.getMessage().getVersion());
+            }
         }
     }
 
@@ -57,8 +60,10 @@ public class ProcessingEventMailBox {
         synchronized (lockObj) {
             if (version > this.nextExpectingEventVersion) {
                 this.nextExpectingEventVersion = version;
-                logger.info("{} refreshed next expecting event version, aggregateRootId: {}, aggregateRootTypeName: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName);
+                logger.info("{} refreshed nextExpectingEventVersion, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, nextExpectingEventVersion);
                 tryEnqueueWaitingMessage();
+                lastActiveTime = new Date();
+                tryRun();
             }
         }
     }
