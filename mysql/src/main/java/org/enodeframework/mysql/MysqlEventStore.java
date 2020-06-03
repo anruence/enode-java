@@ -46,19 +46,18 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
     private static final Logger logger = LoggerFactory.getLogger(MysqlEventStore.class);
     private static final String EVENT_TABLE_NAME_FORMAT = "%s_%s";
 
-    private static final Pattern pattern = Pattern.compile("^Duplicate entry '(.*)-(.*)' for key 'IX_EventStream_AggId_CommandId'");
+    private static final Pattern PATTERN = Pattern.compile("^Duplicate entry '(.*)-(.*)' for key 'IX_EventStream_AggId_CommandId'");
 
     private final String tableName;
     private final int tableCount;
+    private final int duplicateCode;
     private final String versionIndexName;
     private final String commandIndexName;
     private final int bulkCopyBatchSize;
     private final int bulkCopyTimeout;
+    private final String INSERT_EVENT_SQL = "INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)";
     private DataSource ds;
     private SQLClient sqlClient;
-
-    private final String INSERT_EVENT_SQL = "INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)";
-
     @Autowired
     private IEventSerializer eventSerializer;
 
@@ -67,6 +66,7 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
         if (optionSetting != null) {
             tableName = optionSetting.getOptionValue(DataSourceKey.EVENT_TABLE_NAME);
             tableCount = Integer.parseInt(optionSetting.getOptionValue(DataSourceKey.EVENT_TABLE_COUNT));
+            duplicateCode = Integer.parseInt(optionSetting.getOptionValue(DataSourceKey.MYSQL_DUPLICATE_CODE));
             versionIndexName = optionSetting.getOptionValue(DataSourceKey.EVENT_TABLE_VERSION_UNIQUE_INDEX_NAME);
             commandIndexName = optionSetting.getOptionValue(DataSourceKey.COMMAND_TABLE_COMMANDID_UNIQUE_INDEX_NAME);
             bulkCopyBatchSize = Integer.parseInt(optionSetting.getOptionValue(DataSourceKey.EVENT_TABLE_BULKCOPY_BATCHSIZE));
@@ -75,6 +75,7 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
             DefaultDBConfigurationSetting setting = new DefaultDBConfigurationSetting();
             tableName = setting.getEventTableName();
             tableCount = setting.getEventTableCount();
+            duplicateCode = setting.getDuplicateCode();
             versionIndexName = setting.getEventTableVersionUniqueIndexName();
             commandIndexName = setting.getEventTableCommandIdUniqueIndexName();
             bulkCopyBatchSize = setting.getEventTableBulkCopyBatchSize();
@@ -88,6 +89,7 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
         this.ds = ds;
     }
 
+    @Override
     public void start() throws Exception {
         sqlClient = JDBCClient.create(vertx, ds);
     }
@@ -161,12 +163,12 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
         return future.exceptionally(throwable -> {
             if (throwable instanceof SQLException) {
                 SQLException ex = (SQLException) throwable;
-                if (ex.getErrorCode() == 1062 && ex.getMessage().contains(versionIndexName)) {
+                if (ex.getErrorCode() == duplicateCode && ex.getMessage().contains(versionIndexName)) {
                     AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
                     appendResult.setEventAppendStatus(EventAppendStatus.DuplicateEvent);
                     return appendResult;
                 }
-                if (ex.getErrorCode() == 1062 && ex.getMessage().contains(commandIndexName)) {
+                if (ex.getErrorCode() == duplicateCode && ex.getMessage().contains(commandIndexName)) {
                     // Duplicate entry '5d3ac841d1fcfe669e9a257d-5d3ac841d1fcfe669e9a2585' for key 'IX_EventStream_AggId_CommandId'
                     AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
                     appendResult.setEventAppendStatus(EventAppendStatus.DuplicateCommand);
@@ -183,7 +185,7 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
     }
 
     private String parseCommandIdInException(String errMsg) {
-        Matcher matcher = pattern.matcher(errMsg);
+        Matcher matcher = PATTERN.matcher(errMsg);
         if (matcher.find()) {
             if (matcher.groupCount() >= 2) {
                 return matcher.group(2);

@@ -12,6 +12,12 @@ public class DefaultDBConfigurationSetting {
      * 命令表的默认名称；默认为：Command
      */
     private String commandTableName;
+
+    /**
+     * mysql唯一键冲突时的错误码
+     */
+    private int duplicateCode;
+
     /**
      * 事件表的默认名称；默认为：EventStream
      */
@@ -61,6 +67,7 @@ public class DefaultDBConfigurationSetting {
         commandTableName = "Command";
         eventTableName = "EventStream";
         eventTableCount = 1;
+        duplicateCode = 1062;
         eventTableBulkCopyBatchSize = 1000;
         eventTableBulkCopyTimeout = 60;
         publishedVersionTableName = "PublishedVersion";
@@ -174,5 +181,13 @@ public class DefaultDBConfigurationSetting {
 
     public void setLockKeyPrimaryKeyName(String lockKeyPrimaryKeyName) {
         this.lockKeyPrimaryKeyName = lockKeyPrimaryKeyName;
+    }
+
+    public int getDuplicateCode() {
+        return duplicateCode;
+    }
+
+    public void setDuplicateCode(int duplicateCode) {
+        this.duplicateCode = duplicateCode;
     }
 }

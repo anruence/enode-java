@@ -28,6 +28,7 @@ public class MysqlPublishedVersionStore extends AbstractVerticle implements IPub
     private static final Logger logger = LoggerFactory.getLogger(MysqlPublishedVersionStore.class);
     private final String tableName;
     private final String uniqueIndexName;
+    private final int duplicateCode;
     private DataSource ds;
     private SQLClient sqlClient;
 
@@ -36,16 +37,19 @@ public class MysqlPublishedVersionStore extends AbstractVerticle implements IPub
         Ensure.notNull(ds, "ds");
         if (optionSetting != null) {
             tableName = optionSetting.getOptionValue(DataSourceKey.PUBLISHED_VERSION_TABLENAME);
+            duplicateCode = Integer.parseInt(optionSetting.getOptionValue(DataSourceKey.MYSQL_DUPLICATE_CODE));
             uniqueIndexName = optionSetting.getOptionValue(DataSourceKey.PUBLISHED_VERSION_UNIQUE_INDEX_NAME);
         } else {
             DefaultDBConfigurationSetting setting = new DefaultDBConfigurationSetting();
             tableName = setting.getPublishedVersionTableName();
+            duplicateCode = setting.getDuplicateCode();
             uniqueIndexName = setting.getPublishedVersionUniqueIndexName();
         }
         Ensure.notNull(tableName, "tableName");
         Ensure.notNull(uniqueIndexName, "uniqueIndexName");
     }
 
+    @Override
     public void start() throws Exception {
         sqlClient = JDBCClient.create(vertx, ds);
     }
@@ -80,7 +84,7 @@ public class MysqlPublishedVersionStore extends AbstractVerticle implements IPub
         return future.exceptionally(throwable -> {
             if (throwable instanceof SQLException) {
                 SQLException ex = (SQLException) throwable;
-                if (ex.getErrorCode() == 1062 && ex.getMessage().contains(uniqueIndexName)) {
+                if (ex.getErrorCode() == duplicateCode && ex.getMessage().contains(uniqueIndexName)) {
                     future.complete(null);
                 }
                 logger.error("Insert or update aggregate published version has sql exception.", ex);

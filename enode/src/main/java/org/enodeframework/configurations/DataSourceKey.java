@@ -17,6 +17,10 @@ public class DataSourceKey {
      */
     public static String EVENT_TABLE_COUNT = "EVENT_TABLE_COUNT";
     /**
+     * mysql 唯一键冲突时的错误码
+     */
+    public static String MYSQL_DUPLICATE_CODE = "MYSQL_DUPLICATE_CODE";
+    /**
      * 事件表批量持久化单批最大事件数；默认为：1000
      */
     public static String EVENT_TABLE_BULKCOPY_BATCHSIZE = "EVENT_TABLE_BULKCOPY_BATCHSIZE";

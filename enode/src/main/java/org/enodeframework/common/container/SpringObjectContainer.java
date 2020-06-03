@@ -12,7 +12,8 @@ import java.util.Map;
  * @author anruence@gmail.com
  */
 public class SpringObjectContainer implements IObjectContainer, ApplicationContextAware {
-    private static ApplicationContext applicationContext;
+
+    private ApplicationContext applicationContext;
 
     @Override
     public <T> Map<String, T> resolveAll(Class<T> targetClz) {
@@ -26,6 +27,6 @@ public class SpringObjectContainer implements IObjectContainer, ApplicationConte
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        SpringObjectContainer.applicationContext = applicationContext;
+        this.applicationContext = applicationContext;
     }
 }

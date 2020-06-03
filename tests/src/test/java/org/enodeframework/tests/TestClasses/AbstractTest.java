@@ -10,14 +10,17 @@ import org.enodeframework.eventing.IProcessingEventProcessor;
 import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
+import org.enodeframework.tests.App;
 import org.enodeframework.tests.EnodeExtensionConfig;
 import org.enodeframework.tests.KafkaEventConfig;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(classes = App.class)
 @ContextConfiguration(classes = {ENodeAutoConfiguration.class, KafkaEventConfig.class, EnodeExtensionConfig.class})
 public abstract class AbstractTest {
     @Autowired

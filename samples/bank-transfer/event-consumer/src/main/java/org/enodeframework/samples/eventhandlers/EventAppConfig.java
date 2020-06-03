@@ -17,6 +17,24 @@ import static org.enodeframework.samples.QueueProperties.JDBC_URL;
 
 @Configuration
 public class EventAppConfig {
+    private Vertx vertx;
+    @Autowired
+    private MysqlEventStore mysqlEventStore;
+
+//    @Bean
+//    public InMemoryEventStore inMemoryEventStore() {
+//        return new InMemoryEventStore();
+//    }
+//
+//    @Bean
+//    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
+//        return new InMemoryPublishedVersionStore();
+//    }
+    @Autowired
+    private MysqlPublishedVersionStore publishedVersionStore;
+    @Autowired
+    private CommandResultProcessor commandResultProcessor;
+
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
         ENodeBootstrap bootstrap = new ENodeBootstrap();
@@ -29,16 +47,6 @@ public class EventAppConfig {
         CommandResultProcessor processor = new CommandResultProcessor(6001);
         return processor;
     }
-
-//    @Bean
-//    public InMemoryEventStore inMemoryEventStore() {
-//        return new InMemoryEventStore();
-//    }
-//
-//    @Bean
-//    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
-//        return new InMemoryPublishedVersionStore();
-//    }
 
     @Bean
     public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
@@ -61,17 +69,6 @@ public class EventAppConfig {
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
     }
-
-    private Vertx vertx;
-
-    @Autowired
-    private MysqlEventStore mysqlEventStore;
-
-    @Autowired
-    private MysqlPublishedVersionStore publishedVersionStore;
-
-    @Autowired
-    private CommandResultProcessor commandResultProcessor;
 
     @PostConstruct
     public void deployVerticle() {

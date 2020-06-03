@@ -88,6 +88,7 @@ public class CommandResultProcessor extends AbstractVerticle {
         commandTaskDict.asMap().put(command.getId(), new CommandTaskCompletionSource(command.getAggregateRootId(), commandReturnType, taskCompletionSource));
     }
 
+    @Override
     public void start() {
         if (started) {
             return;
@@ -98,6 +99,7 @@ public class CommandResultProcessor extends AbstractVerticle {
         started = true;
     }
 
+    @Override
     public void stop() {
         commandExecutedMessageWorker.stop();
         domainEventHandledMessageWorker.stop();

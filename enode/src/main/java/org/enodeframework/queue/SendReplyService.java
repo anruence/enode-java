@@ -25,14 +25,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SendReplyService {
     private static final Logger logger = LoggerFactory.getLogger(SendReplyService.class);
-
+    private final ConcurrentHashMap<String, CompletableFuture<NetSocket>> socketMap = new ConcurrentHashMap<>();
     private boolean started;
-
     private boolean stoped;
-
     private NetClient netClient;
-
-    private ConcurrentHashMap<String, CompletableFuture<NetSocket>> socketMap = new ConcurrentHashMap<>();
 
     public void start() {
         if (!started) {
@@ -92,10 +88,10 @@ public class SendReplyService {
         });
     }
 
-    class SendReplyContext {
-        private short replyType;
-        private Object replyData;
-        private String replyAddress;
+    static class SendReplyContext {
+        private final short replyType;
+        private final Object replyData;
+        private final String replyAddress;
 
         public SendReplyContext(short replyType, Object replyData, String replyAddress) {
             this.replyType = replyType;
