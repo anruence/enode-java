@@ -1,5 +1,6 @@
 package org.enodeframework.eventing;
 
+import org.enodeframework.common.exception.ENodeRuntimeException;
 import org.enodeframework.common.function.Action1;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.messaging.IMessage;
@@ -15,15 +16,16 @@ import java.util.stream.Collectors;
 
 public class ProcessingEventMailBox {
     private final static Logger logger = LoggerFactory.getLogger(ProcessingEventMailBox.class);
-    private final Object lockObj = new Object();
-    private String aggregateRootId;
 
+    private final Object lockObj = new Object();
+
+    private String aggregateRootId;
 
     private String aggregateRootTypeName;
 
     private Date lastActiveTime;
 
-    private int nextExpectingEventVersion;
+    private int nextExpectingEventVersion = 1;
 
     private AtomicInteger isUsing = new AtomicInteger(0);
     private AtomicInteger isRemoved = new AtomicInteger(0);
@@ -33,11 +35,10 @@ public class ProcessingEventMailBox {
     private ConcurrentLinkedQueue<ProcessingEvent> processingEventQueue;
     private Action1<ProcessingEvent> handleProcessingEventAction;
 
-    public ProcessingEventMailBox(String aggregateRootTypeName, String aggregateRootId, int nextExpectingEventVersion, Action1<ProcessingEvent> handleProcessingEventAction) {
+    public ProcessingEventMailBox(String aggregateRootTypeName, String aggregateRootId, Action1<ProcessingEvent> handleProcessingEventAction) {
         processingEventQueue = new ConcurrentLinkedQueue<>();
         this.aggregateRootId = aggregateRootId;
         this.aggregateRootTypeName = aggregateRootTypeName;
-        this.nextExpectingEventVersion = nextExpectingEventVersion;
         this.handleProcessingEventAction = handleProcessingEventAction;
         lastActiveTime = new Date();
     }
@@ -64,6 +65,8 @@ public class ProcessingEventMailBox {
                 tryEnqueueWaitingMessage();
                 lastActiveTime = new Date();
                 tryRun();
+            } else {
+                logger.info("{} nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, nextExpectingEventVersion: {}, current _nextExpectingEventVersion: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, nextExpectingEventVersion, nextExpectingEventVersion);
             }
         }
     }
@@ -90,6 +93,9 @@ public class ProcessingEventMailBox {
 
     public EnqueueMessageResult enqueueMessage(ProcessingEvent processingEvent) {
         synchronized (lockObj) {
+            if (isRemoved()) {
+                throw new ENodeRuntimeException(String.format("ProcessingEventMailBox was removed, cannot allow to enqueue message, aggregateRootTypeName: %s, aggregateRootId: %s", aggregateRootTypeName, aggregateRootId));
+            }
             DomainEventStreamMessage eventStream = processingEvent.getMessage();
             if (eventStream.getVersion() == nextExpectingEventVersion) {
                 enqueueEventStream(processingEvent);

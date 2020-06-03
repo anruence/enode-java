@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Worker {
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
-    private Object lockObject = new Object();
+    private final Object lockObject = new Object();
     private String actionName;
     private Action action;
     private Status status;
@@ -19,10 +19,6 @@ public class Worker {
         this.actionName = actionName;
         this.action = action;
         this.status = Status.Initial;
-    }
-
-    public String actionName() {
-        return this.actionName;
     }
 
     public Worker start() {

@@ -1,24 +1,34 @@
 package org.enodeframework.tests;
 
 import com.google.common.collect.Lists;
-import com.zaxxer.hikari.HikariDataSource;
+import io.vertx.core.Vertx;
 import org.enodeframework.ENodeBootstrap;
 import org.enodeframework.commanding.impl.DefaultCommandProcessor;
 import org.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import org.enodeframework.eventing.impl.DefaultEventCommittingService;
 import org.enodeframework.eventing.impl.InMemoryEventStore;
 import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
-import org.enodeframework.mysql.MysqlEventStore;
-import org.enodeframework.mysql.MysqlPublishedVersionStore;
 import org.enodeframework.queue.command.CommandResultProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
-import static org.enodeframework.tests.Constants.JDBC_URL;
+import javax.annotation.PostConstruct;
 
 @ComponentScan(value = "org.enodeframework")
 public class EnodeExtensionConfig {
+
+    private Vertx vertx;
+
+    @Autowired
+    private CommandResultProcessor commandResultProcessor;
+
+    @PostConstruct
+    public void deployVerticle() {
+        vertx = Vertx.vertx();
+        vertx.deployVerticle(commandResultProcessor, res -> {
+        });
+    }
 
     @Bean
     public CommandResultProcessor commandResultProcessor() {

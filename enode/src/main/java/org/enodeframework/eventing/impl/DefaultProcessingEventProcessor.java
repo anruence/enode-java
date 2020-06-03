@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -35,15 +36,18 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     private String scanInactiveMailBoxTaskName;
 
-    private String processProblemAggregateTaskName;
+    private String processTryToRefreshAggregateTaskName;
 
-    private int processProblemAggregateIntervalMilliseconds = 1000;
+    private int processTryToRefreshAggregateIntervalMilliseconds = 1000;
 
-    private ConcurrentHashMap<String, ProcessingEventMailBox> problemAggregateRootMailBoxDict;
+    private ConcurrentHashMap<String, ProcessingEventMailBox> toRefreshAggregateRootMailBoxDict;
 
     private String name = "DefaultEventProcessor";
 
     private ConcurrentHashMap<String, ProcessingEventMailBox> mailboxDict;
+
+    private ConcurrentHashMap<String, Boolean> refreshingAggregateRootDict;
+
 
     @Autowired
     private IScheduleService scheduleService;
@@ -56,9 +60,10 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     public DefaultProcessingEventProcessor() {
         mailboxDict = new ConcurrentHashMap<>();
-        problemAggregateRootMailBoxDict = new ConcurrentHashMap<>();
+        toRefreshAggregateRootMailBoxDict = new ConcurrentHashMap<>();
+        refreshingAggregateRootDict = new ConcurrentHashMap<>();
         scanInactiveMailBoxTaskName = "CleanInactiveProcessingEventMailBoxes_" + System.currentTimeMillis() + new Random().nextInt(10000);
-        processProblemAggregateTaskName = "ProcessProblemAggregate_" + System.currentTimeMillis() + new Random().nextInt(10000);
+        processTryToRefreshAggregateTaskName = "ProcessTryToRefreshAggregate_" + System.currentTimeMillis() + new Random().nextInt(10000);
 
     }
 
@@ -86,32 +91,41 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
         if (enqueueResult == EnqueueMessageResult.Ignored) {
             processingMessage.getProcessContext().notifyEventProcessed();
         } else if (enqueueResult == EnqueueMessageResult.AddToWaitingList) {
-            addProblemAggregateMailBoxToDict(mailbox);
+            addToRefreshAggregateMailBoxToDict(mailbox);
         }
         mailbox.exitUsing();
-
     }
 
-    private void addProblemAggregateMailBoxToDict(ProcessingEventMailBox mailbox) {
-        if (problemAggregateRootMailBoxDict.putIfAbsent(mailbox.getAggregateRootId(), mailbox) == null) {
-            logger.warn("Added problem aggregate mailbox, aggregateRootTypeName: {}, aggregateRootId: {}", mailbox.getAggregateRootTypeName(), mailbox.getAggregateRootId());
+    private void addToRefreshAggregateMailBoxToDict(ProcessingEventMailBox mailbox) {
+        if (toRefreshAggregateRootMailBoxDict.putIfAbsent(mailbox.getAggregateRootId(), mailbox) == null) {
+            logger.info("Added toRefreshPublishedVersion aggregate mailbox, aggregateRootTypeName: {}, aggregateRootId: {}", mailbox.getAggregateRootTypeName(), mailbox.getAggregateRootId());
+            tryToRefreshAggregateMailBoxNextExpectingEventVersion(mailbox);
         }
     }
 
     private ProcessingEventMailBox buildProcessingEventMailBox(ProcessingEvent processingMessage) {
-        int latestHandledEventVersion = getAggregateRootLatestHandledEventVersion(processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootId());
-        return new ProcessingEventMailBox(processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootId(), latestHandledEventVersion + 1, y -> dispatchProcessingMessageAsync(y, 0));
+        return new ProcessingEventMailBox(processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootId(), y -> dispatchProcessingMessageAsync(y, 0));
+    }
+
+    private void tryToRefreshAggregateMailBoxNextExpectingEventVersion(ProcessingEventMailBox processingEventMailBox) {
+        if (refreshingAggregateRootDict.putIfAbsent(processingEventMailBox.getAggregateRootId(), true) == null) {
+            getAggregateRootLatestHandledEventVersion(processingEventMailBox.getAggregateRootTypeName(), processingEventMailBox.getAggregateRootId()).thenAccept(latestPublishedEventVersion -> {
+                processingEventMailBox.setNextExpectingEventVersion(latestPublishedEventVersion + 1);
+                refreshingAggregateRootDict.remove(processingEventMailBox.getAggregateRootId());
+            });
+        }
     }
 
     @Override
     public void start() {
         scheduleService.startTask(scanInactiveMailBoxTaskName, this::cleanInactiveMailbox, scanExpiredAggregateIntervalMilliseconds, scanExpiredAggregateIntervalMilliseconds);
-        scheduleService.startTask(processProblemAggregateTaskName, this::processProblemAggregates, processProblemAggregateIntervalMilliseconds, processProblemAggregateIntervalMilliseconds);
+        scheduleService.startTask(processTryToRefreshAggregateTaskName, this::processToRefreshAggregateRootMailBoxs, processTryToRefreshAggregateIntervalMilliseconds, processTryToRefreshAggregateIntervalMilliseconds);
     }
 
     @Override
     public void stop() {
         scheduleService.stopTask(scanInactiveMailBoxTaskName);
+        scheduleService.stopTask(processTryToRefreshAggregateTaskName);
     }
 
     /**
@@ -133,9 +147,9 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
                 retryTimes, true);
     }
 
-    private int getAggregateRootLatestHandledEventVersion(String aggregateRootType, String aggregateRootId) {
+    private CompletableFuture<Integer> getAggregateRootLatestHandledEventVersion(String aggregateRootType, String aggregateRootId) {
         try {
-            return Task.await(publishedVersionStore.getPublishedVersionAsync(name, aggregateRootType, aggregateRootId));
+            return publishedVersionStore.getPublishedVersionAsync(name, aggregateRootType, aggregateRootId);
         } catch (Exception ex) {
             throw new ENodeRuntimeException("_publishedVersionStore.GetPublishedVersionAsync has unknown exception.", ex);
         }
@@ -153,24 +167,23 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     }
 
 
-    private void processProblemAggregates() {
-        List<ProcessingEventMailBox> problemMailboxList = Lists.newArrayList();
+    private void processToRefreshAggregateRootMailBoxs() {
+        List<ProcessingEventMailBox> remainingMailboxList = Lists.newArrayList();
         List<ProcessingEventMailBox> recoveredMailboxList = Lists.newArrayList();
-        problemAggregateRootMailBoxDict.values().forEach(aggregateRootMailBox -> {
+        toRefreshAggregateRootMailBoxDict.values().forEach(aggregateRootMailBox -> {
             if (aggregateRootMailBox.getWaitingMessageCount() > 0) {
-                problemMailboxList.add(aggregateRootMailBox);
+                remainingMailboxList.add(aggregateRootMailBox);
             } else {
                 recoveredMailboxList.add(aggregateRootMailBox);
             }
         });
-        for (ProcessingEventMailBox problemMailbox : problemMailboxList) {
-            int latestHandledEventVersion = getAggregateRootLatestHandledEventVersion(problemMailbox.getAggregateRootTypeName(), problemMailbox.getAggregateRootId());
-            problemMailbox.setNextExpectingEventVersion(latestHandledEventVersion + 1);
+        for (ProcessingEventMailBox mailBox : remainingMailboxList) {
+            tryToRefreshAggregateMailBoxNextExpectingEventVersion(mailBox);
         }
-        for (ProcessingEventMailBox recoveredMailbox : recoveredMailboxList) {
-            ProcessingEventMailBox removed = problemAggregateRootMailBoxDict.remove(recoveredMailbox.getAggregateRootId());
+        for (ProcessingEventMailBox mailBox : recoveredMailboxList) {
+            ProcessingEventMailBox removed = toRefreshAggregateRootMailBoxDict.remove(mailBox.getAggregateRootId());
             if (removed != null) {
-                logger.info("Removed problem aggregate mailbox, aggregateRootTypeName: {}, aggregateRootId: {}", removed.getAggregateRootTypeName(), removed.getAggregateRootId());
+                logger.info("Removed healthy aggregate mailbox, aggregateRootTypeName: {}, aggregateRootId: {}", removed.getAggregateRootTypeName(), removed.getAggregateRootId());
             }
         }
     }

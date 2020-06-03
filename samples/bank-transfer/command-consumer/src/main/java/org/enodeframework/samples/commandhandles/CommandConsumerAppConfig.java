@@ -20,6 +20,24 @@ import static org.enodeframework.samples.QueueProperties.JDBC_URL;
 
 @Configuration
 public class CommandConsumerAppConfig {
+    private Vertx vertx;
+    @Autowired
+    private MysqlEventStore mysqlEventStore;
+    @Autowired
+    private MysqlPublishedVersionStore publishedVersionStore;
+    @Autowired
+    private CommandResultProcessor commandResultProcessor;
+
+//    @Bean
+//    public InMemoryEventStore inMemoryEventStore() {
+//        return new InMemoryEventStore();
+//    }
+//
+//    @Bean
+//    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
+//        return new InMemoryPublishedVersionStore();
+//    }
+
     /**
      * 命令处理器
      */
@@ -45,16 +63,6 @@ public class CommandConsumerAppConfig {
         return bootstrap;
     }
 
-//    @Bean
-//    public InMemoryEventStore inMemoryEventStore() {
-//        return new InMemoryEventStore();
-//    }
-//
-//    @Bean
-//    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
-//        return new InMemoryPublishedVersionStore();
-//    }
-
     @Bean
     public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
         return new MysqlEventStore(dataSource, null);
@@ -74,17 +82,6 @@ public class CommandConsumerAppConfig {
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
     }
-
-    private Vertx vertx;
-
-    @Autowired
-    private MysqlEventStore mysqlEventStore;
-
-    @Autowired
-    private MysqlPublishedVersionStore publishedVersionStore;
-
-    @Autowired
-    private CommandResultProcessor commandResultProcessor;
 
     @PostConstruct
     public void deployVerticle() {

@@ -6,7 +6,6 @@ import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.EventAppendResult;
 import org.enodeframework.eventing.IEventStore;
 import org.enodeframework.eventing.impl.InMemoryEventStore;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -68,6 +67,6 @@ public class MockEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
-        throw new NotImplementedException();
+        throw new ENodeRuntimeException();
     }
 }
