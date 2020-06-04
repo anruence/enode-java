@@ -17,28 +17,22 @@ import static org.enodeframework.samples.QueueProperties.JDBC_URL;
 
 @Configuration
 public class EventAppConfig {
+
     private Vertx vertx;
+
     @Autowired
     private MysqlEventStore mysqlEventStore;
 
-//    @Bean
-//    public InMemoryEventStore inMemoryEventStore() {
-//        return new InMemoryEventStore();
-//    }
-//
-//    @Bean
-//    public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
-//        return new InMemoryPublishedVersionStore();
-//    }
     @Autowired
     private MysqlPublishedVersionStore publishedVersionStore;
+
     @Autowired
     private CommandResultProcessor commandResultProcessor;
 
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
         ENodeBootstrap bootstrap = new ENodeBootstrap();
-        bootstrap.setPackages(Lists.newArrayList("org.enodeframework.samples"));
+        bootstrap.setScanPackages(Lists.newArrayList("org.enodeframework.samples"));
         return bootstrap;
     }
 
@@ -56,9 +50,10 @@ public class EventAppConfig {
 
     @Bean
     public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        MysqlPublishedVersionStore p = new MysqlPublishedVersionStore(dataSource, null);
-        return p;
+        MysqlPublishedVersionStore publishedVersionStore = new MysqlPublishedVersionStore(dataSource, null);
+        return publishedVersionStore;
     }
+
 
     @Bean
     public HikariDataSource dataSource() {
@@ -73,6 +68,7 @@ public class EventAppConfig {
     @PostConstruct
     public void deployVerticle() {
         vertx = Vertx.vertx();
+
         vertx.deployVerticle(commandResultProcessor, res -> {
 
         });
@@ -83,6 +79,4 @@ public class EventAppConfig {
 
         });
     }
-
-
 }

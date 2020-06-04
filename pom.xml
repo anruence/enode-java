@@ -20,13 +20,13 @@
     <properties>
         <revision>1.0.4</revision>
         <maven.skip.deploy>false</maven.skip.deploy>
-        <maven.jar.version>3.0.2</maven.jar.version>
+        <maven.jar.version>3.2.0</maven.jar.version>
         <maven.surefire.version>3.0.0-M4</maven.surefire.version>
         <maven.deploy.version>3.0.0-M1</maven.deploy.version>
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <maven.source.version>3.2.0</maven.source.version>
         <maven.war.version>3.2.3</maven.war.version>
-        <maven.javadoc.version>3.1.1</maven.javadoc.version>
+        <maven.javadoc.version>3.2.0</maven.javadoc.version>
         <maven.jetty.version>9.4.11.v20180605</maven.jetty.version>
         <nexus.staging.version>1.6.8</nexus.staging.version>
         <maven.gpg.version>1.6</maven.gpg.version>
@@ -165,6 +165,7 @@
                         </goals>
                         <configuration>
                             <doclint>none</doclint>
+                            <detectJavaApiLink>false</detectJavaApiLink>
                         </configuration>
                     </execution>
                 </executions>

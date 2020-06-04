@@ -39,7 +39,7 @@ public class EnodeExtensionConfig {
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
         ENodeBootstrap bootstrap = new ENodeBootstrap();
-        bootstrap.setPackages(Lists.newArrayList("org.enodeframework.tests"));
+        bootstrap.setScanPackages(Lists.newArrayList("org.enodeframework.tests"));
         return bootstrap;
     }
 

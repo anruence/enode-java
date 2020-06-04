@@ -13,14 +13,15 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * 应用的核心引导启动类
- * 负责扫描需要注册的packages. 获取到Command，Event
+ * 应用的核心引导启动，负责扫描需要注册的scanPackages. 获取到Command，Event
  *
  * @author anruence@gmail.com
  */
 public class ENodeBootstrap {
-    private static Logger logger = LoggerFactory.getLogger(ENodeBootstrap.class);
-    private List<String> packages;
+
+    private final static Logger logger = LoggerFactory.getLogger(ENodeBootstrap.class);
+
+    private List<String> scanPackages;
 
     @Autowired
     private IObjectContainer objectContainer;
@@ -46,23 +47,23 @@ public class ENodeBootstrap {
      * Scan the packages configured in Spring xml
      */
     private Set<Class<?>> scanConfiguredPackages() {
-        if (packages == null) {
+        if (scanPackages == null) {
             throw new IllegalArgumentException("Command packages is not specified");
         }
-        String[] pkgs = new String[packages.size()];
-        ClassPathScanHandler handler = new ClassPathScanHandler(packages.toArray(pkgs));
+        String[] pkgs = new String[scanPackages.size()];
+        ClassPathScanHandler handler = new ClassPathScanHandler(scanPackages.toArray(pkgs));
         Set<Class<?>> classSet = new TreeSet<>(new ClassNameComparator());
-        for (String pakName : packages) {
+        for (String pakName : scanPackages) {
             classSet.addAll(handler.getPackageAllClasses(pakName, true));
         }
         return classSet;
     }
 
-    public List<String> getPackages() {
-        return this.packages;
+    public List<String> getScanPackages() {
+        return this.scanPackages;
     }
 
-    public void setPackages(List<String> packages) {
-        this.packages = packages;
+    public void setScanPackages(List<String> scanPackages) {
+        this.scanPackages = scanPackages;
     }
 }

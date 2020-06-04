@@ -19,7 +19,7 @@ public class AppConfigCommand {
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
         ENodeBootstrap bootstrap = new ENodeBootstrap();
-        bootstrap.setPackages(Lists.newArrayList("org.enodeframework.samples"));
+        bootstrap.setScanPackages(Lists.newArrayList("org.enodeframework.samples"));
         return bootstrap;
     }
 
