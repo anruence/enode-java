@@ -106,19 +106,59 @@ public class BankAccountCommandHandler {
 ```
 领域事件消费
 ```java
+/**
+ * 银行存款交易流程管理器，用于协调银行存款交易流程中各个参与者聚合根之间的消息交互
+ * IMessageHandler<DepositTransactionStartedEvent>,                    //存款交易已开始
+ * IMessageHandler<DepositTransactionPreparationCompletedEvent>,       //存款交易已提交
+ * IMessageHandler<TransactionPreparationAddedEvent>,                  //账户预操作已添加
+ * IMessageHandler<TransactionPreparationCommittedEvent>               //账户预操作已提交
+ */
 @Event
-public class NoteEventHandler {
+public class DepositTransactionProcessManager {
+
+    @Autowired
+    private ICommandService _commandService;
+
     @Subscribe
-    public AsyncTaskResult handleAsync(NoteTitleChanged evnt) {
-        System.out.println(String.format("Note denormalizered, title：%s, Version: %d", evnt.getTitle(), evnt.version()));
-        return AsyncTaskResult.Success;
+    public void handleAsync(DepositTransactionStartedEvent evnt) {
+        AddTransactionPreparationCommand command = new AddTransactionPreparationCommand(
+                evnt.AccountId,
+                evnt.getAggregateRootId(),
+                TransactionType.DepositTransaction,
+                PreparationType.CreditPreparation,
+                evnt.Amount);
+        command.setId(evnt.getId());
+        Task.await(_commandService.sendAsync(command));
     }
+
     @Subscribe
-    public AsyncTaskResult handleAsync(NoteTitleChanged2 evnt) {
-        System.out.println(String.format("Note denormalizered, title：%s, Version: %d", evnt.getTitle(), evnt.version()));
-        return AsyncTaskResult.Success;
+    public void handleAsync(TransactionPreparationAddedEvent evnt) {
+        if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction
+                && evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
+            ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.TransactionPreparation.TransactionId);
+            command.setId(evnt.getId());
+            Task.await(_commandService.sendAsync(command));
+        }
+    }
+
+    @Subscribe
+    public void handleAsync(DepositTransactionPreparationCompletedEvent evnt) {
+        CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.AccountId, evnt.getAggregateRootId());
+        command.setId(evnt.getId());
+        Task.await(_commandService.sendAsync(command));
+    }
+
+    @Subscribe
+    public void handleAsync(TransactionPreparationCommittedEvent evnt) {
+        if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction &&
+                evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
+            ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.TransactionPreparation.TransactionId);
+            command.setId(evnt.getId());
+            Task.await(_commandService.sendAsync(command));
+        }
     }
 }
+
 ```
 ## 启动配置
 ### enode启动配置
