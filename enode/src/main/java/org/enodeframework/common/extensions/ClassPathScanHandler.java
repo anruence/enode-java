@@ -49,18 +49,18 @@ public class ClassPathScanHandler {
     private Reflections reflections = null;
 
     /**
-     * the classes and the packages to be scanned.
+     * the classes and the scanPackages to be scanned.
      *
-     * @param packages packages.
+     * @param scanPackages scanPackages.
      */
-    public ClassPathScanHandler(String... packages) {
-        this.reflections = new Reflections(new ConfigurationBuilder().forPackages(packages));
+    public ClassPathScanHandler(String... scanPackages) {
+        this.reflections = new Reflections(new ConfigurationBuilder().forPackages(scanPackages));
     }
 
     /**
-     * excludeInner:是否排除内部类 true->是 false->否<br>.
-     * checkInOrEx：过滤规则适用情况 true—>搜索符合规则的 false->排除符合规则的<br>
-     * classFilters：自定义过滤规则，如果是null或者空，即全部符合不过滤
+     * excludeInner: 是否排除内部类 true 是 false 否
+     * checkInOrEx: 过滤规则适用情况 true: 搜索符合规则的 false: 排除符合规则的
+     * classFilters: 自定义过滤规则，如果是null或者空，即全部符合不过滤
      *
      * @param excludeInner whether exclude the inner class.
      * @param checkInOrEx  whether exclude the rule checking.

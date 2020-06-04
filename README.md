@@ -27,7 +27,7 @@ executeAsync发送消息的同时，关注命令的返回结果，返回的时�
 - CommandReturnType.EventHandled：Event处理完成后才返回结果
 ### event使用哪个订阅者发送处理结果
 event的订阅者可能有很多个，所以enode只要求有一个订阅者处理完事件后发送结果给发送命令的人即可，通过AbstractDomainEventListener中sendEventHandledMessage参数来设置是否发送，最终来决定由哪个订阅者来发送命令处理结果
-### ICommandHandler和ICommandAsyncHandler区别
+### ICommandHandler和ICommandAsyncHandler区别 (合并成一个了，但处理思路没变)
 ICommandHandler是为了操作内存中的聚合根的，所以不会有异步操作，但后来ICommandHandler的Handle方法也设计为了HandleAsync了，目的是为了异步到底，否则异步链路中断的话，异步就没效果了
 而ICommandAsyncHandler是为了让开发者调用外部系统的接口的，也就是访问外部IO，所以用了Async
 ICommandHandler，ICommandAsyncHandler这两个接口是用于不同的业务场景，ICommandHandler.handleAsync方法执行完成后，框架要从context中获取当前修改的聚合根的领域事件，然后去提交。而ICommandAsyncHandler.handleAsync方法执行完成后，不会有这个逻辑，而是看一下handleAsync方法执行的异步消息结果是什么，也就是IApplicationMessage。
@@ -52,17 +52,57 @@ aggregateRootType.getDeclaredConstructor().newInstance();
 ```
 消费命令消息
 ```java
+/**
+ * 银行账户相关命令处理
+ * ICommandHandler<CreateAccountCommand>,                       //开户
+ * ICommandAsyncHandler<ValidateAccountCommand>,                //验证账户是否合法
+ * ICommandHandler<AddTransactionPreparationCommand>,           //添加预操作
+ * ICommandHandler<CommitTransactionPreparationCommand>         //提交预操作
+ */
 @Command
-public class CreateNoteCommandHandler {
+public class BankAccountCommandHandler {
     /**
-     * Handle the given aggregate command.
+     * 开户
      */
     @Subscribe
-    public void handleAsync(ICommandContext context, CreateNoteCommand command) {
-        Note note = new Note(command.getAggregateRootId(), command.getTitle());
-        context.add(note);
+    public void handleAsync(ICommandContext context, CreateAccountCommand command) {
+        context.addAsync(new BankAccount(command.getAggregateRootId(), command.Owner));
+    }
+
+    /**
+     * 添加预操作
+     */
+    @Subscribe
+    public void handleAsync(ICommandContext context, AddTransactionPreparationCommand command) {
+        CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
+        BankAccount account = Task.await(future);
+        account.AddTransactionPreparation(command.TransactionId, command.TransactionType, command.PreparationType, command.Amount);
+    }
+
+    /**
+     * 验证账户是否合法
+     */
+    @Subscribe
+    public IApplicationMessage handleAsync(ValidateAccountCommand command) {
+        IApplicationMessage applicationMessage = new AccountValidatePassedMessage(command.getAggregateRootId(), command.TransactionId);
+        //此处应该会调用外部接口验证账号是否合法，这里仅仅简单通过账号是否以INVALID字符串开头来判断是否合法；根据账号的合法性，返回不同的应用层消息
+        if (command.getAggregateRootId().startsWith("INVALID")) {
+            applicationMessage = new AccountValidateFailedMessage(command.getAggregateRootId(), command.TransactionId, "账户不合法.");
+        }
+        return applicationMessage;
+    }
+
+    /**
+     * 提交预操作
+     */
+    @Subscribe
+    public void handleAsync(ICommandContext context, CommitTransactionPreparationCommand command) {
+        CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
+        BankAccount account = Task.await(future);
+        account.CommitTransactionPreparation(command.TransactionId);
     }
 }
+
 ```
 领域事件消费
 ```java
@@ -83,17 +123,71 @@ public class NoteEventHandler {
 ## 启动配置
 ### enode启动配置
 ```java
-    @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public CommandResultProcessor commandResultProcessor() {
-        CommandResultProcessor processor = new CommandResultProcessor(6000);
-        return processor;
-    }
+@Configuration
+public class EventAppConfig {
+
+    private Vertx vertx;
+
+    @Autowired
+    private MysqlEventStore mysqlEventStore;
+
+    @Autowired
+    private MysqlPublishedVersionStore publishedVersionStore;
+
+    @Autowired
+    private CommandResultProcessor commandResultProcessor;
+
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
         ENodeBootstrap bootstrap = new ENodeBootstrap();
-        bootstrap.setPackages(Lists.newArrayList("org.enodeframework.samples"));
+        bootstrap.setScanPackages(Lists.newArrayList("org.enodeframework.samples"));
         return bootstrap;
     }
+
+    @Bean
+    public CommandResultProcessor commandResultProcessor() {
+        CommandResultProcessor processor = new CommandResultProcessor();
+        return processor;
+    }
+
+    @Bean
+    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
+        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
+        return mysqlEventStore;
+    }
+
+    @Bean
+    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
+        MysqlPublishedVersionStore publishedVersionStore = new MysqlPublishedVersionStore(dataSource, null);
+        return publishedVersionStore;
+    }
+
+
+    @Bean
+    public HikariDataSource dataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl(JDBC_URL);
+        dataSource.setUsername("root");
+        dataSource.setPassword("root");
+        dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
+        return dataSource;
+    }
+
+    @PostConstruct
+    public void deployVerticle() {
+        vertx = Vertx.vertx();
+
+        vertx.deployVerticle(commandResultProcessor, res -> {
+
+        });
+        vertx.deployVerticle(mysqlEventStore, res -> {
+
+        });
+        vertx.deployVerticle(publishedVersionStore, res -> {
+
+        });
+    }
+}
 ```
 ### 数据源选择
 #### MySQL
