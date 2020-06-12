@@ -70,15 +70,15 @@ public class ScheduleService implements IScheduleService {
         }
     }
 
-    class TimerBasedTask {
+    static class TimerBasedTask {
         private String name;
         private Action action;
-        private ScheduledFuture scheduledFuture;
+        private ScheduledFuture<?> scheduledFuture;
         private int dueTime;
         private int period;
         private boolean stopped;
 
-        public TimerBasedTask(String name, Action action, ScheduledFuture scheduledFuture, int dueTime, int period, boolean stopped) {
+        public TimerBasedTask(String name, Action action, ScheduledFuture<?> scheduledFuture, int dueTime, int period, boolean stopped) {
             this.name = name;
             this.action = action;
             this.scheduledFuture = scheduledFuture;
@@ -103,11 +103,11 @@ public class ScheduleService implements IScheduleService {
             this.action = action;
         }
 
-        public ScheduledFuture getScheduledFuture() {
+        public ScheduledFuture<?> getScheduledFuture() {
             return scheduledFuture;
         }
 
-        public void setScheduledFuture(ScheduledFuture scheduledFuture) {
+        public void setScheduledFuture(ScheduledFuture<?> scheduledFuture) {
             this.scheduledFuture = scheduledFuture;
         }
 

@@ -18,10 +18,12 @@ public class RocketMQCommandListener extends AbstractCommandListener implements 
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-        final CountDownLatch latch = new CountDownLatch(1);
-        QueueMessage queueMessage = RocketMQTool.covertToQueueMessage(msgs);
-        handle(queueMessage, message -> {
-            latch.countDown();
+        final CountDownLatch latch = new CountDownLatch(msgs.size());
+        msgs.forEach(messageExt -> {
+            QueueMessage queueMessage = RocketMQTool.covertToQueueMessage(messageExt);
+            handle(queueMessage, message -> {
+                latch.countDown();
+            });
         });
         Task.await(latch);
         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;

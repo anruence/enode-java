@@ -3,7 +3,6 @@ package org.enodeframework.samples.controller;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.enodeframework.kafka.KafkaCommandService;
-import org.enodeframework.queue.TopicData;
 import org.enodeframework.samples.QueueProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -18,8 +17,7 @@ public class KafkaConfig {
     public KafkaCommandService kafkaCommandService(KafkaTemplate producer) {
         KafkaCommandService kafkaCommandService = new KafkaCommandService();
         kafkaCommandService.setProducer(producer);
-        TopicData topicData = new TopicData(QueueProperties.COMMAND_TOPIC, "*");
-        kafkaCommandService.setTopicData(topicData);
+        kafkaCommandService.setTopic(QueueProperties.COMMAND_TOPIC);
         return kafkaCommandService;
     }
 
