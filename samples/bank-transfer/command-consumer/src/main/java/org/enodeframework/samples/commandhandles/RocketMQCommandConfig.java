@@ -3,7 +3,6 @@ package org.enodeframework.samples.commandhandles;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.enodeframework.queue.TopicData;
 import org.enodeframework.rocketmq.message.RocketMQApplicationMessagePublisher;
 import org.enodeframework.rocketmq.message.RocketMQCommandListener;
 import org.enodeframework.rocketmq.message.RocketMQDomainEventPublisher;
@@ -39,7 +38,7 @@ public class RocketMQCommandConfig {
     public RocketMQDomainEventPublisher rocketMQDomainEventPublisher(DefaultMQProducer defaultMQProducer) {
         RocketMQDomainEventPublisher domainEventPublisher = new RocketMQDomainEventPublisher();
         domainEventPublisher.setProducer(defaultMQProducer);
-        domainEventPublisher.setTopicData(new TopicData(QueueProperties.EVENT_TOPIC, "*"));
+        domainEventPublisher.setTopic(QueueProperties.EVENT_TOPIC);
         return domainEventPublisher;
     }
 
@@ -50,7 +49,7 @@ public class RocketMQCommandConfig {
     public RocketMQApplicationMessagePublisher rocketMQApplicationMessagePublisher(DefaultMQProducer defaultMQProducer) {
         RocketMQApplicationMessagePublisher applicationMessagePublisher = new RocketMQApplicationMessagePublisher();
         applicationMessagePublisher.setProducer(defaultMQProducer);
-        applicationMessagePublisher.setTopicData(new TopicData(QueueProperties.APPLICATION_TOPIC, "*"));
+        applicationMessagePublisher.setTopic(QueueProperties.APPLICATION_TOPIC);
         return applicationMessagePublisher;
     }
 
@@ -61,7 +60,7 @@ public class RocketMQCommandConfig {
     public RocketMQPublishableExceptionPublisher rocketMQPublishableExceptionPublisher(DefaultMQProducer defaultMQProducer) {
         RocketMQPublishableExceptionPublisher exceptionPublisher = new RocketMQPublishableExceptionPublisher();
         exceptionPublisher.setProducer(defaultMQProducer);
-        exceptionPublisher.setTopicData(new TopicData(QueueProperties.EXCEPTION_TOPIC, "*"));
+        exceptionPublisher.setTopic(QueueProperties.EXCEPTION_TOPIC);
         return exceptionPublisher;
     }
 }

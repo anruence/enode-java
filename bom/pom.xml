@@ -16,6 +16,7 @@
         <gson.version>2.8.6</gson.version>
         <junit.version>4.13</junit.version>
         <rocketmq.version>4.7.0</rocketmq.version>
+        <ons.version>1.8.6.Final</ons.version>
         <mysql.version>8.0.19</mysql.version>
         <reflections.version>0.9.12</reflections.version>
         <maven.flatten.version>1.1.0</maven.flatten.version>
@@ -89,6 +90,11 @@
             </dependency>
             <dependency>
                 <groupId>org.enodeframework</groupId>
+                <artifactId>enode-ons</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
                 <artifactId>enode-kafka</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -126,6 +132,11 @@
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-client</artifactId>
                 <version>${rocketmq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.openservices</groupId>
+                <artifactId>ons-client</artifactId>
+                <version>${ons.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -20,7 +20,7 @@ public class SocketClient {
         NetClient client = Vertx.vertx().createNetClient();
         String host = "127.0.0.1";
         long start = System.currentTimeMillis();
-        int total = 100000;
+        int total = 1000000;
         CompletableFuture<NetSocket> future = new CompletableFuture<>();
         if (smap.putIfAbsent(host, future) == null) {
             client.connect(6008, host, socketAsyncResult -> {
@@ -38,8 +38,7 @@ public class SocketClient {
         }
         smap.get(host).thenAccept(socket -> {
             for (int i = 0; i < total; i++) {
-                int ii = i;
-                socket.write("send message:" + ii + SysProperties.DELIMITED);
+                socket.write("send message:" + i + SysProperties.DELIMITED);
             }
         });
 

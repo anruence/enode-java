@@ -12,7 +12,6 @@ import org.enodeframework.kafka.KafkaDomainEventListener;
 import org.enodeframework.kafka.KafkaDomainEventPublisher;
 import org.enodeframework.kafka.KafkaPublishableExceptionListener;
 import org.enodeframework.kafka.KafkaPublishableExceptionPublisher;
-import org.enodeframework.queue.TopicData;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -30,8 +29,7 @@ public class KafkaEventConfig {
     public KafkaCommandService kafkaCommandService(KafkaTemplate kafkaTemplate) {
         KafkaCommandService kafkaCommandService = new KafkaCommandService();
         kafkaCommandService.setProducer(kafkaTemplate);
-        TopicData topicData = new TopicData(Constants.COMMAND_TOPIC, "*");
-        kafkaCommandService.setTopicData(topicData);
+        kafkaCommandService.setTopic(Constants.COMMAND_TOPIC);
         return kafkaCommandService;
     }
 
@@ -152,7 +150,7 @@ public class KafkaEventConfig {
     public KafkaApplicationMessagePublisher kafkaApplicationMessagePublisher(KafkaTemplate kafkaTemplate) {
         KafkaApplicationMessagePublisher applicationMessagePublisher = new KafkaApplicationMessagePublisher();
         applicationMessagePublisher.setProducer(kafkaTemplate);
-        applicationMessagePublisher.setTopicData(new TopicData(Constants.APPLICATION_TOPIC, "*"));
+        applicationMessagePublisher.setTopic(Constants.APPLICATION_TOPIC);
         return applicationMessagePublisher;
     }
 
@@ -160,7 +158,7 @@ public class KafkaEventConfig {
     public KafkaPublishableExceptionPublisher kafkaPublishableExceptionPublisher(KafkaTemplate kafkaTemplate) {
         KafkaPublishableExceptionPublisher exceptionPublisher = new KafkaPublishableExceptionPublisher();
         exceptionPublisher.setProducer(kafkaTemplate);
-        exceptionPublisher.setTopicData(new TopicData(Constants.EXCEPTION_TOPIC, "*"));
+        exceptionPublisher.setTopic(Constants.EXCEPTION_TOPIC);
         return exceptionPublisher;
     }
 
@@ -168,7 +166,7 @@ public class KafkaEventConfig {
     public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate kafkaTemplate) {
         KafkaDomainEventPublisher domainEventPublisher = new KafkaDomainEventPublisher();
         domainEventPublisher.setProducer(kafkaTemplate);
-        domainEventPublisher.setTopicData(new TopicData(Constants.EVENT_TOPIC, "*"));
+        domainEventPublisher.setTopic(Constants.EVENT_TOPIC);
         return domainEventPublisher;
     }
 }

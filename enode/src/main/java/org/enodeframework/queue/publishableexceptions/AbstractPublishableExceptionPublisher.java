@@ -5,25 +5,23 @@ import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.queue.QueueMessage;
-import org.enodeframework.queue.QueueMessageTypeCode;
-import org.enodeframework.queue.TopicData;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractPublishableExceptionPublisher implements IMessagePublisher<IDomainException> {
-    private TopicData topicData;
+    private String topic;
 
-    public TopicData getTopicData() {
-        return topicData;
+    public String getTopic() {
+        return topic;
     }
 
-    public void setTopicData(TopicData topicData) {
-        this.topicData = topicData;
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     protected QueueMessage createExceptionMessage(IDomainException exception) {
-        Ensure.notNull(topicData, "topicData");
+        Ensure.notNull(topic, "topic");
         Map<String, String> serializableInfo = new HashMap<>();
         exception.serializeTo(serializableInfo);
         PublishableExceptionMessage exceptionMessage = new PublishableExceptionMessage();
@@ -35,12 +33,10 @@ public abstract class AbstractPublishableExceptionPublisher implements IMessageP
         String data = JsonTool.serialize(exceptionMessage);
         String routeKey = exception.getId();
         QueueMessage queueMessage = new QueueMessage();
-        queueMessage.setCode(QueueMessageTypeCode.ExceptionMessage.getValue());
-        queueMessage.setTopic(topicData.getTopic());
-        queueMessage.setTags(topicData.getTags());
+        queueMessage.setTopic(topic);
         queueMessage.setBody(data);
-        queueMessage.setKey(exception.getId());
         queueMessage.setRouteKey(routeKey);
+        queueMessage.setKey(exceptionMessage.getUniqueId());
         return queueMessage;
     }
 }

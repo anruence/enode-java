@@ -1,15 +1,19 @@
 package org.enodeframework.queue;
 
+import java.io.Serializable;
+
 /**
  * @author anruence@gmail.com
  */
-public class QueueMessage {
+public class QueueMessage implements Serializable {
+
     private String body;
     private String topic;
-    private String tags;
-    private int code;
-    private int version;
     private String routeKey;
+
+    /**
+     * 消息唯一标识
+     */
     private String key;
 
     public String getBody() {
@@ -44,38 +48,11 @@ public class QueueMessage {
         this.key = key;
     }
 
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public void setTags(String tags) {
-        this.tags = tags;
-    }
-
     @Override
     public String toString() {
         return "QueueMessage{" +
                 "body='" + body + '\'' +
                 ", topic='" + topic + '\'' +
-                ", tags='" + tags + '\'' +
-                ", code=" + code +
-                ", version=" + version +
                 ", routeKey='" + routeKey + '\'' +
                 ", key='" + key + '\'' +
                 '}';

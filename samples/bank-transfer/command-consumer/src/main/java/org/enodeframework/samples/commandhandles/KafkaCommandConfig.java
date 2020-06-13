@@ -56,7 +56,7 @@ public class KafkaCommandConfig {
     public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate kafkaTemplate) {
         KafkaDomainEventPublisher domainEventPublisher = new KafkaDomainEventPublisher();
         domainEventPublisher.setProducer(kafkaTemplate);
-        domainEventPublisher.setTopicData(new TopicData(EVENT_TOPIC, "*"));
+        domainEventPublisher.setTopic(EVENT_TOPIC);
         return domainEventPublisher;
     }
 
@@ -67,7 +67,7 @@ public class KafkaCommandConfig {
     public KafkaApplicationMessagePublisher kafkaApplicationMessagePublisher(KafkaTemplate kafkaTemplate) {
         KafkaApplicationMessagePublisher applicationMessagePublisher = new KafkaApplicationMessagePublisher();
         applicationMessagePublisher.setProducer(kafkaTemplate);
-        applicationMessagePublisher.setTopicData(new TopicData(APPLICATION_TOPIC, "*"));
+        applicationMessagePublisher.setTopic(APPLICATION_TOPIC);
         return applicationMessagePublisher;
     }
 
@@ -78,7 +78,7 @@ public class KafkaCommandConfig {
     public KafkaPublishableExceptionPublisher kafkaPublishableExceptionPublisher(KafkaTemplate kafkaTemplate) {
         KafkaPublishableExceptionPublisher exceptionPublisher = new KafkaPublishableExceptionPublisher();
         exceptionPublisher.setProducer(kafkaTemplate);
-        exceptionPublisher.setTopicData(new TopicData(EXCEPTION_TOPIC, "*"));
+        exceptionPublisher.setTopic(EXCEPTION_TOPIC);
         return exceptionPublisher;
     }
 

@@ -6,42 +6,38 @@ import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.queue.QueueMessage;
-import org.enodeframework.queue.QueueMessageTypeCode;
-import org.enodeframework.queue.TopicData;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractDomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
+
     @Autowired
     protected IEventSerializer eventSerializer;
 
-    private TopicData topicData;
+    private String topic;
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
 
     public void setEventSerializer(IEventSerializer eventSerializer) {
         this.eventSerializer = eventSerializer;
     }
 
-    public TopicData getTopicData() {
-        return topicData;
-    }
-
-    public void setTopicData(TopicData topicData) {
-        this.topicData = topicData;
-    }
-
     protected QueueMessage createDomainEventStreamMessage(DomainEventStreamMessage eventStream) {
         Ensure.notNull(eventStream.getAggregateRootId(), "aggregateRootId");
-        Ensure.notNull(topicData, "topicData");
+        Ensure.notNull(topic, "topic");
         EventStreamMessage eventMessage = createEventMessage(eventStream);
         String data = JsonTool.serialize(eventMessage);
         String routeKey = eventMessage.getAggregateRootId();
         QueueMessage queueMessage = new QueueMessage();
-        queueMessage.setCode(QueueMessageTypeCode.DomainEventStreamMessage.getValue());
-        queueMessage.setTopic(topicData.getTopic());
-        queueMessage.setTags(topicData.getTags());
+        queueMessage.setTopic(topic);
         queueMessage.setBody(data);
-        queueMessage.setKey(eventStream.getId());
         queueMessage.setRouteKey(routeKey);
-        queueMessage.setVersion(eventStream.getVersion());
+        queueMessage.setKey(eventMessage.getId());
         return queueMessage;
     }
 

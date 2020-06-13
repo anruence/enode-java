@@ -5,23 +5,13 @@ import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.queue.QueueMessage;
-import org.enodeframework.queue.QueueMessageTypeCode;
-import org.enodeframework.queue.TopicData;
 
 public abstract class AbstractApplicationMessagePublisher implements IMessagePublisher<IApplicationMessage> {
 
-    private TopicData topicData;
-
-    public TopicData getTopicData() {
-        return topicData;
-    }
-
-    public void setTopicData(TopicData topicData) {
-        this.topicData = topicData;
-    }
+    private String topic;
 
     protected QueueMessage createApplicationMessage(IApplicationMessage message) {
-        Ensure.notNull(topicData, "topicData");
+        Ensure.notNull(topic, "topic");
         String appMessageData = JsonTool.serialize(message);
         ApplicationDataMessage appDataMessage = new ApplicationDataMessage(appMessageData, message.getClass().getName());
         String data = JsonTool.serialize(appDataMessage);
@@ -29,10 +19,16 @@ public abstract class AbstractApplicationMessagePublisher implements IMessagePub
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setBody(data);
         queueMessage.setRouteKey(routeKey);
-        queueMessage.setCode(QueueMessageTypeCode.ApplicationMessage.getValue());
         queueMessage.setKey(message.getId());
-        queueMessage.setTopic(topicData.getTopic());
-        queueMessage.setTags(topicData.getTags());
+        queueMessage.setTopic(topic);
         return queueMessage;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 }
