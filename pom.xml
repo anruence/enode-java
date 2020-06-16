@@ -10,6 +10,7 @@
         <module>enode</module>
         <module>bom</module>
         <module>mysql</module>
+        <module>mongo</module>
         <module>kafka</module>
         <module>rocketmq</module>
         <module>ons</module>

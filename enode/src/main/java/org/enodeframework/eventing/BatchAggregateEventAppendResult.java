@@ -1,13 +1,8 @@
-package org.enodeframework.mysql;
+package org.enodeframework.eventing;
 
-import org.enodeframework.eventing.EventAppendResult;
-import org.enodeframework.eventing.EventAppendStatus;
-
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-
 
 public class BatchAggregateEventAppendResult {
     private final int expectedAggregateRootCount;
@@ -35,28 +30,5 @@ public class BatchAggregateEventAppendResult {
                 taskCompletionSource.complete(eventAppendResult);
             }
         }
-    }
-}
-
-class AggregateEventAppendResult {
-
-    private EventAppendStatus eventAppendStatus;
-
-    private List<String> duplicateCommandIds;
-
-    public EventAppendStatus getEventAppendStatus() {
-        return eventAppendStatus;
-    }
-
-    public void setEventAppendStatus(EventAppendStatus eventAppendStatus) {
-        this.eventAppendStatus = eventAppendStatus;
-    }
-
-    public List<String> getDuplicateCommandIds() {
-        return duplicateCommandIds;
-    }
-
-    public void setDuplicateCommandIds(List<String> duplicateCommandIds) {
-        this.duplicateCommandIds = duplicateCommandIds;
     }
 }

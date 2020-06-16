@@ -16,9 +16,8 @@ import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.common.utilities.Ensure;
-import org.enodeframework.configurations.DataSourceKey;
-import org.enodeframework.configurations.DefaultDBConfigurationSetting;
-import org.enodeframework.configurations.OptionSetting;
+import org.enodeframework.eventing.AggregateEventAppendResult;
+import org.enodeframework.eventing.BatchAggregateEventAppendResult;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.EventAppendResult;
 import org.enodeframework.eventing.EventAppendStatus;
@@ -31,10 +30,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,53 +46,44 @@ import java.util.stream.Collectors;
 public class MysqlEventStore extends AbstractVerticle implements IEventStore {
     private static final Logger logger = LoggerFactory.getLogger(MysqlEventStore.class);
     private static final String EVENT_TABLE_NAME_FORMAT = "%s_%s";
-
-    private static final Pattern PATTERN = Pattern.compile("^Duplicate entry '(.*)-(.*)' for key 'IX_EventStream_AggId_CommandId'");
+    private static final Pattern PATTERN = Pattern.compile("^Duplicate entry '(.*)-(.*)' for key");
+    private static final String INSERT_EVENT_SQL = "INSERT INTO %s (`aggregate_root_id`, `aggregate_root_type_name`, `command_id`, `version`, `gmt_create`, `events`) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String SELECT_MANY_BY_VERSION_SQL = "SELECT * FROM `%s` WHERE aggregate_root_id = ? AND version >= ? AND Version <= ? ORDER BY version";
+    private static final String SELECT_ONE_BY_VERSION_SQL = "SELECT * FROM `%s` WHERE aggregate_root_id = ? AND version = ?";
+    private static final String SELECT_ONE_BY_COMMAND_ID_SQL = "SELECT * FROM `%s` WHERE aggregate_root_id = ? AND command_id = ?";
 
     private final String tableName;
     private final int tableCount;
     private final int duplicateCode;
     private final String versionIndexName;
     private final String commandIndexName;
-    private final int bulkCopyBatchSize;
-    private final int bulkCopyTimeout;
-    private final String INSERT_EVENT_SQL = "INSERT INTO %s(AggregateRootId,AggregateRootTypeName,CommandId,Version,CreatedOn,Events) VALUES(?,?,?,?,?,?)";
-    private DataSource ds;
+    private final DataSource dataSource;
     private SQLClient sqlClient;
+
     @Autowired
     private IEventSerializer eventSerializer;
 
-    public MysqlEventStore(DataSource ds, OptionSetting optionSetting) {
-        Ensure.notNull(ds, "ds");
-        if (optionSetting != null) {
-            tableName = optionSetting.getOptionValue(DataSourceKey.EVENT_TABLE_NAME);
-            tableCount = Integer.parseInt(optionSetting.getOptionValue(DataSourceKey.EVENT_TABLE_COUNT));
-            duplicateCode = Integer.parseInt(optionSetting.getOptionValue(DataSourceKey.MYSQL_DUPLICATE_CODE));
-            versionIndexName = optionSetting.getOptionValue(DataSourceKey.EVENT_TABLE_VERSION_UNIQUE_INDEX_NAME);
-            commandIndexName = optionSetting.getOptionValue(DataSourceKey.COMMAND_TABLE_COMMANDID_UNIQUE_INDEX_NAME);
-            bulkCopyBatchSize = Integer.parseInt(optionSetting.getOptionValue(DataSourceKey.EVENT_TABLE_BULKCOPY_BATCHSIZE));
-            bulkCopyTimeout = Integer.parseInt(optionSetting.getOptionValue(DataSourceKey.EVENT_TABLE_BULKCOPY_TIMEOUT));
-        } else {
-            DefaultDBConfigurationSetting setting = new DefaultDBConfigurationSetting();
-            tableName = setting.getEventTableName();
-            tableCount = setting.getEventTableCount();
-            duplicateCode = setting.getDuplicateCode();
-            versionIndexName = setting.getEventTableVersionUniqueIndexName();
-            commandIndexName = setting.getEventTableCommandIdUniqueIndexName();
-            bulkCopyBatchSize = setting.getEventTableBulkCopyBatchSize();
-            bulkCopyTimeout = setting.getEventTableBulkCopyTimeout();
-        }
-        Ensure.notNull(tableName, "tableName");
-        Ensure.notNull(versionIndexName, "eventIndexName");
-        Ensure.notNull(commandIndexName, "commandIndexName");
-        Ensure.positive(bulkCopyBatchSize, "bulkCopyBatchSize");
-        Ensure.positive(bulkCopyTimeout, "bulkCopyTimeout");
-        this.ds = ds;
+    /**
+     * dataSource 如果使用了分库分表的ShardDataSource，分表则不再需要
+     */
+    public MysqlEventStore(DataSource dataSource) {
+        this(dataSource, new DBConfigurationSetting());
+    }
+
+    public MysqlEventStore(DataSource dataSource, DBConfigurationSetting setting) {
+        Ensure.notNull(dataSource, "DataSource");
+        Ensure.notNull(setting, "DBConfigurationSetting");
+        this.dataSource = dataSource;
+        this.tableName = setting.getEventTableName();
+        this.tableCount = setting.getEventTableCount();
+        this.duplicateCode = setting.getDuplicateCode();
+        this.versionIndexName = setting.getEventTableVersionUniqueIndexName();
+        this.commandIndexName = setting.getEventTableCommandIdUniqueIndexName();
     }
 
     @Override
-    public void start() throws Exception {
-        sqlClient = JDBCClient.create(vertx, ds);
+    public void start() {
+        sqlClient = JDBCClient.create(vertx, dataSource);
     }
 
     @Override
@@ -141,6 +133,7 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
         CompletableFuture<AggregateEventAppendResult> future = new CompletableFuture<>();
         String sql = String.format(INSERT_EVENT_SQL, getTableName(aggregateRootId));
         List<JsonArray> jsonArrays = Lists.newArrayList();
+        eventStreamList.sort(Comparator.comparingInt(DomainEventStream::getVersion));
         for (DomainEventStream domainEventStream : eventStreamList) {
             JsonArray array = new JsonArray();
             array.add(domainEventStream.getAggregateRootId());
@@ -151,15 +144,11 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
             array.add(JsonTool.serialize(eventSerializer.serialize(domainEventStream.events())));
             jsonArrays.add(array);
         }
-        batchWithParams(sql, jsonArrays, x -> {
-            if (x.succeeded()) {
-                AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
-                appendResult.setEventAppendStatus(EventAppendStatus.Success);
-                future.complete(appendResult);
-                return;
-            }
-            future.completeExceptionally(x.cause());
-        });
+        if (jsonArrays.size() > 1) {
+            future = batchInsertAsync(sql, jsonArrays);
+        } else {
+            future = insertOneByOneAsync(sql, jsonArrays);
+        }
         return future.exceptionally(throwable -> {
             if (throwable instanceof SQLException) {
                 SQLException ex = (SQLException) throwable;
@@ -184,6 +173,44 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
         });
     }
 
+    public CompletableFuture<AggregateEventAppendResult> insertOneByOneAsync(String sql, List<JsonArray> jsonArrays) {
+        CompletableFuture<AggregateEventAppendResult> future = new CompletableFuture<>();
+        CountDownLatch latch = new CountDownLatch(jsonArrays.size());
+        for (JsonArray array : jsonArrays) {
+            sqlClient.updateWithParams(sql, array, x -> {
+                if (x.succeeded()) {
+                    latch.countDown();
+                    if (latch.getCount() == 0) {
+                        AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
+                        appendResult.setEventAppendStatus(EventAppendStatus.Success);
+                        future.complete(appendResult);
+                    }
+                    return;
+                }
+                latch.countDown();
+                future.completeExceptionally(x.cause());
+            });
+            if (future.isDone()) {
+                break;
+            }
+        }
+        return future;
+    }
+
+    public CompletableFuture<AggregateEventAppendResult> batchInsertAsync(String sql, List<JsonArray> jsonArrays) {
+        CompletableFuture<AggregateEventAppendResult> future = new CompletableFuture<>();
+        batchWithParams(sql, jsonArrays, x -> {
+            if (x.succeeded()) {
+                AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
+                appendResult.setEventAppendStatus(EventAppendStatus.Success);
+                future.complete(appendResult);
+                return;
+            }
+            future.completeExceptionally(x.cause());
+        });
+        return future;
+    }
+
     private String parseCommandIdInException(String errMsg) {
         Matcher matcher = PATTERN.matcher(errMsg);
         if (matcher.find()) {
@@ -198,7 +225,7 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
     public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
         return IOHelper.tryIOFuncAsync(() -> {
             CompletableFuture<List<DomainEventStream>> future = new CompletableFuture<>();
-            String sql = String.format("SELECT * FROM `%s` WHERE AggregateRootId = ? AND Version >= ? AND Version <= ? ORDER BY Version", getTableName(aggregateRootId));
+            String sql = String.format(SELECT_MANY_BY_VERSION_SQL, getTableName(aggregateRootId));
             JsonArray array = new JsonArray();
             array.add(aggregateRootId);
             array.add(minVersion);
@@ -230,7 +257,7 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
     public CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, int version) {
         return IOHelper.tryIOFuncAsync(() -> {
             CompletableFuture<DomainEventStream> future = new CompletableFuture<>();
-            String sql = String.format("select * from `%s` where AggregateRootId=? and Version=?", getTableName(aggregateRootId));
+            String sql = String.format(SELECT_ONE_BY_VERSION_SQL, getTableName(aggregateRootId));
             JsonArray array = new JsonArray();
             array.add(aggregateRootId);
             array.add(version);
@@ -264,7 +291,7 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
     public CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, String commandId) {
         return IOHelper.tryIOFuncAsync(() -> {
             CompletableFuture<DomainEventStream> future = new CompletableFuture<>();
-            String sql = String.format("select * from `%s` where AggregateRootId=? and CommandId=?", getTableName(aggregateRootId));
+            String sql = String.format(SELECT_ONE_BY_COMMAND_ID_SQL, getTableName(aggregateRootId));
             JsonArray array = new JsonArray();
             array.add(aggregateRootId);
             array.add(commandId);
@@ -312,11 +339,11 @@ public class MysqlEventStore extends AbstractVerticle implements IEventStore {
 
     private DomainEventStream convertFrom(StreamRecord record) {
         return new DomainEventStream(
-                record.CommandId,
-                record.AggregateRootId,
-                record.AggregateRootTypeName,
-                record.CreatedOn,
-                eventSerializer.deserialize(JsonTool.deserialize(record.Events, Map.class), IDomainEvent.class),
+                record.commandId,
+                record.aggregateRootId,
+                record.aggregateRootTypeName,
+                record.gmtCreated,
+                eventSerializer.deserialize(JsonTool.deserialize(record.events, Map.class), IDomainEvent.class),
                 Maps.newHashMap());
     }
 

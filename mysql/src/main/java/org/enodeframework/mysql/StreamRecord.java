@@ -1,5 +1,7 @@
 package org.enodeframework.mysql;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Date;
 
 /**
@@ -7,24 +9,26 @@ import java.util.Date;
  */
 public class StreamRecord {
 
-    public String Sequence;
-    public String AggregateRootTypeName;
-    public String AggregateRootId;
-    public int Version;
-    public String CommandId;
-    public Date CreatedOn;
-    public String Events;
+    @JsonProperty("id")
+    public String id;
+
+    @JsonProperty("aggregate_root_type_name")
+    public String aggregateRootTypeName;
+
+    @JsonProperty("aggregate_root_id")
+    public String aggregateRootId;
+
+    public int version;
+
+    @JsonProperty("command_id")
+    public String commandId;
+
+    @JsonProperty("gmt_create")
+    public Date gmtCreated;
+
+    public String events;
 
     public StreamRecord() {
 
-    }
-
-    public StreamRecord(String commandId, String aggregateRootId, String aggregateRootTypeName, int version, Date createdOn, String events) {
-        this.AggregateRootTypeName = aggregateRootTypeName;
-        this.AggregateRootId = aggregateRootId;
-        this.Version = version;
-        this.CommandId = commandId;
-        this.CreatedOn = createdOn;
-        this.Events = events;
     }
 }

@@ -44,13 +44,13 @@ public class EventAppConfig {
 
     @Bean
     public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
+        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource);
         return mysqlEventStore;
     }
 
     @Bean
     public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        MysqlPublishedVersionStore publishedVersionStore = new MysqlPublishedVersionStore(dataSource, null);
+        MysqlPublishedVersionStore publishedVersionStore = new MysqlPublishedVersionStore(dataSource);
         return publishedVersionStore;
     }
 

@@ -30,7 +30,7 @@ public class MockPublishedVersionStore implements IPublishedVersionStore {
     }
 
     @Override
-    public CompletableFuture<Void> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
+    public CompletableFuture<Integer> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
         if (_currentUpdateFailedCount < _expectUpdateFailedCount) {
             _currentUpdateFailedCount++;
             if (_failedType == FailedType.UnKnownException) {

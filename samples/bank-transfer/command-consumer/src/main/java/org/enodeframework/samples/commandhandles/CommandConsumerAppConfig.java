@@ -65,12 +65,12 @@ public class CommandConsumerAppConfig {
 
     @Bean
     public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-        return new MysqlEventStore(dataSource, null);
+        return new MysqlEventStore(dataSource);
     }
 
     @Bean
     public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        return new MysqlPublishedVersionStore(dataSource, null);
+        return new MysqlPublishedVersionStore(dataSource);
     }
 
     @Bean

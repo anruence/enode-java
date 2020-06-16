@@ -66,7 +66,7 @@ public class ProcessingEventMailBox {
                 lastActiveTime = new Date();
                 tryRun();
             } else {
-                logger.info("{} nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, nextExpectingEventVersion: {}, current _nextExpectingEventVersion: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, nextExpectingEventVersion, nextExpectingEventVersion);
+                logger.info("{} nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, nextExpectingEventVersion: {}, current _nextExpectingEventVersion: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, version, nextExpectingEventVersion);
             }
         }
     }

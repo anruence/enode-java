@@ -1,23 +1,13 @@
-package org.enodeframework.configurations;
+package org.enodeframework.mysql;
 
 /**
  * @author anruence@gmail.com
  */
-public class DefaultDBConfigurationSetting {
-    /**
-     * 数据库连接字符串
-     */
-    private String connectionString;
-    /**
-     * 命令表的默认名称；默认为：Command
-     */
-    private String commandTableName;
-
+public class DBConfigurationSetting {
     /**
      * mysql唯一键冲突时的错误码
      */
     private int duplicateCode;
-
     /**
      * 事件表的默认名称；默认为：EventStream
      */
@@ -43,10 +33,6 @@ public class DefaultDBConfigurationSetting {
      */
     private String lockKeyTableName;
     /**
-     * Command表的CommandId的唯一索引的默认名称；默认为：IX_Command_CommandId
-     */
-    private String commandTableCommandIdUniqueIndexName;
-    /**
      * 事件表的聚合根版本唯一索引的默认名称；默认为：IX_EventStream_AggId_Version
      */
     private String eventTableVersionUniqueIndexName;
@@ -63,36 +49,18 @@ public class DefaultDBConfigurationSetting {
      */
     private String lockKeyPrimaryKeyName;
 
-    public DefaultDBConfigurationSetting() {
-        commandTableName = "Command";
-        eventTableName = "EventStream";
+    public DBConfigurationSetting() {
+        eventTableName = "event_stream";
         eventTableCount = 1;
-        duplicateCode = 1062;
         eventTableBulkCopyBatchSize = 1000;
         eventTableBulkCopyTimeout = 60;
-        publishedVersionTableName = "PublishedVersion";
+        publishedVersionTableName = "published_version";
         lockKeyTableName = "LockKey";
-        commandTableCommandIdUniqueIndexName = "IX_Command_CommandId";
-        eventTableVersionUniqueIndexName = "IX_EventStream_AggId_Version";
-        eventTableCommandIdUniqueIndexName = "IX_EventStream_AggId_CommandId";
-        publishedVersionUniqueIndexName = "IX_PublishedVersion_AggId_Version";
+        eventTableVersionUniqueIndexName = "uk_aggregate_root_id_version";
+        eventTableCommandIdUniqueIndexName = "uk_aggregate_root_id_command_id";
+        publishedVersionUniqueIndexName = "uk_processor_name_aggregate_root_id_version";
         lockKeyPrimaryKeyName = "PK_LockKey";
-    }
-
-    public String getConnectionString() {
-        return connectionString;
-    }
-
-    public void setConnectionString(String connectionString) {
-        this.connectionString = connectionString;
-    }
-
-    public String getCommandTableName() {
-        return commandTableName;
-    }
-
-    public void setCommandTableName(String commandTableName) {
-        this.commandTableName = commandTableName;
+        duplicateCode = 1062;
     }
 
     public String getEventTableName() {
@@ -141,14 +109,6 @@ public class DefaultDBConfigurationSetting {
 
     public void setLockKeyTableName(String lockKeyTableName) {
         this.lockKeyTableName = lockKeyTableName;
-    }
-
-    public String getCommandTableCommandIdUniqueIndexName() {
-        return commandTableCommandIdUniqueIndexName;
-    }
-
-    public void setCommandTableCommandIdUniqueIndexName(String commandTableCommandIdUniqueIndexName) {
-        this.commandTableCommandIdUniqueIndexName = commandTableCommandIdUniqueIndexName;
     }
 
     public String getEventTableVersionUniqueIndexName() {
