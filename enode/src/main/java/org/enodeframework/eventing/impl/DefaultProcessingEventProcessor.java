@@ -2,7 +2,7 @@ package org.enodeframework.eventing.impl;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
@@ -15,7 +15,6 @@ import org.enodeframework.eventing.ProcessingEventMailBox;
 import org.enodeframework.messaging.IMessageDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
@@ -28,45 +27,31 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class DefaultProcessingEventProcessor implements IProcessingEventProcessor {
+
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingEventProcessor.class);
-
+    private final String scanInactiveMailBoxTaskName;
+    private final String processTryToRefreshAggregateTaskName;
+    private final ConcurrentHashMap<String, ProcessingEventMailBox> toRefreshAggregateRootMailBoxDict;
+    private final String name = "DefaultEventProcessor";
+    private final ConcurrentHashMap<String, ProcessingEventMailBox> mailboxDict;
+    private final ConcurrentHashMap<String, Boolean> refreshingAggregateRootDict;
+    private final IScheduleService scheduleService;
+    private final IMessageDispatcher messageDispatcher;
+    private final IPublishedVersionStore publishedVersionStore;
     private int timeoutSeconds = 3600 * 24 * 3;
-
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
-
-    private String scanInactiveMailBoxTaskName;
-
-    private String processTryToRefreshAggregateTaskName;
-
     private int processTryToRefreshAggregateIntervalMilliseconds = 1000;
 
-    private ConcurrentHashMap<String, ProcessingEventMailBox> toRefreshAggregateRootMailBoxDict;
-
-    private String name = "DefaultEventProcessor";
-
-    private ConcurrentHashMap<String, ProcessingEventMailBox> mailboxDict;
-
-    private ConcurrentHashMap<String, Boolean> refreshingAggregateRootDict;
-
-
-    @Autowired
-    private IScheduleService scheduleService;
-
-    @Autowired
-    private IMessageDispatcher dispatcher;
-
-    @Autowired
-    private IPublishedVersionStore publishedVersionStore;
-
-    public DefaultProcessingEventProcessor() {
+    public DefaultProcessingEventProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore) {
+        this.scheduleService = scheduleService;
+        this.messageDispatcher = messageDispatcher;
+        this.publishedVersionStore = publishedVersionStore;
         mailboxDict = new ConcurrentHashMap<>();
         toRefreshAggregateRootMailBoxDict = new ConcurrentHashMap<>();
         refreshingAggregateRootDict = new ConcurrentHashMap<>();
         scanInactiveMailBoxTaskName = "CleanInactiveProcessingEventMailBoxes_" + System.currentTimeMillis() + new Random().nextInt(10000);
         processTryToRefreshAggregateTaskName = "ProcessTryToRefreshAggregate_" + System.currentTimeMillis() + new Random().nextInt(10000);
-
     }
-
 
     @Override
     public void process(ProcessingEvent processingMessage) {
@@ -138,7 +123,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     private void dispatchProcessingMessageAsync(ProcessingEvent processingEvent, int retryTimes) {
         IOHelper.tryAsyncActionRecursivelyWithoutResult("DispatchProcessingMessageAsync",
-                () -> dispatcher.dispatchMessagesAsync(processingEvent.getMessage().getEvents()),
+                () -> messageDispatcher.dispatchMessagesAsync(processingEvent.getMessage().getEvents()),
                 result -> {
                     updatePublishedVersionAsync(processingEvent, 0);
                 },
@@ -151,7 +136,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
         try {
             return publishedVersionStore.getPublishedVersionAsync(name, aggregateRootType, aggregateRootId);
         } catch (Exception ex) {
-            throw new ENodeRuntimeException("_publishedVersionStore.GetPublishedVersionAsync has unknown exception.", ex);
+            throw new EnodeRuntimeException("_publishedVersionStore.GetPublishedVersionAsync has unknown exception.", ex);
         }
     }
 
@@ -210,5 +195,29 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
                 && !mailbox.isRunning()
                 && mailbox.getTotalUnHandledMessageCount() == 0
                 && mailbox.getWaitingMessageCount() == 0;
+    }
+
+    public int getTimeoutSeconds() {
+        return timeoutSeconds;
+    }
+
+    public void setTimeoutSeconds(int timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
+    }
+
+    public int getScanExpiredAggregateIntervalMilliseconds() {
+        return scanExpiredAggregateIntervalMilliseconds;
+    }
+
+    public void setScanExpiredAggregateIntervalMilliseconds(int scanExpiredAggregateIntervalMilliseconds) {
+        this.scanExpiredAggregateIntervalMilliseconds = scanExpiredAggregateIntervalMilliseconds;
+    }
+
+    public int getProcessTryToRefreshAggregateIntervalMilliseconds() {
+        return processTryToRefreshAggregateIntervalMilliseconds;
+    }
+
+    public void setProcessTryToRefreshAggregateIntervalMilliseconds(int processTryToRefreshAggregateIntervalMilliseconds) {
+        this.processTryToRefreshAggregateIntervalMilliseconds = processTryToRefreshAggregateIntervalMilliseconds;
     }
 }

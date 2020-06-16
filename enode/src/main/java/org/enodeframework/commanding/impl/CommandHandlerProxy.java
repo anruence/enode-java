@@ -3,8 +3,7 @@ package org.enodeframework.commanding.impl;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandContext;
 import org.enodeframework.commanding.ICommandHandlerProxy;
-import org.enodeframework.common.container.IObjectContainer;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.enodeframework.common.container.ObjectContainer;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
@@ -15,17 +14,10 @@ import java.util.concurrent.CompletableFuture;
  */
 public class CommandHandlerProxy implements ICommandHandlerProxy {
 
-    @Autowired
-    private IObjectContainer objectContainer;
     private Class handlerType;
     private Object commandHandler;
     private MethodHandle methodHandle;
     private Method method;
-
-    public CommandHandlerProxy setObjectContainer(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-        return this;
-    }
 
     @Override
     public CompletableFuture<Void> handleAsync(ICommandContext context, ICommand command) {
@@ -47,7 +39,7 @@ public class CommandHandlerProxy implements ICommandHandlerProxy {
         if (commandHandler != null) {
             return commandHandler;
         }
-        commandHandler = objectContainer.resolve(handlerType);
+        commandHandler = ObjectContainer.INSTANCE.resolve(handlerType);
         return commandHandler;
     }
 

@@ -1,18 +1,21 @@
 package org.enodeframework.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;
-import org.enodeframework.queue.domainevent.AbstractDomainEventListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.kafka.listener.AcknowledgingMessageListener;
 import org.springframework.kafka.support.Acknowledgment;
 
 /**
  * @author anruence@gmail.com
  */
-public class KafkaDomainEventListener extends AbstractDomainEventListener implements AcknowledgingMessageListener {
-    private static final Logger logger = LoggerFactory.getLogger(KafkaDomainEventListener.class);
+public class KafkaDomainEventListener implements AcknowledgingMessageListener<String, String> {
+
+    private final IMessageHandler domainEventListener;
+
+    public KafkaDomainEventListener(IMessageHandler domainEventListener) {
+        this.domainEventListener = domainEventListener;
+    }
 
     /**
      * Invoked with data from kafka. The default implementation throws
@@ -22,22 +25,12 @@ public class KafkaDomainEventListener extends AbstractDomainEventListener implem
      * @param acknowledgment the acknowledgment.
      */
     @Override
-    public void onMessage(ConsumerRecord data, Acknowledgment acknowledgment) {
+    public void onMessage(ConsumerRecord<String, String> data, Acknowledgment acknowledgment) {
         QueueMessage queueMessage = KafkaTool.covertToQueueMessage(data);
-        handle(queueMessage, context -> {
+        domainEventListener.handle(queueMessage, context -> {
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
             }
         });
-    }
-
-    /**
-     * Invoked with data from kafka.
-     *
-     * @param data the data to be processed.
-     */
-    @Override
-    public void onMessage(Object data) {
-        logger.info("receive data:{}", data);
     }
 }

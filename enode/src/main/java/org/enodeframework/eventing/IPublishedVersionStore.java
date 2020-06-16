@@ -6,7 +6,7 @@ public interface IPublishedVersionStore {
     /**
      * Update the published version for the given aggregate.
      */
-    CompletableFuture<Void> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion);
+    CompletableFuture<Integer> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion);
 
     /**
      * Get the current published version for the given aggregate.

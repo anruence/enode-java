@@ -1,9 +1,8 @@
 package org.enodeframework.messaging.impl;
 
-import org.enodeframework.common.container.IObjectContainer;
+import org.enodeframework.common.container.ObjectContainer;
 import org.enodeframework.messaging.IMessage;
 import org.enodeframework.messaging.IMessageHandlerProxy1;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
@@ -14,8 +13,6 @@ import java.util.concurrent.CompletableFuture;
  */
 public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
 
-    @Autowired
-    private IObjectContainer objectContainer;
     private Class handlerType;
     private Object handler;
     private MethodHandle methodHandle;
@@ -41,7 +38,7 @@ public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
         if (handler != null) {
             return handler;
         }
-        handler = objectContainer.resolve(handlerType);
+        handler = ObjectContainer.INSTANCE.resolve(handlerType);
         return handler;
     }
 

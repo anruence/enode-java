@@ -3,7 +3,6 @@ package org.enodeframework.commanding.impl;
 import com.google.common.base.Strings;
 import org.enodeframework.commanding.AggregateRootAlreadyExistException;
 import org.enodeframework.commanding.CommandResult;
-import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommandExecuteContext;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.domain.IAggregateRoot;
@@ -11,8 +10,8 @@ import org.enodeframework.domain.IAggregateStorage;
 import org.enodeframework.domain.IRepository;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.queue.IMessageContext;
+import org.enodeframework.queue.ISendReplyService;
 import org.enodeframework.queue.QueueMessage;
-import org.enodeframework.queue.SendReplyService;
 import org.enodeframework.queue.command.CommandMessage;
 
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     private final ConcurrentMap<String, IAggregateRoot> trackingAggregateRootDict;
     private final IRepository repository;
     private final IAggregateStorage aggregateRootStorage;
-    private final SendReplyService sendReplyService;
+    private final ISendReplyService sendReplyService;
     private final QueueMessage queueMessage;
     private String result;
     private IMessageContext messageContext;
@@ -42,7 +41,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
             QueueMessage queueMessage,
             IMessageContext messageContext,
             CommandMessage commandMessage,
-            SendReplyService sendReplyService
+            ISendReplyService sendReplyService
     ) {
         this.trackingAggregateRootDict = new ConcurrentHashMap<>();
         this.repository = repository;
@@ -59,7 +58,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
         if (Strings.isNullOrEmpty(commandMessage.getReplyAddress())) {
             return Task.completedTask;
         }
-        return sendReplyService.sendReply(CommandReturnType.CommandExecuted.getValue(), commandResult, commandMessage.getReplyAddress());
+        return sendReplyService.sendCommandReply(commandResult, commandMessage.getReplyAddress());
     }
 
     @Override

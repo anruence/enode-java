@@ -28,7 +28,6 @@ import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.messaging.MessageHandlerData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,54 +45,22 @@ import java.util.stream.Collectors;
  */
 public class DefaultProcessingCommandHandler implements IProcessingCommandHandler {
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingCommandHandler.class);
-    @Autowired
-    private IEventStore eventStore;
-    @Autowired
-    private ICommandHandlerProvider commandHandlerProvider;
-    @Autowired
-    private ITypeNameProvider typeNameProvider;
-    @Autowired
-    private IEventCommittingService eventService;
-    @Autowired
-    private IMemoryCache memoryCache;
-    @Autowired
-    private IMessagePublisher<IApplicationMessage> applicationMessagePublisher;
-    @Autowired
-    private IMessagePublisher<IDomainException> exceptionPublisher;
+    private final IEventStore eventStore;
+    private final ICommandHandlerProvider commandHandlerProvider;
+    private final ITypeNameProvider typeNameProvider;
+    private final IEventCommittingService eventCommittingService;
+    private final IMemoryCache memoryCache;
+    private final IMessagePublisher<IApplicationMessage> applicationMessagePublisher;
+    private final IMessagePublisher<IDomainException> exceptionPublisher;
 
-    public DefaultProcessingCommandHandler setEventStore(IEventStore eventStore) {
+    public DefaultProcessingCommandHandler(IEventStore eventStore, ICommandHandlerProvider commandHandlerProvider, ITypeNameProvider typeNameProvider, IEventCommittingService eventCommittingService, IMemoryCache memoryCache, IMessagePublisher<IApplicationMessage> applicationMessagePublisher, IMessagePublisher<IDomainException> exceptionPublisher) {
         this.eventStore = eventStore;
-        return this;
-    }
-
-    public DefaultProcessingCommandHandler setCommandHandlerProvider(ICommandHandlerProvider commandHandlerProvider) {
         this.commandHandlerProvider = commandHandlerProvider;
-        return this;
-    }
-
-    public DefaultProcessingCommandHandler setTypeNameProvider(ITypeNameProvider typeNameProvider) {
         this.typeNameProvider = typeNameProvider;
-        return this;
-    }
-
-    public DefaultProcessingCommandHandler setEventService(IEventCommittingService eventService) {
-        this.eventService = eventService;
-        return this;
-    }
-
-    public DefaultProcessingCommandHandler setMemoryCache(IMemoryCache memoryCache) {
+        this.eventCommittingService = eventCommittingService;
         this.memoryCache = memoryCache;
-        return this;
-    }
-
-    public DefaultProcessingCommandHandler setApplicationMessagePublisher(IMessagePublisher<IApplicationMessage> applicationMessagePublisher) {
         this.applicationMessagePublisher = applicationMessagePublisher;
-        return this;
-    }
-
-    public DefaultProcessingCommandHandler setExceptionPublisher(IMessagePublisher<IDomainException> exceptionPublisher) {
         this.exceptionPublisher = exceptionPublisher;
-        return this;
     }
 
     @Override
@@ -222,7 +189,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 processingCommand.getItems().put("CommandResult", commandResult);
             }
             //异步将事件流提交到EventStore
-            eventService.commitDomainEventAsync(committingContext);
+            eventCommittingService.commitDomainEventAsync(committingContext);
         });
     }
 
@@ -234,7 +201,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 result -> {
                     DomainEventStream existingEventStream = result;
                     if (existingEventStream != null) {
-                        eventService.publishDomainEventAsync(processingCommand, existingEventStream);
+                        eventCommittingService.publishDomainEventAsync(processingCommand, existingEventStream);
                         future.complete(null);
                     } else {
                         completeCommand(processingCommand, CommandStatus.NothingChanged, String.class.getName(), processingCommand.getCommandExecuteContext().getResult())
@@ -257,7 +224,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         //这里，我们需要再重新做一遍发布事件这个操作；
                         //之所以要这样做是因为虽然该command产生的事件已经持久化成功，但并不表示事件已经发布出去了；
                         //因为有可能事件持久化成功了，但那时正好机器断电了，则发布事件就没有做；
-                        eventService.publishDomainEventAsync(processingCommand, existingEventStream);
+                        eventCommittingService.publishDomainEventAsync(processingCommand, existingEventStream);
                         future.complete(null);
                     } else {
                         //到这里，说明当前command执行遇到异常，然后当前command之前也没执行过，是第一次被执行。

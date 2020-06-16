@@ -1,6 +1,6 @@
 package org.enodeframework.domain.impl;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
 import org.enodeframework.domain.AggregateCacheInfo;
@@ -10,7 +10,6 @@ import org.enodeframework.domain.IMemoryCache;
 import org.enodeframework.infrastructure.ITypeNameProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
@@ -27,44 +26,19 @@ public class DefaultMemoryCache implements IMemoryCache {
     private static final Logger logger = LoggerFactory.getLogger(DefaultMemoryCache.class);
     private final ConcurrentMap<String, AggregateCacheInfo> aggregateRootInfoDict;
     private final Object lockObj = new Object();
+    private final String taskName;
+    private final IAggregateStorage aggregateStorage;
+    private final ITypeNameProvider typeNameProvider;
+    private final IScheduleService scheduleService;
     private int timeoutSeconds = 5000;
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
-    private String taskName;
-    @Autowired
-    private IAggregateStorage aggregateStorage;
-    @Autowired
-    private ITypeNameProvider typeNameProvider;
-    @Autowired
-    private IScheduleService scheduleService;
 
-    public DefaultMemoryCache() {
+    public DefaultMemoryCache(IAggregateStorage aggregateStorage, IScheduleService scheduleService, ITypeNameProvider typeNameProvider) {
+        this.aggregateStorage = aggregateStorage;
+        this.typeNameProvider = typeNameProvider;
+        this.scheduleService = scheduleService;
         aggregateRootInfoDict = new ConcurrentHashMap<>();
         taskName = "CleanInactiveAggregates_" + System.nanoTime() + new Random().nextInt(10000);
-    }
-
-    public DefaultMemoryCache setTimeoutSeconds(int timeoutSeconds) {
-        this.timeoutSeconds = timeoutSeconds;
-        return this;
-    }
-
-    public DefaultMemoryCache setScanExpiredAggregateIntervalMilliseconds(int scanExpiredAggregateIntervalMilliseconds) {
-        this.scanExpiredAggregateIntervalMilliseconds = scanExpiredAggregateIntervalMilliseconds;
-        return this;
-    }
-
-    public DefaultMemoryCache setAggregateStorage(IAggregateStorage aggregateStorage) {
-        this.aggregateStorage = aggregateStorage;
-        return this;
-    }
-
-    public DefaultMemoryCache setTypeNameProvider(ITypeNameProvider typeNameProvider) {
-        this.typeNameProvider = typeNameProvider;
-        return this;
-    }
-
-    public DefaultMemoryCache setScheduleService(IScheduleService scheduleService) {
-        this.scheduleService = scheduleService;
-        return this;
     }
 
     @Override
@@ -81,7 +55,7 @@ public class DefaultMemoryCache implements IMemoryCache {
         }
         IAggregateRoot aggregateRoot = aggregateRootInfo.getAggregateRoot();
         if (aggregateRoot.getClass() != aggregateRootType) {
-            throw new ENodeRuntimeException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRoot.getClass(), aggregateRootType));
+            throw new EnodeRuntimeException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRoot.getClass(), aggregateRootType));
         }
         if (aggregateRoot.getChanges().size() > 0) {
             CompletableFuture<IAggregateRoot> lastestAggregateRootFuture = aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString());
@@ -191,5 +165,21 @@ public class DefaultMemoryCache implements IMemoryCache {
                 logger.info("Removed inactive aggregate root, id: {}", entry.getKey());
             }
         });
+    }
+
+    public int getTimeoutSeconds() {
+        return timeoutSeconds;
+    }
+
+    public void setTimeoutSeconds(int timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
+    }
+
+    public int getScanExpiredAggregateIntervalMilliseconds() {
+        return scanExpiredAggregateIntervalMilliseconds;
+    }
+
+    public void setScanExpiredAggregateIntervalMilliseconds(int scanExpiredAggregateIntervalMilliseconds) {
+        this.scanExpiredAggregateIntervalMilliseconds = scanExpiredAggregateIntervalMilliseconds;
     }
 }

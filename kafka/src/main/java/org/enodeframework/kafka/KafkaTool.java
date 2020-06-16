@@ -9,11 +9,11 @@ import org.enodeframework.queue.QueueMessage;
  */
 public class KafkaTool {
 
-    public static QueueMessage covertToQueueMessage(ConsumerRecord record) {
+    public static QueueMessage covertToQueueMessage(ConsumerRecord<String, String> record) {
         QueueMessage queueMessage = new QueueMessage();
-        queueMessage.setBody(String.valueOf(record.value()));
+        queueMessage.setBody(record.value());
         queueMessage.setTopic(record.topic());
-        queueMessage.setRouteKey(String.valueOf(record.key()));
+        queueMessage.setRouteKey(record.key());
         return queueMessage;
     }
 

@@ -11,14 +11,12 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class InMemoryPublishedVersionStore implements IPublishedVersionStore {
 
-    private final CompletableFuture<Void> successTask = CompletableFuture.completedFuture(null);
-
     private final ConcurrentMap<String, Integer> versionDict = new ConcurrentHashMap<>();
 
     @Override
-    public CompletableFuture<Void> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
+    public CompletableFuture<Integer> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
         versionDict.put(buildKey(processorName, aggregateRootId), publishedVersion);
-        return successTask;
+        return CompletableFuture.completedFuture(1);
     }
 
     @Override

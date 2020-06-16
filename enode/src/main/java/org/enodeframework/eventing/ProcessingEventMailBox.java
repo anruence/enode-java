@@ -1,6 +1,6 @@
 package org.enodeframework.eventing;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.function.Action1;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.messaging.IMessage;
@@ -66,7 +66,7 @@ public class ProcessingEventMailBox {
                 lastActiveTime = new Date();
                 tryRun();
             } else {
-                logger.info("{} nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, nextExpectingEventVersion: {}, current _nextExpectingEventVersion: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, nextExpectingEventVersion, nextExpectingEventVersion);
+                logger.info("{} nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}, current _nextExpectingEventVersion: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, version, nextExpectingEventVersion);
             }
         }
     }
@@ -94,7 +94,7 @@ public class ProcessingEventMailBox {
     public EnqueueMessageResult enqueueMessage(ProcessingEvent processingEvent) {
         synchronized (lockObj) {
             if (isRemoved()) {
-                throw new ENodeRuntimeException(String.format("ProcessingEventMailBox was removed, cannot allow to enqueue message, aggregateRootTypeName: %s, aggregateRootId: %s", aggregateRootTypeName, aggregateRootId));
+                throw new EnodeRuntimeException(String.format("ProcessingEventMailBox was removed, cannot allow to enqueue message, aggregateRootTypeName: %s, aggregateRootId: %s", aggregateRootTypeName, aggregateRootId));
             }
             DomainEventStreamMessage eventStream = processingEvent.getMessage();
             if (eventStream.getVersion() == nextExpectingEventVersion) {

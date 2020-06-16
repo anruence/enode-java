@@ -17,7 +17,6 @@ import org.enodeframework.messaging.ITwoMessageHandlerProvider;
 import org.enodeframework.messaging.MessageHandlerData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,33 +31,20 @@ import java.util.stream.Collectors;
  */
 public class DefaultMessageDispatcher implements IMessageDispatcher {
     private static final Logger logger = LoggerFactory.getLogger(DefaultMessageDispatcher.class);
-    @Autowired
-    private ITypeNameProvider typeNameProvider;
-    @Autowired
-    private IMessageHandlerProvider handlerProvider;
-    @Autowired
-    private ITwoMessageHandlerProvider twoMessageHandlerProvider;
-    @Autowired
-    private IThreeMessageHandlerProvider threeMessageHandlerProvider;
 
-    public DefaultMessageDispatcher setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+    private final ITypeNameProvider typeNameProvider;
+
+    private final IMessageHandlerProvider messageHandlerProvider;
+
+    private final ITwoMessageHandlerProvider twoMessageHandlerProvider;
+
+    private final IThreeMessageHandlerProvider threeMessageHandlerProvider;
+
+    public DefaultMessageDispatcher(ITypeNameProvider typeNameProvider, IMessageHandlerProvider messageHandlerProvider, ITwoMessageHandlerProvider twoMessageHandlerProvider, IThreeMessageHandlerProvider threeMessageHandlerProvider) {
         this.typeNameProvider = typeNameProvider;
-        return this;
-    }
-
-    public DefaultMessageDispatcher setHandlerProvider(IMessageHandlerProvider handlerProvider) {
-        this.handlerProvider = handlerProvider;
-        return this;
-    }
-
-    public DefaultMessageDispatcher setTwoMessageHandlerProvider(ITwoMessageHandlerProvider twoMessageHandlerProvider) {
+        this.messageHandlerProvider = messageHandlerProvider;
         this.twoMessageHandlerProvider = twoMessageHandlerProvider;
-        return this;
-    }
-
-    public DefaultMessageDispatcher setThreeMessageHandlerProvider(IThreeMessageHandlerProvider threeMessageHandlerProvider) {
         this.threeMessageHandlerProvider = threeMessageHandlerProvider;
-        return this;
     }
 
     @Override
@@ -98,7 +84,7 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
     }
 
     private void dispatchSingleMessage(IMessage message, QueueMessageDispatching queueMessageDispatching) {
-        List<MessageHandlerData<IMessageHandlerProxy1>> messageHandlerDataList = handlerProvider.getHandlers(message.getClass());
+        List<MessageHandlerData<IMessageHandlerProxy1>> messageHandlerDataList = messageHandlerProvider.getHandlers(message.getClass());
         if (messageHandlerDataList.isEmpty()) {
             queueMessageDispatching.onMessageHandled(message);
             return;
@@ -135,19 +121,19 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
     private void dispatchSingleMessageToHandlerAsync(SingleMessageDispatching singleMessageDispatching, IMessageHandlerProxy1 handlerProxy, QueuedHandler<IMessageHandlerProxy1> queueHandler, int retryTimes) {
         IMessage message = singleMessageDispatching.getMessage();
         String messageTypeName = typeNameProvider.getTypeName(message.getClass());
-        Class handlerType = handlerProxy.getInnerObject().getClass();
+        Class<?> handlerType = handlerProxy.getInnerObject().getClass();
         String handlerTypeName = typeNameProvider.getTypeName(handlerType);
         handleSingleMessageAsync(singleMessageDispatching, handlerProxy, handlerTypeName, messageTypeName, queueHandler, retryTimes);
     }
 
     private void dispatchTwoMessageToHandlerAsync(MultiMessageDisptaching multiMessageDispatching, IMessageHandlerProxy2 handlerProxy, QueuedHandler<IMessageHandlerProxy2> queueHandler, int retryTimes) {
-        Class handlerType = handlerProxy.getInnerObject().getClass();
+        Class<?> handlerType = handlerProxy.getInnerObject().getClass();
         String handlerTypeName = typeNameProvider.getTypeName(handlerType);
         handleTwoMessageAsync(multiMessageDispatching, handlerProxy, handlerTypeName, queueHandler, 0);
     }
 
     private void dispatchThreeMessageToHandlerAsync(MultiMessageDisptaching multiMessageDispatching, IMessageHandlerProxy3 handlerProxy, QueuedHandler<IMessageHandlerProxy3> queueHandler, int retryTimes) {
-        Class handlerType = handlerProxy.getInnerObject().getClass();
+        Class<?> handlerType = handlerProxy.getInnerObject().getClass();
         String handlerTypeName = typeNameProvider.getTypeName(handlerType);
         handleThreeMessageAsync(multiMessageDispatching, handlerProxy, handlerTypeName, queueHandler, 0);
     }
@@ -212,9 +198,31 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
                 null, retryTimes, true);
     }
 
+    static class QueuedHandler<T extends IObjectProxy> {
+        private final Action2<QueuedHandler<T>, T> dispatchToNextHandler;
+        private final ConcurrentLinkedQueue<T> handlerQueue;
+
+        public QueuedHandler(List<T> handlers, Action2<QueuedHandler<T>, T> dispatchToNextHandler) {
+            handlerQueue = new ConcurrentLinkedQueue<>();
+            handlerQueue.addAll(handlers);
+            this.dispatchToNextHandler = dispatchToNextHandler;
+        }
+
+        public T dequeueHandler() {
+            return handlerQueue.poll();
+        }
+
+        public void onHandlerFinished(T handler) {
+            T nextHandler = dequeueHandler();
+            if (nextHandler != null) {
+                dispatchToNextHandler.apply(this, nextHandler);
+            }
+        }
+    }
+
     class RootDispatching {
-        private CompletableFuture<Void> taskCompletionSource;
-        private ConcurrentMap<Object, Boolean> childDispatchingDict;
+        private final CompletableFuture<Void> taskCompletionSource;
+        private final ConcurrentMap<Object, Boolean> childDispatchingDict;
 
         public RootDispatching() {
             taskCompletionSource = new CompletableFuture<>();
@@ -239,9 +247,9 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
     }
 
     class QueueMessageDispatching {
-        private DefaultMessageDispatcher dispatcher;
-        private RootDispatching rootDispatching;
-        private ConcurrentLinkedQueue<IMessage> messageQueue;
+        private final DefaultMessageDispatcher dispatcher;
+        private final RootDispatching rootDispatching;
+        private final ConcurrentLinkedQueue<IMessage> messageQueue;
 
         public QueueMessageDispatching(DefaultMessageDispatcher dispatcher, RootDispatching rootDispatching, List<? extends IMessage> messages) {
             this.dispatcher = dispatcher;
@@ -266,9 +274,9 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
     }
 
     class MultiMessageDisptaching {
-        private IMessage[] messages;
-        private ConcurrentMap<String, IObjectProxy> handlerDict;
-        private RootDispatching rootDispatching;
+        private final IMessage[] messages;
+        private final ConcurrentMap<String, IObjectProxy> handlerDict;
+        private final RootDispatching rootDispatching;
 
         public MultiMessageDisptaching(List<? extends IMessage> messages, List<? extends IObjectProxy> handlers, RootDispatching rootDispatching, ITypeNameProvider typeNameProvider) {
             this.messages = messages.toArray(new IMessage[0]);
@@ -292,9 +300,9 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
     }
 
     class SingleMessageDispatching {
-        private ConcurrentMap<String, IObjectProxy> handlerDict;
-        private QueueMessageDispatching queueMessageDispatching;
-        private IMessage message;
+        private final ConcurrentMap<String, IObjectProxy> handlerDict;
+        private final QueueMessageDispatching queueMessageDispatching;
+        private final IMessage message;
 
         public SingleMessageDispatching(IMessage message, QueueMessageDispatching queueMessageDispatching, List<? extends IObjectProxy> handlers, ITypeNameProvider typeNameProvider) {
             this.message = message;
@@ -313,28 +321,6 @@ public class DefaultMessageDispatcher implements IMessageDispatcher {
 
         public IMessage getMessage() {
             return message;
-        }
-    }
-
-    class QueuedHandler<T extends IObjectProxy> {
-        private Action2<QueuedHandler<T>, T> dispatchToNextHandler;
-        private ConcurrentLinkedQueue<T> handlerQueue;
-
-        public QueuedHandler(List<T> handlers, Action2<QueuedHandler<T>, T> dispatchToNextHandler) {
-            handlerQueue = new ConcurrentLinkedQueue<>();
-            handlerQueue.addAll(handlers);
-            this.dispatchToNextHandler = dispatchToNextHandler;
-        }
-
-        public T dequeueHandler() {
-            return handlerQueue.poll();
-        }
-
-        public void onHandlerFinished(T handler) {
-            T nextHandler = dequeueHandler();
-            if (nextHandler != null) {
-                dispatchToNextHandler.apply(this, nextHandler);
-            }
         }
     }
 }

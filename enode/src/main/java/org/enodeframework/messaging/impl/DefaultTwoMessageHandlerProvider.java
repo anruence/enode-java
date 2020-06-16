@@ -1,12 +1,12 @@
 package org.enodeframework.messaging.impl;
 
 import org.enodeframework.common.container.IObjectContainer;
+import org.enodeframework.common.container.ObjectContainer;
 import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.infrastructure.impl.AbstractHandlerProvider;
 import org.enodeframework.infrastructure.impl.ManyType;
 import org.enodeframework.messaging.IMessageHandlerProxy2;
 import org.enodeframework.messaging.ITwoMessageHandlerProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -16,8 +16,6 @@ import java.util.List;
  * @author anruence@gmail.com
  */
 public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<ManyType, IMessageHandlerProxy2, List<Class>> implements ITwoMessageHandlerProvider {
-    @Autowired
-    private IObjectContainer objectContainer;
 
     @Override
     protected ManyType getKey(Method method) {
@@ -55,11 +53,7 @@ public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<Ma
 
     @Override
     protected IObjectContainer getObjectContainer() {
-        return objectContainer;
+        return ObjectContainer.INSTANCE;
     }
 
-    public DefaultTwoMessageHandlerProvider setObjectContainer(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-        return this;
-    }
 }

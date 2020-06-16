@@ -1,6 +1,6 @@
 package org.enodeframework.common.utilities;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -118,7 +118,7 @@ public class ObjectId {
             // use first 3 bytes of hash
             return ((hash[0] & 0xff) << 16) | ((hash[1] & 0xff) << 8) | hash[2] & 0xff;
         } catch (Exception ex) {
-            throw new ENodeRuntimeException(ex);
+            throw new EnodeRuntimeException(ex);
         }
     }
 

@@ -9,10 +9,6 @@ public class ConfigurationSetting {
      */
     private String domainEventStreamMessageHandlerName;
     /**
-     * 默认的数据库配置信息
-     */
-    private DefaultDBConfigurationSetting defaultDBConfigurationSetting;
-    /**
      * 当使用默认的从内存清理聚合根的服务时，该属性用于配置扫描过期的聚合根的时间间隔，默认为5秒；
      */
     private int scanExpiredAggregateIntervalMilliseconds;
@@ -31,7 +27,6 @@ public class ConfigurationSetting {
 
     public ConfigurationSetting() {
         domainEventStreamMessageHandlerName = "DefaultEventProcessor";
-        defaultDBConfigurationSetting = new DefaultDBConfigurationSetting();
         scanExpiredAggregateIntervalMilliseconds = 5000;
         aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
         commandMailBoxPersistenceMaxBatchSize = 1000;
@@ -60,14 +55,6 @@ public class ConfigurationSetting {
 
     public void setAggregateRootMaxInactiveSeconds(int aggregateRootMaxInactiveSeconds) {
         this.aggregateRootMaxInactiveSeconds = aggregateRootMaxInactiveSeconds;
-    }
-
-    public DefaultDBConfigurationSetting getDefaultDBConfigurationSetting() {
-        return defaultDBConfigurationSetting;
-    }
-
-    public void setDefaultDBConfigurationSetting(DefaultDBConfigurationSetting defaultDBConfigurationSetting) {
-        this.defaultDBConfigurationSetting = defaultDBConfigurationSetting;
     }
 
     public int getCommandMailBoxPersistenceMaxBatchSize() {

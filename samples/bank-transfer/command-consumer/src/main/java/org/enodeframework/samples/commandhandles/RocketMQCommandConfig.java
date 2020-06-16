@@ -3,18 +3,11 @@ package org.enodeframework.samples.commandhandles;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.enodeframework.rocketmq.message.RocketMQApplicationMessagePublisher;
 import org.enodeframework.rocketmq.message.RocketMQCommandListener;
-import org.enodeframework.rocketmq.message.RocketMQDomainEventPublisher;
-import org.enodeframework.rocketmq.message.RocketMQPublishableExceptionPublisher;
 import org.enodeframework.samples.QueueProperties;
 import org.springframework.context.annotation.Bean;
 
 public class RocketMQCommandConfig {
-    @Bean
-    public RocketMQCommandListener commandListener() {
-        return new RocketMQCommandListener();
-    }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQPushConsumer defaultMQPushConsumer(RocketMQCommandListener commandListener) throws MQClientException {
@@ -32,35 +25,5 @@ public class RocketMQCommandConfig {
         producer.setNamesrvAddr(QueueProperties.NAMESRVADDR);
         producer.setProducerGroup(QueueProperties.DEFAULT_PRODUCER_GROUP);
         return producer;
-    }
-
-    @Bean
-    public RocketMQDomainEventPublisher rocketMQDomainEventPublisher(DefaultMQProducer defaultMQProducer) {
-        RocketMQDomainEventPublisher domainEventPublisher = new RocketMQDomainEventPublisher();
-        domainEventPublisher.setProducer(defaultMQProducer);
-        domainEventPublisher.setTopic(QueueProperties.EVENT_TOPIC);
-        return domainEventPublisher;
-    }
-
-    /**
-     * 应用消息生产者，复用生产者实例发送到不同topic中
-     */
-    @Bean
-    public RocketMQApplicationMessagePublisher rocketMQApplicationMessagePublisher(DefaultMQProducer defaultMQProducer) {
-        RocketMQApplicationMessagePublisher applicationMessagePublisher = new RocketMQApplicationMessagePublisher();
-        applicationMessagePublisher.setProducer(defaultMQProducer);
-        applicationMessagePublisher.setTopic(QueueProperties.APPLICATION_TOPIC);
-        return applicationMessagePublisher;
-    }
-
-    /**
-     * 异常消息生产者，复用生产者实例发送到不同topic中
-     */
-    @Bean
-    public RocketMQPublishableExceptionPublisher rocketMQPublishableExceptionPublisher(DefaultMQProducer defaultMQProducer) {
-        RocketMQPublishableExceptionPublisher exceptionPublisher = new RocketMQPublishableExceptionPublisher();
-        exceptionPublisher.setProducer(defaultMQProducer);
-        exceptionPublisher.setTopic(QueueProperties.EXCEPTION_TOPIC);
-        return exceptionPublisher;
     }
 }

@@ -18,11 +18,11 @@ import java.util.concurrent.TimeUnit;
 public class ScheduleService implements IScheduleService {
     private static final Logger logger = LoggerFactory.getLogger(ScheduleService.class);
     private final Object lockObject = new Object();
-    private Map<String, TimerBasedTask> taskDict = new HashMap<>();
-    private ScheduledExecutorService scheduledThreadPool;
+    private final Map<String, TimerBasedTask> taskDict = new HashMap<>();
+    private final ScheduledExecutorService scheduledThreadPool;
 
     public ScheduleService() {
-        scheduledThreadPool = new ScheduledThreadPoolExecutor(2, new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ScheduleService-%d").build());
+        scheduledThreadPool = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ScheduleService-%d").build());
     }
 
     @Override
@@ -44,28 +44,6 @@ public class ScheduleService implements IScheduleService {
                 task.setStopped(true);
                 task.getScheduledFuture().cancel(false);
                 taskDict.remove(name);
-            }
-        }
-    }
-
-    class TaskCallback implements Runnable {
-        private String taskName;
-
-        public TaskCallback(String taskName) {
-            this.taskName = taskName;
-        }
-
-        @Override
-        public void run() {
-            TimerBasedTask task = taskDict.get(taskName);
-            if (task != null) {
-                try {
-                    if (!task.isStopped()) {
-                        task.action.apply();
-                    }
-                } catch (Exception ex) {
-                    logger.error("Task has exception, name: {}, due: {}, period: {}", task.getName(), task.getDueTime(), task.getPeriod(), ex);
-                }
             }
         }
     }
@@ -133,6 +111,28 @@ public class ScheduleService implements IScheduleService {
 
         public void setStopped(boolean stopped) {
             this.stopped = stopped;
+        }
+    }
+
+    class TaskCallback implements Runnable {
+        private String taskName;
+
+        public TaskCallback(String taskName) {
+            this.taskName = taskName;
+        }
+
+        @Override
+        public void run() {
+            TimerBasedTask task = taskDict.get(taskName);
+            if (task != null) {
+                try {
+                    if (!task.isStopped()) {
+                        task.action.apply();
+                    }
+                } catch (Exception ex) {
+                    logger.error("Task has exception, name: {}, due: {}, period: {}", task.getName(), task.getDueTime(), task.getPeriod(), ex);
+                }
+            }
         }
     }
 }

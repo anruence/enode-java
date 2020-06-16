@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 
 /**
  * Json静态工具（基于jackson）
@@ -30,7 +30,7 @@ public class JacksonSerialization {
         try {
             return MAPPER.readValue(json, type);
         } catch (JsonProcessingException e) {
-            throw new ENodeRuntimeException(e);
+            throw new EnodeRuntimeException(e);
         }
     }
 
@@ -38,7 +38,7 @@ public class JacksonSerialization {
         try {
             return MAPPER.writeValueAsString(target);
         } catch (JsonProcessingException e) {
-            throw new ENodeRuntimeException(e);
+            throw new EnodeRuntimeException(e);
         }
     }
 }

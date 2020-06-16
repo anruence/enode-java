@@ -9,7 +9,6 @@ import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
@@ -24,47 +23,18 @@ import java.util.stream.Collectors;
 public class DefaultCommandProcessor implements ICommandProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCommandProcessor.class);
     private final ConcurrentMap<String, ProcessingCommandMailbox> mailboxDict;
-    private final Object lockObj = new Object();
-    private int timeoutSeconds;
-    private String taskName;
+    private final String taskName;
+    private final IProcessingCommandHandler processingCommandHandler;
+    private final IScheduleService scheduleService;
+    private int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
     private int commandMailBoxPersistenceMaxBatchSize = 1000;
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
-    private int aggregateRootMaxInactiveSeconds = 3600 * 24 * 3;
 
-    @Autowired
-    private IProcessingCommandHandler processingCommandHandler;
-    @Autowired
-    private IScheduleService scheduleService;
-
-    public DefaultCommandProcessor() {
-        this.mailboxDict = new ConcurrentHashMap<>();
-        this.timeoutSeconds = aggregateRootMaxInactiveSeconds;
-        this.taskName = "CleanInactiveProcessingCommandMailBoxes_" + System.nanoTime() + new Random().nextInt(10000);
-    }
-
-    public DefaultCommandProcessor setCommandMailBoxPersistenceMaxBatchSize(int commandMailBoxPersistenceMaxBatchSize) {
-        this.commandMailBoxPersistenceMaxBatchSize = commandMailBoxPersistenceMaxBatchSize;
-        return this;
-    }
-
-    public DefaultCommandProcessor setScanExpiredAggregateIntervalMilliseconds(int scanExpiredAggregateIntervalMilliseconds) {
-        this.scanExpiredAggregateIntervalMilliseconds = scanExpiredAggregateIntervalMilliseconds;
-        return this;
-    }
-
-    public DefaultCommandProcessor setAggregateRootMaxInactiveSeconds(int aggregateRootMaxInactiveSeconds) {
-        this.aggregateRootMaxInactiveSeconds = aggregateRootMaxInactiveSeconds;
-        return this;
-    }
-
-    public DefaultCommandProcessor setProcessingCommandHandler(IProcessingCommandHandler processingCommandHandler) {
+    public DefaultCommandProcessor(IProcessingCommandHandler processingCommandHandler, IScheduleService scheduleService) {
         this.processingCommandHandler = processingCommandHandler;
-        return this;
-    }
-
-    public DefaultCommandProcessor setScheduleService(IScheduleService scheduleService) {
         this.scheduleService = scheduleService;
-        return this;
+        this.mailboxDict = new ConcurrentHashMap<>();
+        this.taskName = "CleanInactiveProcessingCommandMailBoxes_" + System.nanoTime() + new Random().nextInt(10000);
     }
 
     @Override
@@ -103,7 +73,7 @@ public class DefaultCommandProcessor implements ICommandProcessor {
     }
 
     private boolean isMailBoxAllowRemove(ProcessingCommandMailbox mailbox) {
-        return mailbox.isInactive(timeoutSeconds) && !mailbox.isRunning() && mailbox.getTotalUnHandledMessageCount() == 0;
+        return mailbox.isInactive(aggregateRootMaxInactiveSeconds) && !mailbox.isRunning() && mailbox.getTotalUnHandledMessageCount() == 0;
     }
 
     private void cleanInactiveMailbox() {
@@ -119,5 +89,29 @@ public class DefaultCommandProcessor implements ICommandProcessor {
                 }
             }
         });
+    }
+
+    public int getAggregateRootMaxInactiveSeconds() {
+        return aggregateRootMaxInactiveSeconds;
+    }
+
+    public void setAggregateRootMaxInactiveSeconds(int aggregateRootMaxInactiveSeconds) {
+        this.aggregateRootMaxInactiveSeconds = aggregateRootMaxInactiveSeconds;
+    }
+
+    public int getCommandMailBoxPersistenceMaxBatchSize() {
+        return commandMailBoxPersistenceMaxBatchSize;
+    }
+
+    public void setCommandMailBoxPersistenceMaxBatchSize(int commandMailBoxPersistenceMaxBatchSize) {
+        this.commandMailBoxPersistenceMaxBatchSize = commandMailBoxPersistenceMaxBatchSize;
+    }
+
+    public int getScanExpiredAggregateIntervalMilliseconds() {
+        return scanExpiredAggregateIntervalMilliseconds;
+    }
+
+    public void setScanExpiredAggregateIntervalMilliseconds(int scanExpiredAggregateIntervalMilliseconds) {
+        this.scanExpiredAggregateIntervalMilliseconds = scanExpiredAggregateIntervalMilliseconds;
     }
 }

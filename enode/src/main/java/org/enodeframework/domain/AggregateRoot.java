@@ -1,8 +1,8 @@
 package org.enodeframework.domain;
 
 import com.google.common.collect.Lists;
-import org.enodeframework.ObjectContainer;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.container.ObjectContainer;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.function.Action2;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.IDomainEvent;
@@ -22,7 +22,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     /**
      * dynamic inject through ApplicationContext instance
      */
-    private static IAggregateRootInternalHandlerProvider eventHandlerProvider;
+    private static IAggregateRootInternalHandlerProvider aggregateRootInternalHandlerProvider;
     protected TAggregateRootId id;
     protected int version;
     private List<IDomainEvent> emptyEvents = new ArrayList<>();
@@ -74,12 +74,12 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     }
 
     private void handleEvent(IDomainEvent domainEvent) {
-        if (eventHandlerProvider == null) {
-            eventHandlerProvider = ObjectContainer.resolve(IAggregateRootInternalHandlerProvider.class);
+        if (aggregateRootInternalHandlerProvider == null) {
+            aggregateRootInternalHandlerProvider = ObjectContainer.resolve(IAggregateRootInternalHandlerProvider.class);
         }
-        Action2<IAggregateRoot, IDomainEvent> handler = eventHandlerProvider.getInternalEventHandler(getClass(), domainEvent.getClass());
+        Action2<IAggregateRoot, IDomainEvent> handler = aggregateRootInternalHandlerProvider.getInternalEventHandler(getClass(), domainEvent.getClass());
         if (handler == null) {
-            throw new ENodeRuntimeException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
+            throw new EnodeRuntimeException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
         }
         if (this.id == null && domainEvent.getVersion() == 1) {
             // 获取泛型类型

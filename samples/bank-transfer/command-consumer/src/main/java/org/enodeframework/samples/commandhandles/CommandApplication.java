@@ -1,6 +1,6 @@
 package org.enodeframework.samples.commandhandles;
 
-import org.enodeframework.ENodeAutoConfiguration;
+import org.enodeframework.spring.EnodeAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author anruence@gmail.com
  */
 @SpringBootApplication(scanBasePackages = "org.enodeframework")
-@ImportAutoConfiguration(value = {ENodeAutoConfiguration.class, KafkaCommandConfig.class})
+@ImportAutoConfiguration(value = {EnodeAutoConfiguration.class, KafkaCommandConfig.class})
 public class CommandApplication {
     public static void main(String[] args) {
         SpringApplication.run(CommandApplication.class, args);

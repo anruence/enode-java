@@ -12,7 +12,7 @@ import com.microsoft.conference.management.domain.Events.SeatsReservationCancell
 import com.microsoft.conference.management.domain.Events.SeatsReservationCommitted;
 import com.microsoft.conference.management.domain.Events.SeatsReserved;
 import com.microsoft.conference.management.domain.PublishableExceptions.SeatInsufficientException;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.utilities.Linq;
 import org.enodeframework.domain.AggregateRoot;
 
@@ -57,7 +57,7 @@ public class Conference extends AggregateRoot<String> {
     public void UpdateSeat(String seatTypeId, SeatTypeInfo seatTypeInfo, int quantity) {
         SeatType seatType = Linq.single(_seatTypes, x -> x.Id.equals(seatTypeId));
         if (seatType == null) {
-            throw new ENodeRuntimeException("Seat type not exist.");
+            throw new EnodeRuntimeException("Seat type not exist.");
         }
         applyEvent(new SeatTypeUpdated(seatTypeId, seatTypeInfo));
         if (seatType.Quantity != quantity) {
@@ -96,7 +96,7 @@ public class Conference extends AggregateRoot<String> {
             }
             SeatType seatType = _seatTypes.stream().filter(x -> x.Id == reservationItem.SeatTypeId).findFirst().orElse(null);
             if (seatType == null) {
-                throw new ENodeRuntimeException(String.format("Seat type '{}' not exist.", reservationItem.SeatTypeId));
+                throw new EnodeRuntimeException(String.format("Seat type '{}' not exist.", reservationItem.SeatTypeId));
             }
             int availableQuantity = seatType.Quantity - GetTotalReservationQuantity(seatType.Id);
             if (availableQuantity < reservationItem.Quantity) {

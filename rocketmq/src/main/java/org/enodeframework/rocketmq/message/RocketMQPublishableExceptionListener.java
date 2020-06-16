@@ -5,8 +5,8 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.enodeframework.common.io.Task;
+import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;
-import org.enodeframework.queue.publishableexceptions.AbstractPublishableExceptionListener;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -14,14 +14,20 @@ import java.util.concurrent.CountDownLatch;
 /**
  * @author anruence@gmail.com
  */
-public class RocketMQPublishableExceptionListener extends AbstractPublishableExceptionListener implements MessageListenerConcurrently {
+public class RocketMQPublishableExceptionListener implements MessageListenerConcurrently {
+
+    private final IMessageHandler publishableExceptionListener;
+
+    public RocketMQPublishableExceptionListener(IMessageHandler publishableExceptionListener) {
+        this.publishableExceptionListener = publishableExceptionListener;
+    }
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
         final CountDownLatch latch = new CountDownLatch(msgs.size());
         msgs.forEach(messageExt -> {
             QueueMessage queueMessage = RocketMQTool.covertToQueueMessage(messageExt);
-            handle(queueMessage, message -> {
+            publishableExceptionListener.handle(queueMessage, message -> {
                 latch.countDown();
             });
         });

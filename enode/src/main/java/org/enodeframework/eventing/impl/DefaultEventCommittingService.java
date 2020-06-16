@@ -5,7 +5,7 @@ import org.enodeframework.commanding.CommandStatus;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ProcessingCommand;
 import org.enodeframework.commanding.ProcessingCommandMailbox;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.domain.IMemoryCache;
@@ -18,7 +18,6 @@ import org.enodeframework.eventing.IEventStore;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,44 +32,28 @@ import java.util.stream.Collectors;
 public class DefaultEventCommittingService implements IEventCommittingService {
     private static final Logger logger = LoggerFactory.getLogger(DefaultEventCommittingService.class);
 
-    private int eventMailBoxCount;
+    private final int eventMailBoxCount;
+    private final IMemoryCache memoryCache;
+    private final IEventStore eventStore;
+    private final IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
+    private final List<EventCommittingContextMailBox> eventCommittingContextMailBoxList;
 
-    private List<EventCommittingContextMailBox> eventCommittingContextMailBoxList;
-
-    @Autowired
-    private IMemoryCache memoryCache;
-    @Autowired
-    private IEventStore eventStore;
-    @Autowired
-    private IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
-
-    public DefaultEventCommittingService() {
-        this(1000, 4);
+    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
+        this(memoryCache, eventStore, domainEventPublisher, 4);
     }
 
-    public DefaultEventCommittingService(int eventMailBoxPersistenceMaxBatchSize, int eventMailBoxCount) {
-        this.eventCommittingContextMailBoxList = new ArrayList<>();
+    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher, int eventMailBoxCount) {
+        this.memoryCache = memoryCache;
+        this.eventStore = eventStore;
+        this.domainEventPublisher = domainEventPublisher;
         this.eventMailBoxCount = eventMailBoxCount;
-        for (int i = 0; i < eventMailBoxCount; i++) {
-            EventCommittingContextMailBox mailBox = new EventCommittingContextMailBox(i, eventMailBoxPersistenceMaxBatchSize, x -> batchPersistEventAsync(x, 0));
+        this.eventCommittingContextMailBoxList = new ArrayList<>();
+        for (int i = 0; i < this.eventMailBoxCount; i++) {
+            EventCommittingContextMailBox mailBox = new EventCommittingContextMailBox(i, 1000, x -> batchPersistEventAsync(x, 0));
             eventCommittingContextMailBoxList.add(mailBox);
         }
     }
 
-    public DefaultEventCommittingService setMemoryCache(IMemoryCache memoryCache) {
-        this.memoryCache = memoryCache;
-        return this;
-    }
-
-    public DefaultEventCommittingService setEventStore(IEventStore eventStore) {
-        this.eventStore = eventStore;
-        return this;
-    }
-
-    public DefaultEventCommittingService setDomainEventPublisher(IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
-        this.domainEventPublisher = domainEventPublisher;
-        return this;
-    }
 
     @Override
     public void commitDomainEventAsync(EventCommittingContext eventCommittingContext) {
@@ -109,13 +92,12 @@ public class DefaultEventCommittingService implements IEventCommittingService {
         if (committingContexts == null || committingContexts.size() == 0) {
             return;
         }
-        //TODO await
         IOHelper.tryAsyncActionRecursively("BatchPersistEventAsync",
                 () -> eventStore.batchAppendAsync(committingContexts.stream().map(EventCommittingContext::getEventStream).collect(Collectors.toList())),
                 result -> {
                     EventCommittingContextMailBox eventMailBox = committingContexts.stream()
                             .findFirst()
-                            .orElseThrow(() -> new ENodeRuntimeException("eventMailBox can not be null"))
+                            .orElseThrow(() -> new EnodeRuntimeException("eventMailBox can not be null"))
                             .getMailBox();
                     if (result == null) {
                         logger.error("Batch persist events success, but the persist result is null, the current event committing mailbox should be pending, mailboxNumber: {}", eventMailBox.getNumber());

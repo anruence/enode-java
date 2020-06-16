@@ -1,15 +1,11 @@
 package org.enodeframework.samples.commandhandles;
 
-import com.google.common.collect.Lists;
 import com.zaxxer.hikari.HikariDataSource;
 import io.vertx.core.Vertx;
-import org.enodeframework.ENodeBootstrap;
-import org.enodeframework.commanding.impl.DefaultCommandProcessor;
-import org.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
-import org.enodeframework.eventing.impl.DefaultEventCommittingService;
+import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.mysql.MysqlEventStore;
 import org.enodeframework.mysql.MysqlPublishedVersionStore;
-import org.enodeframework.queue.command.CommandResultProcessor;
+import org.enodeframework.queue.command.DefaultCommandResultProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,13 +16,14 @@ import static org.enodeframework.samples.QueueProperties.JDBC_URL;
 
 @Configuration
 public class CommandConsumerAppConfig {
+
     private Vertx vertx;
     @Autowired
     private MysqlEventStore mysqlEventStore;
     @Autowired
     private MysqlPublishedVersionStore publishedVersionStore;
     @Autowired
-    private CommandResultProcessor commandResultProcessor;
+    private DefaultCommandResultProcessor commandResultProcessor;
 
 //    @Bean
 //    public InMemoryEventStore inMemoryEventStore() {
@@ -38,39 +35,14 @@ public class CommandConsumerAppConfig {
 //        return new InMemoryPublishedVersionStore();
 //    }
 
-    /**
-     * 命令处理器
-     */
     @Bean
-    public DefaultProcessingCommandHandler defaultProcessingCommandHandler() {
-        return new DefaultProcessingCommandHandler();
-    }
-
-    @Bean
-    public DefaultEventCommittingService defaultEventService() {
-        return new DefaultEventCommittingService();
-    }
-
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public DefaultCommandProcessor defaultCommandProcessor() {
-        return new DefaultCommandProcessor();
-    }
-
-    @Bean(initMethod = "init")
-    public ENodeBootstrap eNodeBootstrap() {
-        ENodeBootstrap bootstrap = new ENodeBootstrap();
-        bootstrap.setScanPackages(Lists.newArrayList("org.enodeframework.samples"));
-        return bootstrap;
-    }
-
-    @Bean
-    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-        return new MysqlEventStore(dataSource, null);
+    public MysqlEventStore mysqlEventStore(IEventSerializer eventSerializer, HikariDataSource dataSource) {
+        return new MysqlEventStore(dataSource,eventSerializer);
     }
 
     @Bean
     public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        return new MysqlPublishedVersionStore(dataSource, null);
+        return new MysqlPublishedVersionStore(dataSource);
     }
 
     @Bean
