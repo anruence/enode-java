@@ -1,7 +1,7 @@
 package org.enodeframework.tests.repository;
 
 import org.enodeframework.domain.IAggregateRepository;
-import org.enodeframework.tests.Domain.TestAggregate;
+import org.enodeframework.tests.domain.TestAggregate;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;

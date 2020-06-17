@@ -2,7 +2,6 @@ package org.enodeframework;
 
 import org.enodeframework.commanding.impl.CommandHandlerProxy;
 import org.enodeframework.commanding.impl.DefaultCommandHandlerProvider;
-import org.enodeframework.common.container.SpringObjectContainer;
 import org.enodeframework.common.scheduling.ScheduleService;
 import org.enodeframework.domain.impl.DefaultAggregateRepositoryProvider;
 import org.enodeframework.domain.impl.DefaultAggregateRootFactory;
@@ -40,15 +39,8 @@ public class ENodeAutoConfiguration {
         return new DefaultTypeNameProvider();
     }
 
-    @Bean
-    public SpringObjectContainer springObjectContainer() {
-        SpringObjectContainer objectContainer = new SpringObjectContainer();
-        ObjectContainer.container = objectContainer;
-        return objectContainer;
-    }
-
     @Bean(initMethod = "start", destroyMethod = "stop")
-    public DefaultProcessingEventProcessor defaultProcessingDomainEventStreamMessageProcessor() {
+    public DefaultProcessingEventProcessor defaultProcessingEventProcessor() {
         return new DefaultProcessingEventProcessor();
     }
 

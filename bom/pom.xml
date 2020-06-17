@@ -8,7 +8,7 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <properties>
-        <revision>1.0.4</revision>
+        <revision>1.0.5</revision>
         <springboot.version>2.2.6.RELEASE</springboot.version>
         <vertx.version>3.9.1</vertx.version>
         <slfj4.version>1.7.30</slfj4.version>
@@ -80,7 +80,27 @@
             </dependency>
             <dependency>
                 <groupId>org.enodeframework</groupId>
+                <artifactId>enode-jdbc</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
                 <artifactId>enode-mysql</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-tidb</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-mongo</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-pg</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -137,6 +157,21 @@
                 <groupId>com.aliyun.openservices</groupId>
                 <artifactId>ons-client</artifactId>
                 <version>${ons.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongodb-driver-reactivestreams</artifactId>
+                <version>4.0.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongodb-driver-core</artifactId>
+                <version>4.0.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>bson</artifactId>
+                <version>4.0.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

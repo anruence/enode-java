@@ -1,11 +1,11 @@
 package org.enodeframework.messaging.impl;
 
+import org.enodeframework.ObjectContainer;
 import org.enodeframework.common.container.IObjectContainer;
 import org.enodeframework.infrastructure.impl.AbstractHandlerProvider;
 import org.enodeframework.messaging.IMessage;
 import org.enodeframework.messaging.IMessageHandlerProvider;
 import org.enodeframework.messaging.IMessageHandlerProxy1;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Method;
 
@@ -13,8 +13,6 @@ import java.lang.reflect.Method;
  * @author anruence@gmail.com
  */
 public class DefaultMessageHandlerProvider extends AbstractHandlerProvider<Class, IMessageHandlerProxy1, Class> implements IMessageHandlerProvider {
-    @Autowired
-    private IObjectContainer objectContainer;
 
     @Override
     protected Class getKey(Method method) {
@@ -47,11 +45,6 @@ public class DefaultMessageHandlerProvider extends AbstractHandlerProvider<Class
 
     @Override
     protected IObjectContainer getObjectContainer() {
-        return objectContainer;
-    }
-
-    public DefaultMessageHandlerProvider setObjectContainer(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-        return this;
+        return ObjectContainer.container;
     }
 }

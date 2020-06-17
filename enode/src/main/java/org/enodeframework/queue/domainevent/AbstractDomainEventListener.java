@@ -17,13 +17,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractDomainEventListener implements IMessageHandler {
+
     private static final Logger logger = LoggerFactory.getLogger(AbstractDomainEventListener.class);
+
     @Autowired
     protected SendReplyService sendReplyService;
+
     @Autowired
     protected IEventSerializer eventSerializer;
+
     @Autowired
     protected IProcessingEventProcessor domainEventMessageProcessor;
+
     protected boolean sendEventHandledMessage = true;
 
     public AbstractDomainEventListener setEventSerializer(IEventSerializer eventSerializer) {
@@ -36,13 +41,13 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         return this;
     }
 
-    public SendReplyService getSendReplyService() {
-        return sendReplyService;
-    }
-
     public AbstractDomainEventListener setSendReplyService(SendReplyService sendReplyService) {
         this.sendReplyService = sendReplyService;
         return this;
+    }
+
+    public SendReplyService getSendReplyService() {
+        return sendReplyService;
     }
 
     public boolean isSendEventHandledMessage() {
@@ -80,7 +85,7 @@ public abstract class AbstractDomainEventListener implements IMessageHandler {
         return domainEventStreamMessage;
     }
 
-    class DomainEventStreamProcessContext implements IEventProcessContext {
+    static class DomainEventStreamProcessContext implements IEventProcessContext {
         private final AbstractDomainEventListener eventConsumer;
         private final DomainEventStreamMessage domainEventStreamMessage;
         private final QueueMessage queueMessage;

@@ -9,7 +9,11 @@
     <modules>
         <module>enode</module>
         <module>bom</module>
+        <module>jdbc</module>
         <module>mysql</module>
+        <module>mongo</module>
+        <module>pg</module>
+        <module>tidb</module>
         <module>kafka</module>
         <module>rocketmq</module>
         <module>ons</module>
@@ -19,7 +23,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>1.0.4</revision>
+        <revision>1.0.5</revision>
         <maven.skip.deploy>false</maven.skip.deploy>
         <maven.jar.version>3.2.0</maven.jar.version>
         <maven.surefire.version>3.0.0-M4</maven.surefire.version>

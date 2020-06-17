@@ -233,29 +233,28 @@ public class EventAppConfig {
 #### MySQL
 需要下面两张表来存储事件
 ```mysql
-CREATE TABLE `EventStream`
-(
-    `Sequence`              BIGINT AUTO_INCREMENT NOT NULL,
-    `AggregateRootTypeName` VARCHAR(256)          NOT NULL,
-    `AggregateRootId`       VARCHAR(36)           NOT NULL,
-    `Version`               INT                   NOT NULL,
-    `CommandId`             VARCHAR(36)           NOT NULL,
-    `CreatedOn`             DATETIME              NOT NULL,
-    `Events`                MEDIUMTEXT            NOT NULL,
-    PRIMARY KEY (`Sequence`),
-    UNIQUE KEY `IX_EventStream_AggId_Version` (`AggregateRootId`, `Version`),
-    UNIQUE KEY `IX_EventStream_AggId_CommandId` (`AggregateRootId`, `CommandId`)
+CREATE TABLE `event_stream` (
+  `id` BIGINT AUTO_INCREMENT NOT NULL,
+  `aggregate_root_type_name` VARCHAR(256) NOT NULL,
+  `aggregate_root_id` VARCHAR(36) NOT NULL,
+  `version` INT NOT NULL,
+  `command_id` VARCHAR(36) NOT NULL,
+  `gmt_create` DATETIME NOT NULL,
+  `events` MEDIUMTEXT NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_aggregate_root_id_version` (`aggregate_root_id`, `version`),
+  UNIQUE KEY `uk_aggregate_root_id_command_id` (`aggregate_root_id`, `command_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
-CREATE TABLE `PublishedVersion`
-(
-    `Sequence`              BIGINT AUTO_INCREMENT NOT NULL,
-    `ProcessorName`         VARCHAR(128)          NOT NULL,
-    `AggregateRootTypeName` VARCHAR(256)          NOT NULL,
-    `AggregateRootId`       VARCHAR(36)           NOT NULL,
-    `Version`               INT                   NOT NULL,
-    `CreatedOn`             DATETIME              NOT NULL,
-    PRIMARY KEY (`Sequence`),
-    UNIQUE KEY `IX_PublishedVersion_AggId_Version` (`ProcessorName`, `AggregateRootId`, `Version`)
+
+CREATE TABLE `published_version` (
+  `id` BIGINT AUTO_INCREMENT NOT NULL,
+  `processor_name` VARCHAR(128) NOT NULL,
+  `aggregate_root_type_name` VARCHAR(256) NOT NULL,
+  `aggregate_root_id` VARCHAR(36) NOT NULL,
+  `version` INT NOT NULL,
+  `gmt_create` DATETIME NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_processor_name_aggregate_root_id_version` (`processor_name`, `aggregate_root_id`, `version`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 ```
 ### MQ配置启动
