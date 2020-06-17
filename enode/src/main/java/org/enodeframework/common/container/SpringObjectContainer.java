@@ -1,8 +1,6 @@
 package org.enodeframework.common.container;
 
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import java.util.Map;
 
@@ -11,9 +9,13 @@ import java.util.Map;
  *
  * @author anruence@gmail.com
  */
-public class SpringObjectContainer implements IObjectContainer, ApplicationContextAware {
+public class SpringObjectContainer implements IObjectContainer {
 
-    private ApplicationContext applicationContext;
+    private final ApplicationContext applicationContext;
+
+    public SpringObjectContainer(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Override
     public <T> Map<String, T> resolveAll(Class<T> targetClz) {
@@ -25,8 +27,4 @@ public class SpringObjectContainer implements IObjectContainer, ApplicationConte
         return applicationContext.getBean(serviceType);
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
 }

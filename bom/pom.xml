@@ -80,12 +80,32 @@
             </dependency>
             <dependency>
                 <groupId>org.enodeframework</groupId>
+                <artifactId>enode-spring</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-jdbc</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
                 <artifactId>enode-mysql</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>org.enodeframework</groupId>
+                <artifactId>enode-tidb</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
                 <artifactId>enode-mongo</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-pg</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

@@ -1,6 +1,5 @@
 package org.enodeframework.samples.eventhandlers;
 
-import com.google.common.collect.Lists;
 import com.zaxxer.hikari.HikariDataSource;
 import io.vertx.core.Vertx;
 import org.enodeframework.ENodeBootstrap;
@@ -31,8 +30,7 @@ public class EventAppConfig {
 
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
-        ENodeBootstrap bootstrap = new ENodeBootstrap();
-        bootstrap.setScanPackages(Lists.newArrayList("org.enodeframework.samples"));
+        ENodeBootstrap bootstrap = new ENodeBootstrap("org.enodeframework.samples");
         return bootstrap;
     }
 

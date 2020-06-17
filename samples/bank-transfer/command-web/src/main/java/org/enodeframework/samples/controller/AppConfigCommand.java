@@ -1,6 +1,5 @@
 package org.enodeframework.samples.controller;
 
-import com.google.common.collect.Lists;
 import org.enodeframework.ENodeBootstrap;
 import org.enodeframework.eventing.impl.InMemoryEventStore;
 import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
@@ -10,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AppConfigCommand {
+
     @Bean
     public CommandResultProcessor commandResultProcessor() {
         CommandResultProcessor processor = new CommandResultProcessor();
@@ -18,8 +18,7 @@ public class AppConfigCommand {
 
     @Bean(initMethod = "init")
     public ENodeBootstrap eNodeBootstrap() {
-        ENodeBootstrap bootstrap = new ENodeBootstrap();
-        bootstrap.setScanPackages(Lists.newArrayList("org.enodeframework.samples"));
+        ENodeBootstrap bootstrap = new ENodeBootstrap("org.enodeframework.samples");
         return bootstrap;
     }
 

@@ -11,6 +11,7 @@ import java.util.Map;
  * @author anruence@gmail.com
  */
 public class ObjectContainer {
+
     public static IObjectContainer container;
 
     public static <T> Map<String, T> resolveAll(Class<T> targetClz) {

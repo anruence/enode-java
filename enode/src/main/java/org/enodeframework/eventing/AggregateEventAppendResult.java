@@ -1,12 +1,14 @@
 package org.enodeframework.eventing;
 
+import com.google.common.collect.Lists;
+
 import java.util.List;
 
 public class AggregateEventAppendResult {
 
     private EventAppendStatus eventAppendStatus;
 
-    private List<String> duplicateCommandIds;
+    private List<String> duplicateCommandIds = Lists.newArrayList();
 
     public EventAppendStatus getEventAppendStatus() {
         return eventAppendStatus;

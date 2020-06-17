@@ -11,7 +11,7 @@
     </parent>
     <artifactId>enode-mysql</artifactId>
     <name>${project.artifactId}</name>
-    <description>enodeframework eventstore driver for MySQL and TiDB</description>
+    <description>enodeframework eventstore mysql jdbc driver</description>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -19,12 +19,8 @@
             <artifactId>enode</artifactId>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-jdbc-client</artifactId>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-jdbc</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -11,7 +11,7 @@
     </parent>
     <artifactId>enode-mongo</artifactId>
     <name>${project.artifactId}</name>
-    <description>enodeframework eventstore driver for MySQL and TiDB</description>
+    <description>enodeframework eventstore mongo driver</description>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -21,14 +21,6 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-reactivestreams</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>bson</artifactId>
         </dependency>
     </dependencies>
 </project>

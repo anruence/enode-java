@@ -9,8 +9,12 @@
     <modules>
         <module>enode</module>
         <module>bom</module>
+        <module>jdbc</module>
         <module>mysql</module>
         <module>mongo</module>
+        <module>pg</module>
+        <module>spring</module>
+        <module>tidb</module>
         <module>kafka</module>
         <module>rocketmq</module>
         <module>ons</module>

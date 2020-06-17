@@ -1,13 +1,12 @@
 package org.enodeframework.domain.impl;
 
-import org.enodeframework.common.container.IObjectContainer;
+import org.enodeframework.ObjectContainer;
 import org.enodeframework.domain.IAggregateRepository;
 import org.enodeframework.domain.IAggregateRepositoryProvider;
 import org.enodeframework.domain.IAggregateRepositoryProxy;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.infrastructure.IAssemblyInitializer;
 import org.enodeframework.infrastructure.TypeUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -20,14 +19,8 @@ import java.util.Set;
  * @author anruence@gmail.com
  */
 public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryProvider, IAssemblyInitializer {
-    private final Map<Class, IAggregateRepositoryProxy> repositoryDict = new HashMap<>();
-    @Autowired
-    private IObjectContainer objectContainer;
 
-    public DefaultAggregateRepositoryProvider setObjectContainer(IObjectContainer objectContainer) {
-        this.objectContainer = objectContainer;
-        return this;
-    }
+    private final Map<Class, IAggregateRepositoryProxy> repositoryDict = new HashMap<>();
 
     @Override
     public IAggregateRepositoryProxy getRepository(Class<? extends IAggregateRoot> aggregateRootType) {
@@ -51,7 +44,7 @@ public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryP
             if (!IAggregateRepository.class.equals(superGenericInterfaceType.getRawType())) {
                 return;
             }
-            IAggregateRepository resolve = (IAggregateRepository) objectContainer.resolve(aggregateRepositoryType);
+            IAggregateRepository resolve = (IAggregateRepository) ObjectContainer.container.resolve(aggregateRepositoryType);
             AggregateRepositoryProxy aggregateRepositoryProxy = new AggregateRepositoryProxy(resolve);
             repositoryDict.put((Class) superGenericInterfaceType.getActualTypeArguments()[0], aggregateRepositoryProxy);
         });

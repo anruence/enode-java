@@ -42,9 +42,7 @@ public class ENodeAutoConfiguration {
 
     @Bean
     public SpringObjectContainer springObjectContainer() {
-        SpringObjectContainer objectContainer = new SpringObjectContainer();
-        ObjectContainer.container = objectContainer;
-        return objectContainer;
+        return (SpringObjectContainer) ObjectContainer.container;
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")

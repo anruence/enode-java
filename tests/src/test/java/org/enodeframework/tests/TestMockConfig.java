@@ -1,10 +1,10 @@
 package org.enodeframework.tests;
 
-import org.enodeframework.tests.Mocks.MockApplicationMessagePublisher;
-import org.enodeframework.tests.Mocks.MockDomainEventPublisher;
-import org.enodeframework.tests.Mocks.MockEventStore;
-import org.enodeframework.tests.Mocks.MockPublishableExceptionPublisher;
-import org.enodeframework.tests.Mocks.MockPublishedVersionStore;
+import org.enodeframework.tests.mocks.MockApplicationMessagePublisher;
+import org.enodeframework.tests.mocks.MockDomainEventPublisher;
+import org.enodeframework.tests.mocks.MockEventStore;
+import org.enodeframework.tests.mocks.MockPublishableExceptionPublisher;
+import org.enodeframework.tests.mocks.MockPublishedVersionStore;
 import org.springframework.context.annotation.Bean;
 
 public class TestMockConfig {

@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class CacheMap {
 
-    public static Logger log = LoggerFactory.getLogger(CacheMap.class);
+    public final static Logger log = LoggerFactory.getLogger(CacheMap.class);
 
     @Test
     public void cache() {
