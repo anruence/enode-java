@@ -1,6 +1,6 @@
 package org.enodeframework.common.threading;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 
 /**
  * @author anruence@gmail.com
@@ -19,7 +19,7 @@ public class ManualResetEvent {
                 try {
                     monitor.wait();
                 } catch (InterruptedException e) {
-                    throw new ENodeRuntimeException(e);
+                    throw new EnodeRuntimeException(e);
                 }
             }
             return open;
@@ -32,7 +32,7 @@ public class ManualResetEvent {
                 try {
                     monitor.wait(timeout);
                 } catch (InterruptedException e) {
-                    throw new ENodeRuntimeException(e);
+                    throw new EnodeRuntimeException(e);
                 }
             }
             return open;

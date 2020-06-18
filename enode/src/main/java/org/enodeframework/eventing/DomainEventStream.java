@@ -1,6 +1,6 @@
 package org.enodeframework.eventing;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.utilities.Linq;
 import org.enodeframework.messaging.Message;
 
@@ -34,14 +34,14 @@ public class DomainEventStream extends Message {
         int sequence = 1;
         for (IDomainEvent event : events) {
             if (!aggregateRootId.equals(event.getAggregateRootStringId())) {
-                throw new ENodeRuntimeException(String.format("Invalid domain event aggregateRootId, aggregateRootTypeName: %s expected aggregateRootId: %s, but was: %s",
+                throw new EnodeRuntimeException(String.format("Invalid domain event aggregateRootId, aggregateRootTypeName: %s expected aggregateRootId: %s, but was: %s",
                         aggregateRootTypeName,
                         aggregateRootId,
                         event.getAggregateRootStringId()));
             }
 
             if (event.getVersion() != this.getVersion()) {
-                throw new ENodeRuntimeException(String.format("Invalid domain event version, aggregateRootTypeName: %s aggregateRootId: %s expected version: %d, but was: %d",
+                throw new EnodeRuntimeException(String.format("Invalid domain event version, aggregateRootTypeName: %s aggregateRootId: %s expected version: %d, but was: %d",
                         aggregateRootTypeName,
                         aggregateRootId,
                         version,

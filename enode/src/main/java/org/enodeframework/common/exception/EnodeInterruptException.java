@@ -3,11 +3,11 @@ package org.enodeframework.common.exception;
 /**
  * @author anruence@gmail.com
  */
-public class ENodeInterruptException extends RuntimeException {
+public class EnodeInterruptException extends RuntimeException {
 
     private static final long serialVersionUID = 5391482343851766256L;
 
-    public ENodeInterruptException(Throwable throwable) {
+    public EnodeInterruptException(Throwable throwable) {
         super(throwable);
     }
 

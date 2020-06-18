@@ -3,23 +3,23 @@ package org.enodeframework.common.exception;
 /**
  * @author anruence@gmail.com
  */
-public class ENodeRuntimeException extends RuntimeException {
+public class EnodeRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = -8951926710590746149L;
 
-    public ENodeRuntimeException() {
+    public EnodeRuntimeException() {
         super();
     }
 
-    public ENodeRuntimeException(Throwable throwable) {
+    public EnodeRuntimeException(Throwable throwable) {
         super(throwable);
     }
 
-    public ENodeRuntimeException(String msg) {
+    public EnodeRuntimeException(String msg) {
         super(msg);
     }
 
-    public ENodeRuntimeException(String msg, Throwable cause) {
+    public EnodeRuntimeException(String msg, Throwable cause) {
         super(msg, cause);
     }
 }

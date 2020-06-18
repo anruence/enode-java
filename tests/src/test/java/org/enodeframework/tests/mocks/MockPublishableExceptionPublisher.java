@@ -1,6 +1,6 @@
 package org.enodeframework.tests.mocks;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.messaging.IMessagePublisher;
@@ -29,11 +29,11 @@ public class MockPublishableExceptionPublisher implements IMessagePublisher<IDom
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
-                throw new ENodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("PublishPublishableExceptionAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
-                throw new ENodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
             }
         }
         return _successResultTask;

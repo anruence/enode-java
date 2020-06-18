@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class CommandAndEventServiceTest extends AbstractTest {
-    
+
     private static final Logger _logger = LoggerFactory.getLogger(CommandAndEventServiceTest.class);
 
     public static ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
@@ -853,13 +853,13 @@ public class CommandAndEventServiceTest extends AbstractTest {
         Task.sleep(5000);
         Task.await(publishedVersionStore.updatePublishedVersionAsync(processor.getName(), TestAggregate.class.getName(), aggregate.getUniqueId(), 2));
 
-        //等待ENode内部自动检测到最新的publishedVersion，并继续处理mailbox waitingList中的version=3的事件
+        //等待Enode内部自动检测到最新的publishedVersion，并继续处理mailbox waitingList中的version=3的事件
         waitHandle.waitOne();
 
         Assert.assertEquals(1, versionList.get(0).intValue());
         Assert.assertEquals(3, versionList.get(1).intValue());
 
-        //再等待3秒，等待ENode内部异步打印Removed problem aggregate的日志
+        //再等待3秒，等待Enode内部异步打印Removed problem aggregate的日志
         Task.sleep(3000);
     }
 

@@ -5,21 +5,27 @@ import com.aliyun.openservices.ons.api.ConsumeContext;
 import com.aliyun.openservices.ons.api.Message;
 import com.aliyun.openservices.ons.api.MessageListener;
 import org.enodeframework.common.io.Task;
+import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;
-import org.enodeframework.queue.publishableexceptions.AbstractPublishableExceptionListener;
 
 import java.util.concurrent.CountDownLatch;
 
 /**
  * @author anruence@gmail.com
  */
-public class OnsPublishableExceptionListener extends AbstractPublishableExceptionListener implements MessageListener {
+public class OnsPublishableExceptionListener implements MessageListener {
+
+    private final IMessageHandler publishableExceptionListener;
+
+    public OnsPublishableExceptionListener(IMessageHandler publishableExceptionListener) {
+        this.publishableExceptionListener = publishableExceptionListener;
+    }
 
     @Override
     public Action consume(Message message, ConsumeContext context) {
         final CountDownLatch latch = new CountDownLatch(1);
         QueueMessage queueMessage = OnsTool.covertToQueueMessage(message);
-        handle(queueMessage, m -> {
+        publishableExceptionListener.handle(queueMessage, m -> {
             latch.countDown();
         });
         Task.await(latch);

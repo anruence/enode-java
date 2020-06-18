@@ -6,14 +6,19 @@ import org.enodeframework.commanding.ICommandContext;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.tests.commands.AsyncHandlerCommand;
 import org.enodeframework.tests.commands.TwoAsyncHandlersCommand;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Command
 public class AsyncHandlerCommandHandler {
+
     public boolean CheckCommandHandledFirst;
+    @Autowired
+    TestComponent testComponent;
     private int _count;
 
     @Subscribe
     public void handleAsync(ICommandContext context, AsyncHandlerCommand command) throws Exception {
+        testComponent.sayHello();
         if (command.ShouldGenerateApplicationMessage) {
             context.setApplicationMessage(new TestApplicationMessage(command.getAggregateRootId()));
         } else if (command.ShouldThrowException) {

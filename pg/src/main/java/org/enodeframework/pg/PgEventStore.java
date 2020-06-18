@@ -1,5 +1,6 @@
 package org.enodeframework.pg;
 
+import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.jdbc.DBConfiguration;
 import org.enodeframework.jdbc.JDBCEventStore;
 
@@ -14,12 +15,12 @@ public class PgEventStore extends JDBCEventStore {
 
     private static final Pattern PATTERN_POSTGRESQL = Pattern.compile("=\\(.*, (.*)\\) already exists.$");
 
-    public PgEventStore(DataSource dataSource) {
-        super(dataSource);
+    public PgEventStore(DataSource dataSource, IEventSerializer eventSerializer) {
+        super(dataSource, eventSerializer);
     }
 
-    public PgEventStore(DataSource dataSource, DBConfiguration setting) {
-        super(dataSource, setting);
+    public PgEventStore(DataSource dataSource, DBConfiguration setting, IEventSerializer eventSerializer) {
+        super(dataSource, setting, eventSerializer);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package org.enodeframework.messaging.impl;
 
-import org.enodeframework.ObjectContainer;
+import org.enodeframework.common.container.ObjectContainer;
 import org.enodeframework.messaging.IMessage;
 import org.enodeframework.messaging.IMessageHandlerProxy3;
 
@@ -63,7 +63,7 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
         if (handler != null) {
             return handler;
         }
-        handler = ObjectContainer.container.resolve(handlerType);
+        handler = ObjectContainer.INSTANCE.resolve(handlerType);
         return handler;
     }
 

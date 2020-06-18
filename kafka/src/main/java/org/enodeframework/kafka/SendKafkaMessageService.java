@@ -2,6 +2,8 @@ package org.enodeframework.kafka;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.enodeframework.common.exception.IORuntimeException;
+import org.enodeframework.queue.ISendMessageService;
+import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,22 +15,30 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author anruence@gmail.com
  */
-public class SendMessageService {
-    private final static Logger logger = LoggerFactory.getLogger(SendMessageService.class);
+public class SendKafkaMessageService implements ISendMessageService {
+    private final static Logger logger = LoggerFactory.getLogger(SendKafkaMessageService.class);
 
-    public static CompletableFuture<Void> sendMessageAsync(KafkaTemplate<String, String> producer, ProducerRecord<String, String> message) {
+    private final KafkaTemplate<String, String> producer;
+
+    public SendKafkaMessageService(KafkaTemplate<String, String> producer) {
+        this.producer = producer;
+    }
+
+    @Override
+    public CompletableFuture<Void> sendMessageAsync(QueueMessage queueMessage) {
         CompletableFuture<Void> future = new CompletableFuture<>();
+        ProducerRecord<String, String> message = KafkaTool.covertToProducerRecord(queueMessage);
         producer.send(message).addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
             @Override
             public void onFailure(Throwable throwable) {
-                logger.error("ENode message async send has exception, message: {}", message, throwable);
+                logger.error("Enode message async send has exception, message: {}", message, throwable);
                 future.completeExceptionally(new IORuntimeException(throwable));
             }
 
             @Override
             public void onSuccess(SendResult<String, String> result) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("ENode message async send success, sendResult: {}, message: {}", result, message);
+                    logger.debug("Enode message async send success, sendResult: {}, message: {}", result, message);
                 }
                 future.complete(null);
             }

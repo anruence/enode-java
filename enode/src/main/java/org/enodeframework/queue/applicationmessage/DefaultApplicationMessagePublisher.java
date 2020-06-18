@@ -4,11 +4,21 @@ import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
+import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.QueueMessage;
 
-public abstract class AbstractApplicationMessagePublisher implements IMessagePublisher<IApplicationMessage> {
+import java.util.concurrent.CompletableFuture;
 
-    private String topic;
+public class DefaultApplicationMessagePublisher implements IMessagePublisher<IApplicationMessage> {
+
+    private final String topic;
+
+    private final ISendMessageService producer;
+
+    public DefaultApplicationMessagePublisher(String topic, ISendMessageService producer) {
+        this.topic = topic;
+        this.producer = producer;
+    }
 
     protected QueueMessage createApplicationMessage(IApplicationMessage message) {
         Ensure.notNull(topic, "topic");
@@ -24,11 +34,8 @@ public abstract class AbstractApplicationMessagePublisher implements IMessagePub
         return queueMessage;
     }
 
-    public String getTopic() {
-        return topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
+    @Override
+    public CompletableFuture<Void> publishAsync(IApplicationMessage message) {
+        return producer.sendMessageAsync(createApplicationMessage(message));
     }
 }

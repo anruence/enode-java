@@ -22,7 +22,7 @@ public class AggregateRepositoryProxy<TAggregateRoot extends IAggregateRoot> imp
     }
 
     @Override
-    public CompletableFuture<IAggregateRoot> getAsync(String aggregateRootId) {
-        return (CompletableFuture<IAggregateRoot>) aggregateRepository.getAsync(aggregateRootId);
+    public <T extends IAggregateRoot> CompletableFuture<T> getAsync(String aggregateRootId) {
+        return (CompletableFuture<T>) aggregateRepository.getAsync(aggregateRootId);
     }
 }

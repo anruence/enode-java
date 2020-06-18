@@ -3,7 +3,6 @@ package org.enodeframework.domain.impl;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IMemoryCache;
 import org.enodeframework.domain.IRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -11,12 +10,11 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class DefaultRepository implements IRepository {
-    @Autowired
-    private IMemoryCache memoryCache;
 
-    public DefaultRepository setMemoryCache(IMemoryCache memoryCache) {
+    private final IMemoryCache memoryCache;
+
+    public DefaultRepository(IMemoryCache memoryCache) {
         this.memoryCache = memoryCache;
-        return this;
     }
 
     @Override

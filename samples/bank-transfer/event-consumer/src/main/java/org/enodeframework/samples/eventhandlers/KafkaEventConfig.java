@@ -5,12 +5,8 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.enodeframework.kafka.KafkaApplicationMessageListener;
-import org.enodeframework.kafka.KafkaApplicationMessagePublisher;
-import org.enodeframework.kafka.KafkaCommandService;
 import org.enodeframework.kafka.KafkaDomainEventListener;
-import org.enodeframework.kafka.KafkaDomainEventPublisher;
 import org.enodeframework.kafka.KafkaPublishableExceptionListener;
-import org.enodeframework.kafka.KafkaPublishableExceptionPublisher;
 import org.enodeframework.samples.QueueProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -27,14 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class KafkaEventConfig {
-    @Bean
-    public KafkaCommandService kafkaCommandService(KafkaTemplate kafkaTemplate) {
-        KafkaCommandService kafkaCommandService = new KafkaCommandService();
-        kafkaCommandService.setProducer(kafkaTemplate);
-        kafkaCommandService.setTopic(QueueProperties.COMMAND_TOPIC);
-        return kafkaCommandService;
-    }
-
     /**
      * 根据consumerProps填写的参数创建消费者工厂
      */
@@ -75,21 +63,6 @@ public class KafkaEventConfig {
     }
 
     @Bean
-    public KafkaPublishableExceptionListener publishableExceptionListener() {
-        return new KafkaPublishableExceptionListener();
-    }
-
-    @Bean
-    public KafkaApplicationMessageListener applicationMessageListener() {
-        return new KafkaApplicationMessageListener();
-    }
-
-    @Bean
-    public KafkaDomainEventListener domainEventListener() {
-        return new KafkaDomainEventListener();
-    }
-
-    @Bean
     public KafkaMessageListenerContainer domainEventListenerContainer(KafkaDomainEventListener domainEventListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(QueueProperties.EVENT_TOPIC);
         properties.setGroupId(QueueProperties.DEFAULT_PRODUCER_GROUP);
@@ -120,29 +93,5 @@ public class KafkaEventConfig {
         properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
-    }
-
-    @Bean
-    public KafkaApplicationMessagePublisher kafkaApplicationMessagePublisher(KafkaTemplate kafkaTemplate) {
-        KafkaApplicationMessagePublisher applicationMessagePublisher = new KafkaApplicationMessagePublisher();
-        applicationMessagePublisher.setProducer(kafkaTemplate);
-        applicationMessagePublisher.setTopic(QueueProperties.APPLICATION_TOPIC);
-        return applicationMessagePublisher;
-    }
-
-    @Bean
-    public KafkaPublishableExceptionPublisher kafkaPublishableExceptionPublisher(KafkaTemplate kafkaTemplate) {
-        KafkaPublishableExceptionPublisher exceptionPublisher = new KafkaPublishableExceptionPublisher();
-        exceptionPublisher.setProducer(kafkaTemplate);
-        exceptionPublisher.setTopic(QueueProperties.EXCEPTION_TOPIC);
-        return exceptionPublisher;
-    }
-
-    @Bean
-    public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate kafkaTemplate) {
-        KafkaDomainEventPublisher domainEventPublisher = new KafkaDomainEventPublisher();
-        domainEventPublisher.setProducer(kafkaTemplate);
-        domainEventPublisher.setTopic(QueueProperties.EVENT_TOPIC);
-        return domainEventPublisher;
     }
 }

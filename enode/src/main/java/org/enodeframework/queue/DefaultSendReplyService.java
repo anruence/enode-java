@@ -1,7 +1,6 @@
 package org.enodeframework.queue;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
@@ -22,22 +21,28 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author anruence@gmail.com
+ * TODO 支持其他类型的服务间调用
  */
-public class SendReplyService {
-    private static final Logger logger = LoggerFactory.getLogger(SendReplyService.class);
+public class DefaultSendReplyService extends AbstractVerticle implements ISendReplyService {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultSendReplyService.class);
+
     private final ConcurrentHashMap<String, CompletableFuture<NetSocket>> socketMap = new ConcurrentHashMap<>();
+
     private boolean started;
+
     private boolean stoped;
+
     private NetClient netClient;
 
+    @Override
     public void start() {
         if (!started) {
-            VertxOptions options = new VertxOptions();
-            netClient = Vertx.vertx(options).createNetClient(new NetClientOptions());
+            netClient = vertx.createNetClient(new NetClientOptions());
             started = true;
         }
     }
 
+    @Override
     public void stop() {
         if (!stoped) {
             netClient.close();
@@ -45,15 +50,23 @@ public class SendReplyService {
         }
     }
 
-    public CompletableFuture<Void> sendReply(short replyType, Object replyData, String replyAddress) {
-        SendReplyContext context = new SendReplyContext(replyType, replyData, replyAddress);
+    @Override
+    public CompletableFuture<Void> sendCommandReply(CommandResult commandResult, String replyAddress) {
         RemoteReply remoteReply = new RemoteReply();
-        remoteReply.setCode(context.getReplyType());
-        if (context.getReplyType() == CommandReturnType.CommandExecuted.getValue()) {
-            remoteReply.setCommandResult((CommandResult) context.getReplyData());
-        } else if (context.getReplyType() == CommandReturnType.EventHandled.getValue()) {
-            remoteReply.setEventHandledMessage((DomainEventHandledMessage) context.getReplyData());
-        }
+        remoteReply.setCode(CommandReturnType.CommandExecuted.getValue());
+        remoteReply.setCommandResult(commandResult);
+        return sendReply(remoteReply, replyAddress);
+    }
+
+    @Override
+    public CompletableFuture<Void> sendEventReply(DomainEventHandledMessage eventHandledMessage, String replyAddress) {
+        RemoteReply remoteReply = new RemoteReply();
+        remoteReply.setCode(CommandReturnType.EventHandled.getValue());
+        remoteReply.setEventHandledMessage(eventHandledMessage);
+        return sendReply(remoteReply, replyAddress);
+    }
+
+    public CompletableFuture<Void> sendReply(RemoteReply remoteReply, String replyAddress) {
         String message = JsonTool.serialize(remoteReply) + SysProperties.DELIMITED;
         Address address = RemotingUtil.string2Address(replyAddress);
         SocketAddress socketAddress = SocketAddress.inetSocketAddress(address.getPort(), address.getHost());
@@ -83,32 +96,8 @@ public class SendReplyService {
         return socketMap.get(replyAddress).thenAccept(socket -> {
             socket.write(message);
         }).exceptionally(ex -> {
-            logger.error("Send command reply has exception, replyAddress: {}", context.getReplyAddress(), ex);
+            logger.error("Send command reply has exception, replyAddress: {}", replyAddress, ex);
             return null;
         });
-    }
-
-    static class SendReplyContext {
-        private final short replyType;
-        private final Object replyData;
-        private final String replyAddress;
-
-        public SendReplyContext(short replyType, Object replyData, String replyAddress) {
-            this.replyType = replyType;
-            this.replyData = replyData;
-            this.replyAddress = replyAddress;
-        }
-
-        public short getReplyType() {
-            return replyType;
-        }
-
-        public Object getReplyData() {
-            return replyData;
-        }
-
-        public String getReplyAddress() {
-            return replyAddress;
-        }
     }
 }

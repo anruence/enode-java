@@ -13,7 +13,7 @@ import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
@@ -30,7 +30,6 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Comparator;
 import java.util.Date;
@@ -56,19 +55,19 @@ public class MongoEventStore implements IEventStore {
 
     private final String commandIndexName;
 
-    private MongoClient mongoClient;
+    private final MongoClient mongoClient;
 
-    private MongoConfiguration mongoConfiguration;
+    private final MongoConfiguration mongoConfiguration;
 
-    @Autowired
-    private IEventSerializer eventSerializer;
+    private final IEventSerializer eventSerializer;
 
-    public MongoEventStore(MongoClient mongoClient) {
-        this(mongoClient, new MongoConfiguration());
+    public MongoEventStore(MongoClient mongoClient, IEventSerializer eventSerializer) {
+        this(mongoClient, new MongoConfiguration(), eventSerializer);
     }
 
-    public MongoEventStore(MongoClient mongoClient, MongoConfiguration mongoConfiguration) {
+    public MongoEventStore(MongoClient mongoClient, MongoConfiguration mongoConfiguration, IEventSerializer eventSerializer) {
         this.mongoClient = mongoClient;
+        this.eventSerializer = eventSerializer;
         this.mongoConfiguration = mongoConfiguration;
         this.duplicateCode = mongoConfiguration.getDuplicateCode();
         this.versionIndexName = mongoConfiguration.getEventTableVersionUniqueIndexName();
@@ -179,7 +178,7 @@ public class MongoEventStore implements IEventStore {
                 return appendResult;
             }
             logger.error("Batch append event has unknown exception.", throwable);
-            throw new ENodeRuntimeException(throwable);
+            throw new EnodeRuntimeException(throwable);
         });
     }
 
@@ -312,7 +311,7 @@ public class MongoEventStore implements IEventStore {
                     throw new IORuntimeException(throwable);
                 }
                 logger.error("Failed to query aggregate events async, aggregateRootId: {}, aggregateRootType: {}", aggregateRootId, aggregateRootTypeName, throwable);
-                throw new ENodeRuntimeException(throwable);
+                throw new EnodeRuntimeException(throwable);
             });
         }, "QueryAggregateEventsAsync");
     }
@@ -362,7 +361,7 @@ public class MongoEventStore implements IEventStore {
                     throw new IORuntimeException(throwable);
                 }
                 logger.error("Find event by version has unknown exception, aggregateRootId: {}, version: {}", aggregateRootId, version, throwable);
-                throw new ENodeRuntimeException(throwable);
+                throw new EnodeRuntimeException(throwable);
             });
         }, "FindEventByVersionAsync");
 
@@ -412,7 +411,7 @@ public class MongoEventStore implements IEventStore {
                     throw new IORuntimeException(throwable);
                 }
                 logger.error("Find event by commandId has unknown exception, aggregateRootId: {}, commandId: {}", aggregateRootId, commandId, throwable);
-                throw new ENodeRuntimeException(throwable);
+                throw new EnodeRuntimeException(throwable);
             });
         }, "FindEventByCommandIdAsync");
     }

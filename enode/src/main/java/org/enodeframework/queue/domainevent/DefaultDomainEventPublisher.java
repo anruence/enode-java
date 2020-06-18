@@ -5,43 +5,28 @@ import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.messaging.IMessagePublisher;
+import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.QueueMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class AbstractDomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
+import java.util.concurrent.CompletableFuture;
 
-    @Autowired
-    protected IEventSerializer eventSerializer;
+public class DefaultDomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
 
-    private String topic;
+    private final IEventSerializer eventSerializer;
 
-    public String getTopic() {
-        return topic;
-    }
+    private final ISendMessageService producer;
 
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
+    private final String topic;
 
-    public void setEventSerializer(IEventSerializer eventSerializer) {
+    public DefaultDomainEventPublisher(String topic, IEventSerializer eventSerializer, ISendMessageService producer) {
         this.eventSerializer = eventSerializer;
+        this.producer = producer;
+        this.topic = topic;
     }
 
     protected QueueMessage createDomainEventStreamMessage(DomainEventStreamMessage eventStream) {
         Ensure.notNull(eventStream.getAggregateRootId(), "aggregateRootId");
         Ensure.notNull(topic, "topic");
-        EventStreamMessage eventMessage = createEventMessage(eventStream);
-        String data = JsonTool.serialize(eventMessage);
-        String routeKey = eventMessage.getAggregateRootId();
-        QueueMessage queueMessage = new QueueMessage();
-        queueMessage.setTopic(topic);
-        queueMessage.setBody(data);
-        queueMessage.setRouteKey(routeKey);
-        queueMessage.setKey(eventMessage.getId());
-        return queueMessage;
-    }
-
-    private EventStreamMessage createEventMessage(DomainEventStreamMessage eventStream) {
         EventStreamMessage message = new EventStreamMessage();
         message.setId(eventStream.getId());
         message.setCommandId(eventStream.getCommandId());
@@ -51,6 +36,18 @@ public abstract class AbstractDomainEventPublisher implements IMessagePublisher<
         message.setVersion(eventStream.getVersion());
         message.setEvents(eventSerializer.serialize(eventStream.getEvents()));
         message.setItems(eventStream.getItems());
-        return message;
+        String data = JsonTool.serialize(message);
+        String routeKey = message.getAggregateRootId();
+        QueueMessage queueMessage = new QueueMessage();
+        queueMessage.setTopic(topic);
+        queueMessage.setBody(data);
+        queueMessage.setRouteKey(routeKey);
+        queueMessage.setKey(message.getId());
+        return queueMessage;
+    }
+
+    @Override
+    public CompletableFuture<Void> publishAsync(DomainEventStreamMessage message) {
+        return producer.sendMessageAsync(createDomainEventStreamMessage(message));
     }
 }

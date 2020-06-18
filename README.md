@@ -178,8 +178,8 @@ public class EventAppConfig {
     private CommandResultProcessor commandResultProcessor;
 
     @Bean(initMethod = "init")
-    public ENodeBootstrap eNodeBootstrap() {
-        ENodeBootstrap bootstrap = new ENodeBootstrap();
+    public EnodeBootstrap eNodeBootstrap() {
+        EnodeBootstrap bootstrap = new EnodeBootstrap();
         bootstrap.setScanPackages(Lists.newArrayList("org.enodeframework.samples"));
         return bootstrap;
     }

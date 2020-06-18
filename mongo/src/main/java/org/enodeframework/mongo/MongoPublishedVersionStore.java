@@ -8,7 +8,7 @@ import com.mongodb.client.result.UpdateResult;
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.eventing.IPublishedVersionStore;
 import org.reactivestreams.Subscriber;
@@ -24,11 +24,16 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class MongoPublishedVersionStore implements IPublishedVersionStore {
+
     private static final Logger logger = LoggerFactory.getLogger(MongoPublishedVersionStore.class);
-    private MongoClient mongoClient;
-    private int duplicateCode;
-    private String uniqueIndexName;
-    private MongoConfiguration configuration;
+
+    private final MongoClient mongoClient;
+
+    private final int duplicateCode;
+
+    private final String uniqueIndexName;
+
+    private final MongoConfiguration configuration;
 
     public MongoPublishedVersionStore(MongoClient mongoClient) {
         this(mongoClient, new MongoConfiguration());
@@ -61,7 +66,7 @@ public class MongoPublishedVersionStore implements IPublishedVersionStore {
 
                 @Override
                 public void onNext(InsertOneResult x) {
-
+                    future.complete(x.wasAcknowledged() ? 1 : 0);
                 }
 
                 @Override
@@ -120,7 +125,7 @@ public class MongoPublishedVersionStore implements IPublishedVersionStore {
                 throw new IORuntimeException(throwable);
             }
             logger.error("Insert or update aggregate published version has unknown exception.", throwable);
-            throw new ENodeRuntimeException(throwable);
+            throw new EnodeRuntimeException(throwable);
 
         });
     }
@@ -163,7 +168,7 @@ public class MongoPublishedVersionStore implements IPublishedVersionStore {
                 throw new IORuntimeException(throwable);
             }
             logger.error("Get aggregate published version has unknown exception.", throwable);
-            throw new ENodeRuntimeException(throwable);
+            throw new EnodeRuntimeException(throwable);
         });
     }
 }

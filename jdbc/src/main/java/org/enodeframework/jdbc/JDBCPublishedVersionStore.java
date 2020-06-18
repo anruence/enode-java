@@ -4,7 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.eventing.IPublishedVersionStore;
@@ -87,7 +87,7 @@ public class JDBCPublishedVersionStore extends AbstractVerticle implements IPubl
                 throw new IORuntimeException(throwable);
             }
             logger.error("Insert or update aggregate published version has unknown exception.", throwable);
-            throw new ENodeRuntimeException(throwable);
+            throw new EnodeRuntimeException(throwable);
 
         });
     }
@@ -117,7 +117,7 @@ public class JDBCPublishedVersionStore extends AbstractVerticle implements IPubl
                 throw new IORuntimeException(throwable);
             }
             logger.error("Get aggregate published version has unknown exception.", throwable);
-            throw new ENodeRuntimeException(throwable);
+            throw new EnodeRuntimeException(throwable);
         });
     }
 }

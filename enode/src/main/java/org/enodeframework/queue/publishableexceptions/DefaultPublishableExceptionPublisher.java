@@ -4,20 +4,22 @@ import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.messaging.IMessagePublisher;
+import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.QueueMessage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
-public abstract class AbstractPublishableExceptionPublisher implements IMessagePublisher<IDomainException> {
-    private String topic;
+public class DefaultPublishableExceptionPublisher implements IMessagePublisher<IDomainException> {
 
-    public String getTopic() {
-        return topic;
-    }
+    private final String topic;
 
-    public void setTopic(String topic) {
+    private final ISendMessageService producer;
+
+    public DefaultPublishableExceptionPublisher(String topic, ISendMessageService producer) {
         this.topic = topic;
+        this.producer = producer;
     }
 
     protected QueueMessage createExceptionMessage(IDomainException exception) {
@@ -38,5 +40,10 @@ public abstract class AbstractPublishableExceptionPublisher implements IMessageP
         queueMessage.setRouteKey(routeKey);
         queueMessage.setKey(exceptionMessage.getUniqueId());
         return queueMessage;
+    }
+
+    @Override
+    public CompletableFuture<Void> publishAsync(IDomainException message) {
+        return producer.sendMessageAsync(createExceptionMessage(message));
     }
 }

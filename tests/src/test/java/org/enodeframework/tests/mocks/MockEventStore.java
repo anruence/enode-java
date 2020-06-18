@@ -1,6 +1,6 @@
 package org.enodeframework.tests.mocks;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.EventAppendResult;
@@ -37,7 +37,7 @@ public class MockEventStore implements IEventStore {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
-                throw new ENodeRuntimeException("BatchAppendAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("BatchAppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("BatchAppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
@@ -51,7 +51,7 @@ public class MockEventStore implements IEventStore {
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
-                throw new ENodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
@@ -67,6 +67,6 @@ public class MockEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
-        throw new ENodeRuntimeException();
+        throw new EnodeRuntimeException();
     }
 }

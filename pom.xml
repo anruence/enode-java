@@ -8,6 +8,7 @@
     <version>${revision}</version>
     <modules>
         <module>enode</module>
+        <module>spring</module>
         <module>bom</module>
         <module>jdbc</module>
         <module>mysql</module>

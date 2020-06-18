@@ -1,6 +1,6 @@
 package org.enodeframework.common.io;
 
-import org.enodeframework.common.exception.ENodeInterruptException;
+import org.enodeframework.common.exception.EnodeInterruptException;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -16,7 +16,7 @@ public class Task {
         try {
             latch.await();
         } catch (InterruptedException e) {
-            throw new ENodeInterruptException(e);
+            throw new EnodeInterruptException(e);
         }
     }
 
@@ -28,7 +28,7 @@ public class Task {
         try {
             Thread.sleep(sleepMilliseconds);
         } catch (InterruptedException e) {
-            throw new ENodeInterruptException(e);
+            throw new EnodeInterruptException(e);
         }
     }
 }

@@ -1,13 +1,12 @@
 package org.enodeframework.commanding.impl;
 
-import org.enodeframework.ObjectContainer;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandContext;
 import org.enodeframework.commanding.ICommandHandlerProvider;
 import org.enodeframework.commanding.ICommandHandlerProxy;
 import org.enodeframework.common.container.IObjectContainer;
+import org.enodeframework.common.container.ObjectContainer;
 import org.enodeframework.infrastructure.impl.AbstractHandlerProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Method;
 
@@ -50,6 +49,6 @@ public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class
 
     @Override
     protected IObjectContainer getObjectContainer() {
-        return ObjectContainer.container;
+        return ObjectContainer.INSTANCE;
     }
 }

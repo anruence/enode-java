@@ -1,6 +1,6 @@
 package org.enodeframework.tests.mocks;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
@@ -34,7 +34,7 @@ public class MockPublishedVersionStore implements IPublishedVersionStore {
         if (_currentUpdateFailedCount < _expectUpdateFailedCount) {
             _currentUpdateFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
-                throw new ENodeRuntimeException("UpdatePublishedVersionAsyncUnKnownException" + _currentUpdateFailedCount);
+                throw new EnodeRuntimeException("UpdatePublishedVersionAsyncUnKnownException" + _currentUpdateFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("UpdatePublishedVersionAsyncIOException" + _currentUpdateFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {
@@ -48,7 +48,7 @@ public class MockPublishedVersionStore implements IPublishedVersionStore {
         if (_currentGetFailedCount < _expectGetFailedCount) {
             _currentGetFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
-                throw new ENodeRuntimeException("GetPublishedVersionAsyncUnKnownException" + _currentGetFailedCount);
+                throw new EnodeRuntimeException("GetPublishedVersionAsyncUnKnownException" + _currentGetFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("GetPublishedVersionAsyncIOException" + _currentGetFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {

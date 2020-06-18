@@ -1,11 +1,9 @@
 package org.enodeframework.commanding.impl;
 
-import org.enodeframework.ObjectContainer;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandContext;
 import org.enodeframework.commanding.ICommandHandlerProxy;
-import org.enodeframework.common.container.IObjectContainer;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.enodeframework.common.container.ObjectContainer;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
@@ -41,7 +39,7 @@ public class CommandHandlerProxy implements ICommandHandlerProxy {
         if (commandHandler != null) {
             return commandHandler;
         }
-        commandHandler = ObjectContainer.container.resolve(handlerType);
+        commandHandler = ObjectContainer.INSTANCE.resolve(handlerType);
         return commandHandler;
     }
 

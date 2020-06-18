@@ -10,25 +10,24 @@ import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class AbstractPublishableExceptionListener implements IMessageHandler {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractPublishableExceptionListener.class);
-    @Autowired
-    protected ITypeNameProvider typeNameProvider;
+public class DefaultPublishableExceptionListener implements IMessageHandler {
 
-    @Autowired
-    private IMessageDispatcher messageDispatcher;
+    private static final Logger logger = LoggerFactory.getLogger(DefaultPublishableExceptionListener.class);
 
-    public AbstractPublishableExceptionListener setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+    private final ITypeNameProvider typeNameProvider;
+
+    private final IMessageDispatcher messageDispatcher;
+
+    public DefaultPublishableExceptionListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher) {
         this.typeNameProvider = typeNameProvider;
-        return this;
+        this.messageDispatcher = messageDispatcher;
     }
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
         PublishableExceptionMessage exceptionMessage = JsonTool.deserialize(queueMessage.getBody(), PublishableExceptionMessage.class);
-        Class exceptionType = typeNameProvider.getType(exceptionMessage.getExceptionType());
+        Class<?> exceptionType = typeNameProvider.getType(exceptionMessage.getExceptionType());
         IDomainException exception;
         try {
             exception = (IDomainException) exceptionType.getDeclaredConstructor().newInstance();
@@ -40,7 +39,7 @@ public abstract class AbstractPublishableExceptionListener implements IMessageHa
         exception.setItems(exceptionMessage.getItems());
         exception.restoreFrom(exceptionMessage.getSerializableInfo());
         if (logger.isDebugEnabled()) {
-            logger.debug("ENode exception message received, messageId: {}", exceptionMessage.getUniqueId());
+            logger.debug("Enode exception message received, messageId: {}", exceptionMessage.getUniqueId());
         }
         messageDispatcher.dispatchMessageAsync(exception).thenAccept(x -> {
             context.onMessageHandled(queueMessage);

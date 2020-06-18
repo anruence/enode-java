@@ -1,7 +1,7 @@
 package org.enodeframework.messaging.impl;
 
-import org.enodeframework.ObjectContainer;
 import org.enodeframework.common.container.IObjectContainer;
+import org.enodeframework.common.container.ObjectContainer;
 import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.infrastructure.impl.AbstractHandlerProvider;
 import org.enodeframework.infrastructure.impl.ManyType;
@@ -53,7 +53,7 @@ public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<Ma
 
     @Override
     protected IObjectContainer getObjectContainer() {
-        return ObjectContainer.container;
+        return ObjectContainer.INSTANCE;
     }
 
 }

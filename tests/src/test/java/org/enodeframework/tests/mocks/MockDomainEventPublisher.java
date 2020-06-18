@@ -1,6 +1,6 @@
 package org.enodeframework.tests.mocks;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.messaging.IMessagePublisher;
@@ -28,7 +28,7 @@ public class MockDomainEventPublisher implements IMessagePublisher<DomainEventSt
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
-                throw new ENodeRuntimeException("PublishDomainEventStreamMessageAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("PublishDomainEventStreamMessageAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("PublishDomainEventStreamMessageAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {

@@ -4,16 +4,15 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.enodeframework.kafka.EnodeKafkaAutoConfiguration;
 import org.enodeframework.kafka.KafkaApplicationMessageListener;
-import org.enodeframework.kafka.KafkaApplicationMessagePublisher;
 import org.enodeframework.kafka.KafkaCommandListener;
-import org.enodeframework.kafka.KafkaCommandService;
 import org.enodeframework.kafka.KafkaDomainEventListener;
-import org.enodeframework.kafka.KafkaDomainEventPublisher;
 import org.enodeframework.kafka.KafkaPublishableExceptionListener;
-import org.enodeframework.kafka.KafkaPublishableExceptionPublisher;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -25,16 +24,10 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import java.util.HashMap;
 import java.util.Map;
 
-@ConditionalOnProperty(prefix = "spring.enode.mq", name = "kafka")
+@ConditionalOnProperty(prefix = "spring.enode", name = "mq", havingValue = "kafka")
+@Import(EnodeKafkaAutoConfiguration.class)
+@Configuration
 public class KafkaConfig {
-    @Bean
-    public KafkaCommandService kafkaCommandService(KafkaTemplate kafkaTemplate) {
-        KafkaCommandService kafkaCommandService = new KafkaCommandService();
-        kafkaCommandService.setProducer(kafkaTemplate);
-        kafkaCommandService.setTopic(Constants.COMMAND_TOPIC);
-        return kafkaCommandService;
-    }
-
     /**
      * 根据consumerProps填写的参数创建消费者工厂
      */
@@ -70,26 +63,6 @@ public class KafkaConfig {
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
-    }
-
-    @Bean
-    public KafkaPublishableExceptionListener publishableExceptionListener() {
-        return new KafkaPublishableExceptionListener();
-    }
-
-    @Bean
-    public KafkaApplicationMessageListener applicationMessageListener() {
-        return new KafkaApplicationMessageListener();
-    }
-
-    @Bean
-    public KafkaDomainEventListener domainEventListener() {
-        return new KafkaDomainEventListener();
-    }
-
-    @Bean
-    public KafkaCommandListener commandListener() {
-        return new KafkaCommandListener();
     }
 
     @Bean
@@ -129,29 +102,5 @@ public class KafkaConfig {
         properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory, properties);
-    }
-
-    @Bean
-    public KafkaApplicationMessagePublisher kafkaApplicationMessagePublisher(KafkaTemplate<String, String> kafkaTemplate) {
-        KafkaApplicationMessagePublisher applicationMessagePublisher = new KafkaApplicationMessagePublisher();
-        applicationMessagePublisher.setProducer(kafkaTemplate);
-        applicationMessagePublisher.setTopic(Constants.APPLICATION_TOPIC);
-        return applicationMessagePublisher;
-    }
-
-    @Bean
-    public KafkaPublishableExceptionPublisher kafkaPublishableExceptionPublisher(KafkaTemplate<String, String> kafkaTemplate) {
-        KafkaPublishableExceptionPublisher exceptionPublisher = new KafkaPublishableExceptionPublisher();
-        exceptionPublisher.setProducer(kafkaTemplate);
-        exceptionPublisher.setTopic(Constants.EXCEPTION_TOPIC);
-        return exceptionPublisher;
-    }
-
-    @Bean
-    public KafkaDomainEventPublisher kafkaDomainEventPublisher(KafkaTemplate<String, String> kafkaTemplate) {
-        KafkaDomainEventPublisher domainEventPublisher = new KafkaDomainEventPublisher();
-        domainEventPublisher.setProducer(kafkaTemplate);
-        domainEventPublisher.setTopic(Constants.EVENT_TOPIC);
-        return domainEventPublisher;
     }
 }

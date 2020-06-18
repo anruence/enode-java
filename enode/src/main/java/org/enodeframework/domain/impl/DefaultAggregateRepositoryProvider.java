@@ -1,6 +1,6 @@
 package org.enodeframework.domain.impl;
 
-import org.enodeframework.ObjectContainer;
+import org.enodeframework.common.container.ObjectContainer;
 import org.enodeframework.domain.IAggregateRepository;
 import org.enodeframework.domain.IAggregateRepositoryProvider;
 import org.enodeframework.domain.IAggregateRepositoryProxy;
@@ -44,7 +44,7 @@ public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryP
             if (!IAggregateRepository.class.equals(superGenericInterfaceType.getRawType())) {
                 return;
             }
-            IAggregateRepository resolve = (IAggregateRepository) ObjectContainer.container.resolve(aggregateRepositoryType);
+            IAggregateRepository resolve = (IAggregateRepository) ObjectContainer.INSTANCE.resolve(aggregateRepositoryType);
             AggregateRepositoryProxy aggregateRepositoryProxy = new AggregateRepositoryProxy(resolve);
             repositoryDict.put((Class) superGenericInterfaceType.getActualTypeArguments()[0], aggregateRepositoryProxy);
         });

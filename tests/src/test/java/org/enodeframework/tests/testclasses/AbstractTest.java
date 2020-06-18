@@ -1,6 +1,5 @@
 package org.enodeframework.tests.testclasses;
 
-import org.enodeframework.ENodeAutoConfiguration;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.domain.IMemoryCache;
@@ -12,7 +11,6 @@ import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.tests.App;
 import org.enodeframework.tests.EnodeExtensionConfig;
-import org.enodeframework.tests.KafkaConfig;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,7 +19,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = App.class)
-@ContextConfiguration(classes = {ENodeAutoConfiguration.class, KafkaConfig.class, EnodeExtensionConfig.class})
+@ContextConfiguration(classes = {EnodeExtensionConfig.class})
 public abstract class AbstractTest {
     @Autowired
     protected ICommandService commandService;

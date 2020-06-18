@@ -1,6 +1,6 @@
 package org.enodeframework.tests.mocks;
 
-import org.enodeframework.common.exception.ENodeRuntimeException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
@@ -29,7 +29,7 @@ public class MockApplicationMessagePublisher implements IMessagePublisher<IAppli
         if (_currentFailedCount < _expectFailedCount) {
             _currentFailedCount++;
             if (_failedType == FailedType.UnKnownException) {
-                throw new ENodeRuntimeException("PublishApplicationMessageAsyncUnKnownException" + _currentFailedCount);
+                throw new EnodeRuntimeException("PublishApplicationMessageAsyncUnKnownException" + _currentFailedCount);
             } else if (_failedType == FailedType.IOException) {
                 throw new IORuntimeException("PublishApplicationMessageAsyncIOException" + _currentFailedCount);
             } else if (_failedType == FailedType.TaskIOException) {

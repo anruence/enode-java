@@ -28,10 +28,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author anruence@gmail.com
  */
-public class CommandResultProcessor extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger(CommandResultProcessor.class);
+public class DefaultCommandResultProcessor extends AbstractVerticle implements ICommandResultProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultCommandResultProcessor.class);
     private InetSocketAddress bindAddress;
-    private int port = SysProperties.PORT;
+    private final int port;
     private int completionSourceTimeout = SysProperties.COMPLETION_SOURCE_TIMEOUT;
     private NetServer netServer;
     private Cache<String, CommandTaskCompletionSource> commandTaskDict;
@@ -41,10 +41,11 @@ public class CommandResultProcessor extends AbstractVerticle {
     private Worker domainEventHandledMessageWorker;
     private boolean started;
 
-    public CommandResultProcessor() {
+    public DefaultCommandResultProcessor() {
+        this(SysProperties.PORT);
     }
 
-    public CommandResultProcessor(int port) {
+    public DefaultCommandResultProcessor(int port) {
         this.port = port;
     }
 
@@ -81,6 +82,7 @@ public class CommandResultProcessor extends AbstractVerticle {
         });
     }
 
+    @Override
     public void registerProcessingCommand(ICommand command, CommandReturnType commandReturnType, CompletableFuture<CommandResult> taskCompletionSource) {
         if (commandTaskDict.asMap().containsKey(command.getId())) {
             throw new DuplicateRegisterException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.getId()));
@@ -106,6 +108,7 @@ public class CommandResultProcessor extends AbstractVerticle {
         netServer.close();
     }
 
+    @Override
     public InetSocketAddress getBindAddress() {
         return bindAddress;
     }
@@ -170,6 +173,7 @@ public class CommandResultProcessor extends AbstractVerticle {
         }
     }
 
+    @Override
     public void processFailedSendingCommand(ICommand command) {
         CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().remove(command.getId());
         if (commandTaskCompletionSource != null) {

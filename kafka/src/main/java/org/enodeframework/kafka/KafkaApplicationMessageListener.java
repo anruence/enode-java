@@ -1,15 +1,22 @@
 package org.enodeframework.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;
-import org.enodeframework.queue.applicationmessage.AbstractApplicationMessageListener;
 import org.springframework.kafka.listener.AcknowledgingMessageListener;
 import org.springframework.kafka.support.Acknowledgment;
 
 /**
  * @author anruence@gmail.com
  */
-public class KafkaApplicationMessageListener extends AbstractApplicationMessageListener implements AcknowledgingMessageListener {
+public class KafkaApplicationMessageListener implements AcknowledgingMessageListener<String, String> {
+
+    private final IMessageHandler applicationMessageListener;
+
+    public KafkaApplicationMessageListener(IMessageHandler applicationMessageListener) {
+        this.applicationMessageListener = applicationMessageListener;
+    }
+
     /**
      * Invoked with data from kafka.
      *
@@ -17,21 +24,12 @@ public class KafkaApplicationMessageListener extends AbstractApplicationMessageL
      * @param acknowledgment the acknowledgment.
      */
     @Override
-    public void onMessage(ConsumerRecord data, Acknowledgment acknowledgment) {
+    public void onMessage(ConsumerRecord<String, String> data, Acknowledgment acknowledgment) {
         QueueMessage queueMessage = KafkaTool.covertToQueueMessage(data);
-        handle(queueMessage, context -> {
+        applicationMessageListener.handle(queueMessage, context -> {
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
             }
         });
-    }
-
-    /**
-     * Invoked with data from kafka.
-     *
-     * @param data the data to be processed.
-     */
-    @Override
-    public void onMessage(Object data) {
     }
 }

@@ -5,7 +5,6 @@ import org.enodeframework.common.serializing.JsonTool;
 import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.infrastructure.ITypeNameProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -16,12 +15,11 @@ import java.util.Map;
  * @author anruence@gmail.com
  */
 public class DefaultEventSerializer implements IEventSerializer {
-    @Autowired
-    private ITypeNameProvider typeNameProvider;
 
-    public DefaultEventSerializer setTypeNameProvider(ITypeNameProvider typeNameProvider) {
+    private final ITypeNameProvider typeNameProvider;
+
+    public DefaultEventSerializer(ITypeNameProvider typeNameProvider) {
         this.typeNameProvider = typeNameProvider;
-        return this;
     }
 
     @Override

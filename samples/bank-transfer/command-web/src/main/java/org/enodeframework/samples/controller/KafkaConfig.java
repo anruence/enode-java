@@ -2,7 +2,6 @@ package org.enodeframework.samples.controller;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.enodeframework.kafka.KafkaCommandService;
 import org.enodeframework.samples.QueueProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -13,13 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class KafkaConfig {
-    @Bean
-    public KafkaCommandService kafkaCommandService(KafkaTemplate producer) {
-        KafkaCommandService kafkaCommandService = new KafkaCommandService();
-        kafkaCommandService.setProducer(producer);
-        kafkaCommandService.setTopic(QueueProperties.COMMAND_TOPIC);
-        return kafkaCommandService;
-    }
 
     /**
      * 根据senderProps的参数创建生产者工厂

@@ -4,10 +4,7 @@ import com.mongodb.reactivestreams.client.MongoClient;
 import com.mongodb.reactivestreams.client.MongoClients;
 import com.zaxxer.hikari.HikariDataSource;
 import io.vertx.core.Vertx;
-import org.enodeframework.ENodeBootstrap;
-import org.enodeframework.commanding.impl.DefaultCommandProcessor;
-import org.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
-import org.enodeframework.eventing.impl.DefaultEventCommittingService;
+import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.eventing.impl.InMemoryEventStore;
 import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
 import org.enodeframework.jdbc.DBConfiguration;
@@ -17,89 +14,63 @@ import org.enodeframework.mysql.MysqlEventStore;
 import org.enodeframework.mysql.MysqlPublishedVersionStore;
 import org.enodeframework.pg.PgEventStore;
 import org.enodeframework.pg.PgPublishedVersionStore;
-import org.enodeframework.queue.command.CommandResultProcessor;
+import org.enodeframework.queue.DefaultSendReplyService;
+import org.enodeframework.queue.command.DefaultCommandResultProcessor;
 import org.enodeframework.tidb.TiDBEventStore;
 import org.enodeframework.tidb.TiDBPublishedVersionStore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan(value = "org.enodeframework")
 public class EnodeExtensionConfig {
 
     private final Vertx vertx = Vertx.vertx();
 
-//    @PostConstruct
-//    public void deployVerticle() {
-//        vertx = Vertx.vertx();
-//        vertx.deployVerticle(commandResultProcessor, res -> {
-//        });
-//        vertx.deployVerticle(eventStore, res -> {
-//        });
-//        vertx.deployVerticle(publishedVersionStore, res -> {
-//        });
-//    }
-
     @Bean
-    public CommandResultProcessor commandResultProcessor() {
-        CommandResultProcessor processor = new CommandResultProcessor();
+    public DefaultCommandResultProcessor commandResultProcessor() {
+        DefaultCommandResultProcessor processor = new DefaultCommandResultProcessor();
         vertx.deployVerticle(processor, res -> {
         });
         return processor;
     }
 
-    @Bean(initMethod = "init")
-    public ENodeBootstrap eNodeBootstrap() {
-        ENodeBootstrap bootstrap = new ENodeBootstrap("org.enodeframework.tests");
-        return bootstrap;
+    @Bean
+    public DefaultSendReplyService sendReplyService() {
+        DefaultSendReplyService sendReplyService = new DefaultSendReplyService();
+        vertx.deployVerticle(sendReplyService, res -> {
+        });
+        return sendReplyService;
     }
 
     @Bean
-    public DefaultProcessingCommandHandler defaultProcessingCommandHandler() {
-        return new DefaultProcessingCommandHandler();
-    }
-
-    @Bean
-    public DefaultEventCommittingService defaultEventService() {
-        return new DefaultEventCommittingService();
-    }
-
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public DefaultCommandProcessor defaultCommandProcessor() {
-        return new DefaultCommandProcessor();
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "mongo")
-    public MongoEventStore mongoEventStore(MongoClient mongoClient) {
-        MongoEventStore eventStore = new MongoEventStore(mongoClient);
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mongo")
+    public MongoEventStore mongoEventStore(IEventSerializer eventSerializer, MongoClient mongoClient) {
+        MongoEventStore eventStore = new MongoEventStore(mongoClient, eventSerializer);
         return eventStore;
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "mongo")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mongo")
     public MongoPublishedVersionStore mongoPublishedVersionStore(MongoClient mongoClient) {
         return new MongoPublishedVersionStore(mongoClient);
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "mongo")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mongo")
     public MongoClient mongoClient() {
         return MongoClients.create();
     }
 
-
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "mysql")
-    public MysqlEventStore mysqlEventStore(HikariDataSource mysqlDataSource) {
-        MysqlEventStore eventStore = new MysqlEventStore(mysqlDataSource, DBConfiguration.mysql());
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mysql")
+    public MysqlEventStore mysqlEventStore(IEventSerializer eventSerializer, HikariDataSource mysqlDataSource) {
+        MysqlEventStore eventStore = new MysqlEventStore(mysqlDataSource, DBConfiguration.mysql(), eventSerializer);
         vertx.deployVerticle(eventStore, res -> {
         });
         return eventStore;
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "mysql")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mysql")
     public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource mysqlDataSource) {
         MysqlPublishedVersionStore publishedVersionStore = new MysqlPublishedVersionStore(mysqlDataSource, DBConfiguration.mysql());
         vertx.deployVerticle(publishedVersionStore, res -> {
@@ -108,15 +79,15 @@ public class EnodeExtensionConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "pg")
-    public PgEventStore pgEventStore(HikariDataSource pgDataSource) {
-        PgEventStore eventStore = new PgEventStore(pgDataSource, DBConfiguration.postgresql());
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "pg")
+    public PgEventStore pgEventStore(IEventSerializer eventSerializer, HikariDataSource pgDataSource) {
+        PgEventStore eventStore = new PgEventStore(pgDataSource, DBConfiguration.postgresql(), eventSerializer);
         vertx.deployVerticle(eventStore, res -> {
         });
         return eventStore;
     }
 
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "pg")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "pg")
     @Bean
     public PgPublishedVersionStore pgPublishedVersionStore(HikariDataSource pgDataSource) {
         PgPublishedVersionStore versionStore = new PgPublishedVersionStore(pgDataSource, DBConfiguration.postgresql());
@@ -126,16 +97,16 @@ public class EnodeExtensionConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "tidb")
-    public TiDBEventStore tiDBEventStore(HikariDataSource tidbDataSource) {
-        TiDBEventStore eventStore = new TiDBEventStore(tidbDataSource, DBConfiguration.mysql());
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "tidb")
+    public TiDBEventStore tiDBEventStore(IEventSerializer eventSerializer, HikariDataSource tidbDataSource) {
+        TiDBEventStore eventStore = new TiDBEventStore(tidbDataSource, DBConfiguration.mysql(), eventSerializer);
         vertx.deployVerticle(eventStore, res -> {
         });
         return eventStore;
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "tidb")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "tidb")
     public TiDBPublishedVersionStore tidbPublishedVersionStore(HikariDataSource tidbDataSource) {
         TiDBPublishedVersionStore publishedVersionStore = new TiDBPublishedVersionStore(tidbDataSource, DBConfiguration.mysql());
         vertx.deployVerticle(publishedVersionStore, res -> {
@@ -144,7 +115,7 @@ public class EnodeExtensionConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "tidb")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "tidb")
     public HikariDataSource tidbDataSource() {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl("jdbc:mysql://127.0.0.1:4000/enode?");
@@ -155,7 +126,7 @@ public class EnodeExtensionConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "mysql")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mysql")
     public HikariDataSource mysqlDataSource() {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/enode?");
@@ -166,7 +137,7 @@ public class EnodeExtensionConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "pg")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "pg")
     public HikariDataSource pgDataSource() {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl("jdbc:postgresql://localhost:5432/enode");
@@ -177,15 +148,14 @@ public class EnodeExtensionConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "memory")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "memory")
     public InMemoryEventStore inMemoryEventStore() {
         return new InMemoryEventStore();
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.enode.eventstore", name = "memory")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "memory")
     public InMemoryPublishedVersionStore inMemoryPublishedVersionStore() {
         return new InMemoryPublishedVersionStore();
     }
-
 }

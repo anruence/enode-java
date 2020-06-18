@@ -1,5 +1,6 @@
-package org.enodeframework.common.container;
+package org.enodeframework.spring;
 
+import org.enodeframework.common.container.IObjectContainer;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
