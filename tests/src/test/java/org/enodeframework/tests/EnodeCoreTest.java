@@ -1,4 +1,4 @@
-package org.enodeframework.tests.testclasses;
+package org.enodeframework.tests;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -46,6 +46,7 @@ import org.enodeframework.tests.eventhandlers.Handler1232;
 import org.enodeframework.tests.eventhandlers.Handler1233;
 import org.enodeframework.tests.eventhandlers.Handler2;
 import org.enodeframework.tests.eventhandlers.Handler3;
+import org.enodeframework.tests.mocks.DomainEventStreamProcessContext;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -60,9 +61,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class CommandAndEventServiceTest extends AbstractTest {
+public class EnodeCoreTest extends AbstractTest {
 
-    private static final Logger _logger = LoggerFactory.getLogger(CommandAndEventServiceTest.class);
+    private static final Logger _logger = LoggerFactory.getLogger(EnodeCoreTest.class);
 
     public static ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
 

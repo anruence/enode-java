@@ -1,10 +1,17 @@
-package org.enodeframework.kafka;
+package org.enodeframework.spring;
 
+import org.enodeframework.kafka.KafkaApplicationMessageListener;
+import org.enodeframework.kafka.KafkaCommandListener;
+import org.enodeframework.kafka.KafkaDomainEventListener;
+import org.enodeframework.kafka.KafkaPublishableExceptionListener;
+import org.enodeframework.kafka.SendKafkaMessageService;
 import org.enodeframework.queue.IMessageHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaTemplate;
 
+@ConditionalOnProperty(prefix = "spring.enode", name = "mq", havingValue = "kafka")
 public class EnodeKafkaAutoConfiguration {
 
     @Bean

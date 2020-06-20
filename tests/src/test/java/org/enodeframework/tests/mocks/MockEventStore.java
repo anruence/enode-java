@@ -67,6 +67,6 @@ public class MockEventStore implements IEventStore {
 
     @Override
     public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
-        throw new EnodeRuntimeException();
+        return _inMemoryEventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion);
     }
 }

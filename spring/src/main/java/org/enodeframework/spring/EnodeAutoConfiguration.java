@@ -1,5 +1,6 @@
 package org.enodeframework.spring;
 
+import com.mongodb.reactivestreams.client.MongoClient;
 import org.enodeframework.commanding.ICommandHandlerProvider;
 import org.enodeframework.commanding.ICommandProcessor;
 import org.enodeframework.commanding.IProcessingCommandHandler;
@@ -36,6 +37,8 @@ import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.eventing.impl.DefaultEventCommittingService;
 import org.enodeframework.eventing.impl.DefaultEventSerializer;
 import org.enodeframework.eventing.impl.DefaultProcessingEventProcessor;
+import org.enodeframework.eventing.impl.InMemoryEventStore;
+import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
 import org.enodeframework.infrastructure.IAssemblyInitializer;
 import org.enodeframework.infrastructure.ITypeNameProvider;
 import org.enodeframework.infrastructure.impl.DefaultTypeNameProvider;
@@ -52,6 +55,7 @@ import org.enodeframework.messaging.impl.DefaultTwoMessageHandlerProvider;
 import org.enodeframework.messaging.impl.MessageHandlerProxy1;
 import org.enodeframework.messaging.impl.MessageHandlerProxy2;
 import org.enodeframework.messaging.impl.MessageHandlerProxy3;
+import org.enodeframework.mongo.MongoEventStore;
 import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.ISendReplyService;
 import org.enodeframework.queue.applicationmessage.DefaultApplicationMessageListener;
@@ -67,6 +71,7 @@ import org.enodeframework.queue.publishableexceptions.DefaultPublishableExceptio
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -237,8 +242,6 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
         return new DefaultAggregateSnapshotter(aggregateRepositoryProvider);
     }
 
-
-
     @Bean
     public DefaultProcessingCommandHandler defaultProcessingCommandHandler(
             IEventStore eventStore,
@@ -246,13 +249,14 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
             ITypeNameProvider typeNameProvider,
             IEventCommittingService eventService,
             IMemoryCache memoryCache,
-            IMessagePublisher<IApplicationMessage> applicationMessagePublisher,
-            IMessagePublisher<IDomainException> exceptionPublisher) {
-        return new DefaultProcessingCommandHandler(eventStore, commandHandlerProvider, typeNameProvider, eventService, memoryCache, applicationMessagePublisher, exceptionPublisher);
+            @Qualifier(value = "applicationMessagePublisher") IMessagePublisher<IApplicationMessage> applicationMessagePublisher,
+            @Qualifier(value = "publishableExceptionPublisher") IMessagePublisher<IDomainException> publishableExceptionPublisher
+    ) {
+        return new DefaultProcessingCommandHandler(eventStore, commandHandlerProvider, typeNameProvider, eventService, memoryCache, applicationMessagePublisher, publishableExceptionPublisher);
     }
 
     @Bean
-    public DefaultEventCommittingService defaultEventService(IMemoryCache memoryCache, IEventStore eventStore, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
+    public DefaultEventCommittingService defaultEventService(IMemoryCache memoryCache, IEventStore eventStore, @Qualifier(value = "domainEventPublisher") IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
         return new DefaultEventCommittingService(memoryCache, eventStore, domainEventPublisher);
     }
 
@@ -283,21 +287,21 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
     }
 
     @Bean
-    public DefaultCommandService commandService(ICommandResultProcessor commandResultProcessor, ISendMessageService sendMessageService) {
+    public DefaultCommandService defaultCommandService(ICommandResultProcessor commandResultProcessor, ISendMessageService sendMessageService) {
         return new DefaultCommandService(commandTopic, commandResultProcessor, sendMessageService);
     }
 
-    @Bean
-    public DefaultDomainEventPublisher defaultDomainEventPublisher(IEventSerializer eventSerializer, ISendMessageService sendMessageService) {
+    @Bean(name = "domainEventPublisher")
+    public DefaultDomainEventPublisher domainEventPublisher(IEventSerializer eventSerializer, ISendMessageService sendMessageService) {
         return new DefaultDomainEventPublisher(eventTopic, eventSerializer, sendMessageService);
     }
 
-    @Bean
+    @Bean(name = "applicationMessagePublisher")
     public DefaultApplicationMessagePublisher applicationMessagePublisher(ISendMessageService sendMessageService) {
         return new DefaultApplicationMessagePublisher(eventTopic, sendMessageService);
     }
 
-    @Bean
+    @Bean(name = "publishableExceptionPublisher")
     public DefaultPublishableExceptionPublisher publishableExceptionPublisher(ISendMessageService sendMessageService) {
         return new DefaultPublishableExceptionPublisher(eventTopic, sendMessageService);
     }

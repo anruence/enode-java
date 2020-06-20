@@ -22,5 +22,35 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-rocketmq</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-kafka</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-pg</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-mongo</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-mysql</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-tidb</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -6,7 +6,7 @@ import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.tests.domain.Event1;
 import org.enodeframework.tests.domain.Event2;
 import org.enodeframework.tests.domain.Event3;
-import org.enodeframework.tests.testclasses.CommandAndEventServiceTest;
+import org.enodeframework.tests.EnodeCoreTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ public class Handler1232 {
     @Subscribe
     public void HandleAsync(Event1 evnt, Event2 evnt2, Event3 evnt3) {
         _logger.info("event1,event2,event3 handled by handler2.");
-        CommandAndEventServiceTest.HandlerTypes.computeIfAbsent(3, k -> new ArrayList<>()).add(getClass().getName());
+        EnodeCoreTest.HandlerTypes.computeIfAbsent(3, k -> new ArrayList<>()).add(getClass().getName());
 
     }
 }

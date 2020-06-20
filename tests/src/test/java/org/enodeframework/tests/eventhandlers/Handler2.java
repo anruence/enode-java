@@ -4,7 +4,7 @@ import org.enodeframework.annotation.Event;
 import org.enodeframework.annotation.Priority;
 import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.tests.domain.Event1;
-import org.enodeframework.tests.testclasses.CommandAndEventServiceTest;
+import org.enodeframework.tests.EnodeCoreTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +18,6 @@ public class Handler2 {
     @Subscribe
     public void HandleAsync(Event1 evnt) {
         logger.info("event1 handled by handler2.");
-        CommandAndEventServiceTest.HandlerTypes.computeIfAbsent(1, k -> new ArrayList<>()).add(getClass().getName());
+        EnodeCoreTest.HandlerTypes.computeIfAbsent(1, k -> new ArrayList<>()).add(getClass().getName());
     }
 }

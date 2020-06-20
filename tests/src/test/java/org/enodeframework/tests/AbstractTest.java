@@ -1,4 +1,4 @@
-package org.enodeframework.tests.testclasses;
+package org.enodeframework.tests;
 
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.domain.IDomainException;
@@ -9,17 +9,18 @@ import org.enodeframework.eventing.IProcessingEventProcessor;
 import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
-import org.enodeframework.tests.App;
-import org.enodeframework.tests.EnodeExtensionConfig;
+import org.enodeframework.tests.config.EnodeTestDataSourceConfig;
+import org.enodeframework.tests.config.TestMockConfig;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = App.class)
-@ContextConfiguration(classes = {EnodeExtensionConfig.class})
+@ContextConfiguration(classes = {EnodeTestDataSourceConfig.class})
 public abstract class AbstractTest {
     @Autowired
     protected ICommandService commandService;
@@ -30,11 +31,16 @@ public abstract class AbstractTest {
     @Autowired
     protected IPublishedVersionStore publishedVersionStore;
     @Autowired
+
+    @Qualifier(value = "domainEventPublisher")
     protected IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
     @Autowired
+    @Qualifier(value = "applicationMessagePublisher")
     protected IMessagePublisher<IApplicationMessage> applicationMessagePublisher;
     @Autowired
+    @Qualifier(value = "publishableExceptionPublisher")
     protected IMessagePublisher<IDomainException> publishableExceptionPublisher;
+
     @Autowired
     protected IProcessingEventProcessor processor;
 }

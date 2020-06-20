@@ -31,7 +31,7 @@ import java.util.Set;
  *
  * @see EnableEnode
  */
-public class EnodeBootstrapConfiguration implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
+public class EnodeBootstrapRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
     private ResourceLoader resourceLoader;
 

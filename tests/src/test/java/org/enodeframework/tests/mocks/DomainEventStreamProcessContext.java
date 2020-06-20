@@ -1,4 +1,4 @@
-package org.enodeframework.tests.testclasses;
+package org.enodeframework.tests.mocks;
 
 import org.enodeframework.common.threading.ManualResetEvent;
 import org.enodeframework.eventing.DomainEventStreamMessage;

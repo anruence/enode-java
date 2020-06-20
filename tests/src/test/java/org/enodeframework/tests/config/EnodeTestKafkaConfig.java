@@ -1,18 +1,19 @@
-package org.enodeframework.tests;
+package org.enodeframework.tests.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.enodeframework.kafka.EnodeKafkaAutoConfiguration;
 import org.enodeframework.kafka.KafkaApplicationMessageListener;
 import org.enodeframework.kafka.KafkaCommandListener;
 import org.enodeframework.kafka.KafkaDomainEventListener;
 import org.enodeframework.kafka.KafkaPublishableExceptionListener;
+import org.enodeframework.tests.mocks.MockEventStore;
+import org.enodeframework.tests.mocks.MockPublishedVersionStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -25,9 +26,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ConditionalOnProperty(prefix = "spring.enode", name = "mq", havingValue = "kafka")
-@Import(EnodeKafkaAutoConfiguration.class)
 @Configuration
-public class KafkaConfig {
+public class EnodeTestKafkaConfig {
+
+
+
+    @Value("${spring.enode.queue.command.topic}")
+    private String commandTopic;
+
+    @Value("${spring.enode.queue.event.topic}")
+    private String eventTopic;
+
+    @Value("${spring.enode.queue.application.topic}")
+    private String applicationTopic;
+
+    @Value("${spring.enode.queue.exception.topic}")
+    private String exceptionTopic;
+
     /**
      * 根据consumerProps填写的参数创建消费者工厂
      */
@@ -67,7 +82,7 @@ public class KafkaConfig {
 
     @Bean
     public KafkaMessageListenerContainer<String, String> commandListenerContainer(KafkaCommandListener commandListener, ConsumerFactory<String, String> consumerFactory) {
-        ContainerProperties properties = new ContainerProperties(Constants.COMMAND_TOPIC);
+        ContainerProperties properties = new ContainerProperties(commandTopic);
         properties.setGroupId(Constants.DEFAULT_CONSUMER_GROUP);
         properties.setMessageListener(commandListener);
         properties.setMissingTopicsFatal(false);
@@ -76,7 +91,7 @@ public class KafkaConfig {
 
     @Bean
     public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener, ConsumerFactory<String, String> consumerFactory) {
-        ContainerProperties properties = new ContainerProperties(Constants.EVENT_TOPIC);
+        ContainerProperties properties = new ContainerProperties(eventTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(domainEventListener);
         properties.setMissingTopicsFatal(false);
@@ -86,7 +101,7 @@ public class KafkaConfig {
 
     @Bean
     public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, ConsumerFactory<String, String> consumerFactory) {
-        ContainerProperties properties = new ContainerProperties(Constants.APPLICATION_TOPIC);
+        ContainerProperties properties = new ContainerProperties(applicationTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(applicationMessageListener);
         properties.setMissingTopicsFatal(false);
@@ -96,7 +111,7 @@ public class KafkaConfig {
 
     @Bean
     public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, ConsumerFactory<String, String> consumerFactory) {
-        ContainerProperties properties = new ContainerProperties(Constants.EXCEPTION_TOPIC);
+        ContainerProperties properties = new ContainerProperties(exceptionTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(publishableExceptionListener);
         properties.setMissingTopicsFatal(false);
