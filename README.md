@@ -45,6 +45,9 @@ aggregateRootType.getDeclaredConstructor().newInstance();
 - @Command
 - @Event
 - @Subscribe
+
+启动时会扫描包路径下的注解，注册成spring bean，类似@Component的作用
+
 ### 消息
 发送命令代码
 ```java
@@ -161,75 +164,175 @@ public class DepositTransactionProcessManager {
 
 ```
 ## 启动配置
+新增@EnableEnode 注解，可自动配置Bean，简化了接入方式
+
 ### enode启动配置
 ```java
-@Configuration
-public class EventAppConfig {
+@SpringBootApplication
+@EnableEnode(basePackages = "org.enodeframework.tests")
+@ComponentScan(value = "org.enodeframework")
+public class App {
+    public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
+    }
+}
+```
 
-    private Vertx vertx;
+### Spring Boot 启动配置文件
+```properties
+# enode eventstore (memory, mysql, tidb, pg, mongo)
+spring.enode.eventstore=mongo
+# enode messagequeue (kafka, rocketmq, ons)
+spring.enode.mq=kafka
+spring.enode.queue.command.topic=EnodeTestCommandTopic
+spring.enode.queue.event.topic=EnodeTestEventTopic
+spring.enode.queue.application.topic=EnodeTestApplicationMessageTopic
+spring.enode.queue.exception.topic=EnodeTestExceptionTopic
+```
 
-    @Autowired
-    private MysqlEventStore mysqlEventStore;
+### kafka listener bean 配置
+```java
 
-    @Autowired
-    private MysqlPublishedVersionStore publishedVersionStore;
+    @Value("${spring.enode.queue.command.topic}")
+    private String commandTopic;
 
-    @Autowired
-    private CommandResultProcessor commandResultProcessor;
+    @Value("${spring.enode.queue.event.topic}")
+    private String eventTopic;
 
-    @Bean(initMethod = "init")
-    public EnodeBootstrap eNodeBootstrap() {
-        EnodeBootstrap bootstrap = new EnodeBootstrap();
-        bootstrap.setScanPackages(Lists.newArrayList("org.enodeframework.samples"));
-        return bootstrap;
+    @Value("${spring.enode.queue.application.topic}")
+    private String applicationTopic;
+
+    @Value("${spring.enode.queue.exception.topic}")
+    private String exceptionTopic;
+
+    @Bean
+    public ConsumerFactory<String, String> consumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Constants.KAFKA_SERVER);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, Constants.DEFAULT_PRODUCER_GROUP);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "15000");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
-    public CommandResultProcessor commandResultProcessor() {
-        CommandResultProcessor processor = new CommandResultProcessor();
-        return processor;
+    public ProducerFactory<String, String> producerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, Constants.KAFKA_SERVER);
+        props.put(ProducerConfig.RETRIES_CONFIG, 1);
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 1024000);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean
-    public MysqlEventStore mysqlEventStore(HikariDataSource dataSource) {
-        MysqlEventStore mysqlEventStore = new MysqlEventStore(dataSource, null);
-        return mysqlEventStore;
+    public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
+        return new KafkaTemplate<>(producerFactory);
     }
 
     @Bean
-    public MysqlPublishedVersionStore mysqlPublishedVersionStore(HikariDataSource dataSource) {
-        MysqlPublishedVersionStore publishedVersionStore = new MysqlPublishedVersionStore(dataSource, null);
-        return publishedVersionStore;
+    public KafkaMessageListenerContainer<String, String> commandListenerContainer(KafkaCommandListener commandListener, ConsumerFactory<String, String> consumerFactory) {
+        ContainerProperties properties = new ContainerProperties(commandTopic);
+        properties.setGroupId(Constants.DEFAULT_CONSUMER_GROUP);
+        properties.setMessageListener(commandListener);
+        properties.setMissingTopicsFatal(false);
+        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
     }
 
+    @Bean
+    public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener, ConsumerFactory<String, String> consumerFactory) {
+        ContainerProperties properties = new ContainerProperties(eventTopic);
+        properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
+        properties.setMessageListener(domainEventListener);
+        properties.setMissingTopicsFatal(false);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
+    }
 
     @Bean
-    public HikariDataSource dataSource() {
+    public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, ConsumerFactory<String, String> consumerFactory) {
+        ContainerProperties properties = new ContainerProperties(applicationTopic);
+        properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
+        properties.setMessageListener(applicationMessageListener);
+        properties.setMissingTopicsFatal(false);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
+    }
+
+    @Bean
+    public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, ConsumerFactory<String, String> consumerFactory) {
+        ContainerProperties properties = new ContainerProperties(exceptionTopic);
+        properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
+        properties.setMessageListener(publishableExceptionListener);
+        properties.setMissingTopicsFatal(false);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
+    }
+```
+
+
+### eventstore 数据源配置，目前支持四种 （MySQL, TiDB, mongoDB, postgresql...）
+
+```java
+    @Bean
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mock")
+    public MockEventStore mockEventStore() {
+        return new MockEventStore();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mock")
+    public MockPublishedVersionStore mockPublishedVersionStore() {
+        return new MockPublishedVersionStore();
+    }
+
+    @Bean("enodeMongoClient")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mongo")
+    public MongoClient mongoClient() {
+        return MongoClients.create();
+    }
+
+    @Bean("enodeTiDBDataSource")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "tidb")
+    public HikariDataSource tidbDataSource() {
         HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(JDBC_URL);
+        dataSource.setJdbcUrl("jdbc:mysql://127.0.0.1:4000/enode?");
         dataSource.setUsername("root");
-        dataSource.setPassword("root");
+        dataSource.setPassword("");
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
     }
 
-    @PostConstruct
-    public void deployVerticle() {
-        vertx = Vertx.vertx();
-
-        vertx.deployVerticle(commandResultProcessor, res -> {
-
-        });
-        vertx.deployVerticle(mysqlEventStore, res -> {
-
-        });
-        vertx.deployVerticle(publishedVersionStore, res -> {
-
-        });
+    @Bean("enodeMysqlDataSource")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mysql")
+    public HikariDataSource mysqlDataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/enode?");
+        dataSource.setUsername("root");
+        dataSource.setPassword("abcd1234&ABCD");
+        dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
+        return dataSource;
     }
-}
+
+    @Bean("enodePgDataSource")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "pg")
+    public HikariDataSource pgDataSource() {
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl("jdbc:postgresql://localhost:5432/enode");
+        dataSource.setUsername("postgres");
+        dataSource.setPassword("mysecretpassword");
+        dataSource.setDriverClassName(org.postgresql.Driver.class.getName());
+        return dataSource;
+    }
 ```
-### 数据源选择
+
+
 #### MySQL
 需要下面两张表来存储事件
 ```mysql
