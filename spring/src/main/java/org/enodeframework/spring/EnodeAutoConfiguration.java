@@ -1,6 +1,5 @@
 package org.enodeframework.spring;
 
-import com.mongodb.reactivestreams.client.MongoClient;
 import org.enodeframework.commanding.ICommandHandlerProvider;
 import org.enodeframework.commanding.ICommandProcessor;
 import org.enodeframework.commanding.IProcessingCommandHandler;
@@ -37,8 +36,6 @@ import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.eventing.impl.DefaultEventCommittingService;
 import org.enodeframework.eventing.impl.DefaultEventSerializer;
 import org.enodeframework.eventing.impl.DefaultProcessingEventProcessor;
-import org.enodeframework.eventing.impl.InMemoryEventStore;
-import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
 import org.enodeframework.infrastructure.IAssemblyInitializer;
 import org.enodeframework.infrastructure.ITypeNameProvider;
 import org.enodeframework.infrastructure.impl.DefaultTypeNameProvider;
@@ -55,7 +52,6 @@ import org.enodeframework.messaging.impl.DefaultTwoMessageHandlerProvider;
 import org.enodeframework.messaging.impl.MessageHandlerProxy1;
 import org.enodeframework.messaging.impl.MessageHandlerProxy2;
 import org.enodeframework.messaging.impl.MessageHandlerProxy3;
-import org.enodeframework.mongo.MongoEventStore;
 import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.ISendReplyService;
 import org.enodeframework.queue.applicationmessage.DefaultApplicationMessageListener;
@@ -104,6 +100,18 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
     @Value("${spring.enode.queue.exception.topic}")
     private String exceptionTopic;
 
+    @Value("${spring.enode.queue.command.tag}")
+    private String commandTag;
+
+    @Value("${spring.enode.queue.event.tag}")
+    private String eventTag;
+
+    @Value("${spring.enode.queue.application.tag}")
+    private String applicationTag;
+
+    @Value("${spring.enode.queue.exception.tag}")
+    private String exceptionTag;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -141,7 +149,7 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
         return new ScheduleService();
     }
 
-    @Bean(name = "typeNameProvider")
+    @Bean(name = "defaultTypeNameProvider")
     public DefaultTypeNameProvider defaultTypeNameProvider() {
         return new DefaultTypeNameProvider();
     }
@@ -178,7 +186,7 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
         return new MessageHandlerProxy3();
     }
 
-    @Bean(name = "eventSerializer")
+    @Bean(name = "defaultEventSerializer")
     public DefaultEventSerializer defaultEventSerializer(ITypeNameProvider typeNameProvider) {
         return new DefaultEventSerializer(typeNameProvider);
     }
@@ -197,18 +205,18 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
         return new DefaultMessageDispatcher(typeNameProvider, messageHandlerProvider, twoMessageHandlerProvider, threeMessageHandlerProvider);
     }
 
-    @Bean(name = "repository")
+    @Bean(name = "defaultRepository")
     public DefaultRepository defaultRepository(IMemoryCache memoryCache) {
         return new DefaultRepository(memoryCache);
     }
 
-    @Bean(name = "memoryCache", initMethod = "start", destroyMethod = "stop")
+    @Bean(name = "defaultMemoryCache", initMethod = "start", destroyMethod = "stop")
     public DefaultMemoryCache defaultMemoryCache(IAggregateStorage aggregateStorage, IScheduleService scheduleService, ITypeNameProvider typeNameProvider) {
         return new DefaultMemoryCache(aggregateStorage, scheduleService, typeNameProvider);
     }
 
-    @Bean(name = "aggregateRepositoryProvider")
-    public DefaultAggregateRepositoryProvider aggregateRepositoryProvider() {
+    @Bean(name = "defaultAggregateRepositoryProvider")
+    public DefaultAggregateRepositoryProvider defaultAggregateRepositoryProvider() {
         return new DefaultAggregateRepositoryProvider();
     }
 
@@ -242,7 +250,7 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
         return new DefaultAggregateSnapshotter(aggregateRepositoryProvider);
     }
 
-    @Bean
+    @Bean(name = "defaultProcessingCommandHandler")
     public DefaultProcessingCommandHandler defaultProcessingCommandHandler(
             IEventStore eventStore,
             ICommandHandlerProvider commandHandlerProvider,
@@ -255,17 +263,17 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
         return new DefaultProcessingCommandHandler(eventStore, commandHandlerProvider, typeNameProvider, eventService, memoryCache, applicationMessagePublisher, publishableExceptionPublisher);
     }
 
-    @Bean
-    public DefaultEventCommittingService defaultEventService(IMemoryCache memoryCache, IEventStore eventStore, @Qualifier(value = "domainEventPublisher") IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
+    @Bean(name = "defaultEventCommittingService")
+    public DefaultEventCommittingService defaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, @Qualifier(value = "domainEventPublisher") IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
         return new DefaultEventCommittingService(memoryCache, eventStore, domainEventPublisher);
     }
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
+    @Bean(name = "defaultCommandProcessor", initMethod = "start", destroyMethod = "stop")
     public DefaultCommandProcessor defaultCommandProcessor(IProcessingCommandHandler processingCommandHandler, IScheduleService scheduleService) {
         return new DefaultCommandProcessor(processingCommandHandler, scheduleService);
     }
 
-    @Bean
+    @Bean(name = "defaultCommandResultProcessor")
     public DefaultCommandResultProcessor defaultCommandResultProcessor() {
         return new DefaultCommandResultProcessor();
     }
@@ -286,24 +294,24 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
         return new EventSourcingAggregateStorage(eventStore, aggregateRootFactory, aggregateSnapshotter, typeNameProvider);
     }
 
-    @Bean
+    @Bean(name = "defaultCommandService")
     public DefaultCommandService defaultCommandService(ICommandResultProcessor commandResultProcessor, ISendMessageService sendMessageService) {
-        return new DefaultCommandService(commandTopic, commandResultProcessor, sendMessageService);
+        return new DefaultCommandService(commandTopic, commandTag, commandResultProcessor, sendMessageService);
     }
 
     @Bean(name = "domainEventPublisher")
     public DefaultDomainEventPublisher domainEventPublisher(IEventSerializer eventSerializer, ISendMessageService sendMessageService) {
-        return new DefaultDomainEventPublisher(eventTopic, eventSerializer, sendMessageService);
+        return new DefaultDomainEventPublisher(eventTopic, eventTag, eventSerializer, sendMessageService);
     }
 
     @Bean(name = "applicationMessagePublisher")
     public DefaultApplicationMessagePublisher applicationMessagePublisher(ISendMessageService sendMessageService) {
-        return new DefaultApplicationMessagePublisher(eventTopic, sendMessageService);
+        return new DefaultApplicationMessagePublisher(applicationTopic, applicationTag, sendMessageService);
     }
 
     @Bean(name = "publishableExceptionPublisher")
     public DefaultPublishableExceptionPublisher publishableExceptionPublisher(ISendMessageService sendMessageService) {
-        return new DefaultPublishableExceptionPublisher(eventTopic, sendMessageService);
+        return new DefaultPublishableExceptionPublisher(eventTopic, eventTag, sendMessageService);
     }
 
     @Bean(name = "defaultCommandListener")

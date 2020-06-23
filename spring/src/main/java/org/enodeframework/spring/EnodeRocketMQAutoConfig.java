@@ -7,6 +7,7 @@ import org.enodeframework.rocketmq.message.RocketMQCommandListener;
 import org.enodeframework.rocketmq.message.RocketMQDomainEventListener;
 import org.enodeframework.rocketmq.message.RocketMQPublishableExceptionListener;
 import org.enodeframework.rocketmq.message.SendRocketMQService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
@@ -14,27 +15,27 @@ import org.springframework.context.annotation.Bean;
 public class EnodeRocketMQAutoConfig {
 
     @Bean
-    public RocketMQPublishableExceptionListener publishableExceptionListener(IMessageHandler publishableExceptionListener) {
+    public RocketMQPublishableExceptionListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionListener") IMessageHandler publishableExceptionListener) {
         return new RocketMQPublishableExceptionListener(publishableExceptionListener);
     }
 
     @Bean
-    public RocketMQApplicationMessageListener applicationMessageListener(IMessageHandler applicationMessageListener) {
+    public RocketMQApplicationMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageListener") IMessageHandler applicationMessageListener) {
         return new RocketMQApplicationMessageListener(applicationMessageListener);
     }
 
     @Bean
-    public RocketMQDomainEventListener domainEventListener(IMessageHandler domainEventListener) {
+    public RocketMQDomainEventListener domainEventListener(@Qualifier(value = "defaultDomainEventListener") IMessageHandler domainEventListener) {
         return new RocketMQDomainEventListener(domainEventListener);
     }
 
     @Bean
-    public RocketMQCommandListener commandListener(IMessageHandler commandListener) {
+    public RocketMQCommandListener commandListener(@Qualifier(value = "defaultCommandListener") IMessageHandler commandListener) {
         return new RocketMQCommandListener(commandListener);
     }
 
     @Bean
-    public SendRocketMQService sendRocketMQService(MQProducer mqProducer) {
+    public SendRocketMQService sendRocketMQService(@Qualifier(value = "enodeMQProducer") MQProducer mqProducer) {
         return new SendRocketMQService(mqProducer);
     }
 }

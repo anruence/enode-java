@@ -15,11 +15,14 @@ public class DefaultPublishableExceptionPublisher implements IMessagePublisher<I
 
     private final String topic;
 
-    private final ISendMessageService producer;
+    private final String tag;
 
-    public DefaultPublishableExceptionPublisher(String topic, ISendMessageService producer) {
+    private final ISendMessageService sendMessageService;
+
+    public DefaultPublishableExceptionPublisher(String topic, String tag, ISendMessageService sendMessageService) {
         this.topic = topic;
-        this.producer = producer;
+        this.tag = tag;
+        this.sendMessageService = sendMessageService;
     }
 
     protected QueueMessage createExceptionMessage(IDomainException exception) {
@@ -36,6 +39,7 @@ public class DefaultPublishableExceptionPublisher implements IMessagePublisher<I
         String routeKey = exception.getId();
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setTopic(topic);
+        queueMessage.setTag(tag);
         queueMessage.setBody(data);
         queueMessage.setRouteKey(routeKey);
         queueMessage.setKey(exceptionMessage.getUniqueId());
@@ -44,6 +48,6 @@ public class DefaultPublishableExceptionPublisher implements IMessagePublisher<I
 
     @Override
     public CompletableFuture<Void> publishAsync(IDomainException message) {
-        return producer.sendMessageAsync(createExceptionMessage(message));
+        return sendMessageService.sendMessageAsync(createExceptionMessage(message));
     }
 }

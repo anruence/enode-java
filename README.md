@@ -40,129 +40,7 @@ ICommandHandler，ICommandAsyncHandler这两个接口是用于不同的业务场
 ```java
 aggregateRootType.getDeclaredConstructor().newInstance();
 ```
-### 编程方式
-新增了三个注解，系统限定了只扫描@Command和@Event标识的类，执行的方法上需要添加@Subscribe注解
-- @Command
-- @Event
-- @Subscribe
 
-启动时会扫描包路径下的注解，注册成spring bean，类似@Component的作用
-
-### 消息
-发送命令代码
-```java
-        CompletableFuture<CommandResult> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
-```
-消费命令消息
-```java
-/**
- * 银行账户相关命令处理
- * ICommandHandler<CreateAccountCommand>,                       //开户
- * ICommandAsyncHandler<ValidateAccountCommand>,                //验证账户是否合法
- * ICommandHandler<AddTransactionPreparationCommand>,           //添加预操作
- * ICommandHandler<CommitTransactionPreparationCommand>         //提交预操作
- */
-@Command
-public class BankAccountCommandHandler {
-    /**
-     * 开户
-     */
-    @Subscribe
-    public void handleAsync(ICommandContext context, CreateAccountCommand command) {
-        context.addAsync(new BankAccount(command.getAggregateRootId(), command.Owner));
-    }
-
-    /**
-     * 添加预操作
-     */
-    @Subscribe
-    public void handleAsync(ICommandContext context, AddTransactionPreparationCommand command) {
-        CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
-        BankAccount account = Task.await(future);
-        account.AddTransactionPreparation(command.TransactionId, command.TransactionType, command.PreparationType, command.Amount);
-    }
-
-    /**
-     * 验证账户是否合法
-     */
-    @Subscribe
-    public IApplicationMessage handleAsync(ValidateAccountCommand command) {
-        IApplicationMessage applicationMessage = new AccountValidatePassedMessage(command.getAggregateRootId(), command.TransactionId);
-        //此处应该会调用外部接口验证账号是否合法，这里仅仅简单通过账号是否以INVALID字符串开头来判断是否合法；根据账号的合法性，返回不同的应用层消息
-        if (command.getAggregateRootId().startsWith("INVALID")) {
-            applicationMessage = new AccountValidateFailedMessage(command.getAggregateRootId(), command.TransactionId, "账户不合法.");
-        }
-        return applicationMessage;
-    }
-
-    /**
-     * 提交预操作
-     */
-    @Subscribe
-    public void handleAsync(ICommandContext context, CommitTransactionPreparationCommand command) {
-        CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
-        BankAccount account = Task.await(future);
-        account.CommitTransactionPreparation(command.TransactionId);
-    }
-}
-
-```
-领域事件消费
-```java
-/**
- * 银行存款交易流程管理器，用于协调银行存款交易流程中各个参与者聚合根之间的消息交互
- * IMessageHandler<DepositTransactionStartedEvent>,                    //存款交易已开始
- * IMessageHandler<DepositTransactionPreparationCompletedEvent>,       //存款交易已提交
- * IMessageHandler<TransactionPreparationAddedEvent>,                  //账户预操作已添加
- * IMessageHandler<TransactionPreparationCommittedEvent>               //账户预操作已提交
- */
-@Event
-public class DepositTransactionProcessManager {
-
-    @Autowired
-    private ICommandService _commandService;
-
-    @Subscribe
-    public void handleAsync(DepositTransactionStartedEvent evnt) {
-        AddTransactionPreparationCommand command = new AddTransactionPreparationCommand(
-                evnt.AccountId,
-                evnt.getAggregateRootId(),
-                TransactionType.DepositTransaction,
-                PreparationType.CreditPreparation,
-                evnt.Amount);
-        command.setId(evnt.getId());
-        Task.await(_commandService.sendAsync(command));
-    }
-
-    @Subscribe
-    public void handleAsync(TransactionPreparationAddedEvent evnt) {
-        if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction
-                && evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
-            ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.TransactionPreparation.TransactionId);
-            command.setId(evnt.getId());
-            Task.await(_commandService.sendAsync(command));
-        }
-    }
-
-    @Subscribe
-    public void handleAsync(DepositTransactionPreparationCompletedEvent evnt) {
-        CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.AccountId, evnt.getAggregateRootId());
-        command.setId(evnt.getId());
-        Task.await(_commandService.sendAsync(command));
-    }
-
-    @Subscribe
-    public void handleAsync(TransactionPreparationCommittedEvent evnt) {
-        if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction &&
-                evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
-            ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.TransactionPreparation.TransactionId);
-            command.setId(evnt.getId());
-            Task.await(_commandService.sendAsync(command));
-        }
-    }
-}
-
-```
 ## 启动配置
 新增@EnableEnode 注解，可自动配置Bean，简化了接入方式
 
@@ -333,32 +211,183 @@ spring.enode.queue.exception.topic=EnodeTestExceptionTopic
 ```
 
 
-#### MySQL
+### MySQL
 需要下面两张表来存储事件
 ```mysql
-CREATE TABLE `event_stream` (
-  `id` BIGINT AUTO_INCREMENT NOT NULL,
-  `aggregate_root_type_name` VARCHAR(256) NOT NULL,
-  `aggregate_root_id` VARCHAR(36) NOT NULL,
-  `version` INT NOT NULL,
-  `command_id` VARCHAR(36) NOT NULL,
-  `gmt_create` DATETIME NOT NULL,
-  `events` MEDIUMTEXT NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_aggregate_root_id_version` (`aggregate_root_id`, `version`),
-  UNIQUE KEY `uk_aggregate_root_id_command_id` (`aggregate_root_id`, `command_id`)
+CREATE TABLE event_stream (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  aggregate_root_type_name VARCHAR(256) NOT NULL,
+  aggregate_root_id VARCHAR(36) NOT NULL,
+  version INT NOT NULL,
+  command_id VARCHAR(36) NOT NULL,
+  gmt_create DATETIME NOT NULL,
+  events MEDIUMTEXT NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_aggregate_root_id_version (aggregate_root_id, version),
+  UNIQUE KEY uk_aggregate_root_id_command_id (aggregate_root_id, command_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
-CREATE TABLE `published_version` (
-  `id` BIGINT AUTO_INCREMENT NOT NULL,
-  `processor_name` VARCHAR(128) NOT NULL,
-  `aggregate_root_type_name` VARCHAR(256) NOT NULL,
-  `aggregate_root_id` VARCHAR(36) NOT NULL,
-  `version` INT NOT NULL,
-  `gmt_create` DATETIME NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_processor_name_aggregate_root_id_version` (`processor_name`, `aggregate_root_id`, `version`)
+CREATE TABLE published_version (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  processor_name VARCHAR(128) NOT NULL,
+  aggregate_root_type_name VARCHAR(256) NOT NULL,
+  aggregate_root_id VARCHAR(36) NOT NULL,
+  version INT NOT NULL,
+  gmt_create DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_processor_name_aggregate_root_id_version (processor_name, aggregate_root_id, version)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+```
+
+```postgres-sql
+CREATE TABLE event_stream (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  aggregate_root_type_name VARCHAR(256) NOT NULL,
+  aggregate_root_id VARCHAR(36) NOT NULL,
+  version INT NOT NULL,
+  command_id VARCHAR(36) NOT NULL,
+  gmt_create DATETIME NOT NULL,
+  events MEDIUMTEXT NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_aggregate_root_id_version (aggregate_root_id, version),
+  UNIQUE KEY uk_aggregate_root_id_command_id (aggregate_root_id, command_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+CREATE TABLE published_version (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  processor_name VARCHAR(128) NOT NULL,
+  aggregate_root_type_name VARCHAR(256) NOT NULL,
+  aggregate_root_id VARCHAR(36) NOT NULL,
+  version INT NOT NULL,
+  gmt_create DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_processor_name_aggregate_root_id_version (processor_name, aggregate_root_id, version)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+```
+
+### 编程方式
+新增了三个注解，系统限定了只扫描@Command和@Event标识的类，执行的方法上需要添加@Subscribe注解
+- @Command
+- @Event
+- @Subscribe
+
+启动时会扫描包路径下的注解，注册成spring bean，类似@Component的作用
+
+### 消息
+发送命令代码
+```java
+        CompletableFuture<CommandResult> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
+```
+消费命令消息
+```java
+/**
+ * 银行账户相关命令处理
+ * ICommandHandler<CreateAccountCommand>,                       //开户
+ * ICommandAsyncHandler<ValidateAccountCommand>,                //验证账户是否合法
+ * ICommandHandler<AddTransactionPreparationCommand>,           //添加预操作
+ * ICommandHandler<CommitTransactionPreparationCommand>         //提交预操作
+ */
+@Command
+public class BankAccountCommandHandler {
+    /**
+     * 开户
+     */
+    @Subscribe
+    public void handleAsync(ICommandContext context, CreateAccountCommand command) {
+        context.addAsync(new BankAccount(command.getAggregateRootId(), command.Owner));
+    }
+
+    /**
+     * 添加预操作
+     */
+    @Subscribe
+    public void handleAsync(ICommandContext context, AddTransactionPreparationCommand command) {
+        CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
+        BankAccount account = Task.await(future);
+        account.AddTransactionPreparation(command.TransactionId, command.TransactionType, command.PreparationType, command.Amount);
+    }
+
+    /**
+     * 验证账户是否合法
+     */
+    @Subscribe
+    public IApplicationMessage handleAsync(ValidateAccountCommand command) {
+        IApplicationMessage applicationMessage = new AccountValidatePassedMessage(command.getAggregateRootId(), command.TransactionId);
+        //此处应该会调用外部接口验证账号是否合法，这里仅仅简单通过账号是否以INVALID字符串开头来判断是否合法；根据账号的合法性，返回不同的应用层消息
+        if (command.getAggregateRootId().startsWith("INVALID")) {
+            applicationMessage = new AccountValidateFailedMessage(command.getAggregateRootId(), command.TransactionId, "账户不合法.");
+        }
+        return applicationMessage;
+    }
+
+    /**
+     * 提交预操作
+     */
+    @Subscribe
+    public void handleAsync(ICommandContext context, CommitTransactionPreparationCommand command) {
+        CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
+        BankAccount account = Task.await(future);
+        account.CommitTransactionPreparation(command.TransactionId);
+    }
+}
+
+```
+领域事件消费
+```java
+/**
+ * 银行存款交易流程管理器，用于协调银行存款交易流程中各个参与者聚合根之间的消息交互
+ * IMessageHandler<DepositTransactionStartedEvent>,                    //存款交易已开始
+ * IMessageHandler<DepositTransactionPreparationCompletedEvent>,       //存款交易已提交
+ * IMessageHandler<TransactionPreparationAddedEvent>,                  //账户预操作已添加
+ * IMessageHandler<TransactionPreparationCommittedEvent>               //账户预操作已提交
+ */
+@Event
+public class DepositTransactionProcessManager {
+
+    @Autowired
+    private ICommandService _commandService;
+
+    @Subscribe
+    public void handleAsync(DepositTransactionStartedEvent evnt) {
+        AddTransactionPreparationCommand command = new AddTransactionPreparationCommand(
+                evnt.AccountId,
+                evnt.getAggregateRootId(),
+                TransactionType.DepositTransaction,
+                PreparationType.CreditPreparation,
+                evnt.Amount);
+        command.setId(evnt.getId());
+        Task.await(_commandService.sendAsync(command));
+    }
+
+    @Subscribe
+    public void handleAsync(TransactionPreparationAddedEvent evnt) {
+        if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction
+                && evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
+            ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.TransactionPreparation.TransactionId);
+            command.setId(evnt.getId());
+            Task.await(_commandService.sendAsync(command));
+        }
+    }
+
+    @Subscribe
+    public void handleAsync(DepositTransactionPreparationCompletedEvent evnt) {
+        CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.AccountId, evnt.getAggregateRootId());
+        command.setId(evnt.getId());
+        Task.await(_commandService.sendAsync(command));
+    }
+
+    @Subscribe
+    public void handleAsync(TransactionPreparationCommittedEvent evnt) {
+        if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction &&
+                evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
+            ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.TransactionPreparation.TransactionId);
+            command.setId(evnt.getId());
+            Task.await(_commandService.sendAsync(command));
+        }
+    }
+}
+
 ```
 ### MQ配置启动
 多选一

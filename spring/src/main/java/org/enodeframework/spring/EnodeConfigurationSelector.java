@@ -13,7 +13,7 @@ import org.springframework.core.type.AnnotationMetadata;
  * @since 1.0.5
  */
 @Order
-public class EnodeListenerConfigurationSelector implements DeferredImportSelector {
+public class EnodeConfigurationSelector implements DeferredImportSelector {
 
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
@@ -22,6 +22,7 @@ public class EnodeListenerConfigurationSelector implements DeferredImportSelecto
                 EnodeAutoConfiguration.class.getName(),
                 EnodeEventStoreAutoConfig.class.getName(),
                 EnodeKafkaAutoConfiguration.class.getName(),
+                EnodeOnsAutoConfig.class.getName(),
                 EnodeRocketMQAutoConfig.class.getName()
         };
     }

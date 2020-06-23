@@ -11,17 +11,16 @@ import org.enodeframework.queue.QueueMessage;
 import java.util.concurrent.CompletableFuture;
 
 public class DefaultDomainEventPublisher implements IMessagePublisher<DomainEventStreamMessage> {
-
-    private final IEventSerializer eventSerializer;
-
-    private final ISendMessageService producer;
-
     private final String topic;
+    private final String tag;
+    private final IEventSerializer eventSerializer;
+    private final ISendMessageService sendMessageService;
 
-    public DefaultDomainEventPublisher(String topic, IEventSerializer eventSerializer, ISendMessageService producer) {
+    public DefaultDomainEventPublisher(String topic, String tag, IEventSerializer eventSerializer, ISendMessageService sendMessageService) {
         this.eventSerializer = eventSerializer;
-        this.producer = producer;
+        this.sendMessageService = sendMessageService;
         this.topic = topic;
+        this.tag = tag;
     }
 
     protected QueueMessage createDomainEventStreamMessage(DomainEventStreamMessage eventStream) {
@@ -40,6 +39,7 @@ public class DefaultDomainEventPublisher implements IMessagePublisher<DomainEven
         String routeKey = message.getAggregateRootId();
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setTopic(topic);
+        queueMessage.setTag(tag);
         queueMessage.setBody(data);
         queueMessage.setRouteKey(routeKey);
         queueMessage.setKey(message.getId());
@@ -48,6 +48,6 @@ public class DefaultDomainEventPublisher implements IMessagePublisher<DomainEven
 
     @Override
     public CompletableFuture<Void> publishAsync(DomainEventStreamMessage message) {
-        return producer.sendMessageAsync(createDomainEventStreamMessage(message));
+        return sendMessageService.sendMessageAsync(createDomainEventStreamMessage(message));
     }
 }

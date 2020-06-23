@@ -13,10 +13,13 @@ public class DefaultApplicationMessagePublisher implements IMessagePublisher<IAp
 
     private final String topic;
 
+    private final String tag;
+
     private final ISendMessageService producer;
 
-    public DefaultApplicationMessagePublisher(String topic, ISendMessageService producer) {
+    public DefaultApplicationMessagePublisher(String topic, String tag, ISendMessageService producer) {
         this.topic = topic;
+        this.tag = tag;
         this.producer = producer;
     }
 
@@ -31,6 +34,7 @@ public class DefaultApplicationMessagePublisher implements IMessagePublisher<IAp
         queueMessage.setRouteKey(routeKey);
         queueMessage.setKey(message.getId());
         queueMessage.setTopic(topic);
+        queueMessage.setTag(tag);
         return queueMessage;
     }
 

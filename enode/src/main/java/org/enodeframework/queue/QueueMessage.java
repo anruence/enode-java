@@ -9,6 +9,10 @@ public class QueueMessage implements Serializable {
 
     private String body;
     private String topic;
+    /**
+     * 业务标识
+     */
+    private String tag;
     private String routeKey;
 
     /**
@@ -32,6 +36,14 @@ public class QueueMessage implements Serializable {
         this.topic = topic;
     }
 
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
     public String getRouteKey() {
         return routeKey;
     }
@@ -46,15 +58,5 @@ public class QueueMessage implements Serializable {
 
     public void setKey(String key) {
         this.key = key;
-    }
-
-    @Override
-    public String toString() {
-        return "QueueMessage{" +
-                "body='" + body + '\'' +
-                ", topic='" + topic + '\'' +
-                ", routeKey='" + routeKey + '\'' +
-                ", key='" + key + '\'' +
-                '}';
     }
 }

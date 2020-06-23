@@ -35,7 +35,7 @@ public class EnodeKafkaAutoConfiguration {
     }
 
     @Bean
-    public SendKafkaMessageService sendKafkaMessageService(KafkaTemplate<String, String> kafkaTemplate) {
+    public SendKafkaMessageService sendKafkaMessageService(@Qualifier(value = "enodeKafkaTemplate") KafkaTemplate<String, String> kafkaTemplate) {
         return new SendKafkaMessageService(kafkaTemplate);
     }
 }

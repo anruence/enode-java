@@ -14,8 +14,6 @@ public class TestMockConfig {
         return new MockPublishableExceptionPublisher();
     }
 
-
-
     @Bean
     public MockDomainEventPublisher mockDomainEventPublisher() {
         return new MockDomainEventPublisher();

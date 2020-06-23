@@ -13,13 +13,14 @@ public class OnsTool {
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setBody(BitConverter.toString(messageExt.getBody()));
         queueMessage.setTopic(messageExt.getTopic());
+        queueMessage.setTag(messageExt.getTag());
         queueMessage.setRouteKey(messageExt.getShardingKey());
         queueMessage.setKey(messageExt.getKey());
         return queueMessage;
     }
 
     public static Message covertToProducerRecord(QueueMessage queueMessage) {
-        Message message = new Message(queueMessage.getTopic(), null, queueMessage.getKey(), BitConverter.getBytes(queueMessage.getBody()));
+        Message message = new Message(queueMessage.getTopic(), queueMessage.getTag(), queueMessage.getKey(), BitConverter.getBytes(queueMessage.getBody()));
         message.setShardingKey(queueMessage.getRouteKey());
         return message;
     }

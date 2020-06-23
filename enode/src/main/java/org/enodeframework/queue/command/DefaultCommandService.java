@@ -19,19 +19,22 @@ public class DefaultCommandService implements ICommandService {
 
     private final String topic;
 
-    private final ISendMessageService producer;
+    private final String tag;
+
+    private final ISendMessageService sendMessageService;
 
     private final ICommandResultProcessor commandResultProcessor;
 
-    public DefaultCommandService(String topic, ICommandResultProcessor commandResultProcessor, ISendMessageService producer) {
+    public DefaultCommandService(String topic, String tag, ICommandResultProcessor commandResultProcessor, ISendMessageService sendMessageService) {
         this.topic = topic;
+        this.tag = tag;
         this.commandResultProcessor = commandResultProcessor;
-        this.producer = producer;
+        this.sendMessageService = sendMessageService;
     }
 
     @Override
     public CompletableFuture<Void> sendAsync(ICommand command) {
-        return producer.sendMessageAsync(buildCommandMessage(command, false));
+        return sendMessageService.sendMessageAsync(buildCommandMessage(command, false));
     }
 
     @Override
@@ -45,7 +48,7 @@ public class DefaultCommandService implements ICommandService {
         try {
             Ensure.notNull(commandResultProcessor, "commandResultProcessor");
             commandResultProcessor.registerProcessingCommand(command, commandReturnType, taskCompletionSource);
-            CompletableFuture<Void> sendMessageAsync = producer.sendMessageAsync(buildCommandMessage(command, true));
+            CompletableFuture<Void> sendMessageAsync = sendMessageService.sendMessageAsync(buildCommandMessage(command, true));
             sendMessageAsync.thenAccept(sendResult -> {
             }).exceptionally(ex -> {
                 commandResultProcessor.processFailedSendingCommand(command);
@@ -69,11 +72,12 @@ public class DefaultCommandService implements ICommandService {
         commandMessage.setCommandType(command.getClass().getName());
         String messageData = JsonTool.serialize(commandMessage);
         QueueMessage queueMessage = new QueueMessage();
+        queueMessage.setTopic(topic);
+        queueMessage.setTag(tag);
         queueMessage.setBody(messageData);
         queueMessage.setRouteKey(command.getAggregateRootId());
         String key = String.format("%s%s", command.getId(), command.getAggregateRootId() == null ? "" : "_cmd_agg_" + command.getAggregateRootId());
         queueMessage.setKey(key);
-        queueMessage.setTopic(topic);
         return queueMessage;
     }
 }

@@ -13,11 +13,12 @@ public class RocketMQTool {
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setBody(BitConverter.toString(messageExt.getBody()));
         queueMessage.setTopic(messageExt.getTopic());
+        queueMessage.setTag(messageExt.getTags());
         queueMessage.setKey(messageExt.getKeys());
         return queueMessage;
     }
 
     public static Message covertToProducerRecord(QueueMessage queueMessage) {
-        return new Message(queueMessage.getTopic(), null, queueMessage.getKey(), BitConverter.getBytes(queueMessage.getBody()));
+        return new Message(queueMessage.getTopic(), queueMessage.getTag(), queueMessage.getKey(), BitConverter.getBytes(queueMessage.getBody()));
     }
 }

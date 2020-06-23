@@ -5,6 +5,7 @@ import org.enodeframework.annotation.Event;
 import org.enodeframework.annotation.Priority;
 import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.common.container.IObjectContainer;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.RegisterComponentException;
 import org.enodeframework.infrastructure.IAssemblyInitializer;
 import org.enodeframework.infrastructure.IObjectProxy;
@@ -26,9 +27,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface extends IObjectProxy & MethodInvocation, THandlerSource> implements IAssemblyInitializer {
-    private Map<TKey, List<THandlerProxyInterface>> handlerDict = new HashMap<>();
-    private Map<TKey, MessageHandlerData<THandlerProxyInterface>> messageHandlerDict = new HashMap<>();
-    private MethodHandles.Lookup lookup = MethodHandles.lookup();
+    private final Map<TKey, List<THandlerProxyInterface>> handlerDict = new HashMap<>();
+    private final Map<TKey, MessageHandlerData<THandlerProxyInterface>> messageHandlerDict = new HashMap<>();
+    private final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
     protected abstract TKey getKey(Method method);
 
@@ -90,7 +91,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
         return priority;
     }
 
-    private boolean isHandlerType(Class type) {
+    private boolean isHandlerType(Class<?> type) {
         if (type == null) {
             return false;
         }
@@ -103,7 +104,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
         return containsHandleType(type);
     }
 
-    private boolean containsHandleType(Class type) {
+    private boolean containsHandleType(Class<?> type) {
         return type.isAnnotationPresent(Command.class) || type.isAnnotationPresent(Event.class);
     }
 
@@ -111,7 +112,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
         return method.isAnnotationPresent(Subscribe.class);
     }
 
-    private void registerHandler(Class handlerType) {
+    private void registerHandler(Class<?> handlerType) {
         Set<Method> handleMethods = ReflectionUtils.getMethods(handlerType, this::isHandleMethodMatch);
         handleMethods.forEach(method -> {
             try {
@@ -126,7 +127,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                 // prototype
                 THandlerProxyInterface handlerProxy = objectContainer.resolve(getHandlerProxyImplementationType());
                 if (handlerProxy == null) {
-                    throw new RuntimeException("THandlerProxyInterface is null, " + getHandlerProxyImplementationType().getName());
+                    throw new EnodeRuntimeException("THandlerProxyInterface is null, " + getHandlerProxyImplementationType().getName());
                 }
                 handlerProxy.setHandlerType(handlerType);
                 handlerProxy.setMethod(method);

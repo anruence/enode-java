@@ -1,9 +1,9 @@
 package org.enodeframework.ons.message;
 
-import com.aliyun.openservices.ons.api.Action;
-import com.aliyun.openservices.ons.api.ConsumeContext;
 import com.aliyun.openservices.ons.api.Message;
-import com.aliyun.openservices.ons.api.MessageListener;
+import com.aliyun.openservices.ons.api.order.ConsumeOrderContext;
+import com.aliyun.openservices.ons.api.order.MessageOrderListener;
+import com.aliyun.openservices.ons.api.order.OrderAction;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.queue.IMessageHandler;
 import org.enodeframework.queue.QueueMessage;
@@ -13,7 +13,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * @author anruence@gmail.com
  */
-public class OnsPublishableExceptionListener implements MessageListener {
+public class OnsPublishableExceptionListener implements MessageOrderListener {
 
     private final IMessageHandler publishableExceptionListener;
 
@@ -22,13 +22,13 @@ public class OnsPublishableExceptionListener implements MessageListener {
     }
 
     @Override
-    public Action consume(Message message, ConsumeContext context) {
+    public OrderAction consume(Message message, ConsumeOrderContext context) {
         final CountDownLatch latch = new CountDownLatch(1);
         QueueMessage queueMessage = OnsTool.covertToQueueMessage(message);
         publishableExceptionListener.handle(queueMessage, m -> {
             latch.countDown();
         });
         Task.await(latch);
-        return Action.CommitMessage;
+        return OrderAction.Success;
     }
 }
