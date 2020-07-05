@@ -1,8 +1,8 @@
 package com.microsoft.conference.registration.readmodel;
 
-import com.microsoft.conference.registration.domain.SeatAssigning.Events.OrderSeatAssignmentsCreated;
-import com.microsoft.conference.registration.domain.SeatAssigning.Events.SeatAssigned;
-import com.microsoft.conference.registration.domain.SeatAssigning.Events.SeatUnassigned;
+import com.microsoft.conference.registration.domain.seatassigning.Events.OrderSeatAssignmentsCreated;
+import com.microsoft.conference.registration.domain.seatassigning.Events.SeatAssigned;
+import com.microsoft.conference.registration.domain.seatassigning.Events.SeatUnassigned;
 
 public class OrderSeatAssignmentsViewModelGenerator {
     public void HandleAsync(OrderSeatAssignmentsCreated evnt) {

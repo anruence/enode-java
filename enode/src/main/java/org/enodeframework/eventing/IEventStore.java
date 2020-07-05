@@ -21,13 +21,6 @@ public interface IEventStore {
     CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, String commandId);
 
     /**
-     * parse commandId from exception message with different event store
-     */
-    default String findDuplicateCommandInException(String errMsg) {
-        return "";
-    }
-
-    /**
      * Query a range of event streams of a single aggregate from event store async.
      */
     CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion);

@@ -24,7 +24,7 @@ public class PgEventStore extends JDBCEventStore {
     }
 
     @Override
-    public String findDuplicateCommandInException(String errMsg) {
+    public String parseDuplicateCommandId(String errMsg) {
         Matcher matcher = PATTERN_POSTGRESQL.matcher(errMsg);
         if (!matcher.find()) {
             return "";

@@ -57,6 +57,8 @@ public class App {
 ```
 
 ### Spring Boot 启动配置文件
+如果需要使用RokcetMQ和ONS的tag功能，相应的配置 spring.enode.queue.**.tag 属性即可
+
 ```properties
 # enode eventstore (memory, mysql, tidb, pg, mongo)
 spring.enode.eventstore=mongo
@@ -154,8 +156,7 @@ spring.enode.queue.exception.topic=EnodeTestExceptionTopic
     }
 ```
 
-
-### eventstore 数据源配置，目前支持四种 （MySQL, TiDB, mongoDB, postgresql...）
+### eventstore 数据源配置，目前支持四种（MySQL, TiDB, MongoDB, PostgreSQL ...）
 
 ```java
     @Bean
@@ -211,7 +212,7 @@ spring.enode.queue.exception.topic=EnodeTestExceptionTopic
 ```
 
 
-### MySQL
+### MySQL & TiDB
 需要下面两张表来存储事件
 ```mysql
 CREATE TABLE event_stream (
@@ -239,31 +240,39 @@ CREATE TABLE published_version (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 ```
 
+### postgresql
 ```postgres-sql
 CREATE TABLE event_stream (
-  id BIGINT AUTO_INCREMENT NOT NULL,
-  aggregate_root_type_name VARCHAR(256) NOT NULL,
-  aggregate_root_id VARCHAR(36) NOT NULL,
-  version INT NOT NULL,
-  command_id VARCHAR(36) NOT NULL,
-  gmt_create DATETIME NOT NULL,
-  events MEDIUMTEXT NOT NULL,
+  id bigserial,
+  aggregate_root_type_name varchar(256),
+  aggregate_root_id varchar(36),
+  version integer,
+  command_id varchar(36),
+  gmt_create date,
+  events text,
   PRIMARY KEY (id),
-  UNIQUE KEY uk_aggregate_root_id_version (aggregate_root_id, version),
-  UNIQUE KEY uk_aggregate_root_id_command_id (aggregate_root_id, command_id)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+  CONSTRAINT uk_aggregate_root_id_version UNIQUE (aggregate_root_id, version),
+  CONSTRAINT uk_aggregate_root_id_command_id UNIQUE (aggregate_root_id, command_id)
+);
 
 CREATE TABLE published_version (
-  id BIGINT AUTO_INCREMENT NOT NULL,
-  processor_name VARCHAR(128) NOT NULL,
-  aggregate_root_type_name VARCHAR(256) NOT NULL,
-  aggregate_root_id VARCHAR(36) NOT NULL,
-  version INT NOT NULL,
-  gmt_create DATETIME NOT NULL,
+  id bigserial,
+  processor_name varchar(128),
+  aggregate_root_type_name varchar(256),
+  aggregate_root_id varchar(36),
+  version integer,
+  gmt_create date,
   PRIMARY KEY (id),
-  UNIQUE KEY uk_processor_name_aggregate_root_id_version (processor_name, aggregate_root_id, version)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+  CONSTRAINT uk_processor_name_aggregate_root_id_version UNIQUE (processor_name, aggregate_root_id, version)
+);
 
+```
+
+### MongoDB
+```
+db.event_stream.createIndex({aggregateRootId:1,commandId:1},{unique:true})
+db.event_stream.createIndex({aggregateRootId:1,version:1},{unique:true})
+db.published_version.createIndex({processorName:1,aggregateRootId:1,version:1},{unique:true})
 ```
 
 ### 编程方式
@@ -272,7 +281,7 @@ CREATE TABLE published_version (
 - @Event
 - @Subscribe
 
-启动时会扫描包路径下的注解，注册成spring bean，类似@Component的作用
+启动时会扫描包路径下的注解，注册成Spring bean，类似@Component的作用
 
 ### 消息
 发送命令代码

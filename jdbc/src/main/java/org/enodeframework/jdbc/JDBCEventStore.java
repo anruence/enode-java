@@ -42,8 +42,10 @@ import java.util.stream.Collectors;
 /**
  * @author anruence@gmail.com
  */
-public class JDBCEventStore extends AbstractVerticle implements IEventStore {
+public abstract class JDBCEventStore extends AbstractVerticle implements IEventStore {
+
     private static final Logger logger = LoggerFactory.getLogger(JDBCEventStore.class);
+
     private static final String EVENT_TABLE_NAME_FORMAT = "%s_%s";
 
     private static final String INSERT_EVENT_SQL = "INSERT INTO %s (aggregate_root_id, aggregate_root_type_name, command_id, version, gmt_create, events) VALUES (?, ?, ?, ?, ?, ?)";
@@ -161,7 +163,7 @@ public class JDBCEventStore extends AbstractVerticle implements IEventStore {
                     // ERROR: duplicate key value violates unique constraint "event_stream_aggregate_root_id_command_id_key"\n详细：Key (aggregate_root_id, command_id)=(5ee99656d767113d73a7540f, 5ee99656d767113d73a75417) already exists.
                     AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
                     appendResult.setEventAppendStatus(EventAppendStatus.DuplicateCommand);
-                    String commandId = findDuplicateCommandInException(ex.getMessage());
+                    String commandId = parseDuplicateCommandId(ex.getMessage());
                     if (!Strings.isNullOrEmpty(commandId)) {
                         appendResult.setDuplicateCommandIds(Lists.newArrayList(commandId));
                         return appendResult;
@@ -191,6 +193,8 @@ public class JDBCEventStore extends AbstractVerticle implements IEventStore {
             throw new EnodeRuntimeException(throwable);
         });
     }
+
+    abstract protected String parseDuplicateCommandId(String msg);
 
     public CompletableFuture<AggregateEventAppendResult> insertOneByOneAsync(String sql, List<JsonArray> jsonArrays) {
         CompletableFuture<AggregateEventAppendResult> future = new CompletableFuture<>();

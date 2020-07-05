@@ -37,7 +37,7 @@ public class DefaultEventSerializer implements IEventSerializer {
     public <TEvent extends IDomainEvent> List<TEvent> deserialize(Map<String, String> data, Class<TEvent> domainEventType) {
         List<TEvent> evnts = new ArrayList<>();
         data.forEach((key, value) -> {
-            Class eventType = typeNameProvider.getType(key);
+            Class<?> eventType = typeNameProvider.getType(key);
             TEvent evnt = (TEvent) JsonTool.deserialize(value, eventType);
             evnts.add(evnt);
         });

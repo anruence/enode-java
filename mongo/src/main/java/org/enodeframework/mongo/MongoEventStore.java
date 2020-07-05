@@ -161,7 +161,7 @@ public class MongoEventStore implements IEventStore {
                 // E11000 duplicate key error collection: enode.event_stream index: aggregateRootId_1_commandId_1 dup key: { aggregateRootId: "5ee8b610d7671114741829c7", commandId: "5ee8b61bd7671114741829cf" }
                 AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
                 appendResult.setEventAppendStatus(EventAppendStatus.DuplicateCommand);
-                String commandId = findDuplicateCommandInException(message);
+                String commandId = parseDuplicateCommandId(message);
                 if (!Strings.isNullOrEmpty(commandId)) {
                     appendResult.setDuplicateCommandIds(Lists.newArrayList(commandId));
                     return appendResult;
@@ -251,8 +251,7 @@ public class MongoEventStore implements IEventStore {
         return future;
     }
 
-    @Override
-    public String findDuplicateCommandInException(String errMsg) {
+    private String parseDuplicateCommandId(String errMsg) {
         Matcher matcher = PATTERN.matcher(errMsg);
         if (matcher.find()) {
             if (matcher.groupCount() == 1) {

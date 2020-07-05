@@ -1,13 +1,13 @@
 package com.microsoft.conference.registration.commandhandlers;
 
-import com.microsoft.conference.common.registration.commands.Orders.AssignRegistrantDetails;
-import com.microsoft.conference.common.registration.commands.Orders.CloseOrder;
-import com.microsoft.conference.common.registration.commands.Orders.ConfirmPayment;
-import com.microsoft.conference.common.registration.commands.Orders.ConfirmReservation;
-import com.microsoft.conference.common.registration.commands.Orders.MarkAsSuccess;
-import com.microsoft.conference.common.registration.commands.Orders.PlaceOrder;
-import com.microsoft.conference.registration.domain.Orders.IPricingService;
-import com.microsoft.conference.registration.domain.Orders.Models.Order;
+import com.microsoft.conference.common.registration.commands.orders.AssignRegistrantDetails;
+import com.microsoft.conference.common.registration.commands.orders.CloseOrder;
+import com.microsoft.conference.common.registration.commands.orders.ConfirmPayment;
+import com.microsoft.conference.common.registration.commands.orders.ConfirmReservation;
+import com.microsoft.conference.common.registration.commands.orders.MarkAsSuccess;
+import com.microsoft.conference.common.registration.commands.orders.PlaceOrder;
+import com.microsoft.conference.registration.domain.orders.IPricingService;
+import com.microsoft.conference.registration.domain.orders.Models.Order;
 import com.microsoft.conference.registration.domain.SeatQuantity;
 import com.microsoft.conference.registration.domain.SeatType;
 import org.enodeframework.commanding.ICommandContext;

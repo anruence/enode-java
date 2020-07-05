@@ -3,8 +3,8 @@ package com.microsoft.conference.payments.commandhandlers;
 import com.microsoft.conference.common.payment.commands.CancelPayment;
 import com.microsoft.conference.common.payment.commands.CompletePayment;
 import com.microsoft.conference.common.payment.commands.CreatePayment;
-import com.microsoft.conference.payments.domain.Models.Payment;
-import com.microsoft.conference.payments.domain.Models.PaymentItem;
+import com.microsoft.conference.payments.domain.models.Payment;
+import com.microsoft.conference.payments.domain.models.PaymentItem;
 import org.enodeframework.annotation.Command;
 import org.enodeframework.commanding.ICommandContext;
 

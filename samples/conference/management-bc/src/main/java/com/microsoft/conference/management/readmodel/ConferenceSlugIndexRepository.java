@@ -1,7 +1,7 @@
 package com.microsoft.conference.management.readmodel;
 
-import com.microsoft.conference.management.domain.Models.ConferenceSlugIndex;
-import com.microsoft.conference.management.domain.Repositories.IConferenceSlugIndexRepository;
+import com.microsoft.conference.management.domain.models.ConferenceSlugIndex;
+import com.microsoft.conference.management.domain.repositories.IConferenceSlugIndexRepository;
 
 public class ConferenceSlugIndexRepository implements IConferenceSlugIndexRepository {
     @Override

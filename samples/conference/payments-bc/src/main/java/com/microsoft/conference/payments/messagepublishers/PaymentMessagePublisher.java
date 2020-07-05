@@ -2,8 +2,8 @@ package com.microsoft.conference.payments.messagepublishers;
 
 import com.microsoft.conference.common.payment.message.PaymentCompletedMessage;
 import com.microsoft.conference.common.payment.message.PaymentRejectedMessage;
-import com.microsoft.conference.payments.domain.Events.PaymentCompleted;
-import com.microsoft.conference.payments.domain.Events.PaymentRejected;
+import com.microsoft.conference.payments.domain.events.PaymentCompleted;
+import com.microsoft.conference.payments.domain.events.PaymentRejected;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 

@@ -24,7 +24,7 @@ public class TiDBEventStore extends JDBCEventStore {
     }
 
     @Override
-    public String findDuplicateCommandInException(String errMsg) {
+    public String parseDuplicateCommandId(String errMsg) {
         Matcher matcher = PATTERN_MYSQL.matcher(errMsg);
         if (!matcher.find()) {
             return "";

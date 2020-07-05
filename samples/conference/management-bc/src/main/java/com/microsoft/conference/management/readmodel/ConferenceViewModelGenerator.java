@@ -1,16 +1,16 @@
 package com.microsoft.conference.management.readmodel;
 
-import com.microsoft.conference.management.domain.Events.ConferenceCreated;
-import com.microsoft.conference.management.domain.Events.ConferencePublished;
-import com.microsoft.conference.management.domain.Events.ConferenceUnpublished;
-import com.microsoft.conference.management.domain.Events.ConferenceUpdated;
-import com.microsoft.conference.management.domain.Events.SeatTypeAdded;
-import com.microsoft.conference.management.domain.Events.SeatTypeQuantityChanged;
-import com.microsoft.conference.management.domain.Events.SeatTypeRemoved;
-import com.microsoft.conference.management.domain.Events.SeatTypeUpdated;
-import com.microsoft.conference.management.domain.Events.SeatsReservationCancelled;
-import com.microsoft.conference.management.domain.Events.SeatsReservationCommitted;
-import com.microsoft.conference.management.domain.Events.SeatsReserved;
+import com.microsoft.conference.management.domain.events.ConferenceCreated;
+import com.microsoft.conference.management.domain.events.ConferencePublished;
+import com.microsoft.conference.management.domain.events.ConferenceUnpublished;
+import com.microsoft.conference.management.domain.events.ConferenceUpdated;
+import com.microsoft.conference.management.domain.events.SeatTypeAdded;
+import com.microsoft.conference.management.domain.events.SeatTypeQuantityChanged;
+import com.microsoft.conference.management.domain.events.SeatTypeRemoved;
+import com.microsoft.conference.management.domain.events.SeatTypeUpdated;
+import com.microsoft.conference.management.domain.events.SeatsReservationCancelled;
+import com.microsoft.conference.management.domain.events.SeatsReservationCommitted;
+import com.microsoft.conference.management.domain.events.SeatsReserved;
 import org.enodeframework.annotation.Event;
 
 /**

@@ -1,8 +1,8 @@
 package com.microsoft.conference.payments.readmodel;
 
-import com.microsoft.conference.payments.domain.Events.PaymentCompleted;
-import com.microsoft.conference.payments.domain.Events.PaymentInitiated;
-import com.microsoft.conference.payments.domain.Events.PaymentRejected;
+import com.microsoft.conference.payments.domain.events.PaymentCompleted;
+import com.microsoft.conference.payments.domain.events.PaymentInitiated;
+import com.microsoft.conference.payments.domain.events.PaymentRejected;
 
 public class PaymentViewModelGenerator {
     public void HandleAsync(PaymentInitiated evnt) {

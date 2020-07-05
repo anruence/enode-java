@@ -1,11 +1,11 @@
 package com.microsoft.conference.registration.commandhandlers;
 
-import com.microsoft.conference.common.registration.commands.SeatAssignments.AssignSeat;
-import com.microsoft.conference.common.registration.commands.SeatAssignments.CreateSeatAssignments;
-import com.microsoft.conference.common.registration.commands.SeatAssignments.UnassignSeat;
-import com.microsoft.conference.registration.domain.Orders.Models.Order;
-import com.microsoft.conference.registration.domain.SeatAssigning.Models.Attendee;
-import com.microsoft.conference.registration.domain.SeatAssigning.Models.OrderSeatAssignments;
+import com.microsoft.conference.common.registration.commands.seatassignments.AssignSeat;
+import com.microsoft.conference.common.registration.commands.seatassignments.CreateSeatAssignments;
+import com.microsoft.conference.common.registration.commands.seatassignments.UnassignSeat;
+import com.microsoft.conference.registration.domain.orders.Models.Order;
+import com.microsoft.conference.registration.domain.seatassigning.Models.Attendee;
+import com.microsoft.conference.registration.domain.seatassigning.Models.OrderSeatAssignments;
 import org.enodeframework.commanding.ICommandContext;
 
 import static org.enodeframework.common.io.Task.await;

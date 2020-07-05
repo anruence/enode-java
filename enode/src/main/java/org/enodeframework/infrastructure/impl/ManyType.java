@@ -8,22 +8,23 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class ManyType {
-    private List<Class> types;
 
-    public ManyType(List<Class> types) {
+    private final List<Class<?>> types;
+
+    public ManyType(List<Class<?>> types) {
         if (new HashSet<>(types).size() != types.size()) {
             throw new IllegalArgumentException("Invalid ManyType:" + String.join("|", types.stream().map(Class::getName).collect(Collectors.toList())));
         }
         this.types = types;
     }
 
-    public List<Class> getTypes() {
+    public List<Class<?>> getTypes() {
         return types;
     }
 
     @Override
     public int hashCode() {
-        return types.stream().map(Object::hashCode).reduce((x, y) -> x ^ y).get();
+        return types.stream().map(Object::hashCode).reduce((x, y) -> x ^ y).orElse(1);
     }
 
     @Override

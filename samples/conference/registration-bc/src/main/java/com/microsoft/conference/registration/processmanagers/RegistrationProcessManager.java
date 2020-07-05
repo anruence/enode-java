@@ -10,16 +10,16 @@ import com.microsoft.conference.common.management.message.SeatsReservationCommit
 import com.microsoft.conference.common.management.message.SeatsReservedMessage;
 import com.microsoft.conference.common.payment.message.PaymentCompletedMessage;
 import com.microsoft.conference.common.payment.message.PaymentRejectedMessage;
-import com.microsoft.conference.common.registration.commands.Orders.CloseOrder;
-import com.microsoft.conference.common.registration.commands.Orders.ConfirmPayment;
-import com.microsoft.conference.common.registration.commands.Orders.ConfirmReservation;
-import com.microsoft.conference.common.registration.commands.Orders.MarkAsSuccess;
-import com.microsoft.conference.common.registration.commands.SeatAssignments.CreateSeatAssignments;
-import com.microsoft.conference.registration.domain.Orders.Events.OrderExpired;
-import com.microsoft.conference.registration.domain.Orders.Events.OrderPaymentConfirmed;
-import com.microsoft.conference.registration.domain.Orders.Events.OrderPlaced;
-import com.microsoft.conference.registration.domain.Orders.Events.OrderSuccessed;
-import com.microsoft.conference.registration.domain.Orders.Models.OrderStatus;
+import com.microsoft.conference.common.registration.commands.orders.CloseOrder;
+import com.microsoft.conference.common.registration.commands.orders.ConfirmPayment;
+import com.microsoft.conference.common.registration.commands.orders.ConfirmReservation;
+import com.microsoft.conference.common.registration.commands.orders.MarkAsSuccess;
+import com.microsoft.conference.common.registration.commands.seatassignments.CreateSeatAssignments;
+import com.microsoft.conference.registration.domain.orders.Events.OrderExpired;
+import com.microsoft.conference.registration.domain.orders.Events.OrderPaymentConfirmed;
+import com.microsoft.conference.registration.domain.orders.Events.OrderPlaced;
+import com.microsoft.conference.registration.domain.orders.Events.OrderSuccessed;
+import com.microsoft.conference.registration.domain.orders.Models.OrderStatus;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.common.io.Task;
 
