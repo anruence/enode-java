@@ -24,7 +24,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>1.0.5</revision>
+        <revision>1.0.6</revision>
         <maven.skip.deploy>false</maven.skip.deploy>
         <maven.jar.version>3.2.0</maven.jar.version>
         <maven.surefire.version>3.0.0-M4</maven.surefire.version>
