@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,32 +33,49 @@ import java.util.concurrent.TimeUnit;
 public class DefaultCommandResultProcessor extends AbstractVerticle implements ICommandResultProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCommandResultProcessor.class);
     private final int port;
+    private final String scanExpireCommandTaskName;
+    private final IScheduleService scheduleService;
+    private final int completionSourceTimeout;
+    private final Cache<String, CommandTaskCompletionSource> commandTaskDict;
+    private final BlockingQueue<CommandResult> commandExecutedMessageLocalQueue;
+    private final BlockingQueue<DomainEventHandledMessage> domainEventHandledMessageLocalQueue;
+    private final Worker commandExecutedMessageWorker;
+    private final Worker domainEventHandledMessageWorker;
+
     private InetSocketAddress bindAddress;
-    private IScheduleService scheduleService;
-    private int completionSourceTimeout = SysProperties.COMPLETION_SOURCE_TIMEOUT;
     private NetServer netServer;
-    private Cache<String, CommandTaskCompletionSource> commandTaskDict;
-    private BlockingQueue<CommandResult> commandExecutedMessageLocalQueue;
-    private BlockingQueue<DomainEventHandledMessage> domainEventHandledMessageLocalQueue;
-    private Worker commandExecutedMessageWorker;
-    private Worker domainEventHandledMessageWorker;
     private boolean started;
 
     public DefaultCommandResultProcessor(IScheduleService scheduleService, int port) {
+        this(scheduleService, port, SysProperties.COMPLETION_SOURCE_TIMEOUT);
+    }
+
+    public DefaultCommandResultProcessor(IScheduleService scheduleService, int port, int completionSourceTimeout) {
         this.scheduleService = scheduleService;
         this.port = port;
-    }
-
-    public void setCompletionSourceTimeout(int completionSourceTimeout) {
         this.completionSourceTimeout = completionSourceTimeout;
+        this.scanExpireCommandTaskName = "CleanTimeoutCommandTask_" + System.currentTimeMillis() + new Random().nextInt(10000);
+        this.commandTaskDict = CacheBuilder.newBuilder().removalListener((RemovalListener<String, CommandTaskCompletionSource>) notification -> {
+            if (notification.getCause().equals(RemovalCause.EXPIRED)) {
+                processTimeoutCommand(notification.getKey(), notification.getValue());
+            }
+        }).expireAfterWrite(completionSourceTimeout, TimeUnit.MILLISECONDS).build();
+        this.commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
+        this.domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
+        this.commandExecutedMessageWorker = new Worker("ProcessExecutedCommandMessage", () -> {
+            processExecutedCommandMessage(commandExecutedMessageLocalQueue.take());
+        });
+        this.domainEventHandledMessageWorker = new Worker("ProcessDomainEventHandledMessage", () -> {
+            processDomainEventHandledMessage(domainEventHandledMessageLocalQueue.take());
+        });
     }
 
-    public void startServer(int port, int completionSourceTimeout) {
+    public void startServer(int port) {
         netServer = vertx.createNetServer();
         netServer.connectHandler(sock -> {
             RecordParser parser = RecordParser.newDelimited(SysProperties.DELIMITED, sock);
             parser.endHandler(v -> sock.close()).exceptionHandler(t -> {
-                logger.error("Failed to start NetServer", t);
+                logger.error("Failed to start NetServer port:{}", port, t);
                 sock.close();
             }).handler(buffer -> {
                 RemoteReply name = buffer.toJsonObject().mapTo(RemoteReply.class);
@@ -66,19 +84,6 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
         });
         bindAddress = new InetSocketAddress(port);
         netServer.listen(port);
-        commandTaskDict = CacheBuilder.newBuilder().removalListener((RemovalListener<String, CommandTaskCompletionSource>) notification -> {
-            if (notification.getCause().equals(RemovalCause.EXPIRED)) {
-                processTimeoutCommand(notification.getKey(), notification.getValue());
-            }
-        }).expireAfterWrite(completionSourceTimeout, TimeUnit.MILLISECONDS).build();
-        commandExecutedMessageLocalQueue = new LinkedBlockingQueue<>();
-        domainEventHandledMessageLocalQueue = new LinkedBlockingQueue<>();
-        commandExecutedMessageWorker = new Worker("ProcessExecutedCommandMessage", () -> {
-            processExecutedCommandMessage(commandExecutedMessageLocalQueue.take());
-        });
-        domainEventHandledMessageWorker = new Worker("ProcessDomainEventHandledMessage", () -> {
-            processDomainEventHandledMessage(domainEventHandledMessageLocalQueue.take());
-        });
     }
 
     @Override
@@ -94,18 +99,18 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
         if (started) {
             return;
         }
-        startServer(port, completionSourceTimeout);
+        startServer(port);
         commandExecutedMessageWorker.start();
         domainEventHandledMessageWorker.start();
-        scheduleService.startTask("CleanTimeoutTaskCompletionSource", () -> commandTaskDict.cleanUp(), 5000, 5000);
+        scheduleService.startTask(scanExpireCommandTaskName, commandTaskDict::cleanUp, completionSourceTimeout, completionSourceTimeout);
         started = true;
     }
 
     @Override
     public void stop() {
+        scheduleService.stopTask(scanExpireCommandTaskName);
         commandExecutedMessageWorker.stop();
         domainEventHandledMessageWorker.stop();
-        scheduleService.stopTask("CleanTimeoutTaskCompletionSource");
         netServer.close();
     }
 
