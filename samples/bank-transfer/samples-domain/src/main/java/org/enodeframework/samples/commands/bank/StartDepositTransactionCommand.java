@@ -2,14 +2,17 @@ package org.enodeframework.samples.commands.bank;
 
 import org.enodeframework.commanding.Command;
 
-/// <summary>发起一笔存款交易
-/// </summary>
+/**
+ * 发起一笔存款交易
+ */
 public class StartDepositTransactionCommand extends Command {
-    /// <summary>账户ID
-    /// </summary>
+    /**
+     * 账户ID
+     */
     public String AccountId;
-    /// <summary>存款金额
-    /// </summary>
+    /**
+     * 存款金额
+     */
     public double Amount;
 
     public StartDepositTransactionCommand() {

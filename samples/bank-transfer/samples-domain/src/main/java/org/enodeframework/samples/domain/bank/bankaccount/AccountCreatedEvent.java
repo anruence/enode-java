@@ -2,11 +2,13 @@ package org.enodeframework.samples.domain.bank.bankaccount;
 
 import org.enodeframework.eventing.DomainEvent;
 
-/// <summary>已开户
-/// </summary>
+/**
+ * 已开户
+ */
 public class AccountCreatedEvent extends DomainEvent<String> {
-    /// <summary>账户拥有者
-    /// </summary>
+    /**
+     * 账户拥有者
+     */
     public String Owner;
 
     public AccountCreatedEvent() {

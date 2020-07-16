@@ -6,8 +6,9 @@ import org.enodeframework.common.serializing.JsonTool;
 
 import java.util.Date;
 
-/// <summary>向账户添加一笔预操作
-/// </summary>
+/**
+ * 向账户添加一笔预操作
+ */
 public class AddTransactionPreparationCommand extends Command {
     public String TransactionId;
     public int TransactionType;

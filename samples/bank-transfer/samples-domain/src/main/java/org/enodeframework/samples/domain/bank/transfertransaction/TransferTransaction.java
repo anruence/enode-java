@@ -3,8 +3,9 @@ package org.enodeframework.samples.domain.bank.transfertransaction;
 import org.enodeframework.domain.AggregateRoot;
 import org.enodeframework.samples.domain.bank.TransactionStatus;
 
-/// <summary>聚合根，表示一笔银行内账户之间的转账交易
-/// </summary>
+/**
+ * 聚合根，表示一笔银行内账户之间的转账交易
+ */
 public class TransferTransaction extends AggregateRoot<String> {
     private TransferTransactionInfo _transactionInfo;
     private int _status;
@@ -15,15 +16,17 @@ public class TransferTransaction extends AggregateRoot<String> {
     private boolean _isTransferOutConfirmed;
     private boolean _isTransferInConfirmed;
 
-    /// <summary>构造函数
-    /// </summary>
+    /**
+     * 构造函数
+     */
     public TransferTransaction(String transactionId, TransferTransactionInfo transactionInfo) {
         super(transactionId);
         applyEvent(new TransferTransactionStartedEvent(transactionInfo));
     }
 
-    /// <summary>确认账户验证通过
-    /// </summary>
+    /**
+     * 确认账户验证通过
+     */
     public void ConfirmAccountValidatePassed(String accountId) {
         if (_status == TransactionStatus.Started) {
             if (accountId == _transactionInfo.SourceAccountId) {
@@ -44,8 +47,9 @@ public class TransferTransaction extends AggregateRoot<String> {
         }
     }
 
-    /// <summary>确认预转出
-    /// </summary>
+    /**
+     * 确认预转出
+     */
     public void ConfirmTransferOutPreparation() {
         if (_status == TransactionStatus.AccountValidateCompleted) {
             if (!_isTransferOutPreparationConfirmed) {
@@ -54,8 +58,9 @@ public class TransferTransaction extends AggregateRoot<String> {
         }
     }
 
-    /// <summary>确认预转入
-    /// </summary>
+    /**
+     * 确认预转入
+     */
     public void ConfirmTransferInPreparation() {
         if (_status == TransactionStatus.AccountValidateCompleted) {
             if (!_isTransferInPreparationConfirmed) {
@@ -64,8 +69,9 @@ public class TransferTransaction extends AggregateRoot<String> {
         }
     }
 
-    /// <summary>确认转出
-    /// </summary>
+    /**
+     * 确认转出
+     */
     public void ConfirmTransferOut() {
         if (_status == TransactionStatus.PreparationCompleted) {
             if (!_isTransferOutConfirmed) {
@@ -77,8 +83,9 @@ public class TransferTransaction extends AggregateRoot<String> {
         }
     }
 
-    /// <summary>确认转入
-    /// </summary>
+    /**
+     * 确认转入
+     */
     public void ConfirmTransferIn() {
         if (_status == TransactionStatus.PreparationCompleted) {
             if (!_isTransferInConfirmed) {
@@ -90,8 +97,9 @@ public class TransferTransaction extends AggregateRoot<String> {
         }
     }
 
-    /// <summary>取消转账交易
-    /// </summary>
+    /**
+     * 取消转账交易
+     */
     public void Cancel() {
         applyEvent(new TransferTransactionCanceledEvent());
     }

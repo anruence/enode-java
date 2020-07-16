@@ -13,6 +13,7 @@ import org.enodeframework.commanding.CommandStatus;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.common.SysProperties;
 import org.enodeframework.common.exception.DuplicateRegisterException;
+import org.enodeframework.common.scheduling.IScheduleService;
 import org.enodeframework.common.scheduling.Worker;
 import org.enodeframework.common.utilities.RemoteReply;
 import org.enodeframework.queue.domainevent.DomainEventHandledMessage;
@@ -30,8 +31,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class DefaultCommandResultProcessor extends AbstractVerticle implements ICommandResultProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCommandResultProcessor.class);
-    private InetSocketAddress bindAddress;
     private final int port;
+    private InetSocketAddress bindAddress;
+    private IScheduleService scheduleService;
     private int completionSourceTimeout = SysProperties.COMPLETION_SOURCE_TIMEOUT;
     private NetServer netServer;
     private Cache<String, CommandTaskCompletionSource> commandTaskDict;
@@ -41,11 +43,8 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
     private Worker domainEventHandledMessageWorker;
     private boolean started;
 
-    public DefaultCommandResultProcessor() {
-        this(SysProperties.PORT);
-    }
-
-    public DefaultCommandResultProcessor(int port) {
+    public DefaultCommandResultProcessor(IScheduleService scheduleService, int port) {
+        this.scheduleService = scheduleService;
         this.port = port;
     }
 
@@ -98,6 +97,7 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
         startServer(port, completionSourceTimeout);
         commandExecutedMessageWorker.start();
         domainEventHandledMessageWorker.start();
+        scheduleService.startTask("CleanTimeoutTaskCompletionSource", () -> commandTaskDict.cleanUp(), 5000, 5000);
         started = true;
     }
 
@@ -105,6 +105,7 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
     public void stop() {
         commandExecutedMessageWorker.stop();
         domainEventHandledMessageWorker.stop();
+        scheduleService.stopTask("CleanTimeoutTaskCompletionSource");
         netServer.close();
     }
 

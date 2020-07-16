@@ -6,8 +6,8 @@ import com.aliyun.openservices.ons.api.Producer;
 import com.aliyun.openservices.ons.api.SendCallback;
 import com.aliyun.openservices.ons.api.SendResult;
 import org.enodeframework.common.exception.IORuntimeException;
-import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.ISendMessageService;
+import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

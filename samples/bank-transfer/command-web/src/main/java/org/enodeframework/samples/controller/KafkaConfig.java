@@ -12,12 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class KafkaConfig {
-
-    /**
-     * 根据senderProps的参数创建生产者工厂
-     */
     @Bean
-    public ProducerFactory producerFactory() {
+    public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, QueueProperties.KAFKA_SERVER);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -25,11 +21,8 @@ public class KafkaConfig {
         return new DefaultKafkaProducerFactory<>(props);
     }
 
-    /**
-     * kafkaTemplate实现了Kafka发送接收等功能
-     */
-    @Bean
-    public KafkaTemplate kafkaTemplate() {
+    @Bean(name = "enodeKafkaTemplate")
+    public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

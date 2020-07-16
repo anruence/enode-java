@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import({EnodeConfigurationSelector.class})
+@Import({EnodeConfigurationSelector.class, EnodeBeanInitialize.class})
 public @interface EnableEnode {
     /**
      * Alias for {@link #basePackages}.
@@ -36,11 +36,17 @@ public @interface EnableEnode {
     @AliasFor("value")
     String[] basePackages() default {};
 
+    String[] scanBasePackages() default {};
+
+    @AliasFor("basePackageClasses")
+    Class<?>[] scanBasePackageClasses() default {};
+
     /**
      * Type-safe alternative to {@link #basePackages} for specifying the packages
      * to scan for annotated components. The package of each class specified will be scanned.
      * <p>Consider creating a special no-op marker class or interface in each package
      * that serves no purpose other than being referenced by this attribute.
      */
+    @AliasFor("scanBasePackageClasses")
     Class<?>[] basePackageClasses() default {};
 }

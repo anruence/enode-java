@@ -60,7 +60,13 @@ public class EnodeBootstrapRegistrar implements ImportBeanDefinitionRegistrar, R
         AnnotationAttributes enodeScan = attributesFor(metadata, EnableEnode.class.getName());
         Set<String> basePackages = new LinkedHashSet<>();
         String[] basePackagesArray = enodeScan.getStringArray("basePackages");
+        String[] scanBasePackagesArray = enodeScan.getStringArray("scanBasePackages");
         for (String pkg : basePackagesArray) {
+            String[] tokenized = StringUtils.tokenizeToStringArray(this.environment.resolvePlaceholders(pkg),
+                    ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
+            Collections.addAll(basePackages, tokenized);
+        }
+        for (String pkg : scanBasePackagesArray) {
             String[] tokenized = StringUtils.tokenizeToStringArray(this.environment.resolvePlaceholders(pkg),
                     ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
             Collections.addAll(basePackages, tokenized);

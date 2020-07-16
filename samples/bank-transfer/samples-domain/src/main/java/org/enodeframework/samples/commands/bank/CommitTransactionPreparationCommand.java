@@ -2,8 +2,9 @@ package org.enodeframework.samples.commands.bank;
 
 import org.enodeframework.commanding.Command;
 
-/// <summary>提交预操作
-/// </summary>
+/**
+ * 提交预操作
+ */
 public class CommitTransactionPreparationCommand extends Command {
     public String TransactionId;
 

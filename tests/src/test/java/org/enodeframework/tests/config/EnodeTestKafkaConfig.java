@@ -8,8 +8,6 @@ import org.enodeframework.kafka.KafkaApplicationMessageListener;
 import org.enodeframework.kafka.KafkaCommandListener;
 import org.enodeframework.kafka.KafkaDomainEventListener;
 import org.enodeframework.kafka.KafkaPublishableExceptionListener;
-import org.enodeframework.tests.mocks.MockEventStore;
-import org.enodeframework.tests.mocks.MockPublishedVersionStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -29,23 +27,18 @@ import java.util.Map;
 @Configuration
 public class EnodeTestKafkaConfig {
 
-
-
-    @Value("${spring.enode.queue.command.topic}")
+    @Value("${spring.enode.mq.topic.command}")
     private String commandTopic;
 
-    @Value("${spring.enode.queue.event.topic}")
+    @Value("${spring.enode.mq.topic.event}")
     private String eventTopic;
 
-    @Value("${spring.enode.queue.application.topic}")
+    @Value("${spring.enode.mq.topic.application}")
     private String applicationTopic;
 
-    @Value("${spring.enode.queue.exception.topic}")
+    @Value("${spring.enode.mq.topic.exception}")
     private String exceptionTopic;
 
-    /**
-     * 根据consumerProps填写的参数创建消费者工厂
-     */
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -59,9 +52,6 @@ public class EnodeTestKafkaConfig {
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
-    /**
-     * 根据senderProps填写的参数创建生产者工厂
-     */
     @Bean
     public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -117,5 +107,10 @@ public class EnodeTestKafkaConfig {
         properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
         return new KafkaMessageListenerContainer<>(consumerFactory, properties);
+    }
+
+    @Bean(name = "enodeKafkaTemplate")
+    public KafkaTemplate<String, String> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
     }
 }

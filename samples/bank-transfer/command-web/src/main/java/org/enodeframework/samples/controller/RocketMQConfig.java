@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 
 public class RocketMQConfig {
 
-    @Bean(initMethod = "start", destroyMethod = "shutdown")
+    @Bean(name = "enodeMQProducer", initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQProducer commandProducer() {
         DefaultMQProducer producer = new DefaultMQProducer();
         producer.setNamesrvAddr(QueueProperties.NAMESRVADDR);

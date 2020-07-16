@@ -27,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @Command
 public class TransferTransactionCommandHandlers {
+
     @Subscribe
     public void handleAsync(ICommandContext context, StartTransferTransactionCommand command) {
         context.addAsync(new TransferTransaction(command.getAggregateRootId(), command.TransactionInfo));

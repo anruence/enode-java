@@ -6,8 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/// <summary>银行账户聚合根，封装银行账户余额变动的数据一致性
-/// </summary>
+/**
+ * 银行账户聚合根，封装银行账户余额变动的数据一致性
+ */
 public class BankAccount extends AggregateRoot<String> {
     private Map<String, TransactionPreparation> transactionPreparations;
     private String owner;
@@ -21,8 +22,9 @@ public class BankAccount extends AggregateRoot<String> {
     public BankAccount() {
     }
 
-    /// <summary>添加一笔预操作
-    /// </summary>
+    /**
+     * 添加一笔预操作
+     */
     public void AddTransactionPreparation(String transactionid, int transactionType, int preparationType, double amount) {
         double availableBalance = GetAvailableBalance();
         if (preparationType == PreparationType.DebitPreparation && availableBalance < amount) {
@@ -31,8 +33,9 @@ public class BankAccount extends AggregateRoot<String> {
         applyEvent(new TransactionPreparationAddedEvent(new TransactionPreparation(id, transactionid, transactionType, preparationType, amount)));
     }
 
-    /// <summary>提交一笔预操作
-    /// </summary>
+    /**
+     * 提交一笔预操作
+     */
     public void CommitTransactionPreparation(String transactionId) {
         TransactionPreparation transactionPreparation = GetTransactionPreparation(transactionId);
         double currentBalance = balance;
@@ -44,14 +47,16 @@ public class BankAccount extends AggregateRoot<String> {
         applyEvent(new TransactionPreparationCommittedEvent(currentBalance, transactionPreparation));
     }
 
-    /// <summary>取消一笔预操作
-    /// </summary>
+    /**
+     * 取消一笔预操作
+     */
     public void CancelTransactionPreparation(String transactionId) {
         applyEvent(new TransactionPreparationCanceledEvent(GetTransactionPreparation(transactionId)));
     }
 
-    /// <summary>获取当前账户内的一笔预操作，如果预操作不存在，则抛出异常
-    /// </summary>
+    /**
+     * 获取当前账户内的一笔预操作，如果预操作不存在，则抛出异常
+     */
     private TransactionPreparation GetTransactionPreparation(String transactionId) {
         if (transactionPreparations == null || transactionPreparations.size() == 0) {
             throw new TransactionPreparationNotExistException(id, transactionId);
@@ -63,8 +68,9 @@ public class BankAccount extends AggregateRoot<String> {
         return transactionPreparation;
     }
 
-    /// <summary>获取当前账户的可用余额，需要将已冻结的余额计算在内
-    /// </summary>
+    /**
+     * 获取当前账户的可用余额，需要将已冻结的余额计算在内
+     */
     private double GetAvailableBalance() {
         if (transactionPreparations == null || transactionPreparations.size() == 0) {
             return balance;

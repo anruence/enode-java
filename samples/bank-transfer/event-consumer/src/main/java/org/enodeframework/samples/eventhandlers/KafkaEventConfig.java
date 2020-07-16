@@ -7,7 +7,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.enodeframework.kafka.KafkaApplicationMessageListener;
 import org.enodeframework.kafka.KafkaDomainEventListener;
 import org.enodeframework.kafka.KafkaPublishableExceptionListener;
-import org.enodeframework.samples.QueueProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -22,28 +22,41 @@ import org.springframework.retry.support.RetryTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP;
+import static org.enodeframework.samples.QueueProperties.KAFKA_SERVER;
+
 public class KafkaEventConfig {
-    /**
-     * 根据consumerProps填写的参数创建消费者工厂
-     */
+
+    @Value("${spring.enode.mq.topic.event}")
+    private String eventTopic;
+
+    @Value("${spring.enode.mq.topic.application}")
+    private String applicationTopic;
+
+    @Value("${spring.enode.mq.topic.exception}")
+    private String exceptionTopic;
+
     @Bean
-    public ConsumerFactory consumerFactory() {
+    public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, QueueProperties.KAFKA_SERVER);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, QueueProperties.DEFAULT_PRODUCER_GROUP);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, DEFAULT_CONSUMER_GROUP);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "15000");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
-    /**
-     * 根据senderProps填写的参数创建生产者工厂
-     */
     @Bean
-    public ProducerFactory<Object, Object> producerFactory() {
+    public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, QueueProperties.KAFKA_SERVER);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
+        props.put(ProducerConfig.RETRIES_CONFIG, 1);
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 1024000);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return new DefaultKafkaProducerFactory<>(props);
@@ -54,19 +67,16 @@ public class KafkaEventConfig {
         return new RetryTemplate();
     }
 
-    /**
-     * kafkaTemplate实现了Kafka发送接收等功能
-     */
-    @Bean
-    public KafkaTemplate kafkaTemplate() {
+    @Bean(name = "enodeKafkaTemplate")
+    public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
-    public KafkaMessageListenerContainer domainEventListenerContainer(KafkaDomainEventListener domainEventListener, RetryTemplate retryTemplate) {
-        ContainerProperties properties = new ContainerProperties(QueueProperties.EVENT_TOPIC);
-        properties.setGroupId(QueueProperties.DEFAULT_PRODUCER_GROUP);
-        RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(domainEventListener, retryTemplate);
+    public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener, RetryTemplate retryTemplate) {
+        ContainerProperties properties = new ContainerProperties(eventTopic);
+        properties.setGroupId(DEFAULT_CONSUMER_GROUP);
+        RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(domainEventListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
         properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
@@ -74,10 +84,10 @@ public class KafkaEventConfig {
     }
 
     @Bean
-    public KafkaMessageListenerContainer applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, RetryTemplate retryTemplate) {
-        ContainerProperties properties = new ContainerProperties(QueueProperties.APPLICATION_TOPIC);
-        properties.setGroupId(QueueProperties.DEFAULT_PRODUCER_GROUP);
-        RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(applicationMessageListener, retryTemplate);
+    public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, RetryTemplate retryTemplate) {
+        ContainerProperties properties = new ContainerProperties(applicationTopic);
+        properties.setGroupId(DEFAULT_CONSUMER_GROUP);
+        RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(applicationMessageListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
         properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);
@@ -85,10 +95,10 @@ public class KafkaEventConfig {
     }
 
     @Bean
-    public KafkaMessageListenerContainer publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, RetryTemplate retryTemplate) {
-        ContainerProperties properties = new ContainerProperties(QueueProperties.EXCEPTION_TOPIC);
-        properties.setGroupId(QueueProperties.DEFAULT_PRODUCER_GROUP);
-        RetryingMessageListenerAdapter listenerAdapter = new RetryingMessageListenerAdapter(publishableExceptionListener, retryTemplate);
+    public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, RetryTemplate retryTemplate) {
+        ContainerProperties properties = new ContainerProperties(exceptionTopic);
+        properties.setGroupId(DEFAULT_CONSUMER_GROUP);
+        RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(publishableExceptionListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
         properties.setMissingTopicsFatal(false);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL);

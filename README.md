@@ -57,32 +57,33 @@ public class App {
 ```
 
 ### Spring Boot 启动配置文件
-如果需要使用RokcetMQ和ONS的tag功能，相应的配置 spring.enode.queue.**.tag 属性即可
+
+如果需要使用RokcetMQ和ONS的tag功能，相应的配置 spring.enode.mq.tag.* 属性即可
 
 ```properties
 # enode eventstore (memory, mysql, tidb, pg, mongo)
 spring.enode.eventstore=mongo
 # enode messagequeue (kafka, rocketmq, ons)
 spring.enode.mq=kafka
-spring.enode.queue.command.topic=EnodeTestCommandTopic
-spring.enode.queue.event.topic=EnodeTestEventTopic
-spring.enode.queue.application.topic=EnodeTestApplicationMessageTopic
-spring.enode.queue.exception.topic=EnodeTestExceptionTopic
+spring.enode.mq.topic.command=EnodeTestCommandTopic
+spring.enode.mq.topic.event=EnodeTestEventTopic
+spring.enode.mq.topic.application=EnodeTestApplicationMessageTopic
+spring.enode.mq.topic.exception=EnodeTestExceptionTopic
 ```
 
 ### kafka listener bean 配置
 ```java
 
-    @Value("${spring.enode.queue.command.topic}")
+    @Value("${spring.enode.mq.topic.command}")
     private String commandTopic;
 
-    @Value("${spring.enode.queue.event.topic}")
+    @Value("${spring.enode.mq.topic.event}")
     private String eventTopic;
 
-    @Value("${spring.enode.queue.application.topic}")
+    @Value("${spring.enode.mq.topic.application}")
     private String applicationTopic;
 
-    @Value("${spring.enode.queue.exception.topic}")
+    @Value("${spring.enode.mq.topic.exception}")
     private String exceptionTopic;
 
     @Bean

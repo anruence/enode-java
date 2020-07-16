@@ -2,8 +2,9 @@ package org.enodeframework.samples.applicationmessages;
 
 import org.enodeframework.messaging.ApplicationMessage;
 
-/// <summary>账户验证已通过
-/// </summary>
+/**
+ * 账户验证已通过
+ */
 public class AccountValidatePassedMessage extends ApplicationMessage {
     public String AccountId;
     public String TransactionId;

@@ -5,23 +5,29 @@ import org.enodeframework.domain.DomainException;
 import java.util.Map;
 
 public class InsufficientBalanceException extends DomainException {
-    /// <summary>账户ID
-    /// </summary>
+    /**
+     * 账户ID
+     */
     public String AccountId;
-    /// <summary>交易ID
-    /// </summary>
+    /**
+     * 交易ID
+     */
     public String TransactionId;
-    /// <summary>交易类型
-    /// </summary>
+    /**
+     * 交易类型
+     */
     public int TransactionType;
-    /// <summary>交易金额
-    /// </summary>
+    /**
+     * 交易金额
+     */
     public double Amount;
-    /// <summary>当前余额
-    /// </summary>
+    /**
+     * 当前余额
+     */
     public double CurrentBalance;
-    /// <summary>当前可用余额
-    /// </summary>
+    /**
+     * 当前可用余额
+     */
     public double CurrentAvailableBalance;
 
     public InsufficientBalanceException(String accountId, String transactionId, int transactionType, double amount, double currentBalance, double currentAvailableBalance) {

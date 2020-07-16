@@ -15,21 +15,25 @@ import org.springframework.context.annotation.Bean;
 public class EnodeRocketMQAutoConfig {
 
     @Bean
+    @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "exception")
     public RocketMQPublishableExceptionListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionListener") IMessageHandler publishableExceptionListener) {
         return new RocketMQPublishableExceptionListener(publishableExceptionListener);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "application")
     public RocketMQApplicationMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageListener") IMessageHandler applicationMessageListener) {
         return new RocketMQApplicationMessageListener(applicationMessageListener);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "event")
     public RocketMQDomainEventListener domainEventListener(@Qualifier(value = "defaultDomainEventListener") IMessageHandler domainEventListener) {
         return new RocketMQDomainEventListener(domainEventListener);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "command")
     public RocketMQCommandListener commandListener(@Qualifier(value = "defaultCommandListener") IMessageHandler commandListener) {
         return new RocketMQCommandListener(commandListener);
     }

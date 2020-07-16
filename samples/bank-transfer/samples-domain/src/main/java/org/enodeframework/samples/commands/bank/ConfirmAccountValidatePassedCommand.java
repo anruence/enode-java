@@ -2,11 +2,13 @@ package org.enodeframework.samples.commands.bank;
 
 import org.enodeframework.commanding.Command;
 
-/// <summary>确认账户验证已通过
-/// </summary>
+/**
+ * 确认账户验证已通过
+ */
 public class ConfirmAccountValidatePassedCommand extends Command {
-    /// <summary>账户ID
-    /// </summary>
+    /**
+     * 账户ID
+     */
     public String AccountId;
 
     public ConfirmAccountValidatePassedCommand() {
