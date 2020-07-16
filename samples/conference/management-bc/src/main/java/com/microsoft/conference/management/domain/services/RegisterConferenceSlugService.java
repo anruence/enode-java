@@ -10,8 +10,9 @@ public class RegisterConferenceSlugService {
         _conferenceSlugIndexRepository = conferenceSlugIndexRepository;
     }
 
-    /// <summary>注册会议的Slug索引
-    /// </summary>
+    /**
+     * 注册会议的Slug索引
+     */
     /// <param name="indexId"></param>
     /// <param name="conferenceId"></param>
     /// <param name="slug"></param>

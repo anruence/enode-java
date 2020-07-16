@@ -2,8 +2,9 @@ package org.enodeframework.samples.commands.bank;
 
 import org.enodeframework.commanding.Command;
 
-/// <summary>确认预存款
-/// </summary>
+/**
+ * 确认预存款
+ */
 public class ConfirmDepositPreparationCommand extends Command {
     public ConfirmDepositPreparationCommand() {
     }

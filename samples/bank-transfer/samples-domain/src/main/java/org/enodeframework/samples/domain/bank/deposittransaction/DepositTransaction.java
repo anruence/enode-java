@@ -3,30 +3,34 @@ package org.enodeframework.samples.domain.bank.deposittransaction;
 import org.enodeframework.domain.AggregateRoot;
 import org.enodeframework.samples.domain.bank.TransactionStatus;
 
-/// <summary>聚合根，表示一笔银行存款交易
-/// </summary>
+/**
+ * 聚合根，表示一笔银行存款交易
+ */
 public class DepositTransaction extends AggregateRoot<String> {
     private String _accountId;
     private double _amount;
     private int _status;
 
-    /// <summary>构造函数
-    /// </summary>
+    /**
+     * 构造函数
+     */
     public DepositTransaction(String transactionId, String accountId, double amount) {
         super(transactionId);
         applyEvent(new DepositTransactionStartedEvent(accountId, amount));
     }
 
-    /// <summary>确认预存款
-    /// </summary>
+    /**
+     * 确认预存款
+     */
     public void ConfirmDepositPreparation() {
         if (_status == TransactionStatus.Started) {
             applyEvent(new DepositTransactionPreparationCompletedEvent(_accountId));
         }
     }
 
-    /// <summary>确认存款
-    /// </summary>
+    /**
+     * 确认存款
+     */
     public void ConfirmDeposit() {
         if (_status == TransactionStatus.PreparationCompleted) {
             applyEvent(new DepositTransactionCompletedEvent(_accountId));

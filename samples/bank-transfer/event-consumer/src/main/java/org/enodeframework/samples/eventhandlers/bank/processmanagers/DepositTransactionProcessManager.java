@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DepositTransactionProcessManager {
 
     @Autowired
-    private ICommandService _commandService;
+    private ICommandService commandService;
 
     @Subscribe
     public void handleAsync(DepositTransactionStartedEvent evnt) {
@@ -38,7 +38,7 @@ public class DepositTransactionProcessManager {
                 PreparationType.CreditPreparation,
                 evnt.Amount);
         command.setId(evnt.getId());
-        Task.await(_commandService.sendAsync(command));
+        Task.await(commandService.sendAsync(command));
     }
 
     @Subscribe
@@ -47,7 +47,7 @@ public class DepositTransactionProcessManager {
                 && evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
             ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.TransactionPreparation.TransactionId);
             command.setId(evnt.getId());
-            Task.await(_commandService.sendAsync(command));
+            Task.await(commandService.sendAsync(command));
         }
     }
 
@@ -55,7 +55,7 @@ public class DepositTransactionProcessManager {
     public void handleAsync(DepositTransactionPreparationCompletedEvent evnt) {
         CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.AccountId, evnt.getAggregateRootId());
         command.setId(evnt.getId());
-        Task.await(_commandService.sendAsync(command));
+        Task.await(commandService.sendAsync(command));
     }
 
     @Subscribe
@@ -64,7 +64,7 @@ public class DepositTransactionProcessManager {
                 evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
             ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.TransactionPreparation.TransactionId);
             command.setId(evnt.getId());
-            Task.await(_commandService.sendAsync(command));
+            Task.await(commandService.sendAsync(command));
         }
     }
 }

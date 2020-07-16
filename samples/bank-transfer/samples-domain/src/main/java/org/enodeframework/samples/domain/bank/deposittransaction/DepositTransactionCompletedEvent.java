@@ -2,8 +2,9 @@ package org.enodeframework.samples.domain.bank.deposittransaction;
 
 import org.enodeframework.eventing.DomainEvent;
 
-/// <summary>存款交易已完成
-/// </summary>
+/**
+ * 存款交易已完成
+ */
 public class DepositTransactionCompletedEvent extends DomainEvent<String> {
     public String AccountId;
 

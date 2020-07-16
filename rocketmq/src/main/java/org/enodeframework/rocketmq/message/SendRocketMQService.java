@@ -8,8 +8,8 @@ import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.enodeframework.common.exception.IORuntimeException;
-import org.enodeframework.queue.QueueMessage;
 import org.enodeframework.queue.ISendMessageService;
+import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -10,7 +10,6 @@ import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.tests.config.EnodeTestDataSourceConfig;
-import org.enodeframework.tests.config.TestMockConfig;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

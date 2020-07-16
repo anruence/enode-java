@@ -1,11 +1,12 @@
 package org.enodeframework.samples.commands.bank;
-/// <summary>开户（创建一个账户）
-/// </summary>
+/**
+ * 开户（创建一个账户）
+ */
 
 import org.enodeframework.commanding.Command;
 
-/// <summary>验证账户是否合法
-/// </summary>
+/**验证账户是否合法
+ */
 public class ValidateAccountCommand extends Command {
     public String TransactionId;
 

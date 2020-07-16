@@ -6,10 +6,10 @@ import com.microsoft.conference.common.registration.commands.orders.ConfirmPayme
 import com.microsoft.conference.common.registration.commands.orders.ConfirmReservation;
 import com.microsoft.conference.common.registration.commands.orders.MarkAsSuccess;
 import com.microsoft.conference.common.registration.commands.orders.PlaceOrder;
-import com.microsoft.conference.registration.domain.orders.IPricingService;
-import com.microsoft.conference.registration.domain.orders.Models.Order;
 import com.microsoft.conference.registration.domain.SeatQuantity;
 import com.microsoft.conference.registration.domain.SeatType;
+import com.microsoft.conference.registration.domain.orders.IPricingService;
+import com.microsoft.conference.registration.domain.orders.Models.Order;
 import org.enodeframework.commanding.ICommandContext;
 
 import java.util.ArrayList;

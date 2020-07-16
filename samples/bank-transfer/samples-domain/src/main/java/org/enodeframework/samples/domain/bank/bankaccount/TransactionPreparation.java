@@ -2,23 +2,29 @@ package org.enodeframework.samples.domain.bank.bankaccount;
 
 import org.enodeframework.samples.domain.bank.TransactionType;
 
-/// <summary>实体，表示账户聚合内的一笔预操作（如预存款、预取款、预转入、预转出）
-/// </summary>
+/**
+ * 实体，表示账户聚合内的一笔预操作（如预存款、预取款、预转入、预转出）
+ */
 public class TransactionPreparation {
-    /// <summary>账户ID
-    /// </summary>
+    /**
+     * 账户ID
+     */
     public String AccountId;
-    /// <summary>交易ID
-    /// </summary>
+    /**
+     * 交易ID
+     */
     public String TransactionId;
-    /// <summary>预借或预贷
-    /// </summary>
+    /**
+     * 预借或预贷
+     */
     public int preparationType;
-    /// <summary>交易类型
-    /// </summary>
+    /**
+     * 交易类型
+     */
     public int transactionType;
-    /// <summary>交易金额
-    /// </summary>
+    /**
+     * 交易金额
+     */
     public double Amount;
 
     public TransactionPreparation(String accountId, String transactionId, int transactionType, int preparationType, double amount) {

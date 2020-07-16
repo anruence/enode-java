@@ -27,6 +27,5 @@ public class NoteEventHandler {
     @Subscribe
     public void handleAsync(NoteTitleChanged2 evnt) {
         logger.info("NoteTitleChanged2 Note denormalizered, title：{}, Version: {}", evnt.getTitle(), evnt.getVersion());
-
     }
 }

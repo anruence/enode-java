@@ -7,9 +7,6 @@ import org.enodeframework.commanding.impl.CommandHandlerProxy;
 import org.enodeframework.commanding.impl.DefaultCommandHandlerProvider;
 import org.enodeframework.commanding.impl.DefaultCommandProcessor;
 import org.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
-import org.enodeframework.common.container.ObjectContainer;
-import org.enodeframework.common.extensions.ClassNameComparator;
-import org.enodeframework.common.extensions.ClassPathScanHandler;
 import org.enodeframework.common.scheduling.IScheduleService;
 import org.enodeframework.common.scheduling.ScheduleService;
 import org.enodeframework.domain.IAggregateRepositoryProvider;
@@ -36,7 +33,6 @@ import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.eventing.impl.DefaultEventCommittingService;
 import org.enodeframework.eventing.impl.DefaultEventSerializer;
 import org.enodeframework.eventing.impl.DefaultProcessingEventProcessor;
-import org.enodeframework.infrastructure.IAssemblyInitializer;
 import org.enodeframework.infrastructure.ITypeNameProvider;
 import org.enodeframework.infrastructure.impl.DefaultTypeNameProvider;
 import org.enodeframework.messaging.IApplicationMessage;
@@ -57,92 +53,47 @@ import org.enodeframework.queue.ISendReplyService;
 import org.enodeframework.queue.applicationmessage.DefaultApplicationMessageListener;
 import org.enodeframework.queue.applicationmessage.DefaultApplicationMessagePublisher;
 import org.enodeframework.queue.command.DefaultCommandListener;
-import org.enodeframework.queue.command.DefaultCommandResultProcessor;
 import org.enodeframework.queue.command.DefaultCommandService;
 import org.enodeframework.queue.command.ICommandResultProcessor;
 import org.enodeframework.queue.domainevent.DefaultDomainEventListener;
 import org.enodeframework.queue.domainevent.DefaultDomainEventPublisher;
 import org.enodeframework.queue.publishableexceptions.DefaultPublishableExceptionListener;
 import org.enodeframework.queue.publishableexceptions.DefaultPublishableExceptionPublisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
-
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author anruence@gmail.com
  */
-public class EnodeAutoConfiguration implements ApplicationContextAware {
+public class EnodeAutoConfiguration {
 
-    private final static Logger logger = LoggerFactory.getLogger(EnodeAutoConfiguration.class);
-
-    private ApplicationContext applicationContext;
-
-    @Value("${spring.enode.queue.command.topic}")
+    @Value("${spring.enode.mq.topic.command:}")
     private String commandTopic;
 
-    @Value("${spring.enode.queue.event.topic}")
+    @Value("${spring.enode.mq.topic.event:}")
     private String eventTopic;
 
-    @Value("${spring.enode.queue.application.topic}")
+    @Value("${spring.enode.mq.topic.application:}")
     private String applicationTopic;
 
-    @Value("${spring.enode.queue.exception.topic}")
+    @Value("${spring.enode.mq.topic.exception:}")
     private String exceptionTopic;
 
-    @Value("${spring.enode.queue.command.tag}")
+    @Value("${spring.enode.mq.tag.command:*}")
     private String commandTag;
 
-    @Value("${spring.enode.queue.event.tag}")
+    @Value("${spring.enode.mq.tag.event:*}")
     private String eventTag;
 
-    @Value("${spring.enode.queue.application.tag}")
+    @Value("${spring.enode.mq.tag.application:*}")
     private String applicationTag;
 
-    @Value("${spring.enode.queue.exception.tag}")
+    @Value("${spring.enode.mq.tag.exception:*}")
     private String exceptionTag;
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-        SpringObjectContainer container = new SpringObjectContainer(applicationContext);
-        ObjectContainer.INSTANCE = container;
-        scanConfiguredPackages(ObjectContainer.BASE_PACKAGES);
-    }
-
-    private void registerBeans(Set<Class<?>> classSet) {
-        applicationContext.getBeansOfType(IAssemblyInitializer.class).values().forEach(provider -> {
-            provider.initialize(classSet);
-            if (logger.isDebugEnabled()) {
-                logger.debug("{} initial success", provider.getClass().getName());
-            }
-        });
-    }
-
-    /**
-     * Scan the packages configured
-     */
-    private void scanConfiguredPackages(String... scanPackages) {
-        if (scanPackages == null) {
-            throw new IllegalArgumentException("packages is not specified");
-        }
-        ClassPathScanHandler handler = new ClassPathScanHandler(scanPackages);
-        Set<Class<?>> classSet = new TreeSet<>(new ClassNameComparator());
-        for (String pakName : scanPackages) {
-            classSet.addAll(handler.getPackageAllClasses(pakName, true));
-        }
-        registerBeans(classSet);
-    }
 
     @Bean(name = "scheduleService")
     public ScheduleService scheduleService() {
@@ -273,11 +224,6 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
         return new DefaultCommandProcessor(processingCommandHandler, scheduleService);
     }
 
-    @Bean(name = "defaultCommandResultProcessor")
-    public DefaultCommandResultProcessor defaultCommandResultProcessor() {
-        return new DefaultCommandResultProcessor();
-    }
-
     @Bean(name = "snapshotOnlyAggregateStorage")
     @ConditionalOnProperty(prefix = "spring.enode", name = "aggregatestorage", havingValue = "snapshot", matchIfMissing = false)
     public SnapshotOnlyAggregateStorage snapshotOnlyAggregateStorage(IAggregateSnapshotter aggregateSnapshotter) {
@@ -311,7 +257,7 @@ public class EnodeAutoConfiguration implements ApplicationContextAware {
 
     @Bean(name = "publishableExceptionPublisher")
     public DefaultPublishableExceptionPublisher publishableExceptionPublisher(ISendMessageService sendMessageService) {
-        return new DefaultPublishableExceptionPublisher(eventTopic, eventTag, sendMessageService);
+        return new DefaultPublishableExceptionPublisher(exceptionTopic, eventTag, sendMessageService);
     }
 
     @Bean(name = "defaultCommandListener")

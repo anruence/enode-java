@@ -2,8 +2,9 @@ package org.enodeframework.samples.domain.bank.bankaccount;
 
 import org.enodeframework.eventing.DomainEvent;
 
-/// <summary>账户预操作已执行
-/// </summary>
+/**
+ * 账户预操作已执行
+ */
 public class TransactionPreparationCommittedEvent extends DomainEvent<String> {
     public double CurrentBalance;
     public TransactionPreparation TransactionPreparation;

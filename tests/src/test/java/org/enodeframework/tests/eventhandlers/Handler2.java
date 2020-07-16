@@ -3,8 +3,8 @@ package org.enodeframework.tests.eventhandlers;
 import org.enodeframework.annotation.Event;
 import org.enodeframework.annotation.Priority;
 import org.enodeframework.annotation.Subscribe;
-import org.enodeframework.tests.domain.Event1;
 import org.enodeframework.tests.EnodeCoreTest;
+import org.enodeframework.tests.domain.Event1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

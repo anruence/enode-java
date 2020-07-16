@@ -15,21 +15,25 @@ import org.springframework.context.annotation.Bean;
 public class EnodeOnsAutoConfig {
 
     @Bean
+    @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "exception")
     public OnsPublishableExceptionListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionListener") IMessageHandler publishableExceptionListener) {
         return new OnsPublishableExceptionListener(publishableExceptionListener);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "application")
     public OnsApplicationMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageListener") IMessageHandler applicationMessageListener) {
         return new OnsApplicationMessageListener(applicationMessageListener);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "event")
     public OnsDomainEventListener domainEventListener(@Qualifier(value = "defaultDomainEventListener") IMessageHandler domainEventListener) {
         return new OnsDomainEventListener(domainEventListener);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "command")
     public OnsCommandListener commandListener(@Qualifier(value = "defaultCommandListener") IMessageHandler commandListener) {
         return new OnsCommandListener(commandListener);
     }
