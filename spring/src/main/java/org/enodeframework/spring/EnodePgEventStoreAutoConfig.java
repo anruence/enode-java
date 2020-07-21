@@ -1,5 +1,6 @@
 package org.enodeframework.spring;
 
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.jdbc.DBConfiguration;
 import org.enodeframework.pg.PgEventStore;
@@ -15,8 +16,8 @@ public class EnodePgEventStoreAutoConfig extends EnodeVertxAutoConfig {
 
     @Bean
     @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "pg")
-    public PgEventStore pgEventStore(@Qualifier("enodePgDataSource") DataSource pgDataSource, IEventSerializer eventSerializer) {
-        PgEventStore eventStore = new PgEventStore(pgDataSource, DBConfiguration.postgresql(), eventSerializer);
+    public PgEventStore pgEventStore(@Qualifier("enodePgDataSource") DataSource pgDataSource, IEventSerializer eventSerializer, ISerializeService serializeService) {
+        PgEventStore eventStore = new PgEventStore(pgDataSource, DBConfiguration.postgresql(), eventSerializer, serializeService);
         vertx.deployVerticle(eventStore, res -> {
         });
         return eventStore;

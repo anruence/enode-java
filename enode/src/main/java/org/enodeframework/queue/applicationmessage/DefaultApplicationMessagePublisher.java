@@ -1,6 +1,6 @@
 package org.enodeframework.queue.applicationmessage;
 
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
@@ -17,17 +17,20 @@ public class DefaultApplicationMessagePublisher implements IMessagePublisher<IAp
 
     private final ISendMessageService producer;
 
-    public DefaultApplicationMessagePublisher(String topic, String tag, ISendMessageService producer) {
+    private final ISerializeService serializeService;
+
+    public DefaultApplicationMessagePublisher(String topic, String tag, ISendMessageService producer, ISerializeService serializeService) {
         this.topic = topic;
         this.tag = tag;
         this.producer = producer;
+        this.serializeService = serializeService;
     }
 
     protected QueueMessage createApplicationMessage(IApplicationMessage message) {
         Ensure.notNull(topic, "topic");
-        String appMessageData = JsonTool.serialize(message);
+        String appMessageData = serializeService.serialize(message);
         ApplicationDataMessage appDataMessage = new ApplicationDataMessage(appMessageData, message.getClass().getName());
-        String data = JsonTool.serialize(appDataMessage);
+        String data = serializeService.serialize(appDataMessage);
         String routeKey = message.getId();
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setBody(data);

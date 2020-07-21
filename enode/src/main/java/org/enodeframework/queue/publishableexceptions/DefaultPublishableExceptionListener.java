@@ -1,7 +1,7 @@
 package org.enodeframework.queue.publishableexceptions;
 
-import org.enodeframework.common.exception.InvalidOperationException;
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.exception.MessageInstanceCreateException;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.infrastructure.ITypeNameProvider;
 import org.enodeframework.messaging.IMessageDispatcher;
@@ -19,20 +19,23 @@ public class DefaultPublishableExceptionListener implements IMessageHandler {
 
     private final IMessageDispatcher messageDispatcher;
 
-    public DefaultPublishableExceptionListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher) {
+    private final ISerializeService serializeService;
+
+    public DefaultPublishableExceptionListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
         this.typeNameProvider = typeNameProvider;
         this.messageDispatcher = messageDispatcher;
+        this.serializeService = serializeService;
     }
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
-        PublishableExceptionMessage exceptionMessage = JsonTool.deserialize(queueMessage.getBody(), PublishableExceptionMessage.class);
+        PublishableExceptionMessage exceptionMessage = serializeService.deserialize(queueMessage.getBody(), PublishableExceptionMessage.class);
         Class<?> exceptionType = typeNameProvider.getType(exceptionMessage.getExceptionType());
         IDomainException exception;
         try {
             exception = (IDomainException) exceptionType.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new InvalidOperationException(e);
+            throw new MessageInstanceCreateException(e);
         }
         exception.setId(exceptionMessage.getUniqueId());
         exception.setTimestamp(exceptionMessage.getTimestamp());

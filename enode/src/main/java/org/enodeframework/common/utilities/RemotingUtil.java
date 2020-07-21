@@ -16,7 +16,7 @@
  */
 package org.enodeframework.common.utilities;
 
-import org.enodeframework.common.exception.RemotingException;
+import org.enodeframework.common.exception.EnodeRuntimeException;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -28,22 +28,22 @@ import java.net.UnknownHostException;
  */
 public class RemotingUtil {
     public static final String OS_NAME = System.getProperty("os.name");
-
-    private static boolean isLinuxPlatform = false;
-
-    private static boolean isWindowsPlatform = false;
+    private static final String LINUX = "linux";
+    private static final String WINDOWS = "windows";
+    private static boolean IS_LINUX_PLATFORM = false;
+    private static boolean IS_WINDOWS_PLATFORM = false;
 
     static {
-        if (OS_NAME != null && OS_NAME.toLowerCase().contains("linux")) {
-            isLinuxPlatform = true;
+        if (OS_NAME != null && OS_NAME.toLowerCase().contains(LINUX)) {
+            IS_LINUX_PLATFORM = true;
         }
-        if (OS_NAME != null && OS_NAME.toLowerCase().contains("windows")) {
-            isWindowsPlatform = true;
+        if (OS_NAME != null && OS_NAME.toLowerCase().contains(WINDOWS)) {
+            IS_WINDOWS_PLATFORM = true;
         }
     }
 
     public static boolean isLinuxPlatform() {
-        return isLinuxPlatform;
+        return IS_LINUX_PLATFORM;
     }
 
     public static Address string2Address(final String addr) {
@@ -58,7 +58,7 @@ public class RemotingUtil {
             try {
                 localAddress = Inet4Address.getLocalHost();
             } catch (UnknownHostException e) {
-                throw new RemotingException("No local address found", e);
+                throw new EnodeRuntimeException("No local address found", e);
             }
         }
         return String.format("%s:%d", localAddress.getHostAddress(), port);

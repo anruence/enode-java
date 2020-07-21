@@ -12,11 +12,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
-import org.enodeframework.common.exception.EnodeRuntimeException;
+import org.enodeframework.common.exception.EventStoreException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.eventing.AggregateEventAppendResult;
 import org.enodeframework.eventing.BatchAggregateEventAppendResult;
@@ -63,13 +63,15 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
      */
     private final DataSource dataSource;
     private final IEventSerializer eventSerializer;
+    private final ISerializeService serializeService;
     private SQLClient sqlClient;
 
-    public JDBCEventStore(DataSource dataSource, IEventSerializer eventSerializer) {
-        this(dataSource, new DBConfiguration(), eventSerializer);
+    public JDBCEventStore(DataSource dataSource, IEventSerializer eventSerializer, ISerializeService serializeService) {
+        this(dataSource, new DBConfiguration(), eventSerializer, serializeService);
     }
 
-    public JDBCEventStore(DataSource dataSource, DBConfiguration dbConfiguration, IEventSerializer eventSerializer) {
+    public JDBCEventStore(DataSource dataSource, DBConfiguration dbConfiguration, IEventSerializer eventSerializer, ISerializeService serializeService) {
+        this.serializeService = serializeService;
         Ensure.notNull(dataSource, "dataSource");
         Ensure.notNull(eventSerializer, "eventSerializer");
         Ensure.notNull(dbConfiguration, "dbConfiguration");
@@ -142,7 +144,7 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
             array.add(domainEventStream.getCommandId());
             array.add(domainEventStream.getVersion());
             array.add(domainEventStream.getTimestamp().toInstant());
-            array.add(JsonTool.serialize(eventSerializer.serialize(domainEventStream.events())));
+            array.add(serializeService.serialize(eventSerializer.serialize(domainEventStream.events())));
             jsonArrays.add(array);
         }
         if (jsonArrays.size() > 1) {
@@ -190,7 +192,7 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
                 throw new IORuntimeException(throwable);
             }
             logger.error("Batch append event has unknown exception.", throwable);
-            throw new EnodeRuntimeException(throwable);
+            throw new EventStoreException(throwable);
         });
     }
 
@@ -261,7 +263,7 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
                     throw new IORuntimeException(throwable);
                 }
                 logger.error("Failed to query aggregate events async, aggregateRootId: {}, aggregateRootType: {}", aggregateRootId, aggregateRootTypeName, throwable);
-                throw new EnodeRuntimeException(throwable);
+                throw new EventStoreException(throwable);
             });
         }, "QueryAggregateEventsAsync");
     }
@@ -294,7 +296,7 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
                     throw new IORuntimeException(throwable);
                 }
                 logger.error("Find event by version has unknown exception, aggregateRootId: {}, version: {}", aggregateRootId, version, throwable);
-                throw new EnodeRuntimeException(throwable);
+                throw new EventStoreException(throwable);
             });
         }, "FindEventByVersionAsync");
 
@@ -328,7 +330,7 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
                     throw new IORuntimeException(throwable);
                 }
                 logger.error("Find event by commandId has unknown exception, aggregateRootId: {}, commandId: {}", aggregateRootId, commandId, throwable);
-                throw new EnodeRuntimeException(throwable);
+                throw new EventStoreException(throwable);
             });
         }, "FindEventByCommandIdAsync");
 
@@ -356,7 +358,7 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
                 record.aggregateRootId,
                 record.aggregateRootTypeName,
                 record.gmtCreated,
-                eventSerializer.deserialize(JsonTool.deserialize(record.events, Map.class), IDomainEvent.class),
+                eventSerializer.deserialize(serializeService.deserialize(record.events, Map.class), IDomainEvent.class),
                 Maps.newHashMap());
     }
 

@@ -1,5 +1,6 @@
 package com.microsoft.conference.registration.domain.orders.Models;
 
+import com.microsoft.conference.common.exception.InvalidOperationException;
 import com.microsoft.conference.registration.domain.SeatQuantity;
 import com.microsoft.conference.registration.domain.orders.Events.OrderClosed;
 import com.microsoft.conference.registration.domain.orders.Events.OrderExpired;
@@ -10,7 +11,6 @@ import com.microsoft.conference.registration.domain.orders.Events.OrderReservati
 import com.microsoft.conference.registration.domain.orders.Events.OrderSuccessed;
 import com.microsoft.conference.registration.domain.orders.IPricingService;
 import com.microsoft.conference.registration.domain.seatassigning.Models.OrderSeatAssignments;
-import org.enodeframework.common.exception.InvalidOperationException;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.common.utilities.ObjectId;
 import org.enodeframework.domain.AggregateRoot;

@@ -23,22 +23,17 @@ public class ProcessingCommandMailbox {
     /**
      * Sequence 对应 ProcessingCommand
      */
-    private ConcurrentHashMap<Long, ProcessingCommand> messageDict;
-
-    private ConcurrentHashMap<String, Byte> duplicateCommandIdDict;
-
-    private IProcessingCommandHandler messageHandler;
-    private int batchSize;
-
+    private final ConcurrentHashMap<Long, ProcessingCommand> messageDict;
+    private final ConcurrentHashMap<String, Byte> duplicateCommandIdDict;
+    private final IProcessingCommandHandler messageHandler;
+    private final int batchSize;
+    private final AtomicInteger isUsing = new AtomicInteger(0);
+    private final AtomicInteger isRemoved = new AtomicInteger(0);
     private String aggregateRootId;
     private Date lastActiveTime;
     private boolean running;
     private boolean pauseRequested;
     private boolean paused;
-
-    private AtomicInteger isUsing = new AtomicInteger(0);
-    private AtomicInteger isRemoved = new AtomicInteger(0);
-
     private long nextSequence;
     private long consumingSequence;
 

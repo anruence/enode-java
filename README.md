@@ -189,7 +189,7 @@ spring.enode.mq.topic.exception=EnodeTestExceptionTopic
         return dataSource;
     }
 
-    @Bean("enodeMysqlDataSource")
+    @Bean("enodeMySQLDataSource")
     @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mysql")
     public HikariDataSource mysqlDataSource() {
         HikariDataSource dataSource = new HikariDataSource();

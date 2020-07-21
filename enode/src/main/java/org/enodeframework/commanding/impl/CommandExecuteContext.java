@@ -5,6 +5,7 @@ import org.enodeframework.commanding.AggregateRootAlreadyExistException;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.ICommandExecuteContext;
 import org.enodeframework.common.io.Task;
+import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IAggregateStorage;
 import org.enodeframework.domain.IRepository;
@@ -29,10 +30,9 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     private final IAggregateStorage aggregateRootStorage;
     private final ISendReplyService sendReplyService;
     private final QueueMessage queueMessage;
+    private final IMessageContext messageContext;
+    private final CommandMessage commandMessage;
     private String result;
-    private IMessageContext messageContext;
-    private CommandMessage commandMessage;
-
     private IApplicationMessage applicationMessage;
 
     public CommandExecuteContext(
@@ -63,9 +63,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
 
     @Override
     public void add(IAggregateRoot aggregateRoot) {
-        if (aggregateRoot == null) {
-            throw new IllegalArgumentException("aggregateRoot");
-        }
+        Ensure.notNull(aggregateRoot, "aggregateRoot");
         if (trackingAggregateRootDict.containsKey(aggregateRoot.getUniqueId())) {
             throw new AggregateRootAlreadyExistException(aggregateRoot.getUniqueId(), aggregateRoot.getClass());
         }
@@ -86,9 +84,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
      */
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Object id, boolean firstFromCache, Class<T> aggregateRootType) {
-        if (id == null) {
-            throw new IllegalArgumentException("id");
-        }
+        Ensure.notNull(id, "id");
         String aggregateRootId = id.toString();
         T iAggregateRoot = (T) trackingAggregateRootDict.get(aggregateRootId);
         CompletableFuture<T> future = new CompletableFuture<>();

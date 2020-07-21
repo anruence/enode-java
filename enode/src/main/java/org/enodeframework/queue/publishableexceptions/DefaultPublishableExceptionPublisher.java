@@ -1,6 +1,6 @@
 package org.enodeframework.queue.publishableexceptions;
 
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.messaging.IMessagePublisher;
@@ -19,10 +19,13 @@ public class DefaultPublishableExceptionPublisher implements IMessagePublisher<I
 
     private final ISendMessageService sendMessageService;
 
-    public DefaultPublishableExceptionPublisher(String topic, String tag, ISendMessageService sendMessageService) {
+    private final ISerializeService serializeService;
+
+    public DefaultPublishableExceptionPublisher(String topic, String tag, ISendMessageService sendMessageService, ISerializeService serializeService) {
         this.topic = topic;
         this.tag = tag;
         this.sendMessageService = sendMessageService;
+        this.serializeService = serializeService;
     }
 
     protected QueueMessage createExceptionMessage(IDomainException exception) {
@@ -35,7 +38,7 @@ public class DefaultPublishableExceptionPublisher implements IMessagePublisher<I
         exceptionMessage.setTimestamp(exception.getTimestamp());
         exceptionMessage.setSerializableInfo(serializableInfo);
         exceptionMessage.setItems(exception.getItems());
-        String data = JsonTool.serialize(exceptionMessage);
+        String data = serializeService.serialize(exceptionMessage);
         String routeKey = exception.getId();
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setTopic(topic);

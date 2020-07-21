@@ -1,6 +1,8 @@
 package org.enodeframework.domain.impl;
 
-import org.enodeframework.common.exception.EnodeRuntimeException;
+import org.enodeframework.common.exception.AggregateRootInvalidException;
+import org.enodeframework.common.io.IOHelper;
+import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IAggregateSnapshotter;
 import org.enodeframework.domain.IAggregateStorage;
@@ -20,19 +22,12 @@ public class SnapshotOnlyAggregateStorage implements IAggregateStorage {
 
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, String aggregateRootId) {
-        CompletableFuture<T> future = new CompletableFuture<>();
-        if (aggregateRootId == null) {
-            future.completeExceptionally(new IllegalArgumentException("aggregateRootId"));
-            return future;
-        }
-        if (aggregateRootType == null) {
-            future.completeExceptionally(new IllegalArgumentException("aggregateRootType"));
-            return future;
-        }
-        return aggregateSnapshotter.restoreFromSnapshotAsync(aggregateRootType, aggregateRootId)
+        Ensure.notNull(aggregateRootId, "aggregateRootId");
+        Ensure.notNull(aggregateRootType, "aggregateRootType");
+        return tryRestoreFromSnapshotAsync(aggregateRootType, aggregateRootId, 0, new CompletableFuture<>())
                 .thenApply(aggregateRoot -> {
                     if (aggregateRoot != null && (aggregateRoot.getClass() != aggregateRootType || !aggregateRoot.getUniqueId().equals(aggregateRootId))) {
-                        throw new EnodeRuntimeException(String.format("AggregateRoot recovery from snapshot is invalid as the aggregateRootType or aggregateRootId is not matched. Snapshot: [aggregateRootType:%s,aggregateRootId:%s], expected: [aggregateRootType:%s,aggregateRootId:%s]",
+                        throw new AggregateRootInvalidException(String.format("AggregateRoot recovery from snapshot is invalid as the aggregateRootType or aggregateRootId is not matched. Snapshot: [aggregateRootType:%s,aggregateRootId:%s], expected: [aggregateRootType:%s,aggregateRootId:%s]",
                                 aggregateRoot.getClass(),
                                 aggregateRoot.getUniqueId(),
                                 aggregateRootType,
@@ -40,5 +35,15 @@ public class SnapshotOnlyAggregateStorage implements IAggregateStorage {
                     }
                     return aggregateRoot;
                 });
+    }
+
+    private <T extends IAggregateRoot> CompletableFuture<T> tryRestoreFromSnapshotAsync(Class<T> aggregateRootType, String aggregateRootId, int retryTimes, CompletableFuture<T> taskSource) {
+        IOHelper.tryAsyncActionRecursively("TryRestoreFromSnapshotAsync",
+                () -> aggregateSnapshotter.restoreFromSnapshotAsync(aggregateRootType, aggregateRootId),
+                taskSource::complete,
+                () -> String.format("aggregateSnapshotter.tryRestoreFromSnapshotAsync has unknown exception, aggregateRootType: %s, aggregateRootId: %s", aggregateRootType.getName(), aggregateRootId),
+                null,
+                retryTimes, true);
+        return taskSource;
     }
 }

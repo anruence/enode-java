@@ -13,11 +13,11 @@ import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.enodeframework.common.exception.EnodeRuntimeException;
+import org.enodeframework.common.exception.EventStoreException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.AggregateEventAppendResult;
 import org.enodeframework.eventing.BatchAggregateEventAppendResult;
 import org.enodeframework.eventing.DomainEventStream;
@@ -61,17 +61,20 @@ public class MongoEventStore implements IEventStore {
 
     private final IEventSerializer eventSerializer;
 
-    public MongoEventStore(MongoClient mongoClient, IEventSerializer eventSerializer) {
-        this(mongoClient, new MongoConfiguration(), eventSerializer);
+    private final ISerializeService serializeService;
+
+    public MongoEventStore(MongoClient mongoClient, IEventSerializer eventSerializer, ISerializeService serializeService) {
+        this(mongoClient, new MongoConfiguration(), eventSerializer, serializeService);
     }
 
-    public MongoEventStore(MongoClient mongoClient, MongoConfiguration mongoConfiguration, IEventSerializer eventSerializer) {
+    public MongoEventStore(MongoClient mongoClient, MongoConfiguration mongoConfiguration, IEventSerializer eventSerializer, ISerializeService serializeService) {
         this.mongoClient = mongoClient;
         this.eventSerializer = eventSerializer;
         this.mongoConfiguration = mongoConfiguration;
         this.duplicateCode = mongoConfiguration.getDuplicateCode();
         this.versionIndexName = mongoConfiguration.getEventTableVersionUniqueIndexName();
         this.commandIndexName = mongoConfiguration.getEventTableCommandIdUniqueIndexName();
+        this.serializeService = serializeService;
     }
 
     @Override
@@ -127,7 +130,7 @@ public class MongoEventStore implements IEventStore {
             document.put("commandId", domainEventStream.getCommandId());
             document.put("version", domainEventStream.getVersion());
             document.put("gmtCreate", domainEventStream.getTimestamp());
-            document.put("events", JsonTool.serialize(eventSerializer.serialize(domainEventStream.events())));
+            document.put("events", serializeService.serialize(eventSerializer.serialize(domainEventStream.events())));
             documents.add(document);
         }
         if (documents.size() > 1) {
@@ -178,7 +181,7 @@ public class MongoEventStore implements IEventStore {
                 return appendResult;
             }
             logger.error("Batch append event has unknown exception.", throwable);
-            throw new EnodeRuntimeException(throwable);
+            throw new EventStoreException(throwable);
         });
     }
 
@@ -286,7 +289,7 @@ public class MongoEventStore implements IEventStore {
                             document.getString("aggregateRootId"),
                             document.getString("aggregateRootTypeName"),
                             document.get("gmtCreate", Date.class),
-                            eventSerializer.deserialize(JsonTool.deserialize(document.getString("events"), Map.class), IDomainEvent.class),
+                            eventSerializer.deserialize(serializeService.deserialize(document.getString("events"), Map.class), IDomainEvent.class),
                             Maps.newHashMap());
                     streams.add(eventStream);
                 }
@@ -310,7 +313,7 @@ public class MongoEventStore implements IEventStore {
                     throw new IORuntimeException(throwable);
                 }
                 logger.error("Failed to query aggregate events async, aggregateRootId: {}, aggregateRootType: {}", aggregateRootId, aggregateRootTypeName, throwable);
-                throw new EnodeRuntimeException(throwable);
+                throw new EventStoreException(throwable);
             });
         }, "QueryAggregateEventsAsync");
     }
@@ -336,7 +339,7 @@ public class MongoEventStore implements IEventStore {
                             document.getString("aggregateRootId"),
                             document.getString("aggregateRootTypeName"),
                             document.get("gmtCreate", Date.class),
-                            eventSerializer.deserialize(JsonTool.deserialize(document.getString("events"), Map.class), IDomainEvent.class),
+                            eventSerializer.deserialize(serializeService.deserialize(document.getString("events"), Map.class), IDomainEvent.class),
                             Maps.newHashMap());
                     this.eventStream = eventStream;
                     future.complete(eventStream);
@@ -360,7 +363,7 @@ public class MongoEventStore implements IEventStore {
                     throw new IORuntimeException(throwable);
                 }
                 logger.error("Find event by version has unknown exception, aggregateRootId: {}, version: {}", aggregateRootId, version, throwable);
-                throw new EnodeRuntimeException(throwable);
+                throw new EventStoreException(throwable);
             });
         }, "FindEventByVersionAsync");
 
@@ -387,7 +390,7 @@ public class MongoEventStore implements IEventStore {
                             document.getString("aggregateRootId"),
                             document.getString("aggregateRootTypeName"),
                             document.get("gmtCreate", Date.class),
-                            eventSerializer.deserialize(JsonTool.deserialize(document.getString("events"), Map.class), IDomainEvent.class),
+                            eventSerializer.deserialize(serializeService.deserialize(document.getString("events"), Map.class), IDomainEvent.class),
                             Maps.newHashMap());
                     this.eventStream = eventStream;
                     future.complete(eventStream);
@@ -410,7 +413,7 @@ public class MongoEventStore implements IEventStore {
                     throw new IORuntimeException(throwable);
                 }
                 logger.error("Find event by commandId has unknown exception, aggregateRootId: {}, commandId: {}", aggregateRootId, commandId, throwable);
-                throw new EnodeRuntimeException(throwable);
+                throw new EventStoreException(throwable);
             });
         }, "FindEventByCommandIdAsync");
     }

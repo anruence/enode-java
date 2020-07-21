@@ -1,7 +1,6 @@
 package org.enodeframework.eventing;
 
-import org.enodeframework.common.exception.EnodeRuntimeException;
-import org.enodeframework.common.utilities.Linq;
+import org.enodeframework.common.exception.DomainEventInvalidException;
 import org.enodeframework.messaging.Message;
 
 import java.util.Date;
@@ -27,21 +26,21 @@ public class DomainEventStream extends Message {
         this.commandId = commandId;
         this.aggregateRootId = aggregateRootId;
         this.aggregateRootTypeName = aggregateRootTypeName;
-        this.version = Linq.first(events).getVersion();
+        this.version = events.stream().findFirst().map(IDomainEvent::getVersion).orElse(0);
         this.timestamp = timestamp;
         this.events = events;
         this.items = items == null ? new HashMap<>() : items;
         int sequence = 1;
         for (IDomainEvent event : events) {
             if (!aggregateRootId.equals(event.getAggregateRootStringId())) {
-                throw new EnodeRuntimeException(String.format("Invalid domain event aggregateRootId, aggregateRootTypeName: %s expected aggregateRootId: %s, but was: %s",
+                throw new DomainEventInvalidException(String.format("Invalid domain event aggregateRootId, aggregateRootTypeName: %s expected aggregateRootId: %s, but was: %s",
                         aggregateRootTypeName,
                         aggregateRootId,
                         event.getAggregateRootStringId()));
             }
 
             if (event.getVersion() != this.getVersion()) {
-                throw new EnodeRuntimeException(String.format("Invalid domain event version, aggregateRootTypeName: %s aggregateRootId: %s expected version: %d, but was: %d",
+                throw new DomainEventInvalidException(String.format("Invalid domain event version, aggregateRootTypeName: %s aggregateRootId: %s expected version: %d, but was: %d",
                         aggregateRootTypeName,
                         aggregateRootId,
                         version,

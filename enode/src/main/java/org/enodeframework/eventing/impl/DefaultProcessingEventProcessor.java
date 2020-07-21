@@ -2,7 +2,6 @@ package org.enodeframework.eventing.impl;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -94,11 +92,22 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     private void tryToRefreshAggregateMailBoxNextExpectingEventVersion(ProcessingEventMailBox processingEventMailBox) {
         if (refreshingAggregateRootDict.putIfAbsent(processingEventMailBox.getAggregateRootId(), true) == null) {
-            getAggregateRootLatestHandledEventVersion(processingEventMailBox.getAggregateRootTypeName(), processingEventMailBox.getAggregateRootId()).thenAccept(latestPublishedEventVersion -> {
-                processingEventMailBox.setNextExpectingEventVersion(latestPublishedEventVersion + 1);
-                refreshingAggregateRootDict.remove(processingEventMailBox.getAggregateRootId());
-            });
+            getAggregateRootLatestPublishedEventVersion(processingEventMailBox, 0);
         }
+    }
+
+
+    private void getAggregateRootLatestPublishedEventVersion(ProcessingEventMailBox processingEventMailBox, int retryTimes) {
+        IOHelper.tryAsyncActionRecursively("GetAggregateRootLatestPublishedEventVersion",
+                () -> publishedVersionStore.getPublishedVersionAsync(name, processingEventMailBox.getAggregateRootTypeName(), processingEventMailBox.getAggregateRootId()),
+                result -> {
+                    processingEventMailBox.setNextExpectingEventVersion(result + 1);
+                    refreshingAggregateRootDict.remove(processingEventMailBox.getAggregateRootId());
+                },
+                () -> String.format("publishedVersionStore.GetPublishedVersionAsync has unknown exception, aggregateRootTypeName: %s, aggregateRootId: %s", processingEventMailBox.getAggregateRootTypeName(), processingEventMailBox.getAggregateRootId()),
+                null,
+                retryTimes,
+                true);
     }
 
     @Override
@@ -130,14 +139,6 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
                 () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", processingEvent.getMessage().getId(), processingEvent.getMessage().getClass().getName(), processingEvent.getMessage().getAggregateRootId(), processingEvent.getMessage().getVersion()),
                 null,
                 retryTimes, true);
-    }
-
-    private CompletableFuture<Integer> getAggregateRootLatestHandledEventVersion(String aggregateRootType, String aggregateRootId) {
-        try {
-            return publishedVersionStore.getPublishedVersionAsync(name, aggregateRootType, aggregateRootId);
-        } catch (Exception ex) {
-            throw new EnodeRuntimeException("_publishedVersionStore.GetPublishedVersionAsync has unknown exception.", ex);
-        }
     }
 
     private void updatePublishedVersionAsync(ProcessingEvent processingEvent, int retryTimes) {

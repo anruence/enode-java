@@ -9,7 +9,7 @@ import static org.enodeframework.samples.QueueProperties.JDBC_URL;
 @Configuration
 public class CommandConsumerAppConfig {
 
-    @Bean(name = "enodeMysqlDataSource")
+    @Bean(name = "enodeMySQLDataSource")
     public HikariDataSource dataSource() {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(JDBC_URL);
@@ -18,4 +18,5 @@ public class CommandConsumerAppConfig {
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
     }
+
 }

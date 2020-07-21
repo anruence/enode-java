@@ -8,7 +8,7 @@ import com.mongodb.client.result.UpdateResult;
 import com.mongodb.reactivestreams.client.MongoClient;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.enodeframework.common.exception.EnodeRuntimeException;
+import org.enodeframework.common.exception.EventStoreException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.eventing.IPublishedVersionStore;
 import org.reactivestreams.Subscriber;
@@ -125,7 +125,7 @@ public class MongoPublishedVersionStore implements IPublishedVersionStore {
                 throw new IORuntimeException(throwable);
             }
             logger.error("Insert or update aggregate published version has unknown exception.", throwable);
-            throw new EnodeRuntimeException(throwable);
+            throw new EventStoreException(throwable);
 
         });
     }
@@ -168,7 +168,7 @@ public class MongoPublishedVersionStore implements IPublishedVersionStore {
                 throw new IORuntimeException(throwable);
             }
             logger.error("Get aggregate published version has unknown exception.", throwable);
-            throw new EnodeRuntimeException(throwable);
+            throw new EventStoreException(throwable);
         });
     }
 }
