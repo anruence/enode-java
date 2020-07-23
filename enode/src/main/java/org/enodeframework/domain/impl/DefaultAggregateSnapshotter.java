@@ -1,5 +1,6 @@
 package org.enodeframework.domain.impl;
 
+import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.domain.IAggregateRepositoryProvider;
 import org.enodeframework.domain.IAggregateRepositoryProxy;
 import org.enodeframework.domain.IAggregateRoot;
@@ -26,6 +27,19 @@ public class DefaultAggregateSnapshotter implements IAggregateSnapshotter {
             future.complete(null);
             return future;
         }
-        return aggregateRepository.getAsync(aggregateRootId);
+        return tryGetAggregateAsync(aggregateRepository, aggregateRootType, aggregateRootId, 0, future);
+    }
+
+    private <T extends IAggregateRoot> CompletableFuture<T> tryGetAggregateAsync(IAggregateRepositoryProxy aggregateRepository, Class<?> aggregateRootType, String aggregateRootId, int retryTimes, CompletableFuture<T> taskSource) {
+        IOHelper.tryAsyncActionRecursively("TryGetAggregateAsync",
+                () -> aggregateRepository.getAsync(aggregateRootId),
+                result -> {
+                    taskSource.complete((T) result);
+                },
+                () -> String.format("aggregateRepository.getAsync has unknown exception, aggregateRepository: %s, aggregateRootTypeName: %s, aggregateRootId: %s", aggregateRepository.getClass().getName(), aggregateRootType.getName(), aggregateRootId),
+                null,
+                retryTimes,
+                true);
+        return taskSource;
     }
 }

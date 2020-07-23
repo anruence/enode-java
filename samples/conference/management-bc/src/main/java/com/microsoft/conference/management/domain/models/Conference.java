@@ -1,5 +1,6 @@
 package com.microsoft.conference.management.domain.models;
 
+import com.microsoft.conference.common.Linq;
 import com.microsoft.conference.management.domain.events.ConferenceCreated;
 import com.microsoft.conference.management.domain.events.ConferencePublished;
 import com.microsoft.conference.management.domain.events.ConferenceUnpublished;
@@ -13,7 +14,6 @@ import com.microsoft.conference.management.domain.events.SeatsReservationCommitt
 import com.microsoft.conference.management.domain.events.SeatsReserved;
 import com.microsoft.conference.management.domain.publishableexceptions.SeatInsufficientException;
 import org.enodeframework.common.exception.EnodeRuntimeException;
-import org.enodeframework.common.utilities.Linq;
 import org.enodeframework.domain.AggregateRoot;
 
 import java.util.ArrayList;

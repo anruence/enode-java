@@ -5,9 +5,9 @@ import org.enodeframework.commanding.CommandStatus;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ProcessingCommand;
 import org.enodeframework.commanding.ProcessingCommandMailbox;
-import org.enodeframework.common.exception.EnodeRuntimeException;
+import org.enodeframework.common.exception.MailBoxInvalidException;
 import org.enodeframework.common.io.IOHelper;
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.domain.IMemoryCache;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.DomainEventStreamMessage;
@@ -35,16 +35,18 @@ public class DefaultEventCommittingService implements IEventCommittingService {
     private final int eventMailBoxCount;
     private final IMemoryCache memoryCache;
     private final IEventStore eventStore;
+    private final ISerializeService serializeService;
     private final IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
     private final List<EventCommittingContextMailBox> eventCommittingContextMailBoxList;
 
-    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
-        this(memoryCache, eventStore, domainEventPublisher, 4);
+    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, ISerializeService serializeService, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
+        this(memoryCache, eventStore, serializeService, domainEventPublisher, 4);
     }
 
-    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher, int eventMailBoxCount) {
+    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, ISerializeService serializeService, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher, int eventMailBoxCount) {
         this.memoryCache = memoryCache;
         this.eventStore = eventStore;
+        this.serializeService = serializeService;
         this.domainEventPublisher = domainEventPublisher;
         this.eventMailBoxCount = eventMailBoxCount;
         this.eventCommittingContextMailBoxList = new ArrayList<>();
@@ -97,7 +99,7 @@ public class DefaultEventCommittingService implements IEventCommittingService {
                 result -> {
                     EventCommittingContextMailBox eventMailBox = committingContexts.stream()
                             .findFirst()
-                            .orElseThrow(() -> new EnodeRuntimeException("eventMailBox can not be null"))
+                            .orElseThrow(() -> new MailBoxInvalidException("eventMailBox can not be null"))
                             .getMailBox();
                     if (result == null) {
                         logger.error("Batch persist events success, but the persist result is null, the current event committing mailbox should be pending, mailboxNumber: {}", eventMailBox.getNumber());
@@ -147,7 +149,7 @@ public class DefaultEventCommittingService implements IEventCommittingService {
                                 logger.warn("Batch persist events, mailboxNumber: {}, duplicateEventAggregateRootCount: {}, detail: {}",
                                         eventMailBox.getNumber(),
                                         result.getDuplicateEventAggregateRootIdList().size(),
-                                        JsonTool.serialize(result.getDuplicateEventAggregateRootIdList()));
+                                        serializeService.serialize(result.getDuplicateEventAggregateRootIdList()));
                                 EventCommittingContext eventCommittingContext = committingContextOptional.get();
                                 if (eventCommittingContext.getEventStream().getVersion() == 1) {
                                     handleFirstEventDuplicationAsync(eventCommittingContext, 0);
@@ -193,12 +195,11 @@ public class DefaultEventCommittingService implements IEventCommittingService {
         IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
                 () -> eventStore.findAsync(context.getEventStream().getAggregateRootId(), command.getId()),
                 result -> {
-                    DomainEventStream existingEventStream = result;
-                    if (existingEventStream != null) {
+                    if (result != null) {
                         //这里，我们需要再重新做一遍发布事件这个操作；
                         //之所以要这样做是因为虽然该command产生的事件已经持久化成功，但并不表示事件已经发布出去了；
                         //因为有可能事件持久化成功了，但那时正好机器断电了，则发布事件都没有做；
-                        publishDomainEventAsync(context.getProcessingCommand(), existingEventStream);
+                        publishDomainEventAsync(context.getProcessingCommand(), result);
                     } else {
                         //到这里，说明当前command想添加到eventStore中时，提示command重复，但是尝试从eventStore中取出该command时却找不到该command。
                         //出现这种情况，我们就无法再做后续处理了，这种错误理论上不会出现，除非eventStore的Add接口和Get接口出现读写不一致的情况；
@@ -223,23 +224,22 @@ public class DefaultEventCommittingService implements IEventCommittingService {
                 () -> eventStore.findAsync(context.getEventStream().getAggregateRootId(), 1),
                 result -> {
                     if (result != null) {
-                        DomainEventStream eventStream = result;
                         //判断是否是同一个command，如果是，则再重新做一遍发布事件；
                         //之所以要这样做，是因为虽然该command产生的事件已经持久化成功，但并不表示事件也已经发布出去了；
                         //有可能事件持久化成功了，但那时正好机器断电了，则发布事件都没有做；
-                        if (context.getProcessingCommand().getMessage().getId().equals(eventStream.getCommandId())) {
+                        if (context.getProcessingCommand().getMessage().getId().equals(result.getCommandId())) {
                             resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1, null)
                                     .thenAccept(x -> {
-                                        publishDomainEventAsync(context.getProcessingCommand(), eventStream);
+                                        publishDomainEventAsync(context.getProcessingCommand(), result);
                                         future.complete(null);
                                     });
                         } else {
                             //如果不是同一个command，则认为是两个不同的command重复创建ID相同的聚合根，我们需要记录错误日志，然后通知当前command的处理完成；
                             String errorMessage = String.format("Duplicate aggregate creation. current commandId:%s, existing commandId:%s, aggregateRootId:%s, aggregateRootTypeName:%s",
                                     context.getProcessingCommand().getMessage().getId(),
-                                    eventStream.getCommandId(),
-                                    eventStream.getAggregateRootId(),
-                                    eventStream.getAggregateRootTypeName());
+                                    result.getCommandId(),
+                                    result.getAggregateRootId(),
+                                    result.getAggregateRootTypeName());
                             logger.error(errorMessage);
                             resetCommandMailBoxConsumingSequence(context, context.getProcessingCommand().getSequence() + 1, null)
                                     .thenAccept(x -> {

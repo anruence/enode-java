@@ -2,8 +2,9 @@ package org.enodeframework.domain;
 
 import com.google.common.collect.Lists;
 import org.enodeframework.common.container.ObjectContainer;
-import org.enodeframework.common.exception.EnodeRuntimeException;
+import org.enodeframework.common.exception.HandlerNotFoundException;
 import org.enodeframework.common.function.Action2;
+import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.infrastructure.TypeUtils;
@@ -35,9 +36,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     protected AggregateRoot(TAggregateRootId id) {
         this();
-        if (id == null) {
-            throw new IllegalArgumentException("id");
-        }
+        Ensure.notNull(id, "id");
         this.id = id;
     }
 
@@ -54,12 +53,8 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     }
 
     protected void applyEvent(IDomainEvent<TAggregateRootId> domainEvent) {
-        if (domainEvent == null) {
-            throw new IllegalArgumentException("domainEvent");
-        }
-        if (id == null) {
-            throw new RuntimeException("Aggregate root id cannot be null.");
-        }
+        Ensure.notNull(domainEvent, "domainEvent");
+        Ensure.notNull(id, "AggregateRootId");
         domainEvent.setAggregateRootId(id);
         domainEvent.setAggregateRootStringId(this.getUniqueId());
         domainEvent.setVersion(version + 1);
@@ -79,16 +74,19 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         }
         Action2<IAggregateRoot, IDomainEvent> handler = aggregateRootInternalHandlerProvider.getInternalEventHandler(getClass(), domainEvent.getClass());
         if (handler == null) {
-            throw new EnodeRuntimeException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
+            throw new HandlerNotFoundException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
         }
         if (this.id == null && domainEvent.getVersion() == 1) {
             // 获取泛型类型
-            Class genericType = TypeUtils.getGenericType(this.getClass());
+            Class<?> genericType = TypeUtils.getGenericType(this.getClass());
             if (Long.class.equals(genericType)) {
                 this.id = (TAggregateRootId) Long.valueOf(domainEvent.getAggregateRootStringId());
             }
             if (Integer.class.equals(genericType)) {
                 this.id = (TAggregateRootId) Integer.valueOf(domainEvent.getAggregateRootStringId());
+            }
+            if (String.class.equals(genericType)) {
+                this.id = (TAggregateRootId) String.valueOf(domainEvent.getAggregateRootStringId());
             }
             this.id = (TAggregateRootId) domainEvent.getAggregateRootStringId();
         }

@@ -11,7 +11,7 @@ import org.enodeframework.common.exception.EnodeRuntimeException;
 /**
  * Json静态工具（基于jackson）
  */
-public class JacksonSerialization {
+public class JacksonSerializeService implements ISerializeService {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -26,7 +26,8 @@ public class JacksonSerialization {
         MAPPER.configure(MapperFeature.AUTO_DETECT_FIELDS, true);
     }
 
-    public static <T> T deserialize(String json, Class<T> type) {
+    @Override
+    public <T> T deserialize(String json, Class<T> type) {
         try {
             return MAPPER.readValue(json, type);
         } catch (JsonProcessingException e) {
@@ -34,7 +35,8 @@ public class JacksonSerialization {
         }
     }
 
-    public static String serialize(Object target) {
+    @Override
+    public String serialize(Object target) {
         try {
             return MAPPER.writeValueAsString(target);
         } catch (JsonProcessingException e) {

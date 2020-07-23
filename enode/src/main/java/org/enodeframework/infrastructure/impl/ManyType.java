@@ -13,7 +13,7 @@ public class ManyType {
 
     public ManyType(List<Class<?>> types) {
         if (new HashSet<>(types).size() != types.size()) {
-            throw new IllegalArgumentException("Invalid ManyType:" + String.join("|", types.stream().map(Class::getName).collect(Collectors.toList())));
+            throw new IllegalArgumentException("Invalid ManyType:" + types.stream().map(Class::getName).collect(Collectors.joining("|")));
         }
         this.types = types;
     }

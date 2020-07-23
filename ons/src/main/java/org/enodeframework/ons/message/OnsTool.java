@@ -1,8 +1,9 @@
 package org.enodeframework.ons.message;
 
 import com.aliyun.openservices.ons.api.Message;
-import org.enodeframework.common.utilities.BitConverter;
 import org.enodeframework.queue.QueueMessage;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author anruence@gmail.com
@@ -11,7 +12,7 @@ public class OnsTool {
 
     public static QueueMessage covertToQueueMessage(Message messageExt) {
         QueueMessage queueMessage = new QueueMessage();
-        queueMessage.setBody(BitConverter.toString(messageExt.getBody()));
+        queueMessage.setBody(new String(messageExt.getBody(), StandardCharsets.UTF_8));
         queueMessage.setTopic(messageExt.getTopic());
         queueMessage.setTag(messageExt.getTag());
         queueMessage.setRouteKey(messageExt.getShardingKey());
@@ -20,7 +21,7 @@ public class OnsTool {
     }
 
     public static Message covertToProducerRecord(QueueMessage queueMessage) {
-        Message message = new Message(queueMessage.getTopic(), queueMessage.getTag(), queueMessage.getKey(), BitConverter.getBytes(queueMessage.getBody()));
+        Message message = new Message(queueMessage.getTopic(), queueMessage.getTag(), queueMessage.getKey(), queueMessage.getBody().getBytes(StandardCharsets.UTF_8));
         message.setShardingKey(queueMessage.getRouteKey());
         return message;
     }

@@ -1,6 +1,7 @@
 package org.enodeframework.spring;
 
 import com.mongodb.reactivestreams.client.MongoClient;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.mongo.MongoEventStore;
 import org.enodeframework.mongo.MongoPublishedVersionStore;
@@ -12,9 +13,8 @@ import org.springframework.context.annotation.Bean;
 public class EnodeMongoEventStoreAutoConfig extends EnodeVertxAutoConfig {
 
     @Bean
-    public MongoEventStore mongoEventStore(@Qualifier("enodeMongoClient") MongoClient mongoClient, IEventSerializer eventSerializer) {
-        MongoEventStore eventStore = new MongoEventStore(mongoClient, eventSerializer);
-        return eventStore;
+    public MongoEventStore mongoEventStore(@Qualifier("enodeMongoClient") MongoClient mongoClient, IEventSerializer eventSerializer, ISerializeService serializeService) {
+        return new MongoEventStore(mongoClient, eventSerializer, serializeService);
     }
 
     @Bean

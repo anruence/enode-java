@@ -17,14 +17,14 @@ public class ObjectId {
     private static final int STATIC_MACHINE;
     private static final short STATIC_PID;
     private static final AtomicInteger STATIC_INCREMENT;
-    private static String[] lookup32 = new String[256];
+    private static final String[] LOOKUP_32 = new String[256];
 
     static {
         STATIC_MACHINE = getMachineHash();
         STATIC_INCREMENT = new AtomicInteger(new Random().nextInt());
         STATIC_PID = (short) getCurrentProcessId();
         for (int i = 0; i < 256; i++) {
-            lookup32[i] = String.format("%02x", i);
+            LOOKUP_32[i] = String.format("%02x", i);
         }
     }
 
@@ -34,9 +34,7 @@ public class ObjectId {
     private int increment;
 
     public ObjectId(byte[] bytes) {
-        if (bytes == null) {
-            throw new IllegalArgumentException("bytes");
-        }
+        Ensure.notNull(bytes, "bytes");
         unpack(bytes);
     }
 
@@ -103,8 +101,8 @@ public class ObjectId {
             throw new IllegalArgumentException("bytes");
         }
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < bytes.length; i++) {
-            String val = lookup32[bytes[i] & 0xff];
+        for (byte aByte : bytes) {
+            String val = LOOKUP_32[aByte & 0xff];
             result.append(val);
         }
         return result.toString();

@@ -1,12 +1,12 @@
 package com.microsoft.conference.registration.domain.seatassigning.Models;
 
+import com.microsoft.conference.common.Linq;
+import com.microsoft.conference.common.exception.ArgumentOutOfRangeException;
 import com.microsoft.conference.registration.domain.orders.Models.OrderLine;
 import com.microsoft.conference.registration.domain.seatassigning.Events.OrderSeatAssignmentsCreated;
 import com.microsoft.conference.registration.domain.seatassigning.Events.SeatAssigned;
 import com.microsoft.conference.registration.domain.seatassigning.Events.SeatUnassigned;
-import org.enodeframework.common.exception.ArgumentOutOfRangeException;
 import org.enodeframework.common.utilities.Ensure;
-import org.enodeframework.common.utilities.Linq;
 import org.enodeframework.common.utilities.ObjectId;
 import org.enodeframework.domain.AggregateRoot;
 

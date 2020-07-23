@@ -4,7 +4,7 @@ import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandProcessor;
 import org.enodeframework.commanding.ProcessingCommand;
 import org.enodeframework.commanding.impl.CommandExecuteContext;
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.domain.IAggregateStorage;
 import org.enodeframework.domain.IRepository;
 import org.enodeframework.infrastructure.ITypeNameProvider;
@@ -32,20 +32,23 @@ public class DefaultCommandListener implements IMessageHandler {
 
     private final IAggregateStorage aggregateRootStorage;
 
-    public DefaultCommandListener(ISendReplyService sendReplyService, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateRootStorage) {
+    private final ISerializeService serializeService;
+
+    public DefaultCommandListener(ISendReplyService sendReplyService, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateRootStorage, ISerializeService serializeService) {
         this.sendReplyService = sendReplyService;
         this.typeNameProvider = typeNameProvider;
         this.commandProcessor = commandProcessor;
         this.repository = repository;
         this.aggregateRootStorage = aggregateRootStorage;
+        this.serializeService = serializeService;
     }
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
         Map<String, String> commandItems = new HashMap<>();
-        CommandMessage commandMessage = JsonTool.deserialize(queueMessage.getBody(), CommandMessage.class);
+        CommandMessage commandMessage = serializeService.deserialize(queueMessage.getBody(), CommandMessage.class);
         Class<?> commandType = typeNameProvider.getType(commandMessage.getCommandType());
-        ICommand command = (ICommand) JsonTool.deserialize(commandMessage.getCommandData(), commandType);
+        ICommand command = (ICommand) serializeService.deserialize(commandMessage.getCommandData(), commandType);
         CommandExecuteContext commandExecuteContext = new CommandExecuteContext(repository, aggregateRootStorage, queueMessage, context, commandMessage, sendReplyService);
         commandItems.put("CommandReplyAddress", commandMessage.getReplyAddress());
         if (logger.isDebugEnabled()) {

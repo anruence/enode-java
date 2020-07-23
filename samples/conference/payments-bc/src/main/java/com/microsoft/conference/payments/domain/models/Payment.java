@@ -1,9 +1,9 @@
 package com.microsoft.conference.payments.domain.models;
 
+import com.microsoft.conference.common.exception.InvalidOperationException;
 import com.microsoft.conference.payments.domain.events.PaymentCompleted;
 import com.microsoft.conference.payments.domain.events.PaymentInitiated;
 import com.microsoft.conference.payments.domain.events.PaymentRejected;
-import org.enodeframework.common.exception.InvalidOperationException;
 import org.enodeframework.domain.AggregateRoot;
 
 import java.math.BigDecimal;

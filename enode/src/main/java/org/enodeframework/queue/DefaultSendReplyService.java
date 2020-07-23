@@ -8,7 +8,7 @@ import io.vertx.core.net.SocketAddress;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.common.SysProperties;
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.Address;
 import org.enodeframework.common.utilities.RemoteReply;
 import org.enodeframework.common.utilities.RemotingUtil;
@@ -27,12 +27,14 @@ public class DefaultSendReplyService extends AbstractVerticle implements ISendRe
     private static final Logger logger = LoggerFactory.getLogger(DefaultSendReplyService.class);
 
     private final ConcurrentHashMap<String, CompletableFuture<NetSocket>> socketMap = new ConcurrentHashMap<>();
-
+    private final ISerializeService serializeService;
     private boolean started;
-
     private boolean stoped;
-
     private NetClient netClient;
+
+    public DefaultSendReplyService(ISerializeService serializeService) {
+        this.serializeService = serializeService;
+    }
 
     @Override
     public void start() {
@@ -67,7 +69,7 @@ public class DefaultSendReplyService extends AbstractVerticle implements ISendRe
     }
 
     public CompletableFuture<Void> sendReply(RemoteReply remoteReply, String replyAddress) {
-        String message = JsonTool.serialize(remoteReply) + SysProperties.DELIMITED;
+        String message = serializeService.serialize(remoteReply) + SysProperties.DELIMITED;
         Address address = RemotingUtil.string2Address(replyAddress);
         SocketAddress socketAddress = SocketAddress.inetSocketAddress(address.getPort(), address.getHost());
         CompletableFuture<NetSocket> future = new CompletableFuture<>();

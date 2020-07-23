@@ -1,6 +1,8 @@
 package org.enodeframework.domain.impl;
 
-import org.enodeframework.common.exception.EnodeRuntimeException;
+import org.enodeframework.common.exception.AggregateRootInvalidException;
+import org.enodeframework.common.io.IOHelper;
+import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IAggregateRootFactory;
 import org.enodeframework.domain.IAggregateSnapshotter;
@@ -34,40 +36,53 @@ public class EventSourcingAggregateStorage implements IAggregateStorage {
 
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, String aggregateRootId) {
-        CompletableFuture<T> future = new CompletableFuture<>();
-        if (aggregateRootId == null) {
-            future.completeExceptionally(new IllegalArgumentException("aggregateRootId"));
-            return future;
-        }
-        if (aggregateRootType == null) {
-            future.completeExceptionally(new IllegalArgumentException("aggregateRootType"));
-            return future;
-        }
+        Ensure.notNull(aggregateRootId, "aggregateRootId");
+        Ensure.notNull(aggregateRootType, "aggregateRootType");
         return tryGetFromSnapshot(aggregateRootId, aggregateRootType).thenCompose(aggregateRoot -> {
             if (aggregateRoot != null) {
                 return CompletableFuture.completedFuture(aggregateRoot);
             }
             String aggregateRootTypeName = typeNameProvider.getTypeName(aggregateRootType);
-            return eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, MINVERSION, MAXVERSION)
+            return tryQueryAggregateEventsAsync(aggregateRootType, aggregateRootTypeName, aggregateRootId, MINVERSION, MAXVERSION, 0, new CompletableFuture<>())
                     .thenApply(eventStreams -> rebuildAggregateRoot(aggregateRootType, eventStreams));
         });
     }
 
+    private <T extends IAggregateRoot> CompletableFuture<T> tryRestoreFromSnapshotAsync(Class<T> aggregateRootType, String aggregateRootId, int retryTimes, CompletableFuture<T> taskSource) {
+        IOHelper.tryAsyncActionRecursively("TryRestoreFromSnapshotAsync",
+                () -> aggregateSnapshotter.restoreFromSnapshotAsync(aggregateRootType, aggregateRootId),
+                taskSource::complete,
+                () -> String.format("aggregateSnapshotter.tryRestoreFromSnapshotAsync has unknown exception, aggregateRootType: %s, aggregateRootId: %s", aggregateRootType.getName(), aggregateRootId),
+                null,
+                retryTimes, true);
+        return taskSource;
+    }
+
+    private CompletableFuture<List<DomainEventStream>> tryQueryAggregateEventsAsync(Class<?> aggregateRootType, String aggregateRootTypeName, String aggregateRootId, int minVersion, int maxVersion, int retryTimes, CompletableFuture<List<DomainEventStream>> taskSource) {
+        IOHelper.tryAsyncActionRecursively("TryQueryAggregateEventsAsync",
+                () -> eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion),
+                taskSource::complete,
+                () -> String.format("eventStore.queryAggregateEventsAsync has unknown exception, aggregateRootTypeName: %s, aggregateRootId: %s", aggregateRootTypeName, aggregateRootId),
+                null,
+                retryTimes, true);
+        return taskSource;
+    }
+
     private <T extends IAggregateRoot> CompletableFuture<T> tryGetFromSnapshot(String aggregateRootId, Class<T> aggregateRootType) {
-        CompletableFuture<T> aggregateRootFuture = aggregateSnapshotter.restoreFromSnapshotAsync(aggregateRootType, aggregateRootId);
+        CompletableFuture<T> aggregateRootFuture = tryRestoreFromSnapshotAsync(aggregateRootType, aggregateRootId, 0, new CompletableFuture<>());
         return aggregateRootFuture.thenCompose((aggregateRoot) -> {
             if (aggregateRoot == null) {
                 return CompletableFuture.completedFuture(null);
             }
             if (aggregateRoot.getClass() != aggregateRootType || !aggregateRoot.getUniqueId().equals(aggregateRootId)) {
-                throw new EnodeRuntimeException(String.format("AggregateRoot recovery from snapshot is invalid as the aggregateRootType or aggregateRootId is not matched. Snapshot: [aggregateRootType:%s,aggregateRootId:%s], expected: [aggregateRootType:%s,aggregateRootId:%s]",
+                throw new AggregateRootInvalidException(String.format("AggregateRoot recovery from snapshot is invalid as the aggregateRootType or aggregateRootId is not matched. Snapshot: [aggregateRootType:%s,aggregateRootId:%s], expected: [aggregateRootType:%s,aggregateRootId:%s]",
                         aggregateRoot.getClass(),
                         aggregateRoot.getUniqueId(),
                         aggregateRootType,
                         aggregateRootId));
             }
             String aggregateRootTypeName = typeNameProvider.getTypeName(aggregateRootType);
-            CompletableFuture<List<DomainEventStream>> eventStreamsFuture = eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, aggregateRoot.getVersion() + 1, MAXVERSION);
+            CompletableFuture<List<DomainEventStream>> eventStreamsFuture = tryQueryAggregateEventsAsync(aggregateRootType, aggregateRootTypeName, aggregateRootId, aggregateRoot.getVersion() + 1, MAXVERSION, 0, new CompletableFuture<>());
             return eventStreamsFuture.thenApply(eventStreams -> {
                 List<DomainEventStream> eventStreamsAfterSnapshot = eventStreams;
                 aggregateRoot.replayEvents(eventStreamsAfterSnapshot);

@@ -12,7 +12,7 @@ import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.CommandStatus;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.common.SysProperties;
-import org.enodeframework.common.exception.DuplicateRegisterException;
+import org.enodeframework.common.exception.DuplicateCommandRegisterException;
 import org.enodeframework.common.scheduling.IScheduleService;
 import org.enodeframework.common.scheduling.Worker;
 import org.enodeframework.common.utilities.RemoteReply;
@@ -89,7 +89,7 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
     @Override
     public void registerProcessingCommand(ICommand command, CommandReturnType commandReturnType, CompletableFuture<CommandResult> taskCompletionSource) {
         if (commandTaskDict.asMap().containsKey(command.getId())) {
-            throw new DuplicateRegisterException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.getId()));
+            throw new DuplicateCommandRegisterException(String.format("Duplicate processing command registration, type:%s, id:%s", command.getClass().getName(), command.getId()));
         }
         commandTaskDict.asMap().put(command.getId(), new CommandTaskCompletionSource(command.getAggregateRootId(), commandReturnType, taskCompletionSource));
     }

@@ -5,8 +5,8 @@ import org.enodeframework.annotation.Event;
 import org.enodeframework.annotation.Priority;
 import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.common.container.IObjectContainer;
-import org.enodeframework.common.exception.EnodeRuntimeException;
-import org.enodeframework.common.exception.RegisterComponentException;
+import org.enodeframework.common.exception.HandlerRegisterException;
+import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.infrastructure.IAssemblyInitializer;
 import org.enodeframework.infrastructure.IObjectProxy;
 import org.enodeframework.infrastructure.MethodInvocation;
@@ -121,20 +121,15 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                 TKey key = getKey(method);
                 List<THandlerProxyInterface> handlers = handlerDict.computeIfAbsent(key, k -> new ArrayList<>());
                 IObjectContainer objectContainer = getObjectContainer();
-                if (objectContainer == null) {
-                    throw new IllegalArgumentException("IObjectContainer is null");
-                }
-                // prototype
+                Ensure.notNull(objectContainer, "objectContainer");
                 THandlerProxyInterface handlerProxy = objectContainer.resolve(getHandlerProxyImplementationType());
-                if (handlerProxy == null) {
-                    throw new EnodeRuntimeException("THandlerProxyInterface is null, " + getHandlerProxyImplementationType().getName());
-                }
+                Ensure.notNull(handlerProxy, "handlerProxy: " + getHandlerProxyImplementationType().getName());
                 handlerProxy.setHandlerType(handlerType);
                 handlerProxy.setMethod(method);
                 handlerProxy.setMethodHandle(handleMethod);
                 handlers.add(handlerProxy);
             } catch (Exception e) {
-                throw new RegisterComponentException(e);
+                throw new HandlerRegisterException(e);
             }
         });
     }

@@ -1,6 +1,6 @@
 package org.enodeframework.eventing;
 
-import org.enodeframework.common.exception.EnodeRuntimeException;
+import org.enodeframework.common.exception.MailBoxProcessException;
 import org.enodeframework.common.function.Action1;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.messaging.IMessage;
@@ -19,21 +19,17 @@ public class ProcessingEventMailBox {
 
     private final Object lockObj = new Object();
 
-    private String aggregateRootId;
+    private final String aggregateRootId;
 
-    private String aggregateRootTypeName;
-
+    private final String aggregateRootTypeName;
+    private final AtomicInteger isUsing = new AtomicInteger(0);
+    private final AtomicInteger isRemoved = new AtomicInteger(0);
+    private final AtomicInteger isRunning = new AtomicInteger(0);
+    private final ConcurrentHashMap<Integer, ProcessingEvent> waitingProcessingEventDict = new ConcurrentHashMap<>();
+    private final ConcurrentLinkedQueue<ProcessingEvent> processingEventQueue;
+    private final Action1<ProcessingEvent> handleProcessingEventAction;
     private Date lastActiveTime;
-
-    private int nextExpectingEventVersion = 1;
-
-    private AtomicInteger isUsing = new AtomicInteger(0);
-    private AtomicInteger isRemoved = new AtomicInteger(0);
-    private AtomicInteger isRunning = new AtomicInteger(0);
-
-    private ConcurrentHashMap<Integer, ProcessingEvent> waitingProcessingEventDict = new ConcurrentHashMap<>();
-    private ConcurrentLinkedQueue<ProcessingEvent> processingEventQueue;
-    private Action1<ProcessingEvent> handleProcessingEventAction;
+    private Integer nextExpectingEventVersion;
 
     public ProcessingEventMailBox(String aggregateRootTypeName, String aggregateRootId, Action1<ProcessingEvent> handleProcessingEventAction) {
         processingEventQueue = new ConcurrentLinkedQueue<>();
@@ -43,9 +39,30 @@ public class ProcessingEventMailBox {
         lastActiveTime = new Date();
     }
 
-    private void tryEnqueueWaitingMessage() {
-        while (waitingProcessingEventDict.containsKey(nextExpectingEventVersion)) {
-            ProcessingEvent nextProcessingEvent = waitingProcessingEventDict.remove(nextExpectingEventVersion);
+    private void tryRemovedInvalidWaitingMessages(int version) {
+        waitingProcessingEventDict.keySet().stream().filter(x -> x < version).forEach(key -> {
+            if (waitingProcessingEventDict.containsKey(version)) {
+                ProcessingEvent processingEvent = waitingProcessingEventDict.remove(key);
+                logger.warn("{} invalid waiting message removed, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}, nextExpectingEventVersion: {}",
+                        getClass().getName(),
+                        processingEvent.getMessage().getAggregateRootTypeName(),
+                        processingEvent.getMessage().getAggregateRootId(),
+                        processingEvent.getMessage().getCommandId(),
+                        processingEvent.getMessage().getVersion(),
+                        processingEvent.getMessage().getId(),
+                        processingEvent.getMessage().getEvents().stream().map(x -> x.getClass().getName()).collect(Collectors.joining("|")),
+                        processingEvent.getMessage().getEvents().stream().map(IMessage::getId).collect(Collectors.joining("|")),
+                        version);
+            }
+        });
+    }
+
+    private void tryEnqueueValidWaitingMessage() {
+        if (this.nextExpectingEventVersion == null) {
+            return;
+        }
+        while (waitingProcessingEventDict.containsKey(this.nextExpectingEventVersion)) {
+            ProcessingEvent nextProcessingEvent = waitingProcessingEventDict.remove(this.nextExpectingEventVersion);
             if (nextProcessingEvent != null) {
                 enqueueEventStream(nextProcessingEvent);
                 logger.info("{} enqueued waiting processingEvent, aggregateRootId: {}, aggregateRootTypeName: {}, eventVersion: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, nextProcessingEvent.getMessage().getVersion());
@@ -59,14 +76,15 @@ public class ProcessingEventMailBox {
 
     public void setNextExpectingEventVersion(int version) {
         synchronized (lockObj) {
-            if (version > this.nextExpectingEventVersion) {
+            tryRemovedInvalidWaitingMessages(version);
+            if (this.nextExpectingEventVersion == null || version > this.nextExpectingEventVersion) {
                 this.nextExpectingEventVersion = version;
-                logger.info("{} refreshed nextExpectingEventVersion, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, nextExpectingEventVersion);
-                tryEnqueueWaitingMessage();
+                logger.info("{} refreshed nextExpectingEventVersion, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, this.nextExpectingEventVersion);
+                tryEnqueueValidWaitingMessage();
                 lastActiveTime = new Date();
                 tryRun();
             } else {
-                logger.info("{} nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}, current _nextExpectingEventVersion: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, version, nextExpectingEventVersion);
+                logger.info("{} nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}, current nextExpectingEventVersion: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, version, this.nextExpectingEventVersion);
             }
         }
     }
@@ -84,8 +102,8 @@ public class ProcessingEventMailBox {
                         processingEvent.getMessage().getCommandId(),
                         processingEvent.getMessage().getVersion(),
                         processingEvent.getMessage().getId(),
-                        String.join("|", processingEvent.getMessage().getEvents().stream().map(x -> x.getClass().getName()).collect(Collectors.toList())),
-                        String.join("|", processingEvent.getMessage().getEvents().stream().map(x -> x.getId()).collect(Collectors.toList()))
+                        processingEvent.getMessage().getEvents().stream().map(x -> x.getClass().getName()).collect(Collectors.joining("|")),
+                        processingEvent.getMessage().getEvents().stream().map(x -> x.getId()).collect(Collectors.joining("|"))
                 );
             }
         }
@@ -94,18 +112,12 @@ public class ProcessingEventMailBox {
     public EnqueueMessageResult enqueueMessage(ProcessingEvent processingEvent) {
         synchronized (lockObj) {
             if (isRemoved()) {
-                throw new EnodeRuntimeException(String.format("ProcessingEventMailBox was removed, cannot allow to enqueue message, aggregateRootTypeName: %s, aggregateRootId: %s", aggregateRootTypeName, aggregateRootId));
+                throw new MailBoxProcessException(String.format("ProcessingEventMailBox was removed, cannot allow to enqueue message, aggregateRootTypeName: %s, aggregateRootId: %s", aggregateRootTypeName, aggregateRootId));
             }
             DomainEventStreamMessage eventStream = processingEvent.getMessage();
-            if (eventStream.getVersion() == nextExpectingEventVersion) {
-                enqueueEventStream(processingEvent);
-                tryEnqueueWaitingMessage();
-                lastActiveTime = new Date();
-                tryRun();
-                return EnqueueMessageResult.Success;
-            } else if (eventStream.getVersion() > nextExpectingEventVersion) {
+            if (this.nextExpectingEventVersion == null || eventStream.getVersion() > this.nextExpectingEventVersion) {
                 if (waitingProcessingEventDict.putIfAbsent(eventStream.getVersion(), processingEvent) == null) {
-                    logger.warn("{} later version of message arrived, added it to the waiting list, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}, _nextExpectingEventVersion: {}",
+                    logger.warn("{} waiting message added, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}, nextExpectingEventVersion: {}",
                             getClass().getName(),
                             eventStream.getAggregateRootTypeName(),
                             eventStream.getAggregateRootId(),
@@ -114,10 +126,16 @@ public class ProcessingEventMailBox {
                             eventStream.getId(),
                             eventStream.getEvents().stream().map(x -> x.getClass().getName()).collect(Collectors.joining("|")),
                             eventStream.getEvents().stream().map(IMessage::getId).collect(Collectors.joining("|")),
-                            nextExpectingEventVersion
+                            this.nextExpectingEventVersion
                     );
                 }
                 return EnqueueMessageResult.AddToWaitingList;
+            } else if (eventStream.getVersion() == this.nextExpectingEventVersion) {
+                enqueueEventStream(processingEvent);
+                tryEnqueueValidWaitingMessage();
+                lastActiveTime = new Date();
+                tryRun();
+                return EnqueueMessageResult.Success;
             }
             return EnqueueMessageResult.Ignored;
         }

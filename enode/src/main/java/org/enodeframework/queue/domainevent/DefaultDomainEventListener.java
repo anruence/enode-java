@@ -1,6 +1,6 @@
 package org.enodeframework.queue.domainevent;
 
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.IEventProcessContext;
@@ -23,13 +23,15 @@ public class DefaultDomainEventListener implements IMessageHandler {
     private final IEventSerializer eventSerializer;
 
     private final IProcessingEventProcessor domainEventMessageProcessor;
+    private final ISerializeService serializeService;
 
     private boolean sendEventHandledMessage = true;
 
-    public DefaultDomainEventListener(ISendReplyService sendReplyService, IProcessingEventProcessor domainEventMessageProcessor, IEventSerializer eventSerializer) {
+    public DefaultDomainEventListener(ISendReplyService sendReplyService, IProcessingEventProcessor domainEventMessageProcessor, IEventSerializer eventSerializer, ISerializeService serializeService) {
         this.sendReplyService = sendReplyService;
         this.eventSerializer = eventSerializer;
         this.domainEventMessageProcessor = domainEventMessageProcessor;
+        this.serializeService = serializeService;
     }
 
     public ISendReplyService getSendReplyService() {
@@ -38,7 +40,7 @@ public class DefaultDomainEventListener implements IMessageHandler {
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
-        EventStreamMessage message = JsonTool.deserialize(queueMessage.getBody(), EventStreamMessage.class);
+        EventStreamMessage message = serializeService.deserialize(queueMessage.getBody(), EventStreamMessage.class);
         DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
         DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(this, domainEventStreamMessage, queueMessage, context);
         ProcessingEvent processingMessage = new ProcessingEvent(domainEventStreamMessage, processContext);

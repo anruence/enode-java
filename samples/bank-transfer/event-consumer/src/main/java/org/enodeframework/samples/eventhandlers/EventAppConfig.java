@@ -9,7 +9,7 @@ import static org.enodeframework.samples.QueueProperties.JDBC_URL;
 @Configuration
 public class EventAppConfig {
 
-    @Bean(name = "enodeMysqlDataSource")
+    @Bean(name = "enodeMySQLDataSource")
     public HikariDataSource dataSource() {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(JDBC_URL);

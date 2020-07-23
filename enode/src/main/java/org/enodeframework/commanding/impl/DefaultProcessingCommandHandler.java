@@ -11,8 +11,7 @@ import org.enodeframework.commanding.IProcessingCommandHandler;
 import org.enodeframework.commanding.ProcessingCommand;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
-import org.enodeframework.common.serializing.JsonTool;
-import org.enodeframework.common.utilities.Linq;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.domain.IMemoryCache;
@@ -52,8 +51,9 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
     private final IMemoryCache memoryCache;
     private final IMessagePublisher<IApplicationMessage> applicationMessagePublisher;
     private final IMessagePublisher<IDomainException> exceptionPublisher;
+    private final ISerializeService serializeService;
 
-    public DefaultProcessingCommandHandler(IEventStore eventStore, ICommandHandlerProvider commandHandlerProvider, ITypeNameProvider typeNameProvider, IEventCommittingService eventCommittingService, IMemoryCache memoryCache, IMessagePublisher<IApplicationMessage> applicationMessagePublisher, IMessagePublisher<IDomainException> exceptionPublisher) {
+    public DefaultProcessingCommandHandler(IEventStore eventStore, ICommandHandlerProvider commandHandlerProvider, ITypeNameProvider typeNameProvider, IEventCommittingService eventCommittingService, IMemoryCache memoryCache, IMessagePublisher<IApplicationMessage> applicationMessagePublisher, IMessagePublisher<IDomainException> exceptionPublisher, ISerializeService serializeService) {
         this.eventStore = eventStore;
         this.commandHandlerProvider = commandHandlerProvider;
         this.typeNameProvider = typeNameProvider;
@@ -61,6 +61,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         this.memoryCache = memoryCache;
         this.applicationMessagePublisher = applicationMessagePublisher;
         this.exceptionPublisher = exceptionPublisher;
+        this.serializeService = serializeService;
     }
 
     @Override
@@ -293,7 +294,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         CompletableFuture<Void> future = new CompletableFuture<>();
         IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishApplicationMessageAsync",
                 () -> applicationMessagePublisher.publishAsync(message),
-                result -> completeCommand(processingCommand, CommandStatus.Success, message.getClass().getName(), JsonTool.serialize(message))
+                result -> completeCommand(processingCommand, CommandStatus.Success, message.getClass().getName(), serializeService.serialize(message))
                         .thenAccept(x -> future.complete(null)),
                 () -> String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.getId(), message.getClass().getName(), command.getId(), command.getClass().getName()),
                 null,
@@ -302,7 +303,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         return future;
     }
 
-    private <T extends IObjectProxy> HandlerFindResult<T> getCommandHandler(ProcessingCommand processingCommand, Function<Class, List<MessageHandlerData<T>>> getHandlersFunc) {
+    private <T extends IObjectProxy> HandlerFindResult<T> getCommandHandler(ProcessingCommand processingCommand, Function<Class<?>, List<MessageHandlerData<T>>> getHandlersFunc) {
         ICommand command = processingCommand.getMessage();
         List<MessageHandlerData<T>> handlerDataList = getHandlersFunc.apply(command.getClass());
         if (handlerDataList == null || handlerDataList.size() == 0) {
@@ -310,14 +311,15 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         } else if (handlerDataList.size() > 1) {
             return HandlerFindResult.TooManyHandlerData;
         }
-        MessageHandlerData<T> handlerData = Linq.first(handlerDataList);
+        MessageHandlerData<T> handlerData = handlerDataList.stream().findFirst().orElse(new MessageHandlerData<>());
         if (handlerData.listHandlers == null || handlerData.listHandlers.size() == 0) {
             return HandlerFindResult.NotFound;
         } else if (handlerData.listHandlers.size() > 1) {
             return HandlerFindResult.TooManyHandler;
         }
-        T handlerProxy = Linq.first(handlerData.listHandlers);
-        return new HandlerFindResult<>(HandlerFindStatus.Found, handlerProxy);
+        return handlerData.listHandlers.stream().findFirst()
+                .map(t -> new HandlerFindResult<>(HandlerFindStatus.Found, t))
+                .orElseGet(() -> HandlerFindResult.NotFound);
     }
 
     private CompletableFuture<Void> completeCommand(ProcessingCommand processingCommand, CommandStatus commandStatus, String resultType, String result) {

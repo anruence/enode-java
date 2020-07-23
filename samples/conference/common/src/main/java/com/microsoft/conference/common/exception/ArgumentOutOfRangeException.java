@@ -1,4 +1,4 @@
-package org.enodeframework.common.exception;
+package com.microsoft.conference.common.exception;
 
 public class ArgumentOutOfRangeException extends RuntimeException {
 

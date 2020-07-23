@@ -1,5 +1,6 @@
 package org.enodeframework.spring;
 
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.jdbc.DBConfiguration;
 import org.enodeframework.tidb.TiDBEventStore;
@@ -11,11 +12,11 @@ import org.springframework.context.annotation.Bean;
 import javax.sql.DataSource;
 
 @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "tidb")
-public class EnodeTidbEventStoreAutoConfig extends EnodeVertxAutoConfig {
+public class EnodeTiDBEventStoreAutoConfig extends EnodeVertxAutoConfig {
 
     @Bean
-    public TiDBEventStore tiDBEventStore(@Qualifier("enodeTiDBDataSource") DataSource tidbDataSource, IEventSerializer eventSerializer) {
-        TiDBEventStore eventStore = new TiDBEventStore(tidbDataSource, DBConfiguration.mysql(), eventSerializer);
+    public TiDBEventStore tiDBEventStore(@Qualifier("enodeTiDBDataSource") DataSource tidbDataSource, IEventSerializer eventSerializer, ISerializeService serializeService) {
+        TiDBEventStore eventStore = new TiDBEventStore(tidbDataSource, DBConfiguration.mysql(), eventSerializer, serializeService);
         vertx.deployVerticle(eventStore, res -> {
         });
         return eventStore;

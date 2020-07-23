@@ -4,7 +4,7 @@ import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandService;
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.common.utilities.RemotingUtil;
 import org.enodeframework.queue.ISendMessageService;
@@ -25,11 +25,14 @@ public class DefaultCommandService implements ICommandService {
 
     private final ICommandResultProcessor commandResultProcessor;
 
-    public DefaultCommandService(String topic, String tag, ICommandResultProcessor commandResultProcessor, ISendMessageService sendMessageService) {
+    private final ISerializeService serializeService;
+
+    public DefaultCommandService(String topic, String tag, ICommandResultProcessor commandResultProcessor, ISendMessageService sendMessageService, ISerializeService serializeService) {
         this.topic = topic;
         this.tag = tag;
         this.commandResultProcessor = commandResultProcessor;
         this.sendMessageService = sendMessageService;
+        this.serializeService = serializeService;
     }
 
     @Override
@@ -64,13 +67,13 @@ public class DefaultCommandService implements ICommandService {
     protected QueueMessage buildCommandMessage(ICommand command, boolean needReply) {
         Ensure.notNull(command.getAggregateRootId(), "aggregateRootId");
         Ensure.notNull(topic, "topic");
-        String commandData = JsonTool.serialize(command);
+        String commandData = serializeService.serialize(command);
         String replyAddress = needReply && commandResultProcessor != null ? RemotingUtil.parseAddress(commandResultProcessor.getBindAddress()) : null;
         CommandMessage commandMessage = new CommandMessage();
         commandMessage.setCommandData(commandData);
         commandMessage.setReplyAddress(replyAddress);
         commandMessage.setCommandType(command.getClass().getName());
-        String messageData = JsonTool.serialize(commandMessage);
+        String messageData = serializeService.serialize(commandMessage);
         QueueMessage queueMessage = new QueueMessage();
         queueMessage.setTopic(topic);
         queueMessage.setTag(tag);

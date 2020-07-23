@@ -1,12 +1,14 @@
 package org.enodeframework.common.threading;
 
-import org.enodeframework.common.exception.EnodeRuntimeException;
+import org.enodeframework.common.exception.EnodeInterruptException;
 
 /**
  * @author anruence@gmail.com
  */
 public class ManualResetEvent {
+
     private final Object monitor = new Object();
+
     private volatile boolean open = false;
 
     public ManualResetEvent(boolean initialState) {
@@ -19,7 +21,7 @@ public class ManualResetEvent {
                 try {
                     monitor.wait();
                 } catch (InterruptedException e) {
-                    throw new EnodeRuntimeException(e);
+                    throw new EnodeInterruptException(e);
                 }
             }
             return open;
@@ -32,7 +34,7 @@ public class ManualResetEvent {
                 try {
                     monitor.wait(timeout);
                 } catch (InterruptedException e) {
-                    throw new EnodeRuntimeException(e);
+                    throw new EnodeInterruptException(e);
                 }
             }
             return open;

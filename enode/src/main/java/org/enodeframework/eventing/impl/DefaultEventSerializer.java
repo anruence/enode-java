@@ -1,7 +1,7 @@
 package org.enodeframework.eventing.impl;
 
 import com.google.common.collect.Maps;
-import org.enodeframework.common.serializing.JsonTool;
+import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.infrastructure.ITypeNameProvider;
@@ -18,8 +18,11 @@ public class DefaultEventSerializer implements IEventSerializer {
 
     private final ITypeNameProvider typeNameProvider;
 
-    public DefaultEventSerializer(ITypeNameProvider typeNameProvider) {
+    private final ISerializeService serializeService;
+
+    public DefaultEventSerializer(ITypeNameProvider typeNameProvider, ISerializeService serializeService) {
         this.typeNameProvider = typeNameProvider;
+        this.serializeService = serializeService;
     }
 
     @Override
@@ -27,7 +30,7 @@ public class DefaultEventSerializer implements IEventSerializer {
         LinkedHashMap<String, String> dict = Maps.newLinkedHashMap();
         evnts.forEach(evnt -> {
             String typeName = typeNameProvider.getTypeName(evnt.getClass());
-            String eventData = JsonTool.serialize(evnt);
+            String eventData = serializeService.serialize(evnt);
             dict.put(typeName, eventData);
         });
         return dict;
@@ -38,7 +41,7 @@ public class DefaultEventSerializer implements IEventSerializer {
         List<TEvent> evnts = new ArrayList<>();
         data.forEach((key, value) -> {
             Class<?> eventType = typeNameProvider.getType(key);
-            TEvent evnt = (TEvent) JsonTool.deserialize(value, eventType);
+            TEvent evnt = (TEvent) serializeService.deserialize(value, eventType);
             evnts.add(evnt);
         });
         return evnts;
