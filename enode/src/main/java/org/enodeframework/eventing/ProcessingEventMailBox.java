@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -18,9 +19,8 @@ public class ProcessingEventMailBox {
     private final static Logger logger = LoggerFactory.getLogger(ProcessingEventMailBox.class);
 
     private final Object lockObj = new Object();
-
     private final String aggregateRootId;
-
+    private final Executor executor;
     private final String aggregateRootTypeName;
     private final AtomicInteger isUsing = new AtomicInteger(0);
     private final AtomicInteger isRemoved = new AtomicInteger(0);
@@ -31,8 +31,9 @@ public class ProcessingEventMailBox {
     private Date lastActiveTime;
     private Integer nextExpectingEventVersion;
 
-    public ProcessingEventMailBox(String aggregateRootTypeName, String aggregateRootId, Action1<ProcessingEvent> handleProcessingEventAction) {
-        processingEventQueue = new ConcurrentLinkedQueue<>();
+    public ProcessingEventMailBox(String aggregateRootTypeName, String aggregateRootId, Action1<ProcessingEvent> handleProcessingEventAction, Executor executor) {
+        this.executor = executor;
+        this.processingEventQueue = new ConcurrentLinkedQueue<>();
         this.aggregateRootId = aggregateRootId;
         this.aggregateRootTypeName = aggregateRootTypeName;
         this.handleProcessingEventAction = handleProcessingEventAction;
@@ -153,7 +154,7 @@ public class ProcessingEventMailBox {
             if (logger.isDebugEnabled()) {
                 logger.debug("{} start run, aggregateRootId: {}", getClass().getName(), aggregateRootId);
             }
-            CompletableFuture.runAsync(this::processMessages);
+            CompletableFuture.runAsync(this::processMessages, executor);
         }
     }
 

@@ -5,6 +5,7 @@ import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.domain.AggregateCacheInfo;
+import org.enodeframework.domain.AggregateRootReferenceChangedException;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IAggregateStorage;
 import org.enodeframework.domain.IMemoryCache;
@@ -75,8 +76,24 @@ public class DefaultMemoryCache implements IMemoryCache {
     }
 
     @Override
-    public CompletableFuture<Void> updateAggregateRootCache(IAggregateRoot aggregateRoot) {
-        resetAggregateRootCache(aggregateRoot);
+    public CompletableFuture<Void> acceptAggregateRootChanges(IAggregateRoot aggregateRoot) {
+        synchronized (lockObj) {
+            Ensure.notNull(aggregateRoot, "aggregateRoot");
+            AggregateCacheInfo cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.getUniqueId(), x -> {
+                logger.info("Aggregate root in-memory cache init, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion());
+                return new AggregateCacheInfo(aggregateRoot);
+            });
+            //更新到内存缓存前需要先检查聚合根引用是否有变化，有变化说明此聚合根已经被重置过状态了
+            if (aggregateRoot.getVersion() > 1 && cacheInfo.getAggregateRoot() != aggregateRoot) {
+                throw new AggregateRootReferenceChangedException(aggregateRoot);
+            }
+            //接受聚合根的最新事件修改，更新聚合根版本号
+            aggregateRoot.acceptChanges();
+            IAggregateRoot existingAggregateRoot = cacheInfo.getAggregateRoot();
+            cacheInfo.setAggregateRoot(aggregateRoot);
+            cacheInfo.setLastUpdateTimeMillis(System.currentTimeMillis());
+            logger.info("Aggregate root in-memory cache changed, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion(), existingAggregateRoot.getVersion());
+        }
         return Task.completedTask;
     }
 

@@ -3,7 +3,9 @@ package org.enodeframework.tests.commandhandlers;
 import org.enodeframework.annotation.Command;
 import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.commanding.ICommandContext;
+import org.enodeframework.common.container.ObjectContainer;
 import org.enodeframework.common.io.Task;
+import org.enodeframework.domain.IMemoryCache;
 import org.enodeframework.tests.commands.AggregateThrowExceptionCommand;
 import org.enodeframework.tests.commands.AsyncHandlerBaseCommand;
 import org.enodeframework.tests.commands.AsyncHandlerChildCommand;
@@ -12,6 +14,7 @@ import org.enodeframework.tests.commands.ChangeInheritTestAggregateTitleCommand;
 import org.enodeframework.tests.commands.ChangeMultipleAggregatesCommand;
 import org.enodeframework.tests.commands.ChangeNothingCommand;
 import org.enodeframework.tests.commands.ChangeTestAggregateTitleCommand;
+import org.enodeframework.tests.commands.ChangeTestAggregateTitleWhenDirtyCommand;
 import org.enodeframework.tests.commands.ChildCommand;
 import org.enodeframework.tests.commands.CreateInheritTestAggregateCommand;
 import org.enodeframework.tests.commands.CreateTestAggregateCommand;
@@ -26,6 +29,17 @@ import org.enodeframework.tests.domain.TestAggregate;
 
 @Command
 public class TestCommandHandler {
+
+    @Subscribe
+    public void handleAsync(ICommandContext context, ChangeTestAggregateTitleWhenDirtyCommand command) {
+        TestAggregate testAggregate = context.getAsync(command.getAggregateRootId(), TestAggregate.class).join();
+        if (command.isFirstExecute()) {
+            ObjectContainer.resolve(IMemoryCache.class).refreshAggregateFromEventStoreAsync(TestAggregate.class.getName(), command.getAggregateRootId());
+        }
+        testAggregate.changeTitle(command.getTitle());
+        command.setFirstExecute(false);
+    }
+
     @Subscribe
     public void handleAsync(ICommandContext context, CreateTestAggregateCommand command) {
         if (command.SleepMilliseconds > 0) {
@@ -37,7 +51,7 @@ public class TestCommandHandler {
     @Subscribe
     public void handleAsync(ICommandContext context, ChangeTestAggregateTitleCommand command) {
         TestAggregate testAggregate = Task.await(context.getAsync(command.aggregateRootId, TestAggregate.class));
-        testAggregate.ChangeTitle(command.Title);
+        testAggregate.changeTitle(command.Title);
     }
 
     @Subscribe

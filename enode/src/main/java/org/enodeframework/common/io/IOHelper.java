@@ -148,7 +148,6 @@ public class IOHelper {
 
         public abstract void execute();
 
-
         public void taskContinueAction(CompletableFuture<TAsyncResult> asyncResult) {
             if (asyncResult.isCancelled()) {
                 asyncResult.exceptionally(ex -> {
@@ -211,7 +210,7 @@ public class IOHelper {
                 return func.apply();
             } catch (Exception ex) {
                 logger.error("Failed to execute the getContextInfoFunc.", ex);
-                return null;
+                return "";
             }
         }
 

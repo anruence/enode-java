@@ -13,14 +13,14 @@ import java.util.concurrent.CompletableFuture;
  */
 public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
 
-    private Class handlerType;
+    private Class<?> handlerType;
     private Object handler;
     private MethodHandle methodHandle;
     private Method method;
 
     @Override
     public CompletableFuture<Void> handleAsync(IMessage message) {
-        CompletableFuture future = new CompletableFuture<>();
+        CompletableFuture<Void> future = new CompletableFuture<>();
         try {
             Object result = methodHandle.invoke(getInnerObject(), message);
             if (result instanceof CompletableFuture) {

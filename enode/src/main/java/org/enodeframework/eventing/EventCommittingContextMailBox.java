@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 public class EventCommittingContextMailBox {
@@ -19,27 +20,25 @@ public class EventCommittingContextMailBox {
     public final static Logger logger = LoggerFactory.getLogger(EventCommittingContextMailBox.class);
     private final static Byte ONE_BYTE = 1;
     private final Object lockObj = new Object();
+    private final Executor executor;
     private final Object processMessageLockObj = new Object();
     private Date lastActiveTime;
     private boolean running;
-    private int number;
-    private ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> aggregateDictDict;
+    private final int number;
+    private final ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> aggregateDictDict;
+    private final ConcurrentLinkedQueue<EventCommittingContext> messageQueue;
+    private final Action1<List<EventCommittingContext>> handleMessageAction;
+    private final int batchSize;
 
-    private ConcurrentLinkedQueue<EventCommittingContext> messageQueue;
-
-    private Action1<List<EventCommittingContext>> handleMessageAction;
-
-    private int batchSize;
-
-    public EventCommittingContextMailBox(int number, int batchSize, Action1<List<EventCommittingContext>> handleMessageAction) {
-        aggregateDictDict = new ConcurrentHashMap<>();
-        messageQueue = new ConcurrentLinkedQueue<>();
+    public EventCommittingContextMailBox(int number, int batchSize, Action1<List<EventCommittingContext>> handleMessageAction, Executor executor) {
+        this.executor = executor;
+        this.aggregateDictDict = new ConcurrentHashMap<>();
+        this.messageQueue = new ConcurrentLinkedQueue<>();
         this.handleMessageAction = handleMessageAction;
         this.number = number;
         this.batchSize = batchSize;
-        lastActiveTime = new Date();
+        this.lastActiveTime = new Date();
     }
-
 
     public Date getLastActiveTime() {
         return this.lastActiveTime;
@@ -67,7 +66,7 @@ public class EventCommittingContextMailBox {
                     logger.debug("{} enqueued new message, mailboxNumber: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventIds: {}",
                             getClass().getName(),
                             number,
-                            message.getAggregateRoot().getUniqueId(),
+                            message.getEventStream().getAggregateRootId(),
                             message.getProcessingCommand().getMessage().getId(),
                             message.getEventStream().getVersion(),
                             message.getEventStream().getId(),
@@ -92,7 +91,7 @@ public class EventCommittingContextMailBox {
             if (logger.isDebugEnabled()) {
                 logger.debug("{} start run, mailboxNumber: {}", getClass().getName(), number);
             }
-            CompletableFuture.runAsync(this::processMessages);
+            CompletableFuture.runAsync(this::processMessages, executor);
         }
     }
 

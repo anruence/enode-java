@@ -26,7 +26,9 @@ import java.util.stream.Collectors;
 import static org.enodeframework.common.io.Task.await;
 
 public class ConferenceCommandHandler {
+
     private ILockService _lockService;
+
     private RegisterConferenceSlugService _registerConferenceSlugService;
 
     public ConferenceCommandHandler(ILockService lockService, RegisterConferenceSlugService registerConferenceSlugService) {

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.enodeframework.common.io.Task.await;
@@ -17,7 +18,7 @@ import static org.enodeframework.common.io.Task.await;
 public class ProcessingCommandMailbox {
 
     public static final Logger logger = LoggerFactory.getLogger(ProcessingCommandMailbox.class);
-
+    private final Executor executor;
     private final Object lockObj = new Object();
     private final Object asyncLock = new Object();
     /**
@@ -37,7 +38,8 @@ public class ProcessingCommandMailbox {
     private long nextSequence;
     private long consumingSequence;
 
-    public ProcessingCommandMailbox(String aggregateRootId, IProcessingCommandHandler messageHandler, int batchSize) {
+    public ProcessingCommandMailbox(String aggregateRootId, IProcessingCommandHandler messageHandler, int batchSize, Executor executor) {
+        this.executor = executor;
         this.messageDict = new ConcurrentHashMap<>();
         this.duplicateCommandIdDict = new ConcurrentHashMap<>();
         this.messageHandler = messageHandler;
@@ -117,7 +119,7 @@ public class ProcessingCommandMailbox {
             if (logger.isDebugEnabled()) {
                 logger.debug("{} start run, aggregateRootId: {}, consumingSequence: {}", getClass().getName(), aggregateRootId, consumingSequence);
             }
-            CompletableFuture.supplyAsync(this::processMessages);
+            CompletableFuture.supplyAsync(this::processMessages, executor);
         }
     }
 

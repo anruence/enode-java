@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
@@ -35,23 +36,25 @@ public class DefaultEventCommittingService implements IEventCommittingService {
     private final int eventMailBoxCount;
     private final IMemoryCache memoryCache;
     private final IEventStore eventStore;
+    private final Executor executor;
     private final ISerializeService serializeService;
     private final IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
     private final List<EventCommittingContextMailBox> eventCommittingContextMailBoxList;
 
-    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, ISerializeService serializeService, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
-        this(memoryCache, eventStore, serializeService, domainEventPublisher, 4);
+    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, ISerializeService serializeService, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher, Executor executor) {
+        this(memoryCache, eventStore, serializeService, domainEventPublisher, 4, executor);
     }
 
-    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, ISerializeService serializeService, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher, int eventMailBoxCount) {
+    public DefaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, ISerializeService serializeService, IMessagePublisher<DomainEventStreamMessage> domainEventPublisher, int eventMailBoxCount, Executor executor) {
         this.memoryCache = memoryCache;
         this.eventStore = eventStore;
         this.serializeService = serializeService;
         this.domainEventPublisher = domainEventPublisher;
         this.eventMailBoxCount = eventMailBoxCount;
+        this.executor = executor;
         this.eventCommittingContextMailBoxList = new ArrayList<>();
         for (int i = 0; i < this.eventMailBoxCount; i++) {
-            EventCommittingContextMailBox mailBox = new EventCommittingContextMailBox(i, 1000, x -> batchPersistEventAsync(x, 0));
+            EventCommittingContextMailBox mailBox = new EventCommittingContextMailBox(i, 1000, x -> batchPersistEventAsync(x, 0), this.executor);
             eventCommittingContextMailBoxList.add(mailBox);
         }
     }
@@ -127,7 +130,7 @@ public class DefaultEventCommittingService implements IEventCommittingService {
                     if (result.getDuplicateCommandAggregateRootIdList().size() > 0) {
                         for (Map.Entry<String, List<String>> entry : result.getDuplicateCommandAggregateRootIdList().entrySet()) {
                             Optional<EventCommittingContext> committingContextOptional = committingContexts.stream()
-                                    .filter(x -> entry.getKey().equals(x.getAggregateRoot().getUniqueId()))
+                                    .filter(x -> entry.getKey().equals(x.getEventStream().getAggregateRootId()))
                                     .findFirst();
                             if (committingContextOptional.isPresent()) {
                                 logger.warn("Batch persist events has duplicate commandIds, mailboxNumber: {}, aggregateRootId: {}, commandIds: {}",

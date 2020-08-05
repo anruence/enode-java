@@ -21,7 +21,7 @@ import java.util.List;
 public class Order extends AggregateRoot<String> {
     private OrderTotal _total;
     private String _conferenceId;
-    private com.microsoft.conference.registration.domain.orders.Models.OrderStatus _status;
+    private OrderStatus _status;
     private Registrant _registrant;
     private String _accessCode;
 

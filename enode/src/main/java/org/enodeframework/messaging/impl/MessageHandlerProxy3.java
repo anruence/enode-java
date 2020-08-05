@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
 
-    private Class handlerType;
+    private Class<?> handlerType;
     private Object handler;
     private MethodHandle methodHandle;
     private Method method;
@@ -25,7 +25,7 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
 
     @Override
     public CompletableFuture<Void> handleAsync(IMessage message1, IMessage message2, IMessage message3) {
-        CompletableFuture future = new CompletableFuture<>();
+        CompletableFuture<Void> future = new CompletableFuture<>();
         List<Class<?>> parameterTypes = Arrays.asList(methodParameterTypes);
         List<IMessage> params = new ArrayList<>();
         params.add(message1);
@@ -40,7 +40,7 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
             if (result instanceof CompletableFuture) {
                 return (CompletableFuture<Void>) result;
             }
-            future.complete(result);
+            future.complete(null);
         } catch (Throwable throwable) {
             future.completeExceptionally(throwable);
         }
