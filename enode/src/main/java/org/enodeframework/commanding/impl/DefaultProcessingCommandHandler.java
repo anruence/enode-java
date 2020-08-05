@@ -12,6 +12,7 @@ import org.enodeframework.commanding.ProcessingCommand;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.serializing.ISerializeService;
+import org.enodeframework.domain.AggregateRootReferenceChangedException;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.domain.IMemoryCache;
@@ -114,19 +115,39 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                         commitChangesAsync(processingCommand, true, commandContext.getApplicationMessage(), null)
                                 .thenAccept(x -> taskSource.complete(null));
                     } else {
-                        commitAggregateChanges(processingCommand).thenAccept(x -> {
-                            taskSource.complete(null);
-                        }).exceptionally(ex -> {
+                        try {
+                            commitAggregateChanges(processingCommand).thenAccept(x -> {
+                                taskSource.complete(null);
+                            }).exceptionally(ex -> {
+                                logger.error("Commit aggregate changes has unknown exception, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                                        commandHandler.getInnerObject().getClass().getName(),
+                                        command.getClass().getName(),
+                                        command.getId(),
+                                        command.getAggregateRootId(), ex);
+                                completeCommand(processingCommand, CommandStatus.Failed, ex.getClass().getName(), "Unknown exception caught when committing changes of command.").thenAccept(x -> {
+                                    taskSource.complete(null);
+                                });
+                                return null;
+                            });
+                        } catch (AggregateRootReferenceChangedException aggregateRootReferenceChangedException) {
+                            logger.info("Aggregate root reference changed when processing command, try to re-handle the command. aggregateRootId: {}, aggregateRootType: {}, commandId: {}, commandType: {}, handlerType: {}",
+                                    aggregateRootReferenceChangedException.getAggregateRoot().getUniqueId(),
+                                    aggregateRootReferenceChangedException.getAggregateRoot().getClass().getName(),
+                                    command.getId(),
+                                    command.getClass().getName(),
+                                    commandHandler.getInnerObject().getClass().getName()
+                            );
+                            handleCommandInternal(processingCommand, commandHandler, 0).thenAccept(x -> taskSource.complete(null));
+                        } catch (Exception e) {
                             logger.error("Commit aggregate changes has unknown exception, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                     commandHandler.getInnerObject().getClass().getName(),
                                     command.getClass().getName(),
                                     command.getId(),
-                                    command.getAggregateRootId(), ex);
-                            completeCommand(processingCommand, CommandStatus.Failed, ex.getClass().getName(), "Unknown exception caught when committing changes of command.").thenAccept(x -> {
+                                    command.getAggregateRootId(), e);
+                            completeCommand(processingCommand, CommandStatus.Failed, e.getClass().getName(), "Unknown exception caught when committing changes of command.").thenAccept(x -> {
                                 taskSource.complete(null);
                             });
-                            return null;
-                        });
+                        }
                     }
                 },
                 () -> String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.getId(), command.getClass().getName(), commandHandler.getInnerObject().getClass().getName(), command.getAggregateRootId()),
@@ -137,7 +158,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
 
         return taskSource;
     }
-
 
     private CompletableFuture<Void> commitAggregateChanges(ProcessingCommand processingCommand) {
         ICommand command = processingCommand.getMessage();
@@ -171,8 +191,6 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         if (dirtyAggregateRootCount == 0 || changedEvents.size() == 0) {
             return republishCommandEvents(processingCommand, 0);
         }
-        //接受聚合根的最新修改
-        dirtyAggregateRoot.acceptChanges();
         DomainEventStream eventStream = new DomainEventStream(
                 processingCommand.getMessage().getId(),
                 dirtyAggregateRoot.getUniqueId(),
@@ -180,17 +198,14 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 new Date(),
                 changedEvents,
                 command.getItems());
-        EventCommittingContext committingContext = new EventCommittingContext(dirtyAggregateRoot, eventStream, processingCommand);
-        //刷新聚合根的内存缓存
-        return memoryCache.updateAggregateRootCache(dirtyAggregateRoot).thenAccept(x -> {
-            //构造出一个事件流对象
-            //构造出一个事件流对象
+        //内存先接受聚合根的更新，需要检查聚合根引用是否已变化，如果已变化，会抛出异常
+        return memoryCache.acceptAggregateRootChanges(dirtyAggregateRoot).thenAccept(x -> {
             String commandResult = processingCommand.getCommandExecuteContext().getResult();
             if (commandResult != null) {
                 processingCommand.getItems().put("CommandResult", commandResult);
             }
-            //异步将事件流提交到EventStore
-            eventCommittingService.commitDomainEventAsync(committingContext);
+            //提交事件流进行后续的处理
+            eventCommittingService.commitDomainEventAsync(new EventCommittingContext(eventStream, processingCommand));
         });
     }
 
@@ -200,9 +215,8 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
                 () -> eventStore.findAsync(command.getAggregateRootId(), command.getId()),
                 result -> {
-                    DomainEventStream existingEventStream = result;
-                    if (existingEventStream != null) {
-                        eventCommittingService.publishDomainEventAsync(processingCommand, existingEventStream);
+                    if (result != null) {
+                        eventCommittingService.publishDomainEventAsync(processingCommand, result);
                         future.complete(null);
                     } else {
                         completeCommand(processingCommand, CommandStatus.NothingChanged, String.class.getName(), processingCommand.getCommandExecuteContext().getResult())

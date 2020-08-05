@@ -18,7 +18,7 @@ public class TestAggregate extends AggregateRoot<String> {
         return _title;
     }
 
-    public void ChangeTitle(String title) {
+    public void changeTitle(String title) {
         applyEvent(new TestAggregateTitleChanged(title));
     }
 

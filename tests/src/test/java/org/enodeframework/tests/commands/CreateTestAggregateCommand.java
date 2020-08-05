@@ -2,7 +2,7 @@ package org.enodeframework.tests.commands;
 
 import org.enodeframework.commanding.Command;
 
-public class CreateTestAggregateCommand extends Command {
+public class CreateTestAggregateCommand extends Command<String> {
     public String Title;
     public int SleepMilliseconds;
 

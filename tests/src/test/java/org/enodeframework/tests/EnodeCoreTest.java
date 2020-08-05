@@ -13,6 +13,7 @@ import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.EventAppendResult;
+import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.ProcessingEvent;
 import org.enodeframework.tests.commands.AggregateThrowExceptionCommand;
 import org.enodeframework.tests.commands.AsyncHandlerBaseCommand;
@@ -23,6 +24,7 @@ import org.enodeframework.tests.commands.ChangeInheritTestAggregateTitleCommand;
 import org.enodeframework.tests.commands.ChangeMultipleAggregatesCommand;
 import org.enodeframework.tests.commands.ChangeNothingCommand;
 import org.enodeframework.tests.commands.ChangeTestAggregateTitleCommand;
+import org.enodeframework.tests.commands.ChangeTestAggregateTitleWhenDirtyCommand;
 import org.enodeframework.tests.commands.ChildCommand;
 import org.enodeframework.tests.commands.CreateInheritTestAggregateCommand;
 import org.enodeframework.tests.commands.CreateTestAggregateCommand;
@@ -813,10 +815,10 @@ public class EnodeCoreTest extends AbstractTest {
         TestAggregate note = new TestAggregate(ObjectId.generateNewStringId(), "initial title");
         DomainEventStreamMessage message1 = createMessage(note);
         ((IAggregateRoot) note).acceptChanges();
-        note.ChangeTitle("title1");
+        note.changeTitle("title1");
         DomainEventStreamMessage message2 = createMessage(note);
         ((IAggregateRoot) note).acceptChanges();
-        note.ChangeTitle("title2");
+        note.changeTitle("title2");
         DomainEventStreamMessage message3 = createMessage(note);
         ManualResetEvent waitHandle = new ManualResetEvent(false);
         List<Integer> versionList = new ArrayList<>();
@@ -836,11 +838,11 @@ public class EnodeCoreTest extends AbstractTest {
         DomainEventStreamMessage message1 = createMessage(aggregate);
 
         aggregate.acceptChanges();
-        note.ChangeTitle("title1");
+        note.changeTitle("title1");
         DomainEventStreamMessage message2 = createMessage(aggregate);
 
         aggregate.acceptChanges();
-        note.ChangeTitle("title2");
+        note.changeTitle("title2");
         DomainEventStreamMessage message3 = createMessage(aggregate);
 
         ManualResetEvent waitHandle = new ManualResetEvent(false);
@@ -862,6 +864,52 @@ public class EnodeCoreTest extends AbstractTest {
 
         //再等待3秒，等待Enode内部异步打印Removed problem aggregate的日志
         Task.sleep(3000);
+    }
+
+    @Test
+    public void create_and_update_dirty_aggregate_test() {
+        String aggregateId = ObjectId.generateNewStringId();
+        CreateTestAggregateCommand command = new CreateTestAggregateCommand();
+        command.setAggregateRootId(aggregateId);
+        command.setTitle("Sample Note");
+        //执行创建聚合根的命令
+        CommandResult commandResult = commandService.executeAsync(command, CommandReturnType.EventHandled).join();
+        Assert.assertNotNull(commandResult);
+        Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
+        TestAggregate note = memoryCache.getAsync(aggregateId, TestAggregate.class).join();
+        Assert.assertNotNull(note);
+        Assert.assertEquals("Sample Note", note.getTitle());
+        Assert.assertEquals(1, note.getVersion());
+
+        String directUpdateEventStoreCommandId = ObjectId.generateNewStringId();
+        List<DomainEventStream> eventStreamList = new ArrayList<>();
+        List<IDomainEvent> evnts = new ArrayList<>();
+        TestAggregateTitleChanged evnt = new TestAggregateTitleChanged("Note Title2");
+        evnt.setAggregateRootId(aggregateId);
+        evnt.setAggregateRootStringId(aggregateId);
+        evnt.setAggregateRootTypeName(TestAggregate.class.getName());
+        evnt.setCommandId(directUpdateEventStoreCommandId);
+        evnt.setVersion(2);
+        evnts.add(evnt);
+        DomainEventStream eventStream = new DomainEventStream(ObjectId.generateNewStringId(), aggregateId, TestAggregate.class.getName(), new Date(), evnts, Maps.newHashMap());
+        eventStreamList.add(eventStream);
+        eventStore.batchAppendAsync(eventStreamList).join();
+
+        String eventProcessorName = "DefaultEventProcessor";
+        publishedVersionStore.updatePublishedVersionAsync(eventProcessorName, TestAggregate.class.getName(), aggregateId, 2).join();
+
+        //执行修改聚合根的命令
+        ChangeTestAggregateTitleWhenDirtyCommand command2 = new ChangeTestAggregateTitleWhenDirtyCommand();
+        command2.setAggregateRootId(aggregateId);
+        command2.setTitle("Changed Note");
+        command2.setFirstExecute(true);
+        commandResult = commandService.executeAsync(command2, CommandReturnType.EventHandled).join();
+        Assert.assertNotNull(commandResult);
+        Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
+        note = memoryCache.getAsync(aggregateId, TestAggregate.class).join();
+        Assert.assertNotNull(note);
+        Assert.assertEquals("Changed Note", note.getTitle());
+        Assert.assertEquals(3, note.getVersion());
     }
 
     private DomainEventStreamMessage createMessage(IAggregateRoot aggregateRoot) {

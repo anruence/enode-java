@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
@@ -36,19 +37,21 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     private final IScheduleService scheduleService;
     private final IMessageDispatcher messageDispatcher;
     private final IPublishedVersionStore publishedVersionStore;
+    private final Executor executor;
     private int timeoutSeconds = 3600 * 24 * 3;
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
     private int processTryToRefreshAggregateIntervalMilliseconds = 1000;
 
-    public DefaultProcessingEventProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore) {
+    public DefaultProcessingEventProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore, Executor executor) {
         this.scheduleService = scheduleService;
         this.messageDispatcher = messageDispatcher;
         this.publishedVersionStore = publishedVersionStore;
-        mailboxDict = new ConcurrentHashMap<>();
-        toRefreshAggregateRootMailBoxDict = new ConcurrentHashMap<>();
-        refreshingAggregateRootDict = new ConcurrentHashMap<>();
-        scanInactiveMailBoxTaskName = "CleanInactiveProcessingEventMailBoxes_" + System.currentTimeMillis() + new Random().nextInt(10000);
-        processTryToRefreshAggregateTaskName = "ProcessTryToRefreshAggregate_" + System.currentTimeMillis() + new Random().nextInt(10000);
+        this.executor = executor;
+        this.mailboxDict = new ConcurrentHashMap<>();
+        this.toRefreshAggregateRootMailBoxDict = new ConcurrentHashMap<>();
+        this.refreshingAggregateRootDict = new ConcurrentHashMap<>();
+        this.scanInactiveMailBoxTaskName = "CleanInactiveProcessingEventMailBoxes_" + System.currentTimeMillis() + new Random().nextInt(10000);
+        this.processTryToRefreshAggregateTaskName = "ProcessTryToRefreshAggregate_" + System.currentTimeMillis() + new Random().nextInt(10000);
     }
 
     @Override
@@ -87,7 +90,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     }
 
     private ProcessingEventMailBox buildProcessingEventMailBox(ProcessingEvent processingMessage) {
-        return new ProcessingEventMailBox(processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootId(), y -> dispatchProcessingMessageAsync(y, 0));
+        return new ProcessingEventMailBox(processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootId(), y -> dispatchProcessingMessageAsync(y, 0), executor);
     }
 
     private void tryToRefreshAggregateMailBoxNextExpectingEventVersion(ProcessingEventMailBox processingEventMailBox) {

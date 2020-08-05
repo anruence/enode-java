@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
-    private Class handlerType;
+    private Class<?> handlerType;
     private Object handler;
     private MethodHandle methodHandle;
     private Method method;
@@ -21,7 +21,7 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
     @Override
     public CompletableFuture<Void> handleAsync(IMessage message1, IMessage message2) {
         Object result;
-        CompletableFuture future = new CompletableFuture<>();
+        CompletableFuture<Void> future = new CompletableFuture<>();
         try {
             if (methodParameterTypes[0].isAssignableFrom(message1.getClass())) {
                 result = methodHandle.invoke(getInnerObject(), message1, message2);

@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class OrderPlaced extends DomainEvent<String> {
     public String ConferenceId;
-    public com.microsoft.conference.registration.domain.orders.Models.OrderTotal OrderTotal;
+    public OrderTotal OrderTotal;
     public Date ReservationExpirationDate;
     public String AccessCode;
 

@@ -69,6 +69,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 
+import java.util.concurrent.Executor;
+
 /**
  * @author anruence@gmail.com
  */
@@ -109,8 +111,8 @@ public class EnodeAutoConfiguration {
     }
 
     @Bean(name = "domainEventMessageProcessor", initMethod = "start", destroyMethod = "stop")
-    public DefaultProcessingEventProcessor domainEventMessageProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore) {
-        return new DefaultProcessingEventProcessor(scheduleService, messageDispatcher, publishedVersionStore);
+    public DefaultProcessingEventProcessor domainEventMessageProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore, @Qualifier("mailBoxExecutor") Executor executor) {
+        return new DefaultProcessingEventProcessor(scheduleService, messageDispatcher, publishedVersionStore, executor);
     }
 
     /**
@@ -213,14 +215,18 @@ public class EnodeAutoConfiguration {
             IMemoryCache memoryCache,
             @Qualifier(value = "applicationMessagePublisher") IMessagePublisher<IApplicationMessage> applicationMessagePublisher,
             @Qualifier(value = "publishableExceptionPublisher") IMessagePublisher<IDomainException> publishableExceptionPublisher,
-            ISerializeService serializeService
-    ) {
+            ISerializeService serializeService) {
         return new DefaultProcessingCommandHandler(eventStore, commandHandlerProvider, typeNameProvider, eventService, memoryCache, applicationMessagePublisher, publishableExceptionPublisher, serializeService);
     }
 
     @Bean(name = "defaultEventCommittingService")
-    public DefaultEventCommittingService defaultEventCommittingService(IMemoryCache memoryCache, IEventStore eventStore, ISerializeService serializeService, @Qualifier(value = "domainEventPublisher") IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
-        return new DefaultEventCommittingService(memoryCache, eventStore, serializeService, domainEventPublisher);
+    public DefaultEventCommittingService defaultEventCommittingService(
+            IMemoryCache memoryCache,
+            IEventStore eventStore,
+            ISerializeService serializeService,
+            @Qualifier("domainEventPublisher") IMessagePublisher<DomainEventStreamMessage> domainEventPublisher,
+            @Qualifier("mailBoxExecutor") Executor executor) {
+        return new DefaultEventCommittingService(memoryCache, eventStore, serializeService, domainEventPublisher, executor);
     }
 
     @Bean(name = "jacksonSerializeService")
@@ -230,8 +236,8 @@ public class EnodeAutoConfiguration {
     }
 
     @Bean(name = "defaultCommandProcessor", initMethod = "start", destroyMethod = "stop")
-    public DefaultCommandProcessor defaultCommandProcessor(IProcessingCommandHandler processingCommandHandler, IScheduleService scheduleService) {
-        return new DefaultCommandProcessor(processingCommandHandler, scheduleService);
+    public DefaultCommandProcessor defaultCommandProcessor(IProcessingCommandHandler processingCommandHandler, IScheduleService scheduleService, @Qualifier("mailBoxExecutor") Executor executor) {
+        return new DefaultCommandProcessor(processingCommandHandler, scheduleService, executor);
     }
 
     @Bean(name = "snapshotOnlyAggregateStorage")

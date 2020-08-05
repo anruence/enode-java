@@ -70,7 +70,10 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
             });
             handlerData.allHandlers = handlers;
             handlerData.listHandlers = listHandlers;
-            handlerData.queuedHandlers = queueHandlerDict.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).map(x -> x.getKey()).collect(Collectors.toList());
+            handlerData.queuedHandlers = queueHandlerDict.entrySet()
+                    .stream()
+                    .sorted(Comparator.comparingInt(Map.Entry::getValue))
+                    .map(Map.Entry::getKey).collect(Collectors.toList());
             messageHandlerDict.put(key, handlerData);
         });
     }
@@ -116,7 +119,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
         Set<Method> handleMethods = ReflectionUtils.getMethods(handlerType, this::isHandleMethodMatch);
         handleMethods.forEach(method -> {
             try {
-                //反射Method转换为MethodHandle,提高效率
+                // 反射Method转换为MethodHandle，提高效率
                 MethodHandle handleMethod = lookup.findVirtual(handlerType, method.getName(), MethodType.methodType(method.getReturnType(), method.getParameterTypes()));
                 TKey key = getKey(method);
                 List<THandlerProxyInterface> handlers = handlerDict.computeIfAbsent(key, k -> new ArrayList<>());
