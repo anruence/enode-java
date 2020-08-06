@@ -79,8 +79,8 @@ public class TestCommandHandler {
     public void HandleAsync(ICommandContext context, ChangeMultipleAggregatesCommand command) {
         TestAggregate testAggregate1 = Task.await(context.getAsync(command.getAggregateRootId1(), TestAggregate.class));
         TestAggregate testAggregate2 = Task.await(context.getAsync(command.getAggregateRootId2(), TestAggregate.class));
-        testAggregate1.TestEvents();
-        testAggregate2.TestEvents();
+        testAggregate1.testEvents();
+        testAggregate2.testEvents();
     }
 
     @Subscribe
@@ -97,7 +97,7 @@ public class TestCommandHandler {
     @Subscribe
     public void HandleAsync(ICommandContext context, TestEventPriorityCommand command) {
         TestAggregate testAggregate = Task.await(context.getAsync(command.aggregateRootId, TestAggregate.class));
-        testAggregate.TestEvents();
+        testAggregate.testEvents();
     }
 
     @Subscribe

@@ -19,5 +19,5 @@ CREATE TABLE published_version (
   version integer,
   gmt_create date,
   PRIMARY KEY (id),
-  CONSTRAINT uk_processor_name_aggregate_root_id_version UNIQUE (processor_name, aggregate_root_id, version)
+  CONSTRAINT uk_processor_name_aggregate_root_id UNIQUE (processor_name, aggregate_root_id)
 );

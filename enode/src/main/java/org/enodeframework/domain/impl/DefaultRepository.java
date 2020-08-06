@@ -25,7 +25,7 @@ public class DefaultRepository implements IRepository {
         CompletableFuture<T> future = memoryCache.getAsync(aggregateRootId, aggregateRootType);
         return future.thenCompose(aggregateRoot -> {
             if (aggregateRoot == null) {
-                return memoryCache.refreshAggregateFromEventStoreAsync(aggregateRootType, aggregateRootId);
+                return memoryCache.refreshAggregateFromEventStoreAsync(aggregateRootType, aggregateRootId.toString());
             }
             return CompletableFuture.completedFuture(aggregateRoot);
         });

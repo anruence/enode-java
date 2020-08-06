@@ -119,7 +119,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                             commitAggregateChanges(processingCommand).thenAccept(x -> {
                                 taskSource.complete(null);
                             }).exceptionally(ex -> {
-                                logger.error("Commit aggregate changes has unknown exception, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                                logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                         commandHandler.getInnerObject().getClass().getName(),
                                         command.getClass().getName(),
                                         command.getId(),
@@ -139,7 +139,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                             );
                             handleCommandInternal(processingCommand, commandHandler, 0).thenAccept(x -> taskSource.complete(null));
                         } catch (Exception e) {
-                            logger.error("Commit aggregate changes has unknown exception, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                            logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                     commandHandler.getInnerObject().getClass().getName(),
                                     command.getClass().getName(),
                                     command.getId(),

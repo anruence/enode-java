@@ -24,13 +24,11 @@ public class DefaultApplicationMessageListener implements IMessageHandler {
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
+        logger.info("Received application message: {}", queueMessage);
         String msg = queueMessage.getBody();
         ApplicationDataMessage appDataMessage = serializeService.deserialize(msg, ApplicationDataMessage.class);
         Class<?> applicationMessageType = typeNameProvider.getType(appDataMessage.getApplicationMessageType());
         IApplicationMessage message = (IApplicationMessage) serializeService.deserialize(appDataMessage.getApplicationMessageData(), applicationMessageType);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Enode application message received, messageId: {}, messageType: {}", message.getId(), message.getClass().getName());
-        }
         messageDispatcher.dispatchMessageAsync(message).thenAccept(x -> {
             context.onMessageHandled(queueMessage);
         });

@@ -1,19 +1,26 @@
 package org.enodeframework.domain;
 
+import java.util.Date;
+
 /**
  * @author anruence@gmail.com
  */
 public class AggregateCacheInfo {
     private IAggregateRoot aggregateRoot;
-    private long lastUpdateTimeMillis;
+    private Date lastUpdateTime;
 
     public AggregateCacheInfo(IAggregateRoot aggregateRoot) {
         this.aggregateRoot = aggregateRoot;
-        this.lastUpdateTimeMillis = System.currentTimeMillis();
+        this.lastUpdateTime = new Date();
+    }
+
+    public void updateAggregateRoot(IAggregateRoot aggregateRoot) {
+        this.aggregateRoot = aggregateRoot;
+        this.lastUpdateTime = new Date();
     }
 
     public boolean isExpired(int timeoutSeconds) {
-        return ((System.currentTimeMillis() - lastUpdateTimeMillis)) / 1000 >= timeoutSeconds;
+        return ((System.currentTimeMillis() - lastUpdateTime.getTime())) / 1000 >= timeoutSeconds;
     }
 
     public IAggregateRoot getAggregateRoot() {
@@ -24,11 +31,11 @@ public class AggregateCacheInfo {
         this.aggregateRoot = aggregateRoot;
     }
 
-    public long getLastUpdateTimeMillis() {
-        return lastUpdateTimeMillis;
+    public Date getLastUpdateTime() {
+        return lastUpdateTime;
     }
 
-    public void setLastUpdateTimeMillis(long lastUpdateTimeMillis) {
-        this.lastUpdateTimeMillis = lastUpdateTimeMillis;
+    public void setLastUpdateTime(Date lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 }

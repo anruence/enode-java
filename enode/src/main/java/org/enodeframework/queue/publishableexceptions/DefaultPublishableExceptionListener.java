@@ -29,6 +29,7 @@ public class DefaultPublishableExceptionListener implements IMessageHandler {
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
+        logger.info("Received domain exception message: {}", queueMessage);
         PublishableExceptionMessage exceptionMessage = serializeService.deserialize(queueMessage.getBody(), PublishableExceptionMessage.class);
         Class<?> exceptionType = typeNameProvider.getType(exceptionMessage.getExceptionType());
         IDomainException exception;
@@ -41,9 +42,6 @@ public class DefaultPublishableExceptionListener implements IMessageHandler {
         exception.setTimestamp(exceptionMessage.getTimestamp());
         exception.setItems(exceptionMessage.getItems());
         exception.restoreFrom(exceptionMessage.getSerializableInfo());
-        if (logger.isDebugEnabled()) {
-            logger.debug("Enode exception message received, messageId: {}", exceptionMessage.getUniqueId());
-        }
         messageDispatcher.dispatchMessageAsync(exception).thenAccept(x -> {
             context.onMessageHandled(queueMessage);
         });
