@@ -59,4 +59,15 @@ public class QueueMessage implements Serializable {
     public void setKey(String key) {
         this.key = key;
     }
+
+    @Override
+    public String toString() {
+        return "QueueMessage{" +
+                "body='" + body + '\'' +
+                ", topic='" + topic + '\'' +
+                ", tag='" + tag + '\'' +
+                ", routeKey='" + routeKey + '\'' +
+                ", key='" + key + '\'' +
+                '}';
+    }
 }

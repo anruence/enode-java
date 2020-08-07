@@ -58,9 +58,7 @@ public class DefaultMemoryCache implements IMemoryCache {
         if (aggregateRoot.getChanges().size() > 0) {
             CompletableFuture<T> lastestAggregateRootFuture = aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString());
             return lastestAggregateRootFuture.thenApply(lastestAggregateRoot -> {
-                if (lastestAggregateRoot != null) {
-                    resetAggregateRootCache(lastestAggregateRoot);
-                }
+                resetAggregateRootCache(aggregateRootType, aggregateRootId.toString(), lastestAggregateRoot);
                 return lastestAggregateRoot;
             });
         }
@@ -80,7 +78,7 @@ public class DefaultMemoryCache implements IMemoryCache {
         synchronized (lockObj) {
             Ensure.notNull(aggregateRoot, "aggregateRoot");
             AggregateCacheInfo cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.getUniqueId(), x -> {
-                logger.info("Aggregate root in-memory cache init, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion());
+                logger.info("Aggregate root in-memory cache initialized, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion());
                 return new AggregateCacheInfo(aggregateRoot);
             });
             //更新到内存缓存前需要先检查聚合根引用是否有变化，有变化说明此聚合根已经被重置过状态了
@@ -88,17 +86,16 @@ public class DefaultMemoryCache implements IMemoryCache {
                 throw new AggregateRootReferenceChangedException(aggregateRoot);
             }
             //接受聚合根的最新事件修改，更新聚合根版本号
+            int aggregateRootOldVersion = cacheInfo.getAggregateRoot().getVersion();
             aggregateRoot.acceptChanges();
-            IAggregateRoot existingAggregateRoot = cacheInfo.getAggregateRoot();
-            cacheInfo.setAggregateRoot(aggregateRoot);
-            cacheInfo.setLastUpdateTimeMillis(System.currentTimeMillis());
-            logger.info("Aggregate root in-memory cache changed, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion(), existingAggregateRoot.getVersion());
+            cacheInfo.updateAggregateRoot(aggregateRoot);
+            logger.info("Aggregate root in-memory cache changed, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion(), aggregateRootOldVersion);
         }
         return Task.completedTask;
     }
 
     @Override
-    public CompletableFuture<IAggregateRoot> refreshAggregateFromEventStoreAsync(String aggregateRootTypeName, Object aggregateRootId) {
+    public CompletableFuture<IAggregateRoot> refreshAggregateFromEventStoreAsync(String aggregateRootTypeName, String aggregateRootId) {
         Ensure.notNull(aggregateRootTypeName, "aggregateRootTypeName");
         CompletableFuture<IAggregateRoot> future = new CompletableFuture<>();
         try {
@@ -116,13 +113,11 @@ public class DefaultMemoryCache implements IMemoryCache {
     }
 
     @Override
-    public <T extends IAggregateRoot> CompletableFuture<T> refreshAggregateFromEventStoreAsync(Class<T> aggregateRootType, Object aggregateRootId) {
+    public <T extends IAggregateRoot> CompletableFuture<T> refreshAggregateFromEventStoreAsync(Class<T> aggregateRootType, String aggregateRootId) {
         Ensure.notNull(aggregateRootId, "aggregateRootId");
         Ensure.notNull(aggregateRootType, "aggregateRootType");
-        return aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString()).thenApply(aggregateRoot -> {
-            if (aggregateRoot != null) {
-                resetAggregateRootCache(aggregateRoot);
-            }
+        return aggregateStorage.getAsync(aggregateRootType, aggregateRootId).thenApply(aggregateRoot -> {
+            resetAggregateRootCache(aggregateRootType, aggregateRootId, aggregateRoot);
             return aggregateRoot;
         }).exceptionally(ex -> {
             logger.error("Refresh aggregate from event store has unknown exception, aggregateRootTypeName:{}, aggregateRootId:{}", typeNameProvider.getTypeName(aggregateRootType), aggregateRootId, ex);
@@ -140,18 +135,23 @@ public class DefaultMemoryCache implements IMemoryCache {
         scheduleService.stopTask(taskName);
     }
 
-    private void resetAggregateRootCache(IAggregateRoot aggregateRoot) {
+    private void resetAggregateRootCache(Class<?> aggregateRootType, String aggregateRootId, IAggregateRoot aggregateRoot) {
+        AggregateCacheInfo aggregateCacheInfo = aggregateRootInfoDict.remove(aggregateRootId);
+        if (aggregateCacheInfo != null) {
+            logger.info("Removed dirty in-memory aggregate, aggregateRootType: {}, aggregateRootId: {}, version: {}", aggregateRootType.getName(), aggregateRootId, aggregateCacheInfo.getAggregateRoot().getVersion());
+        }
+        if (aggregateRoot == null) {
+            return;
+        }
         synchronized (lockObj) {
-            Ensure.notNull(aggregateRoot, "aggregateRoot");
             AggregateCacheInfo cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.getUniqueId(), x -> {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Aggregate root in-memory cache init, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion());
+                    logger.debug("Aggregate root in-memory cache reset, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion());
                 }
                 return new AggregateCacheInfo(aggregateRoot);
             });
             int aggregateRootOldVersion = cacheInfo.getAggregateRoot().getVersion();
-            cacheInfo.setAggregateRoot(aggregateRoot);
-            cacheInfo.setLastUpdateTimeMillis(System.currentTimeMillis());
+            cacheInfo.updateAggregateRoot(aggregateRoot);
             if (logger.isDebugEnabled()) {
                 logger.debug("Aggregate root in-memory cache reset, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.getClass().getName(), aggregateRoot.getUniqueId(), aggregateRoot.getVersion(), aggregateRootOldVersion);
             }

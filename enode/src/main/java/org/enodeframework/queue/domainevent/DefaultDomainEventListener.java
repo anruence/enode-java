@@ -40,13 +40,11 @@ public class DefaultDomainEventListener implements IMessageHandler {
 
     @Override
     public void handle(QueueMessage queueMessage, IMessageContext context) {
+        logger.info("Received event stream message: {}", queueMessage);
         EventStreamMessage message = serializeService.deserialize(queueMessage.getBody(), EventStreamMessage.class);
         DomainEventStreamMessage domainEventStreamMessage = convertToDomainEventStream(message);
         DomainEventStreamProcessContext processContext = new DomainEventStreamProcessContext(this, domainEventStreamMessage, queueMessage, context);
         ProcessingEvent processingMessage = new ProcessingEvent(domainEventStreamMessage, processContext);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Enode event stream message received, messageId: {}, aggregateRootId: {}, aggregateRootType: {}, version: {}", domainEventStreamMessage.getId(), domainEventStreamMessage.getAggregateRootId(), domainEventStreamMessage.getAggregateRootTypeName(), domainEventStreamMessage.getVersion());
-        }
         domainEventMessageProcessor.process(processingMessage);
     }
 

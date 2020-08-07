@@ -105,7 +105,7 @@ public class ProcessingCommandMailbox {
                 lastActiveTime = new Date();
                 tryRun();
             } else {
-                logger.error("{} enqueue command failed, aggregateRootId: {}, messageId: {}, messageSequence: {}", getClass().getName(), aggregateRootId, message.getMessage().getId(), message.getSequence());
+                logger.error("{} enqueue message failed, aggregateRootId: {}, messageId: {}, messageSequence: {}", getClass().getName(), aggregateRootId, message.getMessage().getId(), message.getSequence());
             }
         }
     }

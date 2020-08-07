@@ -1,9 +1,9 @@
 package org.enodeframework.commanding.impl;
 
 import com.google.common.base.Strings;
-import org.enodeframework.commanding.AggregateRootAlreadyExistException;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.ICommandExecuteContext;
+import org.enodeframework.common.exception.AggregateRootAlreadyExistException;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.domain.IAggregateRoot;

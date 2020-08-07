@@ -30,7 +30,7 @@ public class TestAggregate extends AggregateRoot<String> {
         }
     }
 
-    public void TestEvents() {
+    public void testEvents() {
         applyEvents(Lists.newArrayList(new Event1(), new Event2(), new Event3()));
     }
 

@@ -1,5 +1,6 @@
 package org.enodeframework.eventing;
 
+import org.enodeframework.common.exception.DuplicateEventStreamException;
 import org.enodeframework.common.function.Action1;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.messaging.IMessage;
@@ -22,13 +23,13 @@ public class EventCommittingContextMailBox {
     private final Object lockObj = new Object();
     private final Executor executor;
     private final Object processMessageLockObj = new Object();
-    private Date lastActiveTime;
-    private boolean running;
     private final int number;
     private final ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> aggregateDictDict;
     private final ConcurrentLinkedQueue<EventCommittingContext> messageQueue;
     private final Action1<List<EventCommittingContext>> handleMessageAction;
     private final int batchSize;
+    private Date lastActiveTime;
+    private boolean running;
 
     public EventCommittingContextMailBox(int number, int batchSize, Action1<List<EventCommittingContext>> handleMessageAction, Executor executor) {
         this.executor = executor;
@@ -75,6 +76,8 @@ public class EventCommittingContextMailBox {
                 }
                 lastActiveTime = new Date();
                 tryRun();
+            } else {
+                throw new DuplicateEventStreamException(message.getEventStream());
             }
         }
     }

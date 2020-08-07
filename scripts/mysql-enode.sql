@@ -19,5 +19,5 @@ CREATE TABLE published_version (
   version INT NOT NULL,
   gmt_create DATETIME NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY uk_processor_name_aggregate_root_id_version (processor_name, aggregate_root_id, version)
+  UNIQUE KEY uk_processor_name_aggregate_root_id (processor_name, aggregate_root_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;

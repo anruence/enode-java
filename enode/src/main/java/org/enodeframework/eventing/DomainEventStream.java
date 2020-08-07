@@ -30,6 +30,7 @@ public class DomainEventStream extends Message {
         this.timestamp = timestamp;
         this.events = events;
         this.items = items == null ? new HashMap<>() : items;
+        this.id = aggregateRootId + "_" + version;
         int sequence = 1;
         for (IDomainEvent event : events) {
             if (!aggregateRootId.equals(event.getAggregateRootStringId())) {
