@@ -26,7 +26,7 @@ public class DefaultEventSerializer implements IEventSerializer {
     }
 
     @Override
-    public Map<String, String> serialize(List<IDomainEvent> evnts) {
+    public Map<String, String> serialize(List<IDomainEvent<?>> evnts) {
         LinkedHashMap<String, String> dict = Maps.newLinkedHashMap();
         evnts.forEach(evnt -> {
             String typeName = typeNameProvider.getTypeName(evnt.getClass());
@@ -37,11 +37,11 @@ public class DefaultEventSerializer implements IEventSerializer {
     }
 
     @Override
-    public <TEvent extends IDomainEvent> List<TEvent> deserialize(Map<String, String> data, Class<TEvent> domainEventType) {
-        List<TEvent> evnts = new ArrayList<>();
+    public List<IDomainEvent<?>> deserialize(Map<String, String> data) {
+        List<IDomainEvent<?>> evnts = new ArrayList<>();
         data.forEach((key, value) -> {
             Class<?> eventType = typeNameProvider.getType(key);
-            TEvent evnt = (TEvent) serializeService.deserialize(value, eventType);
+            IDomainEvent<?> evnt = (IDomainEvent<?>) serializeService.deserialize(value, eventType);
             evnts.add(evnt);
         });
         return evnts;

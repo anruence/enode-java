@@ -22,7 +22,7 @@ public interface IAggregateRoot {
     /**
      * Get all the changes of the aggregate root.
      */
-    List<IDomainEvent> getChanges();
+    List<IDomainEvent<?>> getChanges();
 
     /**
      * Accept changes of the aggregate root.

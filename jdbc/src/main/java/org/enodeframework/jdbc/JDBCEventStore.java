@@ -23,7 +23,6 @@ import org.enodeframework.eventing.BatchAggregateEventAppendResult;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.EventAppendResult;
 import org.enodeframework.eventing.EventAppendStatus;
-import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.eventing.IEventStore;
 import org.slf4j.Logger;
@@ -358,7 +357,7 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
                 record.aggregateRootId,
                 record.aggregateRootTypeName,
                 record.gmtCreated,
-                eventSerializer.deserialize(serializeService.deserialize(record.events, Map.class), IDomainEvent.class),
+                eventSerializer.deserialize(serializeService.deserialize(record.events, Map.class)),
                 Maps.newHashMap());
     }
 

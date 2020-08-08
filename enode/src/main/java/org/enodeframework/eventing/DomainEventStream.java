@@ -17,9 +17,9 @@ public class DomainEventStream extends Message {
     private String aggregateRootTypeName;
     private String aggregateRootId;
     private int version;
-    private List<IDomainEvent> events;
+    private List<IDomainEvent<?>> events;
 
-    public DomainEventStream(String commandId, String aggregateRootId, String aggregateRootTypeName, Date timestamp, List<IDomainEvent> events, Map<String, String> items) {
+    public DomainEventStream(String commandId, String aggregateRootId, String aggregateRootTypeName, Date timestamp, List<IDomainEvent<?>> events, Map<String, String> items) {
         if (events == null || events.size() == 0) {
             throw new IllegalArgumentException("Parameter events cannot be null or empty.");
         }
@@ -32,14 +32,7 @@ public class DomainEventStream extends Message {
         this.items = items == null ? new HashMap<>() : items;
         this.id = aggregateRootId + "_" + version;
         int sequence = 1;
-        for (IDomainEvent event : events) {
-            if (!aggregateRootId.equals(event.getAggregateRootStringId())) {
-                throw new DomainEventInvalidException(String.format("Invalid domain event aggregateRootId, aggregateRootTypeName: %s expected aggregateRootId: %s, but was: %s",
-                        aggregateRootTypeName,
-                        aggregateRootId,
-                        event.getAggregateRootStringId()));
-            }
-
+        for (IDomainEvent<?> event : events) {
             if (event.getVersion() != this.getVersion()) {
                 throw new DomainEventInvalidException(String.format("Invalid domain event version, aggregateRootTypeName: %s aggregateRootId: %s expected version: %d, but was: %d",
                         aggregateRootTypeName,
@@ -55,11 +48,11 @@ public class DomainEventStream extends Message {
         }
     }
 
-    public List<IDomainEvent> getEvents() {
+    public List<IDomainEvent<?>> getEvents() {
         return events;
     }
 
-    public void setEvents(List<IDomainEvent> events) {
+    public void setEvents(List<IDomainEvent<?>> events) {
         this.events = events;
     }
 
@@ -95,7 +88,7 @@ public class DomainEventStream extends Message {
         this.version = version;
     }
 
-    public List<IDomainEvent> events() {
+    public List<IDomainEvent<?>> events() {
         return events;
     }
 

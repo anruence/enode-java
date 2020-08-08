@@ -7,7 +7,6 @@ import org.enodeframework.common.function.Action2;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.IDomainEvent;
-import org.enodeframework.infrastructure.TypeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +25,11 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     private static IAggregateRootInternalHandlerProvider aggregateRootInternalHandlerProvider;
     protected TAggregateRootId id;
     protected int version;
-    private List<IDomainEvent> emptyEvents = new ArrayList<>();
-    private Queue<IDomainEvent> uncommittedEvents;
+    private List<IDomainEvent<?>> emptyEvents = new ArrayList<>();
+    private Queue<IDomainEvent<?>> uncommittedEvents;
 
     protected AggregateRoot() {
-        uncommittedEvents = new ConcurrentLinkedDeque<IDomainEvent>() {
+        uncommittedEvents = new ConcurrentLinkedDeque<IDomainEvent<?>>() {
         };
     }
 
@@ -56,7 +55,6 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         Ensure.notNull(domainEvent, "domainEvent");
         Ensure.notNull(id, "AggregateRootId");
         domainEvent.setAggregateRootId(id);
-        domainEvent.setAggregateRootStringId(this.getUniqueId());
         domainEvent.setVersion(version + 1);
         handleEvent(domainEvent);
         appendUncommittedEvent(domainEvent);
@@ -68,27 +66,16 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
         }
     }
 
-    private void handleEvent(IDomainEvent domainEvent) {
+    private void handleEvent(IDomainEvent<?> domainEvent) {
         if (aggregateRootInternalHandlerProvider == null) {
             aggregateRootInternalHandlerProvider = ObjectContainer.resolve(IAggregateRootInternalHandlerProvider.class);
         }
-        Action2<IAggregateRoot, IDomainEvent> handler = aggregateRootInternalHandlerProvider.getInternalEventHandler(getClass(), domainEvent.getClass());
+        Action2<IAggregateRoot, IDomainEvent<?>> handler = aggregateRootInternalHandlerProvider.getInternalEventHandler(getClass(), domainEvent.getClass());
         if (handler == null) {
             throw new HandlerNotFoundException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
         }
         if (this.id == null && domainEvent.getVersion() == 1) {
-            // 获取泛型类型
-            Class<?> genericType = TypeUtils.getGenericType(this.getClass());
-            if (Long.class.equals(genericType)) {
-                this.id = (TAggregateRootId) Long.valueOf(domainEvent.getAggregateRootStringId());
-            }
-            if (Integer.class.equals(genericType)) {
-                this.id = (TAggregateRootId) Integer.valueOf(domainEvent.getAggregateRootStringId());
-            }
-            if (String.class.equals(genericType)) {
-                this.id = (TAggregateRootId) String.valueOf(domainEvent.getAggregateRootStringId());
-            }
-            this.id = (TAggregateRootId) domainEvent.getAggregateRootStringId();
+            this.id = (TAggregateRootId) domainEvent.getAggregateRootId();
         }
         handler.apply(this, domainEvent);
     }
@@ -114,10 +101,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     @Override
     public String getUniqueId() {
-        if (id != null) {
-            return id.toString();
-        }
-        return null;
+        return id.toString();
     }
 
     @Override
@@ -126,7 +110,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     }
 
     @Override
-    public List<IDomainEvent> getChanges() {
+    public List<IDomainEvent<?>> getChanges() {
         if (uncommittedEvents == null) {
             return emptyEvents;
         }

@@ -15,12 +15,12 @@ public class DomainEventStreamMessage extends Message {
     public String aggregateRootTypeName;
     public int version;
     private String commandId;
-    private List<IDomainEvent> events = Lists.newArrayList();
+    private List<IDomainEvent<?>> events = Lists.newArrayList();
 
     public DomainEventStreamMessage() {
     }
 
-    public DomainEventStreamMessage(String commandId, String aggregateRootId, int version, String aggregateRootTypeName, List<IDomainEvent> events, Map<String, String> items) {
+    public DomainEventStreamMessage(String commandId, String aggregateRootId, int version, String aggregateRootTypeName, List<IDomainEvent<?>> events, Map<String, String> items) {
         this.commandId = commandId;
         this.aggregateRootId = aggregateRootId;
         this.aggregateRootTypeName = aggregateRootTypeName;
@@ -61,11 +61,11 @@ public class DomainEventStreamMessage extends Message {
         this.version = version;
     }
 
-    public List<IDomainEvent> getEvents() {
+    public List<IDomainEvent<?>> getEvents() {
         return events;
     }
 
-    public void setEvents(List<IDomainEvent> events) {
+    public void setEvents(List<IDomainEvent<?>> events) {
         this.events = events;
     }
 

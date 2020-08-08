@@ -23,7 +23,6 @@ import org.enodeframework.eventing.BatchAggregateEventAppendResult;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.EventAppendResult;
 import org.enodeframework.eventing.EventAppendStatus;
-import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.eventing.IEventStore;
 import org.reactivestreams.Subscriber;
@@ -289,7 +288,7 @@ public class MongoEventStore implements IEventStore {
                             document.getString("aggregateRootId"),
                             document.getString("aggregateRootTypeName"),
                             document.get("gmtCreate", Date.class),
-                            eventSerializer.deserialize(serializeService.deserialize(document.getString("events"), Map.class), IDomainEvent.class),
+                            eventSerializer.deserialize(serializeService.deserialize(document.getString("events"), Map.class)),
                             Maps.newHashMap());
                     streams.add(eventStream);
                 }
@@ -339,7 +338,7 @@ public class MongoEventStore implements IEventStore {
                             document.getString("aggregateRootId"),
                             document.getString("aggregateRootTypeName"),
                             document.get("gmtCreate", Date.class),
-                            eventSerializer.deserialize(serializeService.deserialize(document.getString("events"), Map.class), IDomainEvent.class),
+                            eventSerializer.deserialize(serializeService.deserialize(document.getString("events"), Map.class)),
                             Maps.newHashMap());
                     this.eventStream = eventStream;
                     future.complete(eventStream);
@@ -390,7 +389,7 @@ public class MongoEventStore implements IEventStore {
                             document.getString("aggregateRootId"),
                             document.getString("aggregateRootTypeName"),
                             document.get("gmtCreate", Date.class),
-                            eventSerializer.deserialize(serializeService.deserialize(document.getString("events"), Map.class), IDomainEvent.class),
+                            eventSerializer.deserialize(serializeService.deserialize(document.getString("events"), Map.class)),
                             Maps.newHashMap());
                     this.eventStream = eventStream;
                     future.complete(eventStream);
