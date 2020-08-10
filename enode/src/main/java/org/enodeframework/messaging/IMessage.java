@@ -21,13 +21,13 @@ public interface IMessage {
     /**
      * Represents the extension key/values data of the message.
      */
-    Map<String, String> getItems();
+    Map<String, Object> getItems();
 
 
-    void setItems(Map<String, String> items);
+    void setItems(Map<String, Object> items);
 
     /**
      * Merge the givens key/values into the current Items.
      */
-    void mergeItems(Map<String, String> items);
+    void mergeItems(Map<String, Object> items);
 }

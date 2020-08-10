@@ -1,6 +1,8 @@
 package org.enodeframework.queue.domainevent;
 
+import org.enodeframework.common.SysProperties;
 import org.enodeframework.common.serializing.ISerializeService;
+import org.enodeframework.common.utilities.InetUtil;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IEventProcessContext;
 import org.enodeframework.eventing.IEventSerializer;
@@ -12,6 +14,8 @@ import org.enodeframework.queue.ISendReplyService;
 import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
 
 public class DefaultDomainEventListener implements IMessageHandler {
 
@@ -92,11 +96,11 @@ public class DefaultDomainEventListener implements IMessageHandler {
             if (!eventConsumer.isSendEventHandledMessage()) {
                 return;
             }
-            String replyAddress = domainEventStreamMessage.getItems().get("CommandReplyAddress");
-            if (replyAddress == null || "".equals(replyAddress.trim())) {
+            InetSocketAddress replyAddress = InetUtil.parseInetSocketAddress((String) domainEventStreamMessage.getItems().get(SysProperties.ITEMS_COMMAND_REPLY_ADDRESS_KEY));
+            if (replyAddress == null) {
                 return;
             }
-            String commandResult = domainEventStreamMessage.getItems().get("CommandResult");
+            String commandResult = (String) domainEventStreamMessage.getItems().getOrDefault(SysProperties.ITEMS_COMMAND_RESULT_KEY, "");
             DomainEventHandledMessage domainEventHandledMessage = new DomainEventHandledMessage();
             domainEventHandledMessage.setCommandId(domainEventStreamMessage.getCommandId());
             domainEventHandledMessage.setAggregateRootId(domainEventStreamMessage.getAggregateRootId());

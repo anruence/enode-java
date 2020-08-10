@@ -15,13 +15,13 @@ public class SeatInsufficientException extends DomainException {
     }
 
     @Override
-    public void serializeTo(Map<String, String> serializableInfo) {
-        ConferenceId = serializableInfo.get("ConferenceId");
-        ReservationId = serializableInfo.get("ReservationId");
+    public void serializeTo(Map<String, Object> serializableInfo) {
+        ConferenceId = (String) serializableInfo.get("ConferenceId");
+        ReservationId = (String) serializableInfo.get("ReservationId");
     }
 
     @Override
-    public void restoreFrom(Map<String, String> serializableInfo) {
+    public void restoreFrom(Map<String, Object> serializableInfo) {
         serializableInfo.put("ConferenceId", ConferenceId);
         serializableInfo.put("ReservationId", ReservationId);
     }

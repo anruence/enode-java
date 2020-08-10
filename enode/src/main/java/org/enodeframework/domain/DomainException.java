@@ -10,7 +10,7 @@ public abstract class DomainException extends RuntimeException implements IDomai
     private static final long serialVersionUID = 2099914413380872726L;
     private String id;
     private Date timestamp;
-    private Map<String, String> items;
+    private Map<String, Object> items;
 
     public DomainException() {
         id = ObjectId.generateNewStringId();
@@ -19,10 +19,10 @@ public abstract class DomainException extends RuntimeException implements IDomai
     }
 
     @Override
-    public abstract void serializeTo(Map<String, String> serializableInfo);
+    public abstract void serializeTo(Map<String, Object> serializableInfo);
 
     @Override
-    public abstract void restoreFrom(Map<String, String> serializableInfo);
+    public abstract void restoreFrom(Map<String, Object> serializableInfo);
 
     @Override
     public String getId() {
@@ -45,24 +45,24 @@ public abstract class DomainException extends RuntimeException implements IDomai
     }
 
     @Override
-    public Map<String, String> getItems() {
+    public Map<String, Object> getItems() {
         return items;
     }
 
     @Override
-    public void setItems(Map<String, String> items) {
+    public void setItems(Map<String, Object> items) {
         this.items = items;
     }
 
     @Override
-    public void mergeItems(Map<String, String> mitems) {
+    public void mergeItems(Map<String, Object> mitems) {
         if (mitems == null || mitems.size() == 0) {
             return;
         }
         if (this.items == null) {
             this.items = new HashMap<>();
         }
-        for (Map.Entry<String, String> entry : mitems.entrySet()) {
+        for (Map.Entry<String, Object> entry : mitems.entrySet()) {
             if (!this.items.containsKey(entry.getKey())) {
                 this.items.put(entry.getKey(), entry.getValue());
             }

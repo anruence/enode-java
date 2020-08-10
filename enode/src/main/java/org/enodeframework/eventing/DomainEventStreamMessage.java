@@ -20,7 +20,7 @@ public class DomainEventStreamMessage extends Message {
     public DomainEventStreamMessage() {
     }
 
-    public DomainEventStreamMessage(String commandId, String aggregateRootId, int version, String aggregateRootTypeName, List<IDomainEvent<?>> events, Map<String, String> items) {
+    public DomainEventStreamMessage(String commandId, String aggregateRootId, int version, String aggregateRootTypeName, List<IDomainEvent<?>> events, Map<String, Object> items) {
         this.commandId = commandId;
         this.aggregateRootId = aggregateRootId;
         this.aggregateRootTypeName = aggregateRootTypeName;

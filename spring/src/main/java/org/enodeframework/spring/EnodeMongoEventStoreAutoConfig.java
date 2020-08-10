@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mongo")
-public class EnodeMongoEventStoreAutoConfig extends EnodeVertxAutoConfig {
+public class EnodeMongoEventStoreAutoConfig {
 
     @Bean
     public MongoEventStore mongoEventStore(@Qualifier("enodeMongoClient") MongoClient mongoClient, IEventSerializer eventSerializer, ISerializeService serializeService) {

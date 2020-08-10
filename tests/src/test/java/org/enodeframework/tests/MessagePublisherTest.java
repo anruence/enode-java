@@ -25,10 +25,19 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
-@ContextConfiguration(classes = {TestMockConfig.class})
+@ContextConfiguration(initializers = MessagePublisherTest.MyPropertyInitializer.class, classes = {TestMockConfig.class})
 public class MessagePublisherTest extends AbstractTest {
+
+    @Autowired
+    protected IEventStore eventStore;
+
+    @Autowired
+    protected IPublishedVersionStore publishedVersionStore;
 
     @Autowired
     @Qualifier("mockDomainEventPublisher")
@@ -42,13 +51,16 @@ public class MessagePublisherTest extends AbstractTest {
     @Qualifier("mockPublishableExceptionPublisher")
     protected IMessagePublisher<IDomainException> publishableExceptionPublisher;
 
-    @Autowired
-    @Qualifier("mockEventStore")
-    protected IEventStore eventStore;
 
-    @Autowired
-    @Qualifier("mockPublishedVersionStore")
-    protected IPublishedVersionStore publishedVersionStore;
+    static class MyPropertyInitializer
+            implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+        @Override
+        public void initialize(ConfigurableApplicationContext applicationContext) {
+            TestPropertyValues.of("spring.enode.eventstore=mock").applyTo(applicationContext);
+        }
+
+    }
 
     @Test
     public void event_store_failed_test() {

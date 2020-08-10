@@ -1,12 +1,23 @@
 package org.enodeframework.queue.command;
 
+import java.io.Serializable;
+import java.net.InetSocketAddress;
+
 /**
  * @author anruence@gmail.com
  */
-public class CommandMessage {
-    private String commandData;
-    private String replyAddress;
+public class CommandMessage implements Serializable {
     private String commandType;
+    private String commandData;
+    private InetSocketAddress replyAddress;
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
 
     public String getCommandData() {
         return commandData;
@@ -16,19 +27,11 @@ public class CommandMessage {
         this.commandData = commandData;
     }
 
-    public String getReplyAddress() {
+    public InetSocketAddress getReplyAddress() {
         return replyAddress;
     }
 
-    public void setReplyAddress(String replyAddress) {
+    public void setReplyAddress(InetSocketAddress replyAddress) {
         this.replyAddress = replyAddress;
-    }
-
-    public String getCommandType() {
-        return commandType;
-    }
-
-    public void setCommandType(String commandType) {
-        this.commandType = commandType;
     }
 }

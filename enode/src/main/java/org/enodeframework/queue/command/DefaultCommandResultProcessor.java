@@ -15,12 +15,14 @@ import org.enodeframework.common.SysProperties;
 import org.enodeframework.common.exception.DuplicateCommandRegisterException;
 import org.enodeframework.common.scheduling.IScheduleService;
 import org.enodeframework.common.scheduling.Worker;
-import org.enodeframework.common.utilities.RemoteReply;
+import org.enodeframework.common.utilities.ReplyMessage;
 import org.enodeframework.queue.domainevent.DomainEventHandledMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -70,20 +72,24 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
         });
     }
 
-    public void startServer(int port) {
+    public void startServer(int port) throws UnknownHostException {
         netServer = vertx.createNetServer();
+        bindAddress = new InetSocketAddress(InetAddress.getLocalHost(), port);
         netServer.connectHandler(sock -> {
             RecordParser parser = RecordParser.newDelimited(SysProperties.DELIMITED, sock);
             parser.endHandler(v -> sock.close()).exceptionHandler(t -> {
-                logger.error("Failed to start NetServer port:{}", port, t);
+                logger.error("vertx netServer start failed. port: {}", port, t);
                 sock.close();
             }).handler(buffer -> {
-                RemoteReply name = buffer.toJsonObject().mapTo(RemoteReply.class);
+                ReplyMessage name = buffer.toJsonObject().mapTo(ReplyMessage.class);
                 processRequestInternal(name);
             });
         });
-        bindAddress = new InetSocketAddress(port);
-        netServer.listen(port);
+        netServer.listen(port, res -> {
+            if (!res.succeeded()) {
+                logger.error("vertx netServer start failed. port: {}", port, res.cause());
+            }
+        });
     }
 
     @Override
@@ -95,7 +101,7 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
     }
 
     @Override
-    public void start() {
+    public void start() throws UnknownHostException {
         if (started) {
             return;
         }
@@ -119,7 +125,7 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
         return bindAddress;
     }
 
-    public void processRequestInternal(RemoteReply reply) {
+    public void processRequestInternal(ReplyMessage reply) {
         if (reply.getCode() == CommandReturnType.CommandExecuted.getValue()) {
             CommandResult result = reply.getCommandResult();
             commandExecutedMessageLocalQueue.add(result);
@@ -142,9 +148,9 @@ public class DefaultCommandResultProcessor extends AbstractVerticle implements I
      * Additionally, some environments restrict the creation of threads, which would make CacheBuilder unusable in that environment.
      */
     private void processExecutedCommandMessage(CommandResult commandResult) {
-        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().get(commandResult.getCommandId());
         // 主动触发cleanUp
         commandTaskDict.cleanUp();
+        CommandTaskCompletionSource commandTaskCompletionSource = commandTaskDict.asMap().get(commandResult.getCommandId());
         if (commandTaskCompletionSource == null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Command result return, {}, but commandTaskCompletionSource maybe timeout expired.", commandResult);

@@ -17,6 +17,7 @@ import org.enodeframework.queue.command.CommandMessage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -55,7 +56,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     @Override
     public CompletableFuture<Void> onCommandExecutedAsync(CommandResult commandResult) {
         messageContext.onMessageHandled(queueMessage);
-        if (Strings.isNullOrEmpty(commandMessage.getReplyAddress())) {
+        if (Objects.isNull(commandMessage.getReplyAddress())) {
             return Task.completedTask;
         }
         return sendReplyService.sendCommandReply(commandResult, commandMessage.getReplyAddress());

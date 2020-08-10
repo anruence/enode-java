@@ -9,7 +9,7 @@ import java.util.Map;
 public abstract class Message implements IMessage {
     protected String id;
     protected Date timestamp;
-    protected Map<String, String> items;
+    protected Map<String, Object> items;
 
     public Message() {
         id = ObjectId.generateNewStringId();
@@ -38,24 +38,24 @@ public abstract class Message implements IMessage {
     }
 
     @Override
-    public Map<String, String> getItems() {
+    public Map<String, Object> getItems() {
         return items;
     }
 
     @Override
-    public void setItems(Map<String, String> items) {
+    public void setItems(Map<String, Object> items) {
         this.items = items;
     }
 
     @Override
-    public void mergeItems(Map<String, String> mitems) {
+    public void mergeItems(Map<String, Object> mitems) {
         if (mitems == null || mitems.size() == 0) {
             return;
         }
         if (this.items == null) {
             this.items = new HashMap<>();
         }
-        for (Map.Entry<String, String> entry : mitems.entrySet()) {
+        for (Map.Entry<String, Object> entry : mitems.entrySet()) {
             if (!this.items.containsKey(entry.getKey())) {
                 this.items.put(entry.getKey(), entry.getValue());
             }

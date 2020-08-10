@@ -9,6 +9,10 @@ public class SysProperties {
      */
     public static final String AGGREGATE_ROOT_HANDLE_METHOD_NAME = "handle";
 
+    public static final String ITEMS_COMMAND_RESULT_KEY = "COMMAND_RESULT";
+
+    public static final String ITEMS_COMMAND_REPLY_ADDRESS_KEY = "COMMAND_REPLY_ADDRESS";
+
     /**
      * socket server RecordParser 使用的分隔符
      */
