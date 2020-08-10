@@ -10,6 +10,7 @@ import java.util.Map;
  * @author anruence@gmail.com
  */
 public class Command<TAggregateRootId> extends Message implements ICommand {
+
     public TAggregateRootId aggregateRootId;
 
     public Command() {
@@ -29,10 +30,7 @@ public class Command<TAggregateRootId> extends Message implements ICommand {
 
     @Override
     public String getAggregateRootId() {
-        if (aggregateRootId != null) {
-            return aggregateRootId.toString();
-        }
-        return null;
+        return aggregateRootId.toString();
     }
 
     public void setAggregateRootId(TAggregateRootId aggregateRootId) {

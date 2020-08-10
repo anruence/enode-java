@@ -553,7 +553,6 @@ public class EnodeCoreTest extends AbstractTest {
         TestAggregateCreated aggregateCreated = new TestAggregateCreated("Note Title");
         aggregateCreated.setVersion(1);
         aggregateCreated.setAggregateRootId(aggregateId);
-        aggregateCreated.setAggregateRootStringId(aggregateId);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
                 commandId,
@@ -616,7 +615,6 @@ public class EnodeCoreTest extends AbstractTest {
         String commandId = ObjectId.generateNewStringId();
         TestAggregateCreated aggregateCreated = new TestAggregateCreated("Note Title");
         aggregateCreated.setAggregateRootId(aggregateId);
-        aggregateCreated.setAggregateRootStringId(aggregateId);
         aggregateCreated.setVersion(1);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
@@ -676,7 +674,6 @@ public class EnodeCoreTest extends AbstractTest {
         String commandId = ObjectId.generateNewStringId();
         TestAggregateTitleChanged titleChanged = new TestAggregateTitleChanged("Note Title");
         titleChanged.setAggregateRootId(aggregateId);
-        titleChanged.setAggregateRootStringId(aggregateId);
         titleChanged.setVersion(1);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
@@ -742,7 +739,6 @@ public class EnodeCoreTest extends AbstractTest {
         Assert.assertEquals(1, note.getVersion());
         TestAggregateTitleChanged aggregateTitleChanged = new TestAggregateTitleChanged("Changed Title");
         aggregateTitleChanged.setAggregateRootId(aggregateId);
-        aggregateTitleChanged.setAggregateRootStringId(aggregateId);
         aggregateTitleChanged.setVersion(2);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
@@ -883,10 +879,9 @@ public class EnodeCoreTest extends AbstractTest {
 
         String directUpdateEventStoreCommandId = ObjectId.generateNewStringId();
         List<DomainEventStream> eventStreamList = new ArrayList<>();
-        List<IDomainEvent> evnts = new ArrayList<>();
+        List<IDomainEvent<?>> evnts = new ArrayList<>();
         TestAggregateTitleChanged evnt = new TestAggregateTitleChanged("Note Title2");
         evnt.setAggregateRootId(aggregateId);
-        evnt.setAggregateRootStringId(aggregateId);
         evnt.setAggregateRootTypeName(TestAggregate.class.getName());
         evnt.setCommandId(directUpdateEventStoreCommandId);
         evnt.setVersion(2);

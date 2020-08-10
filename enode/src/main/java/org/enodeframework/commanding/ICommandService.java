@@ -12,7 +12,7 @@ public interface ICommandService {
      * @param command The command to send.
      * @return A task which contains the send result of the command.
      */
-    CompletableFuture sendAsync(ICommand command);
+    CompletableFuture<Void> sendAsync(ICommand command);
 
     /**
      * Execute a command asynchronously with the default command return type.

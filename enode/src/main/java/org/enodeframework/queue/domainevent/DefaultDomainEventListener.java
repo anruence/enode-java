@@ -2,7 +2,6 @@ package org.enodeframework.queue.domainevent;
 
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.DomainEventStreamMessage;
-import org.enodeframework.eventing.IDomainEvent;
 import org.enodeframework.eventing.IEventProcessContext;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.eventing.IProcessingEventProcessor;
@@ -54,7 +53,7 @@ public class DefaultDomainEventListener implements IMessageHandler {
                 message.getAggregateRootId(),
                 message.getVersion(),
                 message.getAggregateRootTypeName(),
-                eventSerializer.deserialize(message.getEvents(), IDomainEvent.class),
+                eventSerializer.deserialize(message.getEvents()),
                 message.getItems()
         );
         domainEventStreamMessage.setId(message.getId());

@@ -10,5 +10,5 @@ public interface IAggregateRootInternalHandlerProvider {
     /**
      * Get the internal event handler within the aggregate.
      */
-    Action2<IAggregateRoot, IDomainEvent> getInternalEventHandler(Class<? extends IAggregateRoot> aggregateRootType, Class<? extends IDomainEvent> anEventType);
+    Action2<IAggregateRoot, IDomainEvent<?>> getInternalEventHandler(Class<? extends IAggregateRoot> aggregateRootType, Class<? extends IDomainEvent> eventType);
 }

@@ -23,7 +23,7 @@ import java.util.Set;
  * @author anruence@gmail.com
  */
 public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRootInternalHandlerProvider, IAssemblyInitializer {
-    private final Map<Class<?>, Map<Class<?>, Action2<IAggregateRoot, IDomainEvent>>> MAPPINGS = new HashMap<>();
+    private final Map<Class<?>, Map<Class<?>, Action2<IAggregateRoot, IDomainEvent<?>>>> MAPPINGS = new HashMap<>();
 
     @Override
     public void initialize(Set<Class<?>> componentTypes) {
@@ -59,7 +59,7 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
     }
 
     private void registerInternalHandler(Class<?> aggregateRootType, Class<?> eventType, Method method) {
-        Map<Class<?>, Action2<IAggregateRoot, IDomainEvent>> eventHandlerDic = MAPPINGS.computeIfAbsent(aggregateRootType, k -> new HashMap<>());
+        Map<Class<?>, Action2<IAggregateRoot, IDomainEvent<?>>> eventHandlerDic = MAPPINGS.computeIfAbsent(aggregateRootType, k -> new HashMap<>());
         method.setAccessible(true);
         try {
             MethodHandle methodHandle = MethodHandles.lookup().unreflect(method);
@@ -76,10 +76,10 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
     }
 
     @Override
-    public Action2<IAggregateRoot, IDomainEvent> getInternalEventHandler(Class<? extends IAggregateRoot> aggregateRootType, Class<? extends IDomainEvent> anEventType) {
+    public Action2<IAggregateRoot, IDomainEvent<?>> getInternalEventHandler(Class<? extends IAggregateRoot> aggregateRootType, Class<? extends IDomainEvent> eventType) {
         Class currentAggregateType = aggregateRootType;
         while (currentAggregateType != null) {
-            Action2<IAggregateRoot, IDomainEvent> handler = getEventHandler(currentAggregateType, anEventType);
+            Action2<IAggregateRoot, IDomainEvent<?>> handler = getEventHandler(currentAggregateType, eventType);
             if (handler != null) {
                 return handler;
             }
@@ -92,8 +92,8 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
         return null;
     }
 
-    private Action2<IAggregateRoot, IDomainEvent> getEventHandler(Class<? extends IAggregateRoot> aggregateRootType, Class<? extends IDomainEvent> anEventType) {
-        Map<Class<?>, Action2<IAggregateRoot, IDomainEvent>> eventHandlerDic = MAPPINGS.get(aggregateRootType);
+    private Action2<IAggregateRoot, IDomainEvent<?>> getEventHandler(Class<? extends IAggregateRoot> aggregateRootType, Class<? extends IDomainEvent> anEventType) {
+        Map<Class<?>, Action2<IAggregateRoot, IDomainEvent<?>>> eventHandlerDic = MAPPINGS.get(aggregateRootType);
         if (eventHandlerDic == null) {
             return null;
         }
