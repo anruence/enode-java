@@ -9,13 +9,13 @@ import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.common.SysProperties;
 import org.enodeframework.common.serializing.ISerializeService;
-import org.enodeframework.common.utilities.Address;
-import org.enodeframework.common.utilities.RemoteReply;
-import org.enodeframework.common.utilities.RemotingUtil;
+import org.enodeframework.common.utilities.InetUtil;
+import org.enodeframework.common.utilities.ReplyMessage;
 import org.enodeframework.queue.domainevent.DomainEventHandledMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -53,52 +53,50 @@ public class DefaultSendReplyService extends AbstractVerticle implements ISendRe
     }
 
     @Override
-    public CompletableFuture<Void> sendCommandReply(CommandResult commandResult, String replyAddress) {
-        RemoteReply remoteReply = new RemoteReply();
-        remoteReply.setCode(CommandReturnType.CommandExecuted.getValue());
-        remoteReply.setCommandResult(commandResult);
-        return sendReply(remoteReply, replyAddress);
+    public CompletableFuture<Void> sendCommandReply(CommandResult commandResult, InetSocketAddress replyAddress) {
+        ReplyMessage replyMessage = new ReplyMessage();
+        replyMessage.setCode(CommandReturnType.CommandExecuted.getValue());
+        replyMessage.setCommandResult(commandResult);
+        return sendReply(replyMessage, replyAddress);
     }
 
     @Override
-    public CompletableFuture<Void> sendEventReply(DomainEventHandledMessage eventHandledMessage, String replyAddress) {
-        RemoteReply remoteReply = new RemoteReply();
-        remoteReply.setCode(CommandReturnType.EventHandled.getValue());
-        remoteReply.setEventHandledMessage(eventHandledMessage);
-        return sendReply(remoteReply, replyAddress);
+    public CompletableFuture<Void> sendEventReply(DomainEventHandledMessage eventHandledMessage, InetSocketAddress replyAddress) {
+        ReplyMessage replyMessage = new ReplyMessage();
+        replyMessage.setCode(CommandReturnType.EventHandled.getValue());
+        replyMessage.setEventHandledMessage(eventHandledMessage);
+        return sendReply(replyMessage, replyAddress);
     }
 
-    public CompletableFuture<Void> sendReply(RemoteReply remoteReply, String replyAddress) {
-        String message = serializeService.serialize(remoteReply) + SysProperties.DELIMITED;
-        Address address = RemotingUtil.string2Address(replyAddress);
-        SocketAddress socketAddress = SocketAddress.inetSocketAddress(address.getPort(), address.getHost());
+    public CompletableFuture<Void> sendReply(ReplyMessage replyMessage, InetSocketAddress replyAddress) {
+        String message = serializeService.serialize(replyMessage) + SysProperties.DELIMITED;
+        String key = InetUtil.toStringAddress(replyAddress);
+        SocketAddress socketAddress = SocketAddress.inetSocketAddress(replyAddress.getPort(), replyAddress.getAddress().getHostAddress());
         CompletableFuture<NetSocket> future = new CompletableFuture<>();
-        if (socketMap.putIfAbsent(replyAddress, future) == null) {
+        if (socketMap.putIfAbsent(key, future) == null) {
             netClient.connect(socketAddress, res -> {
                 if (!res.succeeded()) {
                     future.completeExceptionally(res.cause());
-                    logger.error("Failed to connect NetServer", res.cause());
+                    logger.error("Failed to connect NetServer, key: {}", key, res.cause());
                     return;
                 }
                 NetSocket socket = res.result();
                 socket.endHandler(v -> socket.close()).exceptionHandler(t -> {
-                    socketMap.remove(replyAddress);
+                    socketMap.remove(key);
                     logger.error("NetSocket occurs unexpected error", t);
                     socket.close();
                 }).handler(buffer -> {
-                    String greeting = buffer.toString("UTF-8");
-                    logger.info("NetClient receiving: {}", greeting);
                 }).closeHandler(v -> {
-                    socketMap.remove(replyAddress);
-                    logger.info("NetClient socket closed: {}", replyAddress);
+                    socketMap.remove(key);
+                    logger.info("NetClient socket closed: {}", key);
                 });
                 future.complete(socket);
             });
         }
-        return socketMap.get(replyAddress).thenAccept(socket -> {
+        return socketMap.get(key).thenAccept(socket -> {
             socket.write(message);
         }).exceptionally(ex -> {
-            logger.error("Send command reply has exception, replyAddress: {}", replyAddress, ex);
+            logger.error("Send command reply has exception, key: {}", key, ex);
             return null;
         });
     }

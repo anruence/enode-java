@@ -21,7 +21,7 @@ public class Command<TAggregateRootId> extends Message implements ICommand {
         this(aggregateRootId, Maps.newHashMap());
     }
 
-    public Command(TAggregateRootId aggregateRootId, Map<String, String> items) {
+    public Command(TAggregateRootId aggregateRootId, Map<String, Object> items) {
         super();
         Ensure.notNull(aggregateRootId, "aggregateRootId");
         this.aggregateRootId = aggregateRootId;

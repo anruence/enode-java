@@ -9,6 +9,7 @@ import org.enodeframework.commanding.ICommandHandlerProvider;
 import org.enodeframework.commanding.ICommandHandlerProxy;
 import org.enodeframework.commanding.IProcessingCommandHandler;
 import org.enodeframework.commanding.ProcessingCommand;
+import org.enodeframework.common.SysProperties;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.serializing.ISerializeService;
@@ -202,7 +203,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
         return memoryCache.acceptAggregateRootChanges(dirtyAggregateRoot).thenAccept(x -> {
             String commandResult = processingCommand.getCommandExecuteContext().getResult();
             if (commandResult != null) {
-                processingCommand.getItems().put("CommandResult", commandResult);
+                processingCommand.getItems().put(SysProperties.ITEMS_COMMAND_RESULT_KEY, commandResult);
             }
             //提交事件流进行后续的处理
             eventCommittingService.commitDomainEventAsync(new EventCommittingContext(eventStream, processingCommand));
@@ -280,7 +281,7 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
                 result -> completeCommand(processingCommand, CommandStatus.Failed, exception.getClass().getName(), ((Exception) exception).getMessage())
                         .thenAccept(x -> future.complete(null)),
                 () -> {
-                    Map<String, String> serializableInfo = new HashMap<>();
+                    Map<String, Object> serializableInfo = new HashMap<>();
                     exception.serializeTo(serializableInfo);
                     String exceptionInfo = serializableInfo.entrySet().stream().map(x -> String.format("%s:%s", x.getKey(), x.getValue())).collect(Collectors.joining(","));
                     return String.format("[commandId:%s, exceptionInfo:%s]", processingCommand.getMessage().getId(), exceptionInfo);

@@ -24,14 +24,14 @@ public class EnodeVertxAutoConfig {
     @Value("${spring.enode.server.port:2019}")
     private int port;
 
-    @Bean(value = "enodeVertx")
+    @Bean(name = "enodeVertx")
     public Vertx enodeVertx() {
         return Vertx.vertx();
     }
 
     @Bean(name = "defaultCommandResultProcessor")
     @ConditionalOnProperty(prefix = "spring.enode", name = "server.port")
-    public DefaultCommandResultProcessor commandResultProcessor(IScheduleService scheduleService) {
+    public DefaultCommandResultProcessor defaultCommandResultProcessor(IScheduleService scheduleService) {
         DefaultCommandResultProcessor processor = new DefaultCommandResultProcessor(scheduleService, port);
         vertx.deployVerticle(processor, res -> {
             if (!res.succeeded()) {
@@ -41,8 +41,8 @@ public class EnodeVertxAutoConfig {
         return processor;
     }
 
-    @Bean
-    public DefaultSendReplyService sendReplyService(ISerializeService serializeService) {
+    @Bean(name = "defaultSendReplyService")
+    public DefaultSendReplyService defaultSendReplyService(ISerializeService serializeService) {
         DefaultSendReplyService sendReplyService = new DefaultSendReplyService(serializeService);
         vertx.deployVerticle(sendReplyService, res -> {
             if (!res.succeeded()) {

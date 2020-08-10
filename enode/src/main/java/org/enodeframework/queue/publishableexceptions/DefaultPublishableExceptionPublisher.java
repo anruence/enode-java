@@ -30,7 +30,7 @@ public class DefaultPublishableExceptionPublisher implements IMessagePublisher<I
 
     protected QueueMessage createExceptionMessage(IDomainException exception) {
         Ensure.notNull(topic, "topic");
-        Map<String, String> serializableInfo = new HashMap<>();
+        Map<String, Object> serializableInfo = new HashMap<>();
         exception.serializeTo(serializableInfo);
         PublishableExceptionMessage exceptionMessage = new PublishableExceptionMessage();
         exceptionMessage.setUniqueId(exception.getId());

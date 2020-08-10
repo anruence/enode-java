@@ -14,7 +14,7 @@ public class EventStreamMessage {
     private Date timestamp;
     private String commandId;
     private Map<String, String> events;
-    private Map<String, String> items;
+    private Map<String, Object> items;
 
     public String getId() {
         return id;
@@ -72,11 +72,11 @@ public class EventStreamMessage {
         this.events = events;
     }
 
-    public Map<String, String> getItems() {
+    public Map<String, Object> getItems() {
         return items;
     }
 
-    public void setItems(Map<String, String> items) {
+    public void setItems(Map<String, Object> items) {
         this.items = items;
     }
 }

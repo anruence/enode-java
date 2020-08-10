@@ -1,11 +1,22 @@
 package org.enodeframework.queue.command;
 
+import java.net.InetSocketAddress;
+
 /**
  * @author anruence@gmail.com
  */
 public class CommandMessage {
     private String commandData;
-    private String replyAddress;
+
+    public InetSocketAddress getReplyAddress() {
+        return replyAddress;
+    }
+
+    public void setReplyAddress(InetSocketAddress replyAddress) {
+        this.replyAddress = replyAddress;
+    }
+
+    private InetSocketAddress replyAddress;
     private String commandType;
 
     public String getCommandData() {
@@ -16,13 +27,6 @@ public class CommandMessage {
         this.commandData = commandData;
     }
 
-    public String getReplyAddress() {
-        return replyAddress;
-    }
-
-    public void setReplyAddress(String replyAddress) {
-        this.replyAddress = replyAddress;
-    }
 
     public String getCommandType() {
         return commandType;

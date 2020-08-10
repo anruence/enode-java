@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "memory")
-public class EnodeMemoryEventStoreAutoConfig extends EnodeVertxAutoConfig {
+public class EnodeMemoryEventStoreAutoConfig {
 
     @Bean
     public InMemoryEventStore inMemoryEventStore() {

@@ -10,13 +10,13 @@ import java.util.concurrent.CompletableFuture;
 public class ProcessingCommand {
     private final ICommand message;
     private final ICommandExecuteContext commandExecuteContext;
-    private final Map<String, String> items;
+    private final Map<String, Object> items;
     private ProcessingCommandMailbox mailBox;
     private long sequence;
 
     private boolean duplicated;
 
-    public ProcessingCommand(ICommand command, ICommandExecuteContext commandExecuteContext, Map<String, String> items) {
+    public ProcessingCommand(ICommand command, ICommandExecuteContext commandExecuteContext, Map<String, Object> items) {
         this.message = command;
         this.commandExecuteContext = commandExecuteContext;
         this.items = items == null ? new HashMap<>() : items;
@@ -42,7 +42,7 @@ public class ProcessingCommand {
         return commandExecuteContext;
     }
 
-    public Map<String, String> getItems() {
+    public Map<String, Object> getItems() {
         return items;
     }
 

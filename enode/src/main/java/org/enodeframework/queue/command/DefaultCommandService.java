@@ -6,10 +6,10 @@ import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.Ensure;
-import org.enodeframework.common.utilities.RemotingUtil;
 import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.QueueMessage;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -68,7 +68,7 @@ public class DefaultCommandService implements ICommandService {
         Ensure.notNull(command.getAggregateRootId(), "aggregateRootId");
         Ensure.notNull(topic, "topic");
         String commandData = serializeService.serialize(command);
-        String replyAddress = needReply && commandResultProcessor != null ? RemotingUtil.parseAddress(commandResultProcessor.getBindAddress()) : null;
+        InetSocketAddress replyAddress = needReply && commandResultProcessor != null ? commandResultProcessor.getBindAddress() : null;
         CommandMessage commandMessage = new CommandMessage();
         commandMessage.setCommandData(commandData);
         commandMessage.setReplyAddress(replyAddress);

@@ -19,7 +19,7 @@ public class DomainEventStream extends Message {
     private int version;
     private List<IDomainEvent<?>> events;
 
-    public DomainEventStream(String commandId, String aggregateRootId, String aggregateRootTypeName, Date timestamp, List<IDomainEvent<?>> events, Map<String, String> items) {
+    public DomainEventStream(String commandId, String aggregateRootId, String aggregateRootTypeName, Date timestamp, List<IDomainEvent<?>> events, Map<String, Object> items) {
         if (events == null || events.size() == 0) {
             throw new IllegalArgumentException("Parameter events cannot be null or empty.");
         }

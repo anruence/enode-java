@@ -41,7 +41,7 @@ public class InsufficientBalanceException extends DomainException {
     }
 
     @Override
-    public void serializeTo(Map<String, String> serializableInfo) {
+    public void serializeTo(Map<String, Object> serializableInfo) {
         serializableInfo.put("AccountId", AccountId);
         serializableInfo.put("TransactionId", TransactionId);
         serializableInfo.put("TransactionType", "");
@@ -51,12 +51,12 @@ public class InsufficientBalanceException extends DomainException {
     }
 
     @Override
-    public void restoreFrom(Map<String, String> serializableInfo) {
-        AccountId = serializableInfo.get("AccountId");
-        TransactionId = serializableInfo.get("TransactionId");
-        TransactionType = Integer.parseInt(serializableInfo.get("transactionType"));
-        Amount = Double.parseDouble(serializableInfo.get("Amount"));
-        CurrentBalance = Double.parseDouble(serializableInfo.get("CurrentBalance"));
-        CurrentAvailableBalance = Double.parseDouble(serializableInfo.get("CurrentAvailableBalance"));
+    public void restoreFrom(Map<String, Object> serializableInfo) {
+        AccountId = (String) serializableInfo.get("AccountId");
+        TransactionId = (String) serializableInfo.get("TransactionId");
+        TransactionType = (Integer) serializableInfo.get("transactionType");
+        Amount = (Double) (serializableInfo.get("Amount"));
+        CurrentBalance = (Double) (serializableInfo.get("CurrentBalance"));
+        CurrentAvailableBalance = (Double) (serializableInfo.get("CurrentAvailableBalance"));
     }
 }

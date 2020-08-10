@@ -8,10 +8,10 @@ public interface IDomainException extends IMessage {
     /**
      * Serialize the current exception info to the given dictionary.
      */
-    void serializeTo(Map<String, String> serializableInfo);
+    void serializeTo(Map<String, Object> serializableInfo);
 
     /**
      * Restore the current exception from the given dictionary.
      */
-    void restoreFrom(Map<String, String> serializableInfo);
+    void restoreFrom(Map<String, Object> serializableInfo);
 }

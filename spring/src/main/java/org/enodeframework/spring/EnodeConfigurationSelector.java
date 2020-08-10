@@ -20,6 +20,7 @@ public class EnodeConfigurationSelector implements DeferredImportSelector {
         return new String[]{
                 EnodeBootstrapRegistrar.class.getName(),
                 EnodeAutoConfiguration.class.getName(),
+                EnodeVertxAutoConfig.class.getName(),
                 EnodeMemoryEventStoreAutoConfig.class.getName(),
                 EnodePgEventStoreAutoConfig.class.getName(),
                 EnodeMySQLEventStoreAutoConfig.class.getName(),

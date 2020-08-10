@@ -27,7 +27,6 @@ public class CommandResult {
 
     public CommandResult() {
     }
-
     /**
      * Parameterized constructor.
      */
@@ -37,17 +36,6 @@ public class CommandResult {
         this.aggregateRootId = aggregateRootId;
         this.result = result;
         this.resultType = resultType;
-    }
-
-    @Override
-    public String toString() {
-        return "CommandResult{" +
-                "status=" + status +
-                ", commandId='" + commandId + '\'' +
-                ", aggregateRootId='" + aggregateRootId + '\'' +
-                ", result='" + result + '\'' +
-                ", resultType='" + resultType + '\'' +
-                '}';
     }
 
     public CommandStatus getStatus() {
@@ -68,5 +56,16 @@ public class CommandResult {
 
     public String getResultType() {
         return resultType;
+    }
+
+    @Override
+    public String toString() {
+        return "CommandResult{" +
+                "status=" + status +
+                ", commandId='" + commandId + '\'' +
+                ", aggregateRootId='" + aggregateRootId + '\'' +
+                ", result='" + result + '\'' +
+                ", resultType='" + resultType + '\'' +
+                '}';
     }
 }

@@ -5,7 +5,7 @@ import org.enodeframework.domain.DomainException;
 import java.util.Map;
 
 public class TestPublishableException extends DomainException {
-    public String AggregateRootId;
+    public String aggregateRootId;
 
     public TestPublishableException(String aggregateRootId) {
     }
@@ -14,12 +14,12 @@ public class TestPublishableException extends DomainException {
     }
 
     @Override
-    public void serializeTo(Map<String, String> serializableInfo) {
-        serializableInfo.put("AggregateRootId", AggregateRootId);
+    public void serializeTo(Map<String, Object> serializableInfo) {
+        serializableInfo.put("AggregateRootId", aggregateRootId);
     }
 
     @Override
-    public void restoreFrom(Map<String, String> serializableInfo) {
-        AggregateRootId = serializableInfo.get("AggregateRootId");
+    public void restoreFrom(Map<String, Object> serializableInfo) {
+        aggregateRootId = (String) serializableInfo.get("AggregateRootId");
     }
 }

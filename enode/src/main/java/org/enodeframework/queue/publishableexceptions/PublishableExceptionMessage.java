@@ -10,8 +10,8 @@ public class PublishableExceptionMessage {
     private String uniqueId;
     private String exceptionType;
     private Date timestamp;
-    private Map<String, String> serializableInfo;
-    private Map<String, String> items;
+    private Map<String, Object> serializableInfo;
+    private Map<String, Object> items;
 
     public String getUniqueId() {
         return uniqueId;
@@ -37,19 +37,19 @@ public class PublishableExceptionMessage {
         this.timestamp = timestamp;
     }
 
-    public Map<String, String> getSerializableInfo() {
+    public Map<String, Object> getSerializableInfo() {
         return serializableInfo;
     }
 
-    public void setSerializableInfo(Map<String, String> serializableInfo) {
+    public void setSerializableInfo(Map<String, Object> serializableInfo) {
         this.serializableInfo = serializableInfo;
     }
 
-    public Map<String, String> getItems() {
+    public Map<String, Object> getItems() {
         return items;
     }
 
-    public void setItems(Map<String, String> items) {
+    public void setItems(Map<String, Object> items) {
         this.items = items;
     }
 }
