@@ -8,7 +8,7 @@ public interface MethodInvocation {
 
     void setMethod(Method method);
 
-    void setHandlerType(Class handlerType);
+    void setHandlerType(Class<?> handlerType);
 
     void setMethodHandle(MethodHandle methodHandle);
 }

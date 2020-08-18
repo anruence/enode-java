@@ -7,8 +7,6 @@ import org.enodeframework.common.io.Task;
 import org.enodeframework.common.utilities.ObjectId;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.eventing.DomainEventStreamMessage;
-import org.enodeframework.eventing.IEventStore;
-import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.tests.commands.AggregateThrowExceptionCommand;
@@ -34,12 +32,6 @@ import org.springframework.test.context.ContextConfiguration;
 public class MessagePublisherTest extends AbstractTest {
 
     @Autowired
-    protected IEventStore eventStore;
-
-    @Autowired
-    protected IPublishedVersionStore publishedVersionStore;
-
-    @Autowired
     @Qualifier("mockDomainEventPublisher")
     protected IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
 
@@ -51,9 +43,7 @@ public class MessagePublisherTest extends AbstractTest {
     @Qualifier("mockPublishableExceptionPublisher")
     protected IMessagePublisher<IDomainException> publishableExceptionPublisher;
 
-
-    static class MyPropertyInitializer
-            implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    static class MyPropertyInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {

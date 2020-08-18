@@ -68,7 +68,7 @@ public class MessageHandlerProxy3 implements IMessageHandlerProxy3 {
     }
 
     @Override
-    public void setHandlerType(Class handlerType) {
+    public void setHandlerType(Class<?> handlerType) {
         this.handlerType = handlerType;
     }
 

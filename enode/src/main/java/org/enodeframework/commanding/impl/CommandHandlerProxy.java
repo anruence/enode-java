@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class CommandHandlerProxy implements ICommandHandlerProxy {
 
-    private Class handlerType;
+    private Class<?> handlerType;
     private Object commandHandler;
     private MethodHandle methodHandle;
     private Method method;
@@ -44,7 +44,7 @@ public class CommandHandlerProxy implements ICommandHandlerProxy {
     }
 
     @Override
-    public void setHandlerType(Class handlerType) {
+    public void setHandlerType(Class<?> handlerType) {
         this.handlerType = handlerType;
     }
 
