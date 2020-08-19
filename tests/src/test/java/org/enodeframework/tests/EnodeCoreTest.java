@@ -59,7 +59,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -208,7 +207,7 @@ public class EnodeCoreTest extends AbstractTest {
         command2.aggregateRootId = aggregateId;
         command2.setTitle("Changed Note");
         //执行修改聚合根的命令
-        CommandResult commandResult = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
+        CommandResult commandResult = Task.await(commandService.executeAsync(command2));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         TestAggregate note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -268,32 +267,6 @@ public class EnodeCoreTest extends AbstractTest {
             });
         }
         waitHandle.waitOne();
-    }
-
-    @Test
-    public void perf_create_and_concurrent_update_aggregate_test() throws InterruptedException {
-        //并发执行创建聚合根的命令
-        int totalCount = 100;
-        AtomicLong finishedCount = new AtomicLong(0);
-        ManualResetEvent waitHandle = new ManualResetEvent(false);
-        long start = System.currentTimeMillis();
-        CountDownLatch latch = new CountDownLatch(totalCount);
-        for (int i = 0; i < totalCount; i++) {
-            CreateTestAggregateCommand command = new CreateTestAggregateCommand();
-            command.aggregateRootId = ObjectId.generateNewStringId();
-            command.setTitle("Sample Note" + ObjectId.generateNewStringId());
-            try {
-                commandService.executeAsync(command).thenAccept(result -> {
-                    _logger.info("{}", result);
-                    latch.countDown();
-                });
-            } catch (Exception e) {
-                latch.countDown();
-            }
-        }
-        latch.await();
-        long end = System.currentTimeMillis();
-        System.out.println("run tin " + (end - start));
     }
 
     @Test
@@ -589,8 +562,7 @@ public class EnodeCoreTest extends AbstractTest {
         ManualResetEvent waitHandle = new ManualResetEvent(false);
         AtomicLong count = new AtomicLong(0);
         for (ICommand updateCommand : commandList) {
-            commandService.executeAsync(updateCommand).thenAccept(t ->
-            {
+            commandService.executeAsync(updateCommand).thenAccept(t -> {
                 Assert.assertNotNull(t);
 
                 CommandResult updateCommandResult = t;
@@ -869,7 +841,7 @@ public class EnodeCoreTest extends AbstractTest {
         command.setAggregateRootId(aggregateId);
         command.setTitle("Sample Note");
         //执行创建聚合根的命令
-        CommandResult commandResult = commandService.executeAsync(command, CommandReturnType.EventHandled).join();
+        CommandResult commandResult = commandService.executeAsync(command).join();
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         TestAggregate note = memoryCache.getAsync(aggregateId, TestAggregate.class).join();
@@ -898,7 +870,7 @@ public class EnodeCoreTest extends AbstractTest {
         command2.setAggregateRootId(aggregateId);
         command2.setTitle("Changed Note");
         command2.setFirstExecute(true);
-        commandResult = commandService.executeAsync(command2, CommandReturnType.EventHandled).join();
+        commandResult = commandService.executeAsync(command2).join();
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         note = memoryCache.getAsync(aggregateId, TestAggregate.class).join();

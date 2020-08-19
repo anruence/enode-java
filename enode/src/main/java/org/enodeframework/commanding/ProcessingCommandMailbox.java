@@ -10,8 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.enodeframework.common.io.Task.await;
-
 /**
  * @author anruence@gmail.com
  */
@@ -205,18 +203,7 @@ public class ProcessingCommandMailbox {
         synchronized (asyncLock) {
             lastActiveTime = new Date();
             try {
-                long scannedCount = 0;
-                while (getTotalUnHandledMessageCount() > 0 && scannedCount < batchSize && !pauseRequested) {
-                    ProcessingCommand message = getMessage(consumingSequence);
-                    if (message != null) {
-                        if (duplicateCommandIdDict.containsKey(message.getMessage().getId())) {
-                            message.setDuplicated(true);
-                        }
-                        await(messageHandler.handleAsync(message));
-                    }
-                    scannedCount++;
-                    consumingSequence++;
-                }
+                processMessagesRecursion(getTotalUnHandledMessageCount(), 0);
             } catch (Exception ex) {
                 logger.error("{} run has unknown exception, aggregateRootId: {}", getClass().getName(), aggregateRootId, ex);
                 Task.sleep(1);
@@ -226,6 +213,25 @@ public class ProcessingCommandMailbox {
         }
         return Task.completedTask;
     }
+
+    public void processMessagesRecursion(long totalUnHandledMessageCount, long scannedCount) {
+        if (!(totalUnHandledMessageCount > 0 && scannedCount < batchSize && !pauseRequested)) {
+            return;
+        }
+        ProcessingCommand message = getMessage(consumingSequence);
+        consumingSequence++;
+        if (message != null) {
+            if (duplicateCommandIdDict.containsKey(message.getMessage().getId())) {
+                message.setDuplicated(true);
+            }
+            messageHandler.handleAsync(message).thenAccept(x -> {
+                processMessagesRecursion(getTotalUnHandledMessageCount(), scannedCount + 1);
+            });
+            return;
+        }
+        processMessagesRecursion(getTotalUnHandledMessageCount(), scannedCount + 1);
+    }
+
 
     private ProcessingCommand getMessage(long sequence) {
         return messageDict.getOrDefault(sequence, null);
