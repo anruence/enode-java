@@ -16,7 +16,6 @@ import org.bson.conversions.Bson;
 import org.enodeframework.common.exception.EventStoreException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.io.IOHelper;
-import org.enodeframework.common.io.Task;
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.AggregateEventAppendResult;
 import org.enodeframework.eventing.BatchAggregateEventAppendResult;
@@ -44,6 +43,7 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class MongoEventStore implements IEventStore {
+    
     private static final Logger logger = LoggerFactory.getLogger(MongoEventStore.class);
 
     private static final Pattern PATTERN = Pattern.compile("\\{.+?commandId: \"(.+?)\" }$");
@@ -159,7 +159,6 @@ public class MongoEventStore implements IEventStore {
                 return appendResult;
             }
             if (code == duplicateCode && message.contains(commandIndexName)) {
-                // Bulk write operation error on server localhost:27017. Write errors: [BulkWriteError{index=0, code=11000, message='E11000 duplicate key error collection: enode.event_stream index: aggregateRootId_1_commandId_1 dup key: { aggregateRootId: "5ee8beddd767111692a3734e", commandId: "5ee8beddd767111692a37356" }', details={}}].
                 // E11000 duplicate key error collection: enode.event_stream index: aggregateRootId_1_commandId_1 dup key: { aggregateRootId: "5ee8b610d7671114741829c7", commandId: "5ee8b61bd7671114741829cf" }
                 AggregateEventAppendResult appendResult = new AggregateEventAppendResult();
                 appendResult.setEventAppendStatus(EventAppendStatus.DuplicateCommand);
@@ -167,15 +166,6 @@ public class MongoEventStore implements IEventStore {
                 if (!Strings.isNullOrEmpty(commandId)) {
                     appendResult.setDuplicateCommandIds(Lists.newArrayList(commandId));
                     return appendResult;
-                }
-                //TODO 没有解析出来的话，兜底查询一遍
-                for (int i = eventStreamList.size() - 1; i >= 0; i--) {
-                    DomainEventStream eventStream = eventStreamList.get(i);
-                    DomainEventStream dbEventStream = Task.await(tryFindEventByCommandIdAsync(aggregateRootId, eventStream.getCommandId(), appendResult.getDuplicateCommandIds(), 0));
-                    if (dbEventStream != null) {
-                        // 找到最后一个写入失败的commandId
-                        break;
-                    }
                 }
                 return appendResult;
             }

@@ -15,7 +15,6 @@ import io.vertx.ext.sql.SQLConnection;
 import org.enodeframework.common.exception.EventStoreException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.common.io.IOHelper;
-import org.enodeframework.common.io.Task;
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.eventing.AggregateEventAppendResult;
@@ -169,22 +168,9 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
                         appendResult.setDuplicateCommandIds(Lists.newArrayList(commandId));
                         return appendResult;
                     }
-                    // 如果没有从异常信息获取到commandId，兜底从db查询出来，此时选择的策略是从最后一个开始查
+                    // 如果没有从异常信息获取到commandId(很低概率获取不到)，兜底从db查询出来，此时选择的策略是从最后一个开始查
                     // 但是Vert.x的线程模型决定了不能再次使用eventloop线程执行阻塞的查询操作
-                    // 这里使用了executeBlocking执行同步任务，但没有阻塞获取
-                    for (int i = eventStreamList.size() - 1; i >= 0; i--) {
-                        CompletableFuture<Boolean> block = new CompletableFuture<>();
-                        DomainEventStream eventStream = eventStreamList.get(i);
-                        vertx.executeBlocking(promise -> {
-                            DomainEventStream dbEventStream = Task.await(tryFindEventByCommandIdAsync(aggregateRootId, eventStream.getCommandId(), appendResult.getDuplicateCommandIds(), 0));
-                            promise.complete(dbEventStream);
-                        }, res -> {
-                            block.complete(res != null);
-                        });
-                        if (Task.await(block)) {
-                            break;
-                        }
-                    }
+                    tryFindEventByCommandIdAsyncRecursion(eventStreamList.size(), aggregateRootId, eventStreamList, appendResult.getDuplicateCommandIds(), 0);
                     return appendResult;
                 }
                 logger.error("Batch append event has sql exception.", throwable);
@@ -192,6 +178,19 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
             }
             logger.error("Batch append event has unknown exception.", throwable);
             throw new EventStoreException(throwable);
+        });
+    }
+
+    private void tryFindEventByCommandIdAsyncRecursion(int i, String aggregateRootId, List<DomainEventStream> eventStreamList, List<String> duplicateCommandIds, int retryTimes) {
+        if (i == 0) {
+            return;
+        }
+        DomainEventStream eventStream = eventStreamList.get(i - 1);
+        tryFindEventByCommandIdAsync(aggregateRootId, eventStream.getCommandId(), duplicateCommandIds, retryTimes).thenAccept(x -> {
+            if (x != null) {
+                return;
+            }
+            tryFindEventByCommandIdAsyncRecursion(i - 1, aggregateRootId, eventStreamList, duplicateCommandIds, 0);
         });
     }
 
