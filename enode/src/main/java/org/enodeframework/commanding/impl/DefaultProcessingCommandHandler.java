@@ -296,12 +296,10 @@ public class DefaultProcessingCommandHandler implements IProcessingCommandHandle
             if (message != null) {
                 message.mergeItems(processingCommand.getMessage().getItems());
                 return publishMessageAsync(processingCommand, message, 0);
-            } else {
-                return completeCommand(processingCommand, CommandStatus.Success, null, null);
             }
-        } else {
-            return completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), errorMessage);
+            return completeCommand(processingCommand, CommandStatus.Success, null, null);
         }
+        return completeCommand(processingCommand, CommandStatus.Failed, String.class.getName(), errorMessage);
     }
 
     private CompletableFuture<Void> publishMessageAsync(ProcessingCommand processingCommand, IApplicationMessage message, int retryTimes) {

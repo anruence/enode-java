@@ -8,6 +8,10 @@ public class ReplySocketAddress implements Serializable {
 
     private int port;
 
+    public ReplySocketAddress() {
+
+    }
+
     public ReplySocketAddress(String host, int port) {
         this.host = host;
         this.port = port;
