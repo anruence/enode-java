@@ -6,6 +6,10 @@ import org.enodeframework.samples.domain.bank.TransactionType;
  * 实体，表示账户聚合内的一笔预操作（如预存款、预取款、预转入、预转出）
  */
 public class TransactionPreparation {
+    public TransactionPreparation() {
+
+    }
+
     /**
      * 账户ID
      */

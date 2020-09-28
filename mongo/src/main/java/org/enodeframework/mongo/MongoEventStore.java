@@ -120,7 +120,6 @@ public class MongoEventStore implements IEventStore {
     }
 
     private CompletableFuture<AggregateEventAppendResult> batchAppendAggregateEventsAsync(String aggregateRootId, List<DomainEventStream> eventStreamList) {
-        CompletableFuture<AggregateEventAppendResult> future = new CompletableFuture<>();
         List<Document> documents = Lists.newArrayList();
         for (DomainEventStream domainEventStream : eventStreamList) {
             Document document = new Document();
@@ -132,11 +131,7 @@ public class MongoEventStore implements IEventStore {
             document.put("events", serializeService.serialize(eventSerializer.serialize(domainEventStream.events())));
             documents.add(document);
         }
-        if (documents.size() > 1) {
-            future = batchInsertAsync(documents);
-        } else {
-            future = insertOneByOneAsync(documents);
-        }
+        CompletableFuture<AggregateEventAppendResult> future = documents.size() > 1 ? batchInsertAsync(documents) : insertOneByOneAsync(documents);
         return future.exceptionally(throwable -> {
             int code = 0;
             String message = "";

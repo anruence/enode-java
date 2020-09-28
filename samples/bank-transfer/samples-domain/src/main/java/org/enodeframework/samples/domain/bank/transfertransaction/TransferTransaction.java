@@ -16,6 +16,9 @@ public class TransferTransaction extends AggregateRoot<String> {
     private boolean _isTransferOutConfirmed;
     private boolean _isTransferInConfirmed;
 
+    public TransferTransaction() {
+    }
+
     /**
      * 构造函数
      */

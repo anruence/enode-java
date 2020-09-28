@@ -11,6 +11,9 @@ public class DepositTransaction extends AggregateRoot<String> {
     private double _amount;
     private int _status;
 
+    public DepositTransaction() {
+    }
+
     /**
      * 构造函数
      */
