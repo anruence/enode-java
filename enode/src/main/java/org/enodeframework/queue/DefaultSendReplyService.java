@@ -8,6 +8,7 @@ import io.vertx.core.net.SocketAddress;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.common.SysProperties;
+import org.enodeframework.common.io.ReplySocketAddress;
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.InetUtil;
 import org.enodeframework.common.utilities.ReplyMessage;
@@ -15,7 +16,6 @@ import org.enodeframework.queue.domainevent.DomainEventHandledMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -53,7 +53,7 @@ public class DefaultSendReplyService extends AbstractVerticle implements ISendRe
     }
 
     @Override
-    public CompletableFuture<Void> sendCommandReply(CommandResult commandResult, InetSocketAddress replyAddress) {
+    public CompletableFuture<Void> sendCommandReply(CommandResult commandResult, ReplySocketAddress replyAddress) {
         ReplyMessage replyMessage = new ReplyMessage();
         replyMessage.setCode(CommandReturnType.CommandExecuted.getValue());
         replyMessage.setCommandResult(commandResult);
@@ -61,17 +61,17 @@ public class DefaultSendReplyService extends AbstractVerticle implements ISendRe
     }
 
     @Override
-    public CompletableFuture<Void> sendEventReply(DomainEventHandledMessage eventHandledMessage, InetSocketAddress replyAddress) {
+    public CompletableFuture<Void> sendEventReply(DomainEventHandledMessage eventHandledMessage, ReplySocketAddress replyAddress) {
         ReplyMessage replyMessage = new ReplyMessage();
         replyMessage.setCode(CommandReturnType.EventHandled.getValue());
         replyMessage.setEventHandledMessage(eventHandledMessage);
         return sendReply(replyMessage, replyAddress);
     }
 
-    public CompletableFuture<Void> sendReply(ReplyMessage replyMessage, InetSocketAddress replyAddress) {
+    public CompletableFuture<Void> sendReply(ReplyMessage replyMessage, ReplySocketAddress replyAddress) {
         String message = serializeService.serialize(replyMessage) + SysProperties.DELIMITED;
-        String key = InetUtil.toStringAddress(replyAddress);
-        SocketAddress socketAddress = SocketAddress.inetSocketAddress(replyAddress.getPort(), replyAddress.getAddress().getHostAddress());
+        String key = InetUtil.toUri(replyAddress);
+        SocketAddress socketAddress = SocketAddress.inetSocketAddress(replyAddress.getPort(), replyAddress.getHost());
         CompletableFuture<NetSocket> future = new CompletableFuture<>();
         if (socketMap.putIfAbsent(key, future) == null) {
             netClient.connect(socketAddress, res -> {

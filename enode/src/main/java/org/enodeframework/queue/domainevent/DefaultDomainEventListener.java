@@ -1,6 +1,7 @@
 package org.enodeframework.queue.domainevent;
 
 import org.enodeframework.common.SysProperties;
+import org.enodeframework.common.io.ReplySocketAddress;
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.InetUtil;
 import org.enodeframework.eventing.DomainEventStreamMessage;
@@ -14,8 +15,6 @@ import org.enodeframework.queue.ISendReplyService;
 import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.InetSocketAddress;
 
 public class DefaultDomainEventListener implements IMessageHandler {
 
@@ -96,8 +95,10 @@ public class DefaultDomainEventListener implements IMessageHandler {
             if (!eventConsumer.isSendEventHandledMessage()) {
                 return;
             }
-            InetSocketAddress replyAddress = InetUtil.parseInetSocketAddress((String) domainEventStreamMessage.getItems().get(SysProperties.ITEMS_COMMAND_REPLY_ADDRESS_KEY));
+            String address = (String) domainEventStreamMessage.getItems().getOrDefault(SysProperties.ITEMS_COMMAND_REPLY_ADDRESS_KEY, "");
+            ReplySocketAddress replyAddress = InetUtil.toSocketAddress(address);
             if (replyAddress == null) {
+                logger.error("can not parse notify address, {}", domainEventStreamMessage);
                 return;
             }
             String commandResult = (String) domainEventStreamMessage.getItems().getOrDefault(SysProperties.ITEMS_COMMAND_RESULT_KEY, "");

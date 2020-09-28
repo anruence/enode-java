@@ -1,27 +1,14 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.enodeframework.common.utilities;
 
+import com.google.common.base.Strings;
+import org.enodeframework.common.io.ReplySocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  * @author anruence@gmail.com
@@ -30,17 +17,30 @@ public class InetUtil {
 
     private final static Logger logger = LoggerFactory.getLogger(InetUtil.class);
 
-    public static InetSocketAddress parseInetSocketAddress(String url) {
+    public static ReplySocketAddress toSocketAddress(String str) {
         try {
-            URI uri = new URI(url);
-            return new InetSocketAddress(uri.getHost(), uri.getPort());
+            if (Strings.isNullOrEmpty(str)) {
+                return null;
+            }
+            URI uri = new URI(str);
+            return new ReplySocketAddress(uri.getHost(), uri.getPort());
         } catch (URISyntaxException e) {
-            logger.error("parseInetSocketAddress error. url: {}", url, e);
+            logger.error("toSocketAddress error. uri: {}", str, e);
             return null;
         }
     }
 
-    public static String toStringAddress(InetSocketAddress socketAddress) {
-        return String.format("enode://%s:%d", socketAddress.getAddress().getHostAddress(), socketAddress.getPort());
+    public static ReplySocketAddress toSocketAddress(InetSocketAddress address) {
+        if (Objects.isNull(address)) {
+            return null;
+        }
+        return new ReplySocketAddress(address.getAddress().getHostAddress(), address.getPort());
+    }
+
+    public static String toUri(ReplySocketAddress socketAddress) {
+        if (Objects.isNull(socketAddress)) {
+            return "";
+        }
+        return String.format("enode://%s:%d", socketAddress.getHost(), socketAddress.getPort());
     }
 }

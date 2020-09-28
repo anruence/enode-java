@@ -53,7 +53,7 @@ public class DefaultCommandListener implements IMessageHandler {
         ICommand command = (ICommand) serializeService.deserialize(commandMessage.getCommandData(), commandType);
         CommandExecuteContext commandExecuteContext = new CommandExecuteContext(repository, aggregateRootStorage, queueMessage, context, commandMessage, sendReplyService);
         Map<String, Object> commandItems = new HashMap<>();
-        commandItems.put(SysProperties.ITEMS_COMMAND_REPLY_ADDRESS_KEY, InetUtil.toStringAddress(commandMessage.getReplyAddress()));
+        commandItems.put(SysProperties.ITEMS_COMMAND_REPLY_ADDRESS_KEY, InetUtil.toUri(commandMessage.getReplyAddress()));
         commandProcessor.process(new ProcessingCommand(command, commandExecuteContext, commandItems));
     }
 }
