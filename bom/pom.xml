@@ -8,13 +8,13 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <properties>
-        <revision>1.0.7</revision>
-        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-        <vertx.version>3.9.1</vertx.version>
+        <revision>1.0.8</revision>
+        <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
+        <vertx.version>3.9.3</vertx.version>
         <slfj4.version>1.7.30</slfj4.version>
         <guava.version>29.0-jre</guava.version>
-        <jackson.version>2.11.1</jackson.version>
-        <mongodb.version>4.0.5</mongodb.version>
+        <jackson.version>2.11.2</jackson.version>
+        <mongodb.version>4.1.0</mongodb.version>
         <junit.version>4.13</junit.version>
         <rocketmq.version>4.7.1</rocketmq.version>
         <ons.version>1.8.7.1.Final</ons.version>

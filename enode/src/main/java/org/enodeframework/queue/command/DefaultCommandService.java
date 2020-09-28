@@ -4,12 +4,14 @@ import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandService;
+import org.enodeframework.common.io.ReplySocketAddress;
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utilities.InetUtil;
 import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.QueueMessage;
 
-import java.net.InetSocketAddress;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -68,10 +70,12 @@ public class DefaultCommandService implements ICommandService {
         Ensure.notNull(command.getAggregateRootId(), "aggregateRootId");
         Ensure.notNull(topic, "topic");
         String commandData = serializeService.serialize(command);
-        InetSocketAddress replyAddress = needReply && commandResultProcessor != null ? commandResultProcessor.getBindAddress() : null;
         CommandMessage commandMessage = new CommandMessage();
+        if (needReply) {
+            ReplySocketAddress replyAddress = InetUtil.toSocketAddress(commandResultProcessor.getBindAddress());
+            commandMessage.setReplyAddress(replyAddress);
+        }
         commandMessage.setCommandData(commandData);
-        commandMessage.setReplyAddress(replyAddress);
         commandMessage.setCommandType(command.getClass().getName());
         String messageData = serializeService.serialize(commandMessage);
         QueueMessage queueMessage = new QueueMessage();
@@ -79,7 +83,8 @@ public class DefaultCommandService implements ICommandService {
         queueMessage.setTag(tag);
         queueMessage.setBody(messageData);
         queueMessage.setRouteKey(command.getAggregateRootId());
-        String key = String.format("%s%s", command.getId(), command.getAggregateRootId() == null ? "" : "_cmd_agg_" + command.getAggregateRootId());
+        String key = String.format("%s%s", command.getId(), Optional.ofNullable(command.getAggregateRootId())
+                .map(x -> "_cmd_agg_" + x).orElse(""));
         queueMessage.setKey(key);
         return queueMessage;
     }
