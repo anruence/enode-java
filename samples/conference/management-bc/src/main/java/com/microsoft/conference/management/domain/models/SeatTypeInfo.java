@@ -3,13 +3,13 @@ package com.microsoft.conference.management.domain.models;
 import java.math.BigDecimal;
 
 public class SeatTypeInfo {
-    public String Name;
-    public String Description;
-    public BigDecimal Price;
+    public String name;
+    public String description;
+    public BigDecimal price;
 
     public SeatTypeInfo(String name, String description, BigDecimal price) {
-        Name = name;
-        Description = description;
-        Price = price;
+        this.name = name;
+        this.description = description;
+        this.price = price;
     }
 }

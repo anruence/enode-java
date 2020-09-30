@@ -5,7 +5,7 @@ import org.enodeframework.commanding.Command;
 /**
  * 确认预转入
  */
-public class ConfirmTransferInPreparationCommand extends Command {
+public class ConfirmTransferInPreparationCommand extends Command<String> {
     public ConfirmTransferInPreparationCommand() {
     }
 

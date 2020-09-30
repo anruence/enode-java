@@ -6,14 +6,14 @@ import org.enodeframework.messaging.ApplicationMessage;
  * 账户验证已通过
  */
 public class AccountValidatePassedMessage extends ApplicationMessage {
-    public String AccountId;
-    public String TransactionId;
+    public String accountId;
+    public String transactionId;
 
     public AccountValidatePassedMessage() {
     }
 
     public AccountValidatePassedMessage(String accountId, String transactionId) {
-        AccountId = accountId;
-        TransactionId = transactionId;
+        this.accountId = accountId;
+        this.transactionId = transactionId;
     }
 }

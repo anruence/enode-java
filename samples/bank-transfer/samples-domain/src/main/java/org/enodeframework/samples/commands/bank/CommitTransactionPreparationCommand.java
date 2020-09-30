@@ -5,14 +5,14 @@ import org.enodeframework.commanding.Command;
 /**
  * 提交预操作
  */
-public class CommitTransactionPreparationCommand extends Command {
-    public String TransactionId;
+public class CommitTransactionPreparationCommand extends Command<String> {
+    public String transactionId;
 
     public CommitTransactionPreparationCommand() {
     }
 
     public CommitTransactionPreparationCommand(String accountId, String transactionId) {
         super(accountId);
-        TransactionId = transactionId;
+        this.transactionId = transactionId;
     }
 }

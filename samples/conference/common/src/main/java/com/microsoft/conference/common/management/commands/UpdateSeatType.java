@@ -5,11 +5,11 @@ import org.enodeframework.commanding.Command;
 import java.math.BigDecimal;
 
 public class UpdateSeatType extends Command<String> {
-    public String SeatTypeId;
-    public String Name;
-    public String Description;
-    public BigDecimal Price;
-    public int Quantity;
+    public String seatTypeId;
+    public String name;
+    public String description;
+    public BigDecimal price;
+    public int quantity;
 
     public UpdateSeatType() {
     }

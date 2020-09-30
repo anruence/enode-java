@@ -25,23 +25,23 @@ public class BankAccount extends AggregateRoot<String> {
     /**
      * 添加一笔预操作
      */
-    public void AddTransactionPreparation(String transactionid, int transactionType, int preparationType, double amount) {
-        double availableBalance = GetAvailableBalance();
-        if (preparationType == PreparationType.DebitPreparation && availableBalance < amount) {
-            throw new InsufficientBalanceException(id, transactionid, transactionType, amount, balance, availableBalance);
+    public void addTransactionPreparation(String transactionId, int transactionType, int preparationType, double amount) {
+        double availableBalance = getAvailableBalance();
+        if (preparationType == PreparationType.DEBIT_PREPARATION && availableBalance < amount) {
+            throw new InsufficientBalanceException(id, transactionId, transactionType, amount, balance, availableBalance);
         }
-        applyEvent(new TransactionPreparationAddedEvent(new TransactionPreparation(id, transactionid, transactionType, preparationType, amount)));
+        applyEvent(new TransactionPreparationAddedEvent(new TransactionPreparation(id, transactionId, transactionType, preparationType, amount)));
     }
 
     /**
      * 提交一笔预操作
      */
-    public void CommitTransactionPreparation(String transactionId) {
-        TransactionPreparation transactionPreparation = GetTransactionPreparation(transactionId);
+    public void commitTransactionPreparation(String transactionId) {
+        TransactionPreparation transactionPreparation = getTransactionPreparation(transactionId);
         double currentBalance = balance;
-        if (transactionPreparation.preparationType == PreparationType.DebitPreparation) {
+        if (transactionPreparation.preparationType == PreparationType.DEBIT_PREPARATION) {
             currentBalance -= transactionPreparation.Amount;
-        } else if (transactionPreparation.preparationType == PreparationType.CreditPreparation) {
+        } else if (transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
             currentBalance += transactionPreparation.Amount;
         }
         applyEvent(new TransactionPreparationCommittedEvent(currentBalance, transactionPreparation));
@@ -50,14 +50,14 @@ public class BankAccount extends AggregateRoot<String> {
     /**
      * 取消一笔预操作
      */
-    public void CancelTransactionPreparation(String transactionId) {
-        applyEvent(new TransactionPreparationCanceledEvent(GetTransactionPreparation(transactionId)));
+    public void cancelTransactionPreparation(String transactionId) {
+        applyEvent(new TransactionPreparationCanceledEvent(getTransactionPreparation(transactionId)));
     }
 
     /**
      * 获取当前账户内的一笔预操作，如果预操作不存在，则抛出异常
      */
-    private TransactionPreparation GetTransactionPreparation(String transactionId) {
+    private TransactionPreparation getTransactionPreparation(String transactionId) {
         if (transactionPreparations == null || transactionPreparations.size() == 0) {
             throw new TransactionPreparationNotExistException(id, transactionId);
         }
@@ -71,32 +71,32 @@ public class BankAccount extends AggregateRoot<String> {
     /**
      * 获取当前账户的可用余额，需要将已冻结的余额计算在内
      */
-    private double GetAvailableBalance() {
+    private double getAvailableBalance() {
         if (transactionPreparations == null || transactionPreparations.size() == 0) {
             return balance;
         }
         double totalDebitTransactionPreparationAmount = 0;
-        for (TransactionPreparation debitTransactionPreparation : transactionPreparations.values().stream().filter(x -> x.preparationType == PreparationType.DebitPreparation).collect(Collectors.toList())) {
+        for (TransactionPreparation debitTransactionPreparation : transactionPreparations.values().stream().filter(x -> x.preparationType == PreparationType.DEBIT_PREPARATION).collect(Collectors.toList())) {
             totalDebitTransactionPreparationAmount += debitTransactionPreparation.Amount;
         }
         return balance - totalDebitTransactionPreparationAmount;
     }
 
     private void handle(AccountCreatedEvent evnt) {
-        owner = evnt.Owner;
+        owner = evnt.owner;
         transactionPreparations = new HashMap<>();
     }
 
     private void handle(TransactionPreparationAddedEvent evnt) {
-        transactionPreparations.put(evnt.TransactionPreparation.TransactionId, evnt.TransactionPreparation);
+        transactionPreparations.put(evnt.transactionPreparation.TransactionId, evnt.transactionPreparation);
     }
 
     private void handle(TransactionPreparationCommittedEvent evnt) {
-        transactionPreparations.remove(evnt.TransactionPreparation.TransactionId);
-        balance = evnt.CurrentBalance;
+        transactionPreparations.remove(evnt.transactionPreparation.TransactionId);
+        balance = evnt.currentBalance;
     }
 
     private void handle(TransactionPreparationCanceledEvent evnt) {
-        transactionPreparations.remove(evnt.TransactionPreparation.TransactionId);
+        transactionPreparations.remove(evnt.transactionPreparation.TransactionId);
     }
 }

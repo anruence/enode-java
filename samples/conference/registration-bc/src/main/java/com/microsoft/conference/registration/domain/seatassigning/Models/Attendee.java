@@ -3,9 +3,9 @@ package com.microsoft.conference.registration.domain.seatassigning.Models;
 import org.enodeframework.common.utilities.Ensure;
 
 public class Attendee {
-    public String FirstName;
-    public String LastName;
-    public String Email;
+    public String firstName;
+    public String lastName;
+    public String email;
 
     public Attendee() {
     }
@@ -14,14 +14,8 @@ public class Attendee {
         Ensure.notNull(firstName, "firstName");
         Ensure.notNull(lastName, "lastName");
         Ensure.notNull(email, "email");
-        FirstName = firstName;
-        LastName = lastName;
-        Email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
     }
-//        public override List<object> GetAtomicValues()
-//        {
-//            yield return FirstName;
-//            yield return LastName;
-//            yield return Email;
-//        }
 }

@@ -24,7 +24,7 @@ public class RocketMQEventConfig {
     @Bean(initMethod = "start", destroyMethod = "shutdown")
     public DefaultMQPushConsumer eventConsumer(RocketMQDomainEventListener domainEventListener) throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
-        defaultMQPushConsumer.setConsumerGroup(QueueProperties.DEFAULT_CONSUMER_GROUP);
+        defaultMQPushConsumer.setConsumerGroup(QueueProperties.DEFAULT_CONSUMER_GROUP0);
         defaultMQPushConsumer.setNamesrvAddr(QueueProperties.NAMESRVADDR);
         defaultMQPushConsumer.subscribe(eventTopic, "*");
         defaultMQPushConsumer.setMessageListener(domainEventListener);
@@ -55,7 +55,7 @@ public class RocketMQEventConfig {
     public DefaultMQProducer defaultMQProducer() {
         DefaultMQProducer producer = new DefaultMQProducer();
         producer.setNamesrvAddr(QueueProperties.NAMESRVADDR);
-        producer.setProducerGroup(QueueProperties.DEFAULT_PRODUCER_GROUP);
+        producer.setProducerGroup(QueueProperties.DEFAULT_PRODUCER_GROUP0);
         return producer;
     }
 }

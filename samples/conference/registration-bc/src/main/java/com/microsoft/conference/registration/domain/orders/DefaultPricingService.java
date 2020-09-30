@@ -10,14 +10,14 @@ import java.util.List;
 
 public class DefaultPricingService implements IPricingService {
     @Override
-    public OrderTotal CalculateTotal(String conferenceId, List<SeatQuantity> seatQuantityList) {
+    public OrderTotal calculateTotal(String conferenceId, List<SeatQuantity> seatQuantityList) {
         List<OrderLine> orderLines = new ArrayList<>();
         for (SeatQuantity seatQuantity : seatQuantityList) {
-            orderLines.add(new OrderLine(seatQuantity, seatQuantity.Seat.UnitPrice.multiply(BigDecimal.valueOf(seatQuantity.Quantity))));
+            orderLines.add(new OrderLine(seatQuantity, seatQuantity.seatType.unitPrice.multiply(BigDecimal.valueOf(seatQuantity.quantity))));
         }
         BigDecimal total = BigDecimal.ZERO;
         for (OrderLine x : orderLines) {
-            total = total.add(x.LineTotal);
+            total = total.add(x.lineTotal);
         }
         return new OrderTotal(orderLines, total);
     }

@@ -10,47 +10,47 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class Payment extends AggregateRoot<String> {
-    private String _orderId;
-    private String _conferenceId;
-    private int _state;
-    private String _description;
-    private BigDecimal _totalAmount;
-    private List<PaymentItem> _items;
+    private String orderId;
+    private String conferenceId;
+    private int state;
+    private String description;
+    private BigDecimal totalAmount;
+    private List<PaymentItem> paymentItems;
 
     public Payment(String id, String orderId, String conferenceId, String description, BigDecimal totalAmount, List<PaymentItem> items) {
         super(id);
         applyEvent(new PaymentInitiated(orderId, conferenceId, description, totalAmount, items));
     }
 
-    public void Complete() {
-        if (_state != PaymentState.Initiated) {
+    public void complete() {
+        if (state != PaymentState.Initiated) {
             throw new InvalidOperationException();
         }
-        applyEvent(new PaymentCompleted(this, _orderId, _conferenceId));
+        applyEvent(new PaymentCompleted(this, orderId, conferenceId));
     }
 
-    public void Cancel() {
-        if (_state != PaymentState.Initiated) {
+    public void cancel() {
+        if (state != PaymentState.Initiated) {
             throw new InvalidOperationException();
         }
-        applyEvent(new PaymentRejected(_orderId, _conferenceId));
+        applyEvent(new PaymentRejected(orderId, conferenceId));
     }
 
-    private void Handle(PaymentInitiated evnt) {
+    private void handle(PaymentInitiated evnt) {
         id = evnt.getAggregateRootId();
-        _orderId = evnt.OrderId;
-        _conferenceId = evnt.ConferenceId;
-        _description = evnt.Description;
-        _totalAmount = evnt.TotalAmount;
-        _state = PaymentState.Initiated;
-        _items = evnt.Items;
+        orderId = evnt.orderId;
+        conferenceId = evnt.conferenceId;
+        description = evnt.description;
+        totalAmount = evnt.totalAmount;
+        state = PaymentState.Initiated;
+        paymentItems = evnt.paymentItems;
     }
 
-    private void Handle(PaymentCompleted evnt) {
-        _state = PaymentState.Completed;
+    private void handle(PaymentCompleted evnt) {
+        state = PaymentState.Completed;
     }
 
-    private void Handle(PaymentRejected evnt) {
-        _state = PaymentState.Rejected;
+    private void handle(PaymentRejected evnt) {
+        state = PaymentState.Rejected;
     }
 }

@@ -27,7 +27,7 @@ public class RocketMQCommandConfig {
     public DefaultMQProducer defaultMQProducer() {
         DefaultMQProducer producer = new DefaultMQProducer();
         producer.setNamesrvAddr(QueueProperties.NAMESRVADDR);
-        producer.setProducerGroup(QueueProperties.DEFAULT_PRODUCER_GROUP);
+        producer.setProducerGroup(QueueProperties.DEFAULT_PRODUCER_GROUP0);
         return producer;
     }
 }

@@ -8,14 +8,14 @@ import org.enodeframework.commanding.Command;
 /**
  * 验证账户是否合法
  */
-public class ValidateAccountCommand extends Command {
-    public String TransactionId;
+public class ValidateAccountCommand extends Command<String> {
+    public String transactionId;
 
     public ValidateAccountCommand() {
     }
 
     public ValidateAccountCommand(String accountId, String transactionId) {
         super(accountId);
-        TransactionId = transactionId;
+        this.transactionId = transactionId;
     }
 }

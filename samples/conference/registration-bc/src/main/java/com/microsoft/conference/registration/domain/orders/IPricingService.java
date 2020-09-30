@@ -6,5 +6,5 @@ import com.microsoft.conference.registration.domain.orders.Models.OrderTotal;
 import java.util.List;
 
 public interface IPricingService {
-    OrderTotal CalculateTotal(String conferenceId, List<SeatQuantity> seats);
+    OrderTotal calculateTotal(String conferenceId, List<SeatQuantity> seats);
 }

@@ -21,20 +21,20 @@ import java.util.concurrent.CompletableFuture;
 public class DepositTransactionCommandHandle {
     @Subscribe
     public void handleAsync(ICommandContext context, StartDepositTransactionCommand command) {
-        context.addAsync(new DepositTransaction(command.getAggregateRootId(), command.AccountId, command.Amount));
+        context.addAsync(new DepositTransaction(command.getAggregateRootId(), command.accountId, command.amount));
     }
 
     @Subscribe
     public void handleAsync(ICommandContext context, ConfirmDepositPreparationCommand command) {
         CompletableFuture<DepositTransaction> future = context.getAsync(command.getAggregateRootId(), DepositTransaction.class);
         DepositTransaction depositTransaction = Task.await(future);
-        depositTransaction.ConfirmDepositPreparation();
+        depositTransaction.confirmDepositPreparation();
     }
 
     @Subscribe
     public void handleAsync(ICommandContext context, ConfirmDepositCommand command) {
         CompletableFuture<DepositTransaction> future = context.getAsync(command.getAggregateRootId(), DepositTransaction.class);
         DepositTransaction depositTransaction = Task.await(future);
-        depositTransaction.ConfirmDeposit();
+        depositTransaction.confirmDeposit();
     }
 }

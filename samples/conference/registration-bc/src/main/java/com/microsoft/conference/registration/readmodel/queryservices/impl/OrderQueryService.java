@@ -6,17 +6,17 @@ import com.microsoft.conference.registration.readmodel.queryservices.OrderSeatAs
 
 public class OrderQueryService implements IOrderQueryService {
     @Override
-    public Order FindOrder(String orderId) {
+    public Order findOrder(String orderId) {
         return null;
     }
 
     @Override
-    public String LocateOrder(String email, String accessCode) {
-        return null;
+    public String locateOrder(String email, String accessCode) {
+        return "";
     }
 
     @Override
-    public OrderSeatAssignment[] FindOrderSeatAssignments(String orderId) {
+    public OrderSeatAssignment[] findOrderSeatAssignments(String orderId) {
         return new OrderSeatAssignment[0];
     }
 //    public Order FindOrder(String orderId) {

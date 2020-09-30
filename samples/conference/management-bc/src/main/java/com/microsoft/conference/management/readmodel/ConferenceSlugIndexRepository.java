@@ -18,7 +18,7 @@ public class ConferenceSlugIndexRepository implements IConferenceSlugIndexReposi
     }
 
     @Override
-    public ConferenceSlugIndex FindSlugIndex(String slug) {
+    public ConferenceSlugIndex findSlugIndex(String slug) {
         return null;
 //        using(var connection = GetConnection())
 //        {

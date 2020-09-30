@@ -6,18 +6,18 @@ import org.enodeframework.eventing.DomainEvent;
 import java.util.Date;
 
 public class OrderPlaced extends DomainEvent<String> {
-    public String ConferenceId;
-    public OrderTotal OrderTotal;
-    public Date ReservationExpirationDate;
-    public String AccessCode;
+    public String conferenceId;
+    public OrderTotal orderTotal;
+    public Date reservationExpirationDate;
+    public String accessCode;
 
     public OrderPlaced() {
     }
 
     public OrderPlaced(String conferenceId, OrderTotal orderTotal, Date reservationExpirationDate, String accessCode) {
-        ConferenceId = conferenceId;
-        OrderTotal = orderTotal;
-        ReservationExpirationDate = reservationExpirationDate;
-        AccessCode = accessCode;
+        this.conferenceId = conferenceId;
+        this.orderTotal = orderTotal;
+        this.reservationExpirationDate = reservationExpirationDate;
+        this.accessCode = accessCode;
     }
 }

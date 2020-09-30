@@ -7,14 +7,14 @@ import org.enodeframework.samples.domain.bank.TransactionStatus;
  * 聚合根，表示一笔银行内账户之间的转账交易
  */
 public class TransferTransaction extends AggregateRoot<String> {
-    private TransferTransactionInfo _transactionInfo;
-    private int _status;
-    private boolean _isSourceAccountValidatePassed;
-    private boolean _isTargetAccountValidatePassed;
-    private boolean _isTransferOutPreparationConfirmed;
-    private boolean _isTransferInPreparationConfirmed;
-    private boolean _isTransferOutConfirmed;
-    private boolean _isTransferInConfirmed;
+    private TransferTransactionInfo transferTransactionInfo;
+    private int status;
+    private boolean isSourceAccountValidatePassed;
+    private boolean isTargetAccountValidatePassed;
+    private boolean isTransferOutPreparationConfirmed;
+    private boolean isTransferInPreparationConfirmed;
+    private boolean isTransferOutConfirmed;
+    private boolean isTransferInConfirmed;
 
     public TransferTransaction() {
     }
@@ -30,20 +30,20 @@ public class TransferTransaction extends AggregateRoot<String> {
     /**
      * 确认账户验证通过
      */
-    public void ConfirmAccountValidatePassed(String accountId) {
-        if (_status == TransactionStatus.Started) {
-            if (accountId == _transactionInfo.SourceAccountId) {
-                if (!_isSourceAccountValidatePassed) {
-                    applyEvent(new SourceAccountValidatePassedConfirmedEvent(_transactionInfo));
-                    if (_isTargetAccountValidatePassed) {
-                        applyEvent(new AccountValidatePassedConfirmCompletedEvent(_transactionInfo));
+    public void confirmAccountValidatePassed(String accountId) {
+        if (status == TransactionStatus.STARTED) {
+            if (accountId == transferTransactionInfo.sourceAccountId) {
+                if (!isSourceAccountValidatePassed) {
+                    applyEvent(new SourceAccountValidatePassedConfirmedEvent(transferTransactionInfo));
+                    if (isTargetAccountValidatePassed) {
+                        applyEvent(new AccountValidatePassedConfirmCompletedEvent(transferTransactionInfo));
                     }
                 }
-            } else if (accountId == _transactionInfo.TargetAccountId) {
-                if (!_isTargetAccountValidatePassed) {
-                    applyEvent(new TargetAccountValidatePassedConfirmedEvent(_transactionInfo));
-                    if (_isSourceAccountValidatePassed) {
-                        applyEvent(new AccountValidatePassedConfirmCompletedEvent(_transactionInfo));
+            } else if (accountId == transferTransactionInfo.targetAccountId) {
+                if (!isTargetAccountValidatePassed) {
+                    applyEvent(new TargetAccountValidatePassedConfirmedEvent(transferTransactionInfo));
+                    if (isSourceAccountValidatePassed) {
+                        applyEvent(new AccountValidatePassedConfirmCompletedEvent(transferTransactionInfo));
                     }
                 }
             }
@@ -53,10 +53,10 @@ public class TransferTransaction extends AggregateRoot<String> {
     /**
      * 确认预转出
      */
-    public void ConfirmTransferOutPreparation() {
-        if (_status == TransactionStatus.AccountValidateCompleted) {
-            if (!_isTransferOutPreparationConfirmed) {
-                applyEvent(new TransferOutPreparationConfirmedEvent(_transactionInfo));
+    public void confirmTransferOutPreparation() {
+        if (status == TransactionStatus.ACCOUNT_VALIDATE_COMPLETED) {
+            if (!isTransferOutPreparationConfirmed) {
+                applyEvent(new TransferOutPreparationConfirmedEvent(transferTransactionInfo));
             }
         }
     }
@@ -64,10 +64,10 @@ public class TransferTransaction extends AggregateRoot<String> {
     /**
      * 确认预转入
      */
-    public void ConfirmTransferInPreparation() {
-        if (_status == TransactionStatus.AccountValidateCompleted) {
-            if (!_isTransferInPreparationConfirmed) {
-                applyEvent(new TransferInPreparationConfirmedEvent(_transactionInfo));
+    public void confirmTransferInPreparation() {
+        if (status == TransactionStatus.ACCOUNT_VALIDATE_COMPLETED) {
+            if (!isTransferInPreparationConfirmed) {
+                applyEvent(new TransferInPreparationConfirmedEvent(transferTransactionInfo));
             }
         }
     }
@@ -75,11 +75,11 @@ public class TransferTransaction extends AggregateRoot<String> {
     /**
      * 确认转出
      */
-    public void ConfirmTransferOut() {
-        if (_status == TransactionStatus.PreparationCompleted) {
-            if (!_isTransferOutConfirmed) {
-                applyEvent(new TransferOutConfirmedEvent(_transactionInfo));
-                if (_isTransferInConfirmed) {
+    public void confirmTransferOut() {
+        if (status == TransactionStatus.PREPARATION_COMPLETED) {
+            if (!isTransferOutConfirmed) {
+                applyEvent(new TransferOutConfirmedEvent(transferTransactionInfo));
+                if (isTransferInConfirmed) {
                     applyEvent(new TransferTransactionCompletedEvent());
                 }
             }
@@ -89,11 +89,11 @@ public class TransferTransaction extends AggregateRoot<String> {
     /**
      * 确认转入
      */
-    public void ConfirmTransferIn() {
-        if (_status == TransactionStatus.PreparationCompleted) {
-            if (!_isTransferInConfirmed) {
-                applyEvent(new TransferInConfirmedEvent(_transactionInfo));
-                if (_isTransferOutConfirmed) {
+    public void confirmTransferIn() {
+        if (status == TransactionStatus.PREPARATION_COMPLETED) {
+            if (!isTransferInConfirmed) {
+                applyEvent(new TransferInConfirmedEvent(transferTransactionInfo));
+                if (isTransferOutConfirmed) {
                     applyEvent(new TransferTransactionCompletedEvent());
                 }
             }
@@ -103,49 +103,49 @@ public class TransferTransaction extends AggregateRoot<String> {
     /**
      * 取消转账交易
      */
-    public void Cancel() {
+    public void cancel() {
         applyEvent(new TransferTransactionCanceledEvent());
     }
 
-    private void Handle(TransferTransactionStartedEvent evnt) {
-        _transactionInfo = evnt.TransactionInfo;
-        _status = TransactionStatus.Started;
+    private void handle(TransferTransactionStartedEvent evnt) {
+        transferTransactionInfo = evnt.transferTransactionInfo;
+        status = TransactionStatus.STARTED;
     }
 
-    private void Handle(SourceAccountValidatePassedConfirmedEvent evnt) {
-        _isSourceAccountValidatePassed = true;
+    private void handle(SourceAccountValidatePassedConfirmedEvent evnt) {
+        isSourceAccountValidatePassed = true;
     }
 
-    private void Handle(TargetAccountValidatePassedConfirmedEvent evnt) {
-        _isTargetAccountValidatePassed = true;
+    private void handle(TargetAccountValidatePassedConfirmedEvent evnt) {
+        isTargetAccountValidatePassed = true;
     }
 
-    private void Handle(AccountValidatePassedConfirmCompletedEvent evnt) {
-        _status = TransactionStatus.AccountValidateCompleted;
+    private void handle(AccountValidatePassedConfirmCompletedEvent evnt) {
+        status = TransactionStatus.ACCOUNT_VALIDATE_COMPLETED;
     }
 
-    private void Handle(TransferOutPreparationConfirmedEvent evnt) {
-        _isTransferOutPreparationConfirmed = true;
+    private void handle(TransferOutPreparationConfirmedEvent evnt) {
+        isTransferOutPreparationConfirmed = true;
     }
 
-    private void Handle(TransferInPreparationConfirmedEvent evnt) {
-        _isTransferInPreparationConfirmed = true;
-        _status = TransactionStatus.PreparationCompleted;
+    private void handle(TransferInPreparationConfirmedEvent evnt) {
+        isTransferInPreparationConfirmed = true;
+        status = TransactionStatus.PREPARATION_COMPLETED;
     }
 
-    private void Handle(TransferOutConfirmedEvent evnt) {
-        _isTransferOutConfirmed = true;
+    private void handle(TransferOutConfirmedEvent evnt) {
+        isTransferOutConfirmed = true;
     }
 
-    private void Handle(TransferInConfirmedEvent evnt) {
-        _isTransferInConfirmed = true;
+    private void handle(TransferInConfirmedEvent evnt) {
+        isTransferInConfirmed = true;
     }
 
-    private void Handle(TransferTransactionCompletedEvent evnt) {
-        _status = TransactionStatus.Completed;
+    private void handle(TransferTransactionCompletedEvent evnt) {
+        status = TransactionStatus.COMPLETED;
     }
 
-    private void Handle(TransferTransactionCanceledEvent evnt) {
-        _status = TransactionStatus.Canceled;
+    private void handle(TransferTransactionCanceledEvent evnt) {
+        status = TransactionStatus.CANCELED;
     }
 }

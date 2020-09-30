@@ -29,7 +29,7 @@ public class BankAccountCommandHandler {
      */
     @Subscribe
     public void handleAsync(ICommandContext context, CreateAccountCommand command) {
-        context.addAsync(new BankAccount(command.getAggregateRootId(), command.Owner));
+        context.addAsync(new BankAccount(command.getAggregateRootId(), command.owner));
     }
 
     /**
@@ -39,7 +39,7 @@ public class BankAccountCommandHandler {
     public void handleAsync(ICommandContext context, AddTransactionPreparationCommand command) {
         CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
         BankAccount account = Task.await(future);
-        account.AddTransactionPreparation(command.TransactionId, command.TransactionType, command.PreparationType, command.Amount);
+        account.addTransactionPreparation(command.transactionId, command.transactionType, command.preparationType, command.amount);
     }
 
     /**
@@ -47,10 +47,10 @@ public class BankAccountCommandHandler {
      */
     @Subscribe
     public IApplicationMessage handleAsync(ValidateAccountCommand command) {
-        IApplicationMessage applicationMessage = new AccountValidatePassedMessage(command.getAggregateRootId(), command.TransactionId);
+        IApplicationMessage applicationMessage = new AccountValidatePassedMessage(command.getAggregateRootId(), command.transactionId);
         //此处应该会调用外部接口验证账号是否合法，这里仅仅简单通过账号是否以INVALID字符串开头来判断是否合法；根据账号的合法性，返回不同的应用层消息
         if (command.getAggregateRootId().startsWith("INVALID")) {
-            applicationMessage = new AccountValidateFailedMessage(command.getAggregateRootId(), command.TransactionId, "账户不合法.");
+            applicationMessage = new AccountValidateFailedMessage(command.getAggregateRootId(), command.transactionId, "账户不合法.");
         }
         return applicationMessage;
     }
@@ -62,6 +62,6 @@ public class BankAccountCommandHandler {
     public void handleAsync(ICommandContext context, CommitTransactionPreparationCommand command) {
         CompletableFuture<BankAccount> future = context.getAsync(command.getAggregateRootId(), BankAccount.class);
         BankAccount account = Task.await(future);
-        account.CommitTransactionPreparation(command.TransactionId);
+        account.commitTransactionPreparation(command.transactionId);
     }
 }

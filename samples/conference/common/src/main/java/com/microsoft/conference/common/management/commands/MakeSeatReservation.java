@@ -6,14 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MakeSeatReservation extends Command<String> {
-    public String ReservationId;
-    public List<SeatReservationItemInfo> Seats;
+    public String reservationId;
+    public List<SeatReservationItemInfo> seats;
 
     public MakeSeatReservation() {
     }
 
     public MakeSeatReservation(String conferenceId) {
         super(conferenceId);
-        this.Seats = new ArrayList<>();
+        this.seats = new ArrayList<>();
     }
 }

@@ -6,12 +6,12 @@ import org.enodeframework.eventing.DomainEvent;
  * 存款交易预存款已确认
  */
 public class DepositTransactionPreparationCompletedEvent extends DomainEvent<String> {
-    public String AccountId;
+    public String accountId;
 
     public DepositTransactionPreparationCompletedEvent() {
     }
 
     public DepositTransactionPreparationCompletedEvent(String accountId) {
-        AccountId = accountId;
+        this.accountId = accountId;
     }
 }

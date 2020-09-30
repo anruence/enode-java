@@ -8,55 +8,55 @@ public class InsufficientBalanceException extends DomainException {
     /**
      * 账户ID
      */
-    public String AccountId;
+    public String accountId;
     /**
      * 交易ID
      */
-    public String TransactionId;
+    public String transactionId;
     /**
      * 交易类型
      */
-    public int TransactionType;
+    public int transactionType;
     /**
      * 交易金额
      */
-    public double Amount;
+    public double amount;
     /**
      * 当前余额
      */
-    public double CurrentBalance;
+    public double currentBalance;
     /**
      * 当前可用余额
      */
-    public double CurrentAvailableBalance;
+    public double currentAvailableBalance;
 
     public InsufficientBalanceException(String accountId, String transactionId, int transactionType, double amount, double currentBalance, double currentAvailableBalance) {
         super();
-        AccountId = accountId;
-        TransactionId = transactionId;
-        TransactionType = transactionType;
-        Amount = amount;
-        CurrentBalance = currentBalance;
-        CurrentAvailableBalance = currentAvailableBalance;
+        this.accountId = accountId;
+        this.transactionId = transactionId;
+        this.transactionType = transactionType;
+        this.amount = amount;
+        this.currentBalance = currentBalance;
+        this.currentAvailableBalance = currentAvailableBalance;
     }
 
     @Override
     public void serializeTo(Map<String, Object> serializableInfo) {
-        serializableInfo.put("AccountId", AccountId);
-        serializableInfo.put("TransactionId", TransactionId);
+        serializableInfo.put("AccountId", accountId);
+        serializableInfo.put("TransactionId", transactionId);
         serializableInfo.put("TransactionType", "");
-        serializableInfo.put("Amount", String.valueOf(Amount));
-        serializableInfo.put("CurrentBalance", String.valueOf(CurrentBalance));
-        serializableInfo.put("CurrentAvailableBalance", String.valueOf(CurrentAvailableBalance));
+        serializableInfo.put("Amount", String.valueOf(amount));
+        serializableInfo.put("CurrentBalance", String.valueOf(currentBalance));
+        serializableInfo.put("CurrentAvailableBalance", String.valueOf(currentAvailableBalance));
     }
 
     @Override
     public void restoreFrom(Map<String, Object> serializableInfo) {
-        AccountId = (String) serializableInfo.get("AccountId");
-        TransactionId = (String) serializableInfo.get("TransactionId");
-        TransactionType = (Integer) serializableInfo.get("transactionType");
-        Amount = (Double) (serializableInfo.get("Amount"));
-        CurrentBalance = (Double) (serializableInfo.get("CurrentBalance"));
-        CurrentAvailableBalance = (Double) (serializableInfo.get("CurrentAvailableBalance"));
+        accountId = (String) serializableInfo.get("AccountId");
+        transactionId = (String) serializableInfo.get("TransactionId");
+        transactionType = (Integer) serializableInfo.get("transactionType");
+        amount = (Double) (serializableInfo.get("Amount"));
+        currentBalance = (Double) (serializableInfo.get("CurrentBalance"));
+        currentAvailableBalance = (Double) (serializableInfo.get("CurrentAvailableBalance"));
     }
 }

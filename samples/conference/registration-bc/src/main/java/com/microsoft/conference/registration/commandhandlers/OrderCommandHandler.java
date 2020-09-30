@@ -18,45 +18,45 @@ import java.util.List;
 import static org.enodeframework.common.io.Task.await;
 
 public class OrderCommandHandler {
-    private IPricingService _pricingService;
+    private IPricingService pricingService;
 
     public OrderCommandHandler(IPricingService pricingService) {
-        _pricingService = pricingService;
+        this.pricingService = pricingService;
     }
 
     //  .stream().filter(x -> new SeatQuantity(new SeatType(x.SeatType, x.SeatName, x.UnitPrice), x.Quantity)).findFirst().orElse(null),
     public void HandleAsync(ICommandContext context, PlaceOrder command) {
         List<SeatQuantity> seats = new ArrayList<>();
-        command.Seats.forEach(x -> seats.add(new SeatQuantity(new SeatType(x.SeatType, x.SeatName, x.UnitPrice), x.Quantity)));
+        command.seatInfos.forEach(x -> seats.add(new SeatQuantity(new SeatType(x.seatType, x.seatName, x.unitPrice), x.quantity)));
         context.addAsync(new Order(
                 command.aggregateRootId,
-                command.ConferenceId,
+                command.conferenceId,
                 seats,
-                _pricingService));
+                pricingService));
     }
 
     public void HandleAsync(ICommandContext context, AssignRegistrantDetails command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-        order.AssignRegistrant(command.FirstName, command.LastName, command.Email);
+        order.assignRegistrant(command.firstName, command.lastName, command.email);
     }
 
     public void HandleAsync(ICommandContext context, ConfirmReservation command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-        order.ConfirmReservation(command.IsReservationSuccess);
+        order.confirmReservation(command.isReservationSuccess);
     }
 
     public void HandleAsync(ICommandContext context, ConfirmPayment command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-        order.ConfirmPayment(command.IsPaymentSuccess);
+        order.confirmPayment(command.isPaymentSuccess);
     }
 
     public void HandleAsync(ICommandContext context, MarkAsSuccess command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-        order.MarkAsSuccess();
+        order.markAsSuccess();
     }
 
     public void HandleAsync(ICommandContext context, CloseOrder command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-        order.Close();
+        order.close();
     }
 }

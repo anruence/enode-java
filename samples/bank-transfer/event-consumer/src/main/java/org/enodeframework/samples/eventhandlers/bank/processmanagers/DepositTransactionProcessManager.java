@@ -32,20 +32,20 @@ public class DepositTransactionProcessManager {
     @Subscribe
     public void handleAsync(DepositTransactionStartedEvent evnt) {
         AddTransactionPreparationCommand command = new AddTransactionPreparationCommand(
-                evnt.AccountId,
+                evnt.accountId,
                 evnt.getAggregateRootId(),
-                TransactionType.DepositTransaction,
-                PreparationType.CreditPreparation,
-                evnt.Amount);
+                TransactionType.DEPOSIT_TRANSACTION,
+                PreparationType.CREDIT_PREPARATION,
+                evnt.amount);
         command.setId(evnt.getId());
         Task.await(commandService.sendAsync(command));
     }
 
     @Subscribe
     public void handleAsync(TransactionPreparationAddedEvent evnt) {
-        if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction
-                && evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
-            ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.TransactionPreparation.TransactionId);
+        if (evnt.transactionPreparation.transactionType == TransactionType.DEPOSIT_TRANSACTION
+                && evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
+            ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.transactionPreparation.TransactionId);
             command.setId(evnt.getId());
             Task.await(commandService.sendAsync(command));
         }
@@ -53,16 +53,16 @@ public class DepositTransactionProcessManager {
 
     @Subscribe
     public void handleAsync(DepositTransactionPreparationCompletedEvent evnt) {
-        CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.AccountId, evnt.getAggregateRootId());
+        CommitTransactionPreparationCommand command = new CommitTransactionPreparationCommand(evnt.accountId, evnt.getAggregateRootId());
         command.setId(evnt.getId());
         Task.await(commandService.sendAsync(command));
     }
 
     @Subscribe
     public void handleAsync(TransactionPreparationCommittedEvent evnt) {
-        if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction &&
-                evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
-            ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.TransactionPreparation.TransactionId);
+        if (evnt.transactionPreparation.transactionType == TransactionType.DEPOSIT_TRANSACTION &&
+                evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
+            ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.transactionPreparation.TransactionId);
             command.setId(evnt.getId());
             Task.await(commandService.sendAsync(command));
         }

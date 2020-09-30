@@ -6,12 +6,12 @@ import org.enodeframework.eventing.DomainEvent;
  * 账户预操作已添加
  */
 public class TransactionPreparationAddedEvent extends DomainEvent<String> {
-    public TransactionPreparation TransactionPreparation;
+    public TransactionPreparation transactionPreparation;
 
     public TransactionPreparationAddedEvent() {
     }
 
     public TransactionPreparationAddedEvent(TransactionPreparation transactionPreparation) {
-        TransactionPreparation = transactionPreparation;
+        this.transactionPreparation = transactionPreparation;
     }
 }

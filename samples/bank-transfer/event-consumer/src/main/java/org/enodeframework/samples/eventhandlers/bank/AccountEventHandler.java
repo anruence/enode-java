@@ -24,29 +24,29 @@ public class AccountEventHandler {
 
     @Subscribe
     public void handleAsync(AccountCreatedEvent evnt) {
-        logger.info("账户已创建，账户：{}，所有者：{}", evnt.getAggregateRootId(), evnt.Owner);
+        logger.info("账户已创建，账户：{}，所有者：{}", evnt.getAggregateRootId(), evnt.owner);
 
     }
 
     @Subscribe
     public void handleAsync(AccountValidatePassedMessage message) {
-        logger.info("账户验证已通过，交易ID：{}，账户：{}", message.TransactionId, message.AccountId);
+        logger.info("账户验证已通过，交易ID：{}，账户：{}", message.transactionId, message.accountId);
 
     }
 
     @Subscribe
     public void handleAsync(AccountValidateFailedMessage message) {
-        logger.info("无效的银行账户，交易ID：{}，账户：{}，理由：{}", message.TransactionId, message.AccountId, message.Reason);
+        logger.info("无效的银行账户，交易ID：{}，账户：{}，理由：{}", message.transactionId, message.accountId, message.reason);
 
     }
 
     @Subscribe
     public void handleAsync(TransactionPreparationAddedEvent evnt) {
-        if (evnt.TransactionPreparation.transactionType == TransactionType.TransferTransaction) {
-            if (evnt.TransactionPreparation.preparationType == PreparationType.DebitPreparation) {
-                logger.info("账户预转出成功，交易ID：{}，账户：{}，金额：{}", evnt.TransactionPreparation.TransactionId, evnt.TransactionPreparation.AccountId, evnt.TransactionPreparation.Amount);
-            } else if (evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
-                logger.info("账户预转入成功，交易ID：{}，账户：{}，金额：{}", evnt.TransactionPreparation.TransactionId, evnt.TransactionPreparation.AccountId, evnt.TransactionPreparation.Amount);
+        if (evnt.transactionPreparation.transactionType == TransactionType.TRANSFER_TRANSACTION) {
+            if (evnt.transactionPreparation.preparationType == PreparationType.DEBIT_PREPARATION) {
+                logger.info("账户预转出成功，交易ID：{}，账户：{}，金额：{}", evnt.transactionPreparation.TransactionId, evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount);
+            } else if (evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
+                logger.info("账户预转入成功，交易ID：{}，账户：{}，金额：{}", evnt.transactionPreparation.TransactionId, evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount);
             }
         }
 
@@ -54,17 +54,17 @@ public class AccountEventHandler {
 
     @Subscribe
     public void handleAsync(TransactionPreparationCommittedEvent evnt) {
-        if (evnt.TransactionPreparation.transactionType == TransactionType.DepositTransaction) {
-            if (evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
-                logger.info("账户存款已成功，账户：{}，金额：{}，当前余额：{}", evnt.TransactionPreparation.AccountId, evnt.TransactionPreparation.Amount, evnt.CurrentBalance);
+        if (evnt.transactionPreparation.transactionType == TransactionType.DEPOSIT_TRANSACTION) {
+            if (evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
+                logger.info("账户存款已成功，账户：{}，金额：{}，当前余额：{}", evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount, evnt.currentBalance);
             }
         }
-        if (evnt.TransactionPreparation.transactionType == TransactionType.TransferTransaction) {
-            if (evnt.TransactionPreparation.preparationType == PreparationType.DebitPreparation) {
-                logger.info("账户转出已成功，交易ID：{}，账户：{}，金额：{}，当前余额：{}", evnt.TransactionPreparation.TransactionId, evnt.TransactionPreparation.AccountId, evnt.TransactionPreparation.Amount, evnt.CurrentBalance);
+        if (evnt.transactionPreparation.transactionType == TransactionType.TRANSFER_TRANSACTION) {
+            if (evnt.transactionPreparation.preparationType == PreparationType.DEBIT_PREPARATION) {
+                logger.info("账户转出已成功，交易ID：{}，账户：{}，金额：{}，当前余额：{}", evnt.transactionPreparation.TransactionId, evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount, evnt.currentBalance);
             }
-            if (evnt.TransactionPreparation.preparationType == PreparationType.CreditPreparation) {
-                logger.info("账户转入已成功，交易ID：{}，账户：{}，金额：{}，当前余额：{}", evnt.TransactionPreparation.TransactionId, evnt.TransactionPreparation.AccountId, evnt.TransactionPreparation.Amount, evnt.CurrentBalance);
+            if (evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
+                logger.info("账户转入已成功，交易ID：{}，账户：{}，金额：{}，当前余额：{}", evnt.transactionPreparation.TransactionId, evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount, evnt.currentBalance);
             }
         }
 
@@ -72,19 +72,19 @@ public class AccountEventHandler {
 
     @Subscribe
     public void handleAsync(TransferTransactionStartedEvent evnt) {
-        logger.info("转账交易已开始，交易ID：{}，源账户：{}，目标账户：{}，转账金额：{}", evnt.getAggregateRootId(), evnt.TransactionInfo.SourceAccountId, evnt.TransactionInfo.TargetAccountId, evnt.TransactionInfo.Amount);
+        logger.info("转账交易已开始，交易ID：{}，源账户：{}，目标账户：{}，转账金额：{}", evnt.getAggregateRootId(), evnt.transferTransactionInfo.sourceAccountId, evnt.transferTransactionInfo.targetAccountId, evnt.transferTransactionInfo.amount);
 
     }
 
     @Subscribe
     public void handleAsync(TransferOutPreparationConfirmedEvent evnt) {
-        logger.info("预转出确认成功，交易ID：{}，账户：{}", evnt.getAggregateRootId(), evnt.TransactionInfo.SourceAccountId);
+        logger.info("预转出确认成功，交易ID：{}，账户：{}", evnt.getAggregateRootId(), evnt.transferTransactionInfo.sourceAccountId);
 
     }
 
     @Subscribe
     public void handleAsync(TransferInPreparationConfirmedEvent evnt) {
-        logger.info("预转入确认成功，交易ID：{}，账户：{}", evnt.getAggregateRootId(), evnt.TransactionInfo.TargetAccountId);
+        logger.info("预转入确认成功，交易ID：{}，账户：{}", evnt.getAggregateRootId(), evnt.transferTransactionInfo.targetAccountId);
 
     }
 
@@ -96,7 +96,7 @@ public class AccountEventHandler {
 
     @Subscribe
     public void handleAsync(InsufficientBalanceException exception) {
-        logger.info("账户的余额不足，交易ID：{}，账户：{}，可用余额：{}，转出金额：{}", exception.TransactionId, exception.AccountId, exception.CurrentAvailableBalance, exception.Amount);
+        logger.info("账户的余额不足，交易ID：{}，账户：{}，可用余额：{}，转出金额：{}", exception.transactionId, exception.accountId, exception.currentAvailableBalance, exception.amount);
 
     }
 

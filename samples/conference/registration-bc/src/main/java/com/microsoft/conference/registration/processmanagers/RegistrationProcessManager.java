@@ -44,62 +44,62 @@ import java.util.stream.Collectors;
  * IMessageHandler<OrderExpired>                           //订单过期时(15分钟过期)发生(Order)
  */
 public class RegistrationProcessManager {
-    private ICommandService _commandService;
+    private ICommandService commandService;
 
     public RegistrationProcessManager(ICommandService commandService) {
-        _commandService = commandService;
+        this.commandService = commandService;
     }
 
-    public void HandleAsync(OrderPlaced evnt) {
-        MakeSeatReservation reservation = new MakeSeatReservation(evnt.ConferenceId);
-        reservation.ReservationId = evnt.getAggregateRootId();
-        reservation.Seats = evnt.OrderTotal.Lines.stream().map(x -> {
+    public void handleAsync(OrderPlaced evnt) {
+        MakeSeatReservation reservation = new MakeSeatReservation(evnt.conferenceId);
+        reservation.reservationId = evnt.getAggregateRootId();
+        reservation.seats = evnt.orderTotal.orderLines.stream().map(x -> {
             SeatReservationItemInfo itemInfo = new SeatReservationItemInfo();
-            itemInfo.SeatType = x.SeatQuantity.Seat.SeatTypeId;
-            itemInfo.Quantity = x.SeatQuantity.Quantity;
+            itemInfo.seatType = x.seatQuantity.seatType.seatTypeId;
+            itemInfo.quantity = x.seatQuantity.quantity;
             return itemInfo;
         }).collect(Collectors.toList());
-        Task.await(_commandService.sendAsync(reservation));
+        Task.await(commandService.sendAsync(reservation));
     }
 
-    public void HandleAsync(SeatsReservedMessage message) {
-        Task.await(_commandService.sendAsync(new ConfirmReservation(message.ReservationId, true)));
+    public void handleAsync(SeatsReservedMessage message) {
+        Task.await(commandService.sendAsync(new ConfirmReservation(message.reservationId, true)));
     }
 
-    public void HandleAsync(SeatInsufficientMessage message) {
-        Task.await(_commandService.sendAsync(new ConfirmReservation(message.ReservationId, false)));
+    public void handleAsync(SeatInsufficientMessage message) {
+        Task.await(commandService.sendAsync(new ConfirmReservation(message.reservationId, false)));
     }
 
-    public void HandleAsync(PaymentCompletedMessage message) {
-        Task.await(_commandService.sendAsync(new ConfirmPayment(message.OrderId, true)));
+    public void handleAsync(PaymentCompletedMessage message) {
+        Task.await(commandService.sendAsync(new ConfirmPayment(message.orderId, true)));
     }
 
-    public void HandleAsync(PaymentRejectedMessage message) {
-        Task.await(_commandService.sendAsync(new ConfirmPayment(message.OrderId, false)));
+    public void handleAsync(PaymentRejectedMessage message) {
+        Task.await(commandService.sendAsync(new ConfirmPayment(message.orderId, false)));
     }
 
-    public void HandleAsync(OrderPaymentConfirmed evnt) {
+    public void handleAsync(OrderPaymentConfirmed evnt) {
         if (evnt.orderStatus == OrderStatus.PaymentSuccess) {
-            Task.await(_commandService.sendAsync(new CommitSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
+            Task.await(commandService.sendAsync(new CommitSeatReservation(evnt.conferenceId, evnt.getAggregateRootId())));
         } else if (evnt.orderStatus == OrderStatus.PaymentRejected) {
-            Task.await(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
+            Task.await(commandService.sendAsync(new CancelSeatReservation(evnt.conferenceId, evnt.getAggregateRootId())));
         }
     }
 
-    public void HandleAsync(SeatsReservationCommittedMessage message) {
-        Task.await(_commandService.sendAsync(new MarkAsSuccess(message.ReservationId)));
+    public void handleAsync(SeatsReservationCommittedMessage message) {
+        Task.await(commandService.sendAsync(new MarkAsSuccess(message.reservationId)));
     }
 
-    public void HandleAsync(SeatsReservationCancelledMessage message) {
-        Task.await(_commandService.sendAsync(new CloseOrder(message.ReservationId)));
+    public void handleAsync(SeatsReservationCancelledMessage message) {
+        Task.await(commandService.sendAsync(new CloseOrder(message.reservationId)));
     }
 
-    public void HandleAsync(OrderSuccessed evnt) {
-        Task.await(_commandService.sendAsync(new CreateSeatAssignments(evnt.getAggregateRootId())));
+    public void handleAsync(OrderSuccessed evnt) {
+        Task.await(commandService.sendAsync(new CreateSeatAssignments(evnt.getAggregateRootId())));
     }
 
-    public void HandleAsync(OrderExpired evnt) {
-        Task.await(_commandService.sendAsync(new CancelSeatReservation(evnt.ConferenceId, evnt.getAggregateRootId())));
+    public void handleAsync(OrderExpired evnt) {
+        Task.await(commandService.sendAsync(new CancelSeatReservation(evnt.conferenceId, evnt.getAggregateRootId())));
     }
 }
         

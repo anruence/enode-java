@@ -1,11 +1,11 @@
 package com.microsoft.conference.management.domain.models;
 
 public class ReservationItem {
-    public String SeatTypeId;
-    public int Quantity;
+    public String seatTypeId;
+    public int quantity;
 
     public ReservationItem(String seatTypeId, int quantity) {
-        SeatTypeId = seatTypeId;
-        Quantity = quantity;
+        this.seatTypeId = seatTypeId;
+        this.quantity = quantity;
     }
 }

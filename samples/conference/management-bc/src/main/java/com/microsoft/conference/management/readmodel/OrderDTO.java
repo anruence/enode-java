@@ -5,25 +5,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrderDTO {
-    public String OrderId;
-    public String ConferenceId;
-    public String AccessCode;
-    public String RegistrantFirstName;
-    public String RegistrantLastName;
-    public String RegistrantEmail;
-    public BigDecimal TotalAmount;
-    public int Status;
-    private List<AttendeeDTO> _attendees = new ArrayList<>();
+    public String orderId;
+    public String conferenceId;
+    public String accessCode;
+    public String registrantFirstName;
+    public String registrantLastName;
+    public String registrantEmail;
+    public BigDecimal totalAmount;
+    public int status;
+    private List<AttendeeDTO> attendees = new ArrayList<>();
 
-    public List<AttendeeDTO> GetAttendees() {
-        return _attendees;
+    public List<AttendeeDTO> getAttendees() {
+        return attendees;
     }
 
-    public void SetAttendees(List<AttendeeDTO> attendees) {
-        _attendees = attendees;
+    public void setAttendees(List<AttendeeDTO> attendees) {
+        this.attendees = attendees;
     }
 
-    public String GetStatusText() {
-        return String.valueOf(Status);
+    public String getStatusText() {
+        return String.valueOf(status);
     }
 }

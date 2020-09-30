@@ -16,25 +16,25 @@ import java.util.Date;
 import java.util.List;
 
 public class Conference {
-    public String Id;
-    public String Code;
-    public String Name;
-    public String Description;
-    public String Location;
-    public String Tagline;
-    public String TwitterSearch;
-    public Date StartDate;
-    public boolean IsPublished;
+    public String id;
+    public String code;
+    public String name;
+    public String description;
+    public String location;
+    public String tagline;
+    public String twitterSearch;
+    public Date startDate;
+    public boolean isPublished;
 
     public Conference(String id, String code, String name, String description, String location, String tagline, String twitterSearch, Date startDate, List<SeatType> seats) {
-        this.Id = id;
-        this.Code = code;
-        this.Name = name;
-        this.Description = description;
-        this.Location = location;
-        this.Tagline = tagline;
-        this.TwitterSearch = twitterSearch;
-        this.StartDate = startDate;
+        this.id = id;
+        this.code = code;
+        this.name = name;
+        this.description = description;
+        this.location = location;
+        this.tagline = tagline;
+        this.twitterSearch = twitterSearch;
+        this.startDate = startDate;
     }
 
     public Conference() {

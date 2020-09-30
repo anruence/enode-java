@@ -7,9 +7,9 @@ import org.enodeframework.samples.domain.bank.TransactionStatus;
  * 聚合根，表示一笔银行存款交易
  */
 public class DepositTransaction extends AggregateRoot<String> {
-    private String _accountId;
-    private double _amount;
-    private int _status;
+    private String accountId;
+    private double amount;
+    private int status;
 
     public DepositTransaction() {
     }
@@ -25,32 +25,32 @@ public class DepositTransaction extends AggregateRoot<String> {
     /**
      * 确认预存款
      */
-    public void ConfirmDepositPreparation() {
-        if (_status == TransactionStatus.Started) {
-            applyEvent(new DepositTransactionPreparationCompletedEvent(_accountId));
+    public void confirmDepositPreparation() {
+        if (status == TransactionStatus.STARTED) {
+            applyEvent(new DepositTransactionPreparationCompletedEvent(accountId));
         }
     }
 
     /**
      * 确认存款
      */
-    public void ConfirmDeposit() {
-        if (_status == TransactionStatus.PreparationCompleted) {
-            applyEvent(new DepositTransactionCompletedEvent(_accountId));
+    public void confirmDeposit() {
+        if (status == TransactionStatus.PREPARATION_COMPLETED) {
+            applyEvent(new DepositTransactionCompletedEvent(accountId));
         }
     }
 
-    private void Handle(DepositTransactionStartedEvent evnt) {
-        _accountId = evnt.AccountId;
-        _amount = evnt.Amount;
-        _status = TransactionStatus.Started;
+    private void handle(DepositTransactionStartedEvent evnt) {
+        accountId = evnt.accountId;
+        amount = evnt.amount;
+        status = TransactionStatus.STARTED;
     }
 
-    private void Handle(DepositTransactionPreparationCompletedEvent evnt) {
-        _status = TransactionStatus.PreparationCompleted;
+    private void handle(DepositTransactionPreparationCompletedEvent evnt) {
+        status = TransactionStatus.PREPARATION_COMPLETED;
     }
 
-    private void Handle(DepositTransactionCompletedEvent evnt) {
-        _status = TransactionStatus.Completed;
+    private void handle(DepositTransactionCompletedEvent evnt) {
+        status = TransactionStatus.COMPLETED;
     }
 }
