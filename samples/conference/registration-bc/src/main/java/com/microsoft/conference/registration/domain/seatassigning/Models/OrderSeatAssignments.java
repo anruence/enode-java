@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrderSeatAssignments extends AggregateRoot<String> {
-    private String _orderId;
-    private List<SeatAssignment> _assignments;
+    private String orderId;
+    private List<SeatAssignment> seatAssignments;
 
     public OrderSeatAssignments(String orderId, List<OrderLine> orderLines) {
         super(ObjectId.generateNewStringId());
@@ -27,42 +27,42 @@ public class OrderSeatAssignments extends AggregateRoot<String> {
         int position = 0;
         List<SeatAssignment> assignments = new ArrayList<>();
         for (OrderLine orderLine : orderLines) {
-            for (int i = 0; i < orderLine.SeatQuantity.Quantity; i++) {
-                assignments.add(new SeatAssignment(position++, orderLine.SeatQuantity.Seat));
+            for (int i = 0; i < orderLine.seatQuantity.quantity; i++) {
+                assignments.add(new SeatAssignment(position++, orderLine.seatQuantity.seatType));
             }
         }
         applyEvent(new OrderSeatAssignmentsCreated(orderId, assignments));
     }
 
-    public void AssignSeat(int position, Attendee attendee) {
-        SeatAssignment current = Linq.singleOrDefault(_assignments, x -> x.Position == position);
+    public void assignSeat(int position, Attendee attendee) {
+        SeatAssignment current = Linq.singleOrDefault(seatAssignments, x -> x.position == position);
         if (current == null) {
             throw new ArgumentOutOfRangeException("position");
         }
         if (current.attendee == null || attendee != current.attendee) {
-            applyEvent(new SeatAssigned(current.Position, current.Seat, attendee));
+            applyEvent(new SeatAssigned(current.position, current.seatType, attendee));
         }
     }
 
-    public void UnassignSeat(int position) {
-        SeatAssignment current = Linq.singleOrDefault(_assignments, x -> x.Position == position);
+    public void unAssignSeat(int position) {
+        SeatAssignment current = Linq.singleOrDefault(seatAssignments, x -> x.position == position);
         if (current == null) {
             throw new ArgumentOutOfRangeException("position");
         }
         applyEvent(new SeatUnassigned(position));
     }
 
-    private void Handle(OrderSeatAssignmentsCreated evnt) {
+    private void handle(OrderSeatAssignmentsCreated evnt) {
         id = evnt.getAggregateRootId();
-        _orderId = evnt.OrderId;
-        _assignments = evnt.Assignments;
+        orderId = evnt.orderId;
+        seatAssignments = evnt.seatAssignments;
     }
 
-    private void Handle(SeatAssigned evnt) {
-        Linq.single(_assignments, x -> x.Position == evnt.Position).attendee = evnt.attendee;
+    private void handle(SeatAssigned evnt) {
+        Linq.single(seatAssignments, x -> x.position == evnt.position).attendee = evnt.attendee;
     }
 
-    private void Handle(SeatUnassigned evnt) {
-        Linq.single(_assignments, x -> x.Position == evnt.Position).attendee = null;
+    private void handle(SeatUnassigned evnt) {
+        Linq.single(seatAssignments, x -> x.position == evnt.position).attendee = null;
     }
 }

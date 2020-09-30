@@ -5,7 +5,7 @@ import com.microsoft.conference.registration.domain.seatassigning.Events.SeatAss
 import com.microsoft.conference.registration.domain.seatassigning.Events.SeatUnassigned;
 
 public class OrderSeatAssignmentsViewModelGenerator {
-    public void HandleAsync(OrderSeatAssignmentsCreated evnt) {
+    public void handleAsync(OrderSeatAssignmentsCreated evnt) {
 //            return TryTransactionAsync((connection, transaction) =>
 //            {
 //                var tasks = new List<Task>();
@@ -27,7 +27,7 @@ public class OrderSeatAssignmentsViewModelGenerator {
 
     }
 
-    public void HandleAsync(SeatAssigned evnt) {
+    public void handleAsync(SeatAssigned evnt) {
 //            return TryUpdateRecordAsync(connection =>
 //            {
 //                return connection.UpdateAsync(new
@@ -44,7 +44,7 @@ public class OrderSeatAssignmentsViewModelGenerator {
 
     }
 
-    public void HandleAsync(SeatUnassigned evnt) {
+    public void handleAsync(SeatUnassigned evnt) {
 //            return TryUpdateRecordAsync(connection =>
 //            {
 //                return connection.UpdateAsync(new

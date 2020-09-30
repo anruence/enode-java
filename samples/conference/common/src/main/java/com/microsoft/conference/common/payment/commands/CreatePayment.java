@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class CreatePayment extends Command<String> {
-    public String OrderId;
-    public String ConferenceId;
-    public String Description;
-    public BigDecimal TotalAmount;
-    public List<PaymentLine> Lines;
+    public String orderId;
+    public String conferenceId;
+    public String description;
+    public BigDecimal totalAmount;
+    public List<PaymentLine> lines;
 }

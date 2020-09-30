@@ -1,9 +1,9 @@
 package com.microsoft.conference.registration.readmodel.queryservices;
 
 public interface IOrderQueryService {
-    Order FindOrder(String orderId);
+    Order findOrder(String orderId);
 
-    String LocateOrder(String email, String accessCode);
+    String locateOrder(String email, String accessCode);
 
-    OrderSeatAssignment[] FindOrderSeatAssignments(String orderId);
+    OrderSeatAssignment[] findOrderSeatAssignments(String orderId);
 }

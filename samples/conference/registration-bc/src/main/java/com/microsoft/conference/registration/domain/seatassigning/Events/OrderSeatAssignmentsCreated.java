@@ -6,14 +6,14 @@ import org.enodeframework.eventing.DomainEvent;
 import java.util.List;
 
 public class OrderSeatAssignmentsCreated extends DomainEvent<String> {
-    public String OrderId;
-    public List<SeatAssignment> Assignments;
+    public String orderId;
+    public List<SeatAssignment> seatAssignments;
 
     public OrderSeatAssignmentsCreated() {
     }
 
-    public OrderSeatAssignmentsCreated(String orderId, List<SeatAssignment> assignments) {
-        OrderId = orderId;
-        Assignments = assignments;
+    public OrderSeatAssignmentsCreated(String orderId, List<SeatAssignment> seatAssignments) {
+        this.orderId = orderId;
+        this.seatAssignments = seatAssignments;
     }
 }

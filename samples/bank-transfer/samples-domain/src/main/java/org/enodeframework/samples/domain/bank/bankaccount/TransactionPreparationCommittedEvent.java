@@ -6,14 +6,14 @@ import org.enodeframework.eventing.DomainEvent;
  * 账户预操作已执行
  */
 public class TransactionPreparationCommittedEvent extends DomainEvent<String> {
-    public double CurrentBalance;
-    public TransactionPreparation TransactionPreparation;
+    public double currentBalance;
+    public TransactionPreparation transactionPreparation;
 
     public TransactionPreparationCommittedEvent() {
     }
 
     public TransactionPreparationCommittedEvent(double currentBalance, TransactionPreparation transactionPreparation) {
-        CurrentBalance = currentBalance;
-        TransactionPreparation = transactionPreparation;
+        this.currentBalance = currentBalance;
+        this.transactionPreparation = transactionPreparation;
     }
 }

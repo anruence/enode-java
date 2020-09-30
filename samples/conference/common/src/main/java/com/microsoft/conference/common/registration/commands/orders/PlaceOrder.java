@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlaceOrder extends Command<String> {
-    public String ConferenceId;
-    public List<SeatInfo> Seats;
+    public String conferenceId;
+    public List<SeatInfo> seatInfos;
 
     public PlaceOrder() {
         super(ObjectId.generateNewStringId());
-        Seats = new ArrayList<>();
+        seatInfos = new ArrayList<>();
     }
 }

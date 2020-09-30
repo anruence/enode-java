@@ -5,7 +5,7 @@ import org.enodeframework.commanding.Command;
 /**
  * 确认预存款
  */
-public class ConfirmDepositPreparationCommand extends Command {
+public class ConfirmDepositPreparationCommand extends Command<String> {
     public ConfirmDepositPreparationCommand() {
     }
 

@@ -1,10 +1,10 @@
 package com.microsoft.conference.registration.readmodel.queryservices;
 
 public class Payment {
-    public String Id;
-    public String OrderId;
-    public String ConferenceId;
-    public int State;
-    public int TotalAmount;
-    public String Description;
+    public String id;
+    public String orderId;
+    public String conferenceId;
+    public int state;
+    public int totalAmount;
+    public String description;
 }

@@ -7,16 +7,16 @@ import org.enodeframework.eventing.DomainEvent;
 import java.util.List;
 
 public class SeatsReserved extends DomainEvent<String> {
-    public String ReservationId;
-    public List<ReservationItem> ReservationItems;
-    public List<SeatAvailableQuantity> SeatAvailableQuantities;
+    public String reservationId;
+    public List<ReservationItem> reservationItems;
+    public List<SeatAvailableQuantity> seatAvailableQuantities;
 
     public SeatsReserved() {
     }
 
     public SeatsReserved(String reservationId, List<ReservationItem> reservationItems, List<SeatAvailableQuantity> seatAvailableQuantities) {
-        ReservationId = reservationId;
-        ReservationItems = reservationItems;
-        SeatAvailableQuantities = seatAvailableQuantities;
+        this.reservationId = reservationId;
+        this.reservationItems = reservationItems;
+        this.seatAvailableQuantities = seatAvailableQuantities;
     }
 }

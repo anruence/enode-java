@@ -5,16 +5,16 @@ import com.microsoft.conference.registration.domain.seatassigning.Models.Attende
 import org.enodeframework.eventing.DomainEvent;
 
 public class SeatAssigned extends DomainEvent<String> {
-    public int Position;
-    public SeatType Seat;
+    public int position;
+    public SeatType seatType;
     public Attendee attendee;
 
     public SeatAssigned() {
     }
 
-    public SeatAssigned(int position, SeatType seat, Attendee attendee) {
-        Position = position;
-        Seat = seat;
+    public SeatAssigned(int position, SeatType seatType, Attendee attendee) {
+        this.position = position;
+        this.seatType = seatType;
         this.attendee = attendee;
     }
 }

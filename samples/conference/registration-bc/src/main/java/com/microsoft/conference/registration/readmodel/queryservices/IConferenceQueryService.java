@@ -3,13 +3,13 @@ package com.microsoft.conference.registration.readmodel.queryservices;
 import java.util.List;
 
 public interface IConferenceQueryService {
-    ConferenceDetails GetConferenceDetails(String slug);
+    ConferenceDetails getConferenceDetails(String slug);
 
-    ConferenceAlias GetConferenceAlias(String slug);
+    ConferenceAlias getConferenceAlias(String slug);
 
-    List<ConferenceAlias> GetPublishedConferences();
+    List<ConferenceAlias> getPublishedConferences();
 
-    List<SeatType> GetPublishedSeatTypes(String conferenceId);
+    List<SeatType> getPublishedSeatTypes(String conferenceId);
 
-    List<SeatTypeName> GetSeatTypeNames(List<String> seatTypes);
+    List<SeatTypeName> getSeatTypeNames(List<String> seatTypes);
 }

@@ -3,15 +3,15 @@ package com.microsoft.conference.registration.domain.seatassigning.Models;
 import com.microsoft.conference.registration.domain.SeatType;
 
 public class SeatAssignment {
-    public int Position;
-    public SeatType Seat;
+    public int position;
+    public SeatType seatType;
     public Attendee attendee;
 
     public SeatAssignment() {
     }
 
-    public SeatAssignment(int position, SeatType seat) {
-        Position = position;
-        Seat = seat;
+    public SeatAssignment(int position, SeatType seatType) {
+        this.position = position;
+        this.seatType = seatType;
     }
 }

@@ -3,18 +3,18 @@ package com.microsoft.conference.management.readmodel;
 import java.util.Date;
 
 public class ConferenceDTO {
-    public String Id;
-    public String Name;
-    public String Description;
-    public String Location;
-    public String Tagline;
-    public String TwitterSearch;
-    public Date StartDate;
-    public Date EndDate;
-    public boolean IsPublished;
-    public String AccessCode;
-    public String OwnerName;
-    public String OwnerEmail;
-    public String Slug;
-    public boolean WasEverPublished;
+    public String id;
+    public String name;
+    public String description;
+    public String location;
+    public String tagline;
+    public String twitterSearch;
+    public Date startDate;
+    public Date endDate;
+    public boolean isPublished;
+    public String accessCode;
+    public String ownerName;
+    public String ownerEmail;
+    public String slug;
+    public boolean wasEverPublished;
 }

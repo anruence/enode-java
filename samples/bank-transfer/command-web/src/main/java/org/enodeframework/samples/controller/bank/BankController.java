@@ -19,7 +19,7 @@ public class BankController {
     private ICommandService commandService;
 
     @RequestMapping("deposit")
-    public Object deposit(@RequestParam("data") String data) throws Exception {
+    public String deposit() throws Exception {
         String account1 = ObjectId.generateNewStringId();
         String account2 = ObjectId.generateNewStringId();
         String account3 = "INVALID-" + ObjectId.generateNewStringId();
@@ -29,6 +29,7 @@ public class BankController {
         //每个账户都存入1000元
         commandService.sendAsync(new StartDepositTransactionCommand(ObjectId.generateNewStringId(), account1, 1000)).join();
         commandService.sendAsync(new StartDepositTransactionCommand(ObjectId.generateNewStringId(), account2, 1000)).join();
+
         //账户1向账户3转账300元，交易会失败，因为账户3不存在
         commandService.sendAsync(new StartTransferTransactionCommand(ObjectId.generateNewStringId(), new TransferTransactionInfo(account1, account3, 300D))).join();
         //账户1向账户2转账1200元，交易会失败，因为余额不足
@@ -40,7 +41,8 @@ public class BankController {
     }
 
     @RequestMapping("transfer")
-    public Object transfer(@RequestParam("data") String data) {
+    public String transfer() {
+
         return "success";
     }
 }

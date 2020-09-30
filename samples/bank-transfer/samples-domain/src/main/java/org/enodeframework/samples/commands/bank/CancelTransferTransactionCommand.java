@@ -5,7 +5,7 @@ import org.enodeframework.commanding.Command;
 /**
  * 取消转账交易
  */
-public class CancelTransferTransactionCommand extends Command {
+public class CancelTransferTransactionCommand extends Command<String> {
     public CancelTransferTransactionCommand() {
     }
 

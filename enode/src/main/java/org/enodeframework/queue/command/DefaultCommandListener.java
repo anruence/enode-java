@@ -1,5 +1,6 @@
 package org.enodeframework.queue.command;
 
+import com.google.common.base.Strings;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandProcessor;
 import org.enodeframework.commanding.ProcessingCommand;
@@ -53,7 +54,10 @@ public class DefaultCommandListener implements IMessageHandler {
         ICommand command = (ICommand) serializeService.deserialize(commandMessage.getCommandData(), commandType);
         CommandExecuteContext commandExecuteContext = new CommandExecuteContext(repository, aggregateRootStorage, queueMessage, context, commandMessage, sendReplyService);
         Map<String, Object> commandItems = new HashMap<>();
-        commandItems.put(SysProperties.ITEMS_COMMAND_REPLY_ADDRESS_KEY, InetUtil.toUri(commandMessage.getReplyAddress()));
+        String uri = InetUtil.toUri(commandMessage.getReplyAddress());
+        if (!Strings.isNullOrEmpty(uri)) {
+            commandItems.put(SysProperties.ITEMS_COMMAND_REPLY_ADDRESS_KEY, uri);
+        }
         commandProcessor.process(new ProcessingCommand(command, commandExecuteContext, commandItems));
     }
 }

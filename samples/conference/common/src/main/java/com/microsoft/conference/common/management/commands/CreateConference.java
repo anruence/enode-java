@@ -5,15 +5,15 @@ import org.enodeframework.commanding.Command;
 import java.util.Date;
 
 public class CreateConference extends Command<String> {
-    public String AccessCode;
-    public String OwnerName;
-    public String OwnerEmail;
-    public String Slug;
-    public String Name;
-    public String Description;
-    public String Location;
-    public String Tagline;
-    public String TwitterSearch;
-    public Date StartDate;
-    public Date EndDate;
+    public String accessCode;
+    public String ownerName;
+    public String ownerEmail;
+    public String slug;
+    public String name;
+    public String description;
+    public String location;
+    public String tagline;
+    public String twitterSearch;
+    public Date startDate;
+    public Date endDate;
 }

@@ -9,12 +9,12 @@ public class AccountCreatedEvent extends DomainEvent<String> {
     /**
      * 账户拥有者
      */
-    public String Owner;
+    public String owner;
 
     public AccountCreatedEvent() {
     }
 
     public AccountCreatedEvent(String owner) {
-        Owner = owner;
+        this.owner = owner;
     }
 }

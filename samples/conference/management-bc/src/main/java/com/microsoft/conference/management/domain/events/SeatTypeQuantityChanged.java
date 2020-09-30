@@ -3,16 +3,16 @@ package com.microsoft.conference.management.domain.events;
 import org.enodeframework.eventing.DomainEvent;
 
 public class SeatTypeQuantityChanged extends DomainEvent<String> {
-    public String SeatTypeId;
-    public int Quantity;
-    public int AvailableQuantity;
+    public String seatTypeId;
+    public int quantity;
+    public int availableQuantity;
 
     public SeatTypeQuantityChanged() {
     }
 
     public SeatTypeQuantityChanged(String seatTypeId, int quantity, int availableQuantity) {
-        SeatTypeId = seatTypeId;
-        Quantity = quantity;
-        AvailableQuantity = availableQuantity;
+        this.seatTypeId = seatTypeId;
+        this.quantity = quantity;
+        this.availableQuantity = availableQuantity;
     }
 }

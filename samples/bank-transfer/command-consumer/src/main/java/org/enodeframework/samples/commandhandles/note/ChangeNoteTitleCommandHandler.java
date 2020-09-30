@@ -13,17 +13,13 @@ import java.util.concurrent.CompletableFuture;
 
 @Command
 public class ChangeNoteTitleCommandHandler {
-    private Logger logger = LoggerFactory.getLogger(ChangeNoteTitleCommandHandler.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ChangeNoteTitleCommandHandler.class);
 
     @Subscribe
     public void handleAsync(ICommandContext context, ChangeNoteTitleCommand command) {
-        logger.info(command.getTitle());
         CompletableFuture<Note> future = context.getAsync(command.getAggregateRootId(), false, Note.class);
         Note note = Task.await(future);
-        if (note == null) {
-            return;
-        }
-        logger.info("note:{}", note.getId());
         note.changeTitle(command.getTitle());
+        LOGGER.info("note: {}", note.getId());
     }
 }

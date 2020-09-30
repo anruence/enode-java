@@ -11,25 +11,25 @@ import static org.enodeframework.common.io.Task.await;
 
 
 public class PaymentMessagePublisher {
-    private IMessagePublisher<IApplicationMessage> _messagePublisher;
+    private IMessagePublisher<IApplicationMessage> messagePublisher;
 
     public PaymentMessagePublisher(IMessagePublisher<IApplicationMessage> messagePublisher) {
-        _messagePublisher = messagePublisher;
+        this.messagePublisher = messagePublisher;
     }
 
     public void HandleAsync(PaymentCompleted evnt) {
         PaymentCompletedMessage message = new PaymentCompletedMessage();
-        message.PaymentId = evnt.getAggregateRootId();
-        message.ConferenceId = evnt.ConferenceId;
-        message.OrderId = evnt.OrderId;
-        await(_messagePublisher.publishAsync(message));
+        message.paymentId = evnt.getAggregateRootId();
+        message.conferenceId = evnt.conferenceId;
+        message.orderId = evnt.orderId;
+        await(messagePublisher.publishAsync(message));
     }
 
     public void HandleAsync(PaymentRejected evnt) {
         PaymentRejectedMessage message = new PaymentRejectedMessage();
-        message.PaymentId = evnt.getAggregateRootId();
-        message.ConferenceId = evnt.ConferenceId;
-        message.OrderId = evnt.OrderId;
-        await(_messagePublisher.publishAsync(message));
+        message.paymentId = evnt.getAggregateRootId();
+        message.conferenceId = evnt.conferenceId;
+        message.orderId = evnt.orderId;
+        await(messagePublisher.publishAsync(message));
     }
 }

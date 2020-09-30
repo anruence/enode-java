@@ -7,20 +7,20 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class PaymentInitiated extends DomainEvent<String> {
-    public String OrderId;
-    public String ConferenceId;
-    public String Description;
-    public BigDecimal TotalAmount;
-    public List<PaymentItem> Items;
+    public String orderId;
+    public String conferenceId;
+    public String description;
+    public BigDecimal totalAmount;
+    public List<PaymentItem> paymentItems;
 
     public PaymentInitiated() {
     }
 
-    public PaymentInitiated(String orderId, String conferenceId, String description, BigDecimal totalAmount, List<PaymentItem> items) {
-        OrderId = orderId;
-        ConferenceId = conferenceId;
-        Description = description;
-        TotalAmount = totalAmount;
-        Items = items;
+    public PaymentInitiated(String orderId, String conferenceId, String description, BigDecimal totalAmount, List<PaymentItem> paymentItems) {
+        this.orderId = orderId;
+        this.conferenceId = conferenceId;
+        this.description = description;
+        this.totalAmount = totalAmount;
+        this.paymentItems = paymentItems;
     }
 }

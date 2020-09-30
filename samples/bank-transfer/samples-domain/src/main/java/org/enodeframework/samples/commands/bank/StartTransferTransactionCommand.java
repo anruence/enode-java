@@ -6,17 +6,17 @@ import org.enodeframework.samples.domain.bank.transfertransaction.TransferTransa
 /**
  * 发起一笔转账交易
  */
-public class StartTransferTransactionCommand extends Command {
+public class StartTransferTransactionCommand extends Command<String> {
     /**
      * 转账交易信息
      */
-    public TransferTransactionInfo TransactionInfo;
+    public TransferTransactionInfo transferTransactionInfo;
 
     public StartTransferTransactionCommand() {
     }
 
-    public StartTransferTransactionCommand(String transactionId, TransferTransactionInfo transactionInfo) {
+    public StartTransferTransactionCommand(String transactionId, TransferTransactionInfo transferTransactionInfo) {
         super(transactionId);
-        TransactionInfo = transactionInfo;
+        this.transferTransactionInfo = transferTransactionInfo;
     }
 }

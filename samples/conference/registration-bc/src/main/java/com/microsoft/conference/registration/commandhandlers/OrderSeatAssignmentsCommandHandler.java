@@ -13,20 +13,20 @@ import static org.enodeframework.common.io.Task.await;
 public class OrderSeatAssignmentsCommandHandler {
     public void HandleAsync(ICommandContext context, CreateSeatAssignments command) {
         Order order = await(context.getAsync(command.aggregateRootId, Order.class));
-        OrderSeatAssignments orderSeatAssignments = order.CreateSeatAssignments();
+        OrderSeatAssignments orderSeatAssignments = order.createSeatAssignments();
         context.add(orderSeatAssignments);
     }
 
     public void HandleAsync(ICommandContext context, AssignSeat command) {
         OrderSeatAssignments orderSeatAssignments = await(context.getAsync(command.aggregateRootId, OrderSeatAssignments.class));
-        orderSeatAssignments.AssignSeat(command.Position, new Attendee(
-                command.PersonalInfo.FirstName,
-                command.PersonalInfo.LastName,
-                command.PersonalInfo.Email));
+        orderSeatAssignments.assignSeat(command.position, new Attendee(
+                command.personalInfo.firstName,
+                command.personalInfo.lastName,
+                command.personalInfo.email));
     }
 
     public void HandleAsync(ICommandContext context, UnassignSeat command) {
         OrderSeatAssignments orderSeatAssignments = await(context.getAsync(command.aggregateRootId, OrderSeatAssignments.class));
-        orderSeatAssignments.UnassignSeat(command.Position);
+        orderSeatAssignments.unAssignSeat(command.position);
     }
 }

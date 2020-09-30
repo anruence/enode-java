@@ -32,10 +32,10 @@ public class TransactionPreparation {
     public double Amount;
 
     public TransactionPreparation(String accountId, String transactionId, int transactionType, int preparationType, double amount) {
-        if (transactionType == TransactionType.TransferTransaction && preparationType != PreparationType.CreditPreparation) {
+        if (transactionType == TransactionType.TRANSFER_TRANSACTION && preparationType != PreparationType.CREDIT_PREPARATION) {
             throw new MismatchTransactionPreparationException(transactionType, preparationType);
         }
-        if (transactionType == TransactionType.WithdrawTransaction && preparationType != PreparationType.DebitPreparation) {
+        if (transactionType == TransactionType.WITHDRAW_TRANSACTION && preparationType != PreparationType.DEBIT_PREPARATION) {
             throw new MismatchTransactionPreparationException(transactionType, preparationType);
         }
         AccountId = accountId;

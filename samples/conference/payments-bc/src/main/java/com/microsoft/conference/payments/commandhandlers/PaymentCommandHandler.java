@@ -6,6 +6,7 @@ import com.microsoft.conference.common.payment.commands.CreatePayment;
 import com.microsoft.conference.payments.domain.models.Payment;
 import com.microsoft.conference.payments.domain.models.PaymentItem;
 import org.enodeframework.annotation.Command;
+import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.commanding.ICommandContext;
 
 import java.util.List;
@@ -20,24 +21,28 @@ import static org.enodeframework.common.io.Task.await;
  */
 @Command
 public class PaymentCommandHandler {
-    public void HandleAsync(ICommandContext context, CreatePayment command) {
-        List<PaymentItem> paymentItemList = command.Lines.stream().map(x -> new PaymentItem(x.Description, x.Amount)).collect(Collectors.toList());
+
+    @Subscribe
+    public void handleAsync(ICommandContext context, CreatePayment command) {
+        List<PaymentItem> paymentItemList = command.lines.stream().map(x -> new PaymentItem(x.description, x.amount)).collect(Collectors.toList());
         context.addAsync(new Payment(
                 command.getAggregateRootId(),
-                command.OrderId,
-                command.ConferenceId,
-                command.Description,
-                command.TotalAmount,
+                command.orderId,
+                command.conferenceId,
+                command.description,
+                command.totalAmount,
                 paymentItemList));
     }
 
-    public void HandleAsync(ICommandContext context, CompletePayment command) {
+    @Subscribe
+    public void handleAsync(ICommandContext context, CompletePayment command) {
         Payment payment = await(context.getAsync(command.getAggregateRootId(), Payment.class));
-        payment.Complete();
+        payment.complete();
     }
 
-    public void HandleAsync(ICommandContext context, CancelPayment command) {
+    @Subscribe
+    public void handleAsync(ICommandContext context, CancelPayment command) {
         Payment payment = await(context.getAsync(command.getAggregateRootId(), Payment.class));
-        payment.Cancel();
+        payment.cancel();
     }
 }

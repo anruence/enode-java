@@ -1,3 +1,5 @@
+package com.microsoft.conference.registration.readmodel.queryservices.impl;
+
 import com.microsoft.conference.registration.readmodel.queryservices.ConferenceAlias;
 import com.microsoft.conference.registration.readmodel.queryservices.ConferenceDetails;
 import com.microsoft.conference.registration.readmodel.queryservices.IConferenceQueryService;
@@ -8,27 +10,27 @@ import java.util.List;
 
 public class ConferenceQueryService implements IConferenceQueryService {
     @Override
-    public ConferenceDetails GetConferenceDetails(String slug) {
+    public ConferenceDetails getConferenceDetails(String slug) {
         return null;
     }
 
     @Override
-    public ConferenceAlias GetConferenceAlias(String slug) {
+    public ConferenceAlias getConferenceAlias(String slug) {
         return null;
     }
 
     @Override
-    public List<ConferenceAlias> GetPublishedConferences() {
+    public List<ConferenceAlias> getPublishedConferences() {
         return null;
     }
 
     @Override
-    public List<SeatType> GetPublishedSeatTypes(String conferenceId) {
+    public List<SeatType> getPublishedSeatTypes(String conferenceId) {
         return null;
     }
 
     @Override
-    public List<SeatTypeName> GetSeatTypeNames(List<String> seatTypes) {
+    public List<SeatTypeName> getSeatTypeNames(List<String> seatTypes) {
         return null;
     }
 //    public ConferenceDetails GetConferenceDetails(String slug) {

@@ -6,12 +6,12 @@ import org.enodeframework.eventing.DomainEvent;
  * 账户预操作已取消
  */
 public class TransactionPreparationCanceledEvent extends DomainEvent<String> {
-    public TransactionPreparation TransactionPreparation;
+    public TransactionPreparation transactionPreparation;
 
     public TransactionPreparationCanceledEvent() {
     }
 
     public TransactionPreparationCanceledEvent(TransactionPreparation transactionPreparation) {
-        TransactionPreparation = transactionPreparation;
+        this.transactionPreparation = transactionPreparation;
     }
 }

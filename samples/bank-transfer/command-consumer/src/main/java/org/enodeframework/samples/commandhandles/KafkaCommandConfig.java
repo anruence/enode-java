@@ -21,7 +21,7 @@ import org.springframework.retry.support.RetryTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP;
+import static org.enodeframework.samples.QueueProperties.DEFAULT_CONSUMER_GROUP0;
 import static org.enodeframework.samples.QueueProperties.KAFKA_SERVER;
 
 @Configuration
@@ -38,7 +38,7 @@ public class KafkaCommandConfig {
     @Bean
     public KafkaMessageListenerContainer<String, String> kafkaMessageListenerContainer(KafkaCommandListener commandListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(commandTopic);
-        properties.setGroupId(DEFAULT_CONSUMER_GROUP);
+        properties.setGroupId(DEFAULT_CONSUMER_GROUP0);
         RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(commandListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
         properties.setMissingTopicsFatal(false);
@@ -50,7 +50,7 @@ public class KafkaCommandConfig {
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, DEFAULT_CONSUMER_GROUP);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, DEFAULT_CONSUMER_GROUP0);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "100");
         props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "15000");

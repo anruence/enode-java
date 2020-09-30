@@ -5,5 +5,5 @@ import com.microsoft.conference.management.domain.models.ConferenceSlugIndex;
 public interface IConferenceSlugIndexRepository {
     void add(ConferenceSlugIndex index);
 
-    ConferenceSlugIndex FindSlugIndex(String slug);
+    ConferenceSlugIndex findSlugIndex(String slug);
 }

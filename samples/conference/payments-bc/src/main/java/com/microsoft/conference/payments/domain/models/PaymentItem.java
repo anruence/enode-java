@@ -3,13 +3,13 @@ package com.microsoft.conference.payments.domain.models;
 import java.math.BigDecimal;
 
 public class PaymentItem {
-    public String Id;
-    public String Description;
-    public BigDecimal Amount;
+    public String id;
+    public String description;
+    public BigDecimal amount;
 
     public PaymentItem(String description, BigDecimal amount) {
-        this.Id = "";
-        this.Description = description;
-        this.Amount = amount;
+        this.id = "";
+        this.description = description;
+        this.amount = amount;
     }
 }

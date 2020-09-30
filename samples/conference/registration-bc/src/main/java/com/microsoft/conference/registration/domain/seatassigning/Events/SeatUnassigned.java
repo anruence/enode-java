@@ -3,12 +3,12 @@ package com.microsoft.conference.registration.domain.seatassigning.Events;
 import org.enodeframework.eventing.DomainEvent;
 
 public class SeatUnassigned extends DomainEvent<String> {
-    public int Position;
+    public int position;
 
     public SeatUnassigned() {
     }
 
     public SeatUnassigned(int position) {
-        Position = position;
+        this.position = position;
     }
 }

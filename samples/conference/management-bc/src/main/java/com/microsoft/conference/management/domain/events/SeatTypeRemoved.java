@@ -3,12 +3,12 @@ package com.microsoft.conference.management.domain.events;
 import org.enodeframework.eventing.DomainEvent;
 
 public class SeatTypeRemoved extends DomainEvent<String> {
-    public String SeatTypeId;
+    public String seatTypeId;
 
     public SeatTypeRemoved() {
     }
 
     public SeatTypeRemoved(String seatTypeId) {
-        SeatTypeId = seatTypeId;
+        this.seatTypeId = seatTypeId;
     }
 }

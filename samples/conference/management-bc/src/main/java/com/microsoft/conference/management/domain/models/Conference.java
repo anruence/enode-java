@@ -22,29 +22,29 @@ import java.util.List;
 import java.util.Map;
 
 public class Conference extends AggregateRoot<String> {
-    private ConferenceInfo _info;
-    private List<SeatType> _seatTypes;
-    private Map<String, List<ReservationItem>> _reservations;
-    private boolean _isPublished;
+    private ConferenceInfo conferenceInfo;
+    private List<SeatType> seatTypes;
+    private Map<String, List<ReservationItem>> reservationsMap;
+    private boolean isPublished;
 
     public Conference(String id, ConferenceInfo info) {
         super(id);
         applyEvent(new ConferenceCreated(info));
     }
 
-    public void Update(ConferenceEditableInfo info) {
+    public void update(ConferenceEditableInfo info) {
         applyEvent(new ConferenceUpdated(info));
     }
 
-    public void Publish() {
-        if (_isPublished) {
+    public void publish() {
+        if (isPublished) {
             throw new RuntimeException("Conference already published.");
         }
         applyEvent(new ConferencePublished());
     }
 
-    public void Unpublish() {
-        if (!_isPublished) {
+    public void unpublish() {
+        if (!isPublished) {
             throw new RuntimeException("Conference already unpublished.");
         }
         applyEvent(new ConferenceUnpublished());
@@ -54,14 +54,14 @@ public class Conference extends AggregateRoot<String> {
         applyEvent(new SeatTypeAdded("", seatTypeInfo, quantity));
     }
 
-    public void UpdateSeat(String seatTypeId, SeatTypeInfo seatTypeInfo, int quantity) {
-        SeatType seatType = Linq.single(_seatTypes, x -> x.Id.equals(seatTypeId));
+    public void updateSeat(String seatTypeId, SeatTypeInfo seatTypeInfo, int quantity) {
+        SeatType seatType = Linq.single(seatTypes, x -> x.id.equals(seatTypeId));
         if (seatType == null) {
             throw new EnodeRuntimeException("Seat type not exist.");
         }
         applyEvent(new SeatTypeUpdated(seatTypeId, seatTypeInfo));
-        if (seatType.Quantity != quantity) {
-            int totalReservationQuantity = GetTotalReservationQuantity(seatType.Id);
+        if (seatType.quantity != quantity) {
+            int totalReservationQuantity = getTotalReservationQuantity(seatType.id);
             if (quantity < totalReservationQuantity) {
                 throw new RuntimeException(String.format("Quantity cannot be small than total reservation quantity:%s", totalReservationQuantity));
             }
@@ -70,20 +70,20 @@ public class Conference extends AggregateRoot<String> {
     }
 
     public void removeSeat(String seatTypeId) {
-        if (_isPublished) {
+        if (isPublished) {
             throw new RuntimeException("Can't delete seat type from a conference that has been published");
         }
-        if (HasReservation(seatTypeId)) {
+        if (hasReservation(seatTypeId)) {
             throw new RuntimeException("The seat type has reservation, cannot be remove.");
         }
         applyEvent(new SeatTypeRemoved(seatTypeId));
     }
 
-    public void MakeReservation(String reservationId, List<ReservationItem> reservationItems) {
-        if (!_isPublished) {
+    public void makeReservation(String reservationId, List<ReservationItem> reservationItems) {
+        if (!isPublished) {
             throw new RuntimeException("Can't make reservation to the conference which is not published.");
         }
-        if (_reservations.containsKey(reservationId)) {
+        if (reservationsMap.containsKey(reservationId)) {
             throw new RuntimeException(String.format("Duplicated reservation, reservationId:{}", reservationId));
         }
         if (reservationItems == null || reservationItems.size() == 0) {
@@ -91,124 +91,124 @@ public class Conference extends AggregateRoot<String> {
         }
         List<SeatAvailableQuantity> seatAvailableQuantities = new ArrayList<>();
         for (ReservationItem reservationItem : reservationItems) {
-            if (reservationItem.Quantity <= 0) {
-                throw new RuntimeException(String.format("Quantity must be bigger than than zero, reservationId:{}, seatTypeId:{}", reservationId, reservationItem.SeatTypeId));
+            if (reservationItem.quantity <= 0) {
+                throw new RuntimeException(String.format("Quantity must be bigger than than zero, reservationId:{}, seatTypeId:{}", reservationId, reservationItem.seatTypeId));
             }
-            SeatType seatType = _seatTypes.stream().filter(x -> x.Id == reservationItem.SeatTypeId).findFirst().orElse(null);
+            SeatType seatType = seatTypes.stream().filter(x -> x.id == reservationItem.seatTypeId).findFirst().orElse(null);
             if (seatType == null) {
-                throw new EnodeRuntimeException(String.format("Seat type '{}' not exist.", reservationItem.SeatTypeId));
+                throw new EnodeRuntimeException(String.format("Seat type '{}' not exist.", reservationItem.seatTypeId));
             }
-            int availableQuantity = seatType.Quantity - GetTotalReservationQuantity(seatType.Id);
-            if (availableQuantity < reservationItem.Quantity) {
+            int availableQuantity = seatType.quantity - getTotalReservationQuantity(seatType.id);
+            if (availableQuantity < reservationItem.quantity) {
                 throw new SeatInsufficientException(id, reservationId);
             }
-            seatAvailableQuantities.add(new SeatAvailableQuantity(seatType.Id, availableQuantity - reservationItem.Quantity));
+            seatAvailableQuantities.add(new SeatAvailableQuantity(seatType.id, availableQuantity - reservationItem.quantity));
         }
         applyEvent(new SeatsReserved(reservationId, reservationItems, seatAvailableQuantities));
     }
 
-    public void CommitReservation(String reservationId) {
-        if (_reservations.containsKey(reservationId)) {
-            List<ReservationItem> reservationItems = _reservations.get(reservationId);
+    public void commitReservation(String reservationId) {
+        if (reservationsMap.containsKey(reservationId)) {
+            List<ReservationItem> reservationItems = reservationsMap.get(reservationId);
             List<SeatQuantity> seatQuantities = new ArrayList<>();
             for (ReservationItem reservationItem : reservationItems) {
-                SeatType seatType = Linq.single(_seatTypes, (x -> x.Id == reservationItem.SeatTypeId));
-                seatQuantities.add(new SeatQuantity(seatType.Id, seatType.Quantity - reservationItem.Quantity));
+                SeatType seatType = Linq.single(seatTypes, (x -> x.id == reservationItem.seatTypeId));
+                seatQuantities.add(new SeatQuantity(seatType.id, seatType.quantity - reservationItem.quantity));
             }
             applyEvent(new SeatsReservationCommitted(reservationId, seatQuantities));
         }
     }
 
-    public void CancelReservation(String reservationId) {
-        if (_reservations.containsKey(reservationId)) {
-            List<ReservationItem> reservationItems = _reservations.get(reservationId);
+    public void cancelReservation(String reservationId) {
+        if (reservationsMap.containsKey(reservationId)) {
+            List<ReservationItem> reservationItems = reservationsMap.get(reservationId);
             List<SeatAvailableQuantity> seatAvailableQuantities = new ArrayList<>();
             for (ReservationItem reservationItem : reservationItems) {
-                SeatType seatType = Linq.single(_seatTypes, (x -> x.Id == reservationItem.SeatTypeId));
-                int availableQuantity = seatType.Quantity - GetTotalReservationQuantity(seatType.Id);
-                seatAvailableQuantities.add(new SeatAvailableQuantity(seatType.Id, availableQuantity + reservationItem.Quantity));
+                SeatType seatType = Linq.single(seatTypes, (x -> x.id == reservationItem.seatTypeId));
+                int availableQuantity = seatType.quantity - getTotalReservationQuantity(seatType.id);
+                seatAvailableQuantities.add(new SeatAvailableQuantity(seatType.id, availableQuantity + reservationItem.quantity));
             }
             applyEvent(new SeatsReservationCancelled(reservationId, seatAvailableQuantities));
         }
     }
 
-    private boolean HasReservation(String seatTypeId) {
-        return _reservations.values().stream().anyMatch(x -> x.stream().anyMatch(y -> y.SeatTypeId == seatTypeId));
+    private boolean hasReservation(String seatTypeId) {
+        return reservationsMap.values().stream().anyMatch(x -> x.stream().anyMatch(y -> y.seatTypeId == seatTypeId));
     }
 
-    private int GetTotalReservationQuantity(String seatTypeId) {
+    private int getTotalReservationQuantity(String seatTypeId) {
         int totalReservationQuantity = 0;
-        for (List<ReservationItem> reservation : _reservations.values()) {
-            ReservationItem reservationItem = Linq.singleOrDefault(reservation, x -> x.SeatTypeId == seatTypeId);
+        for (List<ReservationItem> reservation : reservationsMap.values()) {
+            ReservationItem reservationItem = Linq.singleOrDefault(reservation, x -> x.seatTypeId == seatTypeId);
             if (reservationItem != null) {
-                totalReservationQuantity += reservationItem.Quantity;
+                totalReservationQuantity += reservationItem.quantity;
             }
         }
         return totalReservationQuantity;
     }
 
-    private void Handle(ConferenceCreated evnt) {
+    private void handle(ConferenceCreated evnt) {
         id = evnt.getAggregateRootId();
-        _info = evnt.Info;
-        _seatTypes = new ArrayList<>();
-        _reservations = new HashMap<>();
-        _isPublished = false;
+        conferenceInfo = evnt.info;
+        seatTypes = new ArrayList<>();
+        reservationsMap = new HashMap<>();
+        isPublished = false;
     }
 
-    private void Handle(ConferenceUpdated evnt) {
-        ConferenceEditableInfo editableInfo = evnt.Info;
-        _info = new ConferenceInfo(
-                _info.AccessCode,
-                _info.Owner,
-                _info.Slug,
-                editableInfo.Name,
-                editableInfo.Description,
-                editableInfo.Location,
-                editableInfo.Tagline,
-                editableInfo.TwitterSearch,
-                editableInfo.StartDate,
-                editableInfo.EndDate);
+    private void handle(ConferenceUpdated evnt) {
+        ConferenceEditableInfo editableInfo = evnt.info;
+        conferenceInfo = new ConferenceInfo(
+                conferenceInfo.accessCode,
+                conferenceInfo.owner,
+                conferenceInfo.slug,
+                editableInfo.name,
+                editableInfo.description,
+                editableInfo.location,
+                editableInfo.tagline,
+                editableInfo.twitterSearch,
+                editableInfo.startDate,
+                editableInfo.endDate);
     }
 
-    private void Handle(ConferencePublished evnt) {
-        _isPublished = true;
+    private void handle(ConferencePublished evnt) {
+        isPublished = true;
     }
 
-    private void Handle(ConferenceUnpublished evnt) {
-        _isPublished = false;
+    private void handle(ConferenceUnpublished evnt) {
+        isPublished = false;
     }
 
-    private void Handle(SeatTypeAdded evnt) {
-        SeatType seatType = new SeatType(evnt.SeatTypeId, evnt.SeatTypeInfo);
-        seatType.Quantity = evnt.Quantity;
-        _seatTypes.add(seatType);
+    private void handle(SeatTypeAdded evnt) {
+        SeatType seatType = new SeatType(evnt.seatTypeId, evnt.seatTypeInfo);
+        seatType.quantity = evnt.quantity;
+        seatTypes.add(seatType);
     }
 
-    private void Handle(SeatTypeUpdated evnt) {
-        Linq.single(_seatTypes, x -> x.Id == evnt.SeatTypeId).Info = evnt.SeatTypeInfo;
+    private void handle(SeatTypeUpdated evnt) {
+        Linq.single(seatTypes, x -> x.id == evnt.seatTypeId).seatTypeInfo = evnt.seatTypeInfo;
     }
 
-    private void Handle(SeatTypeQuantityChanged evnt) {
-        Linq.single(_seatTypes, x -> x.Id == evnt.SeatTypeId).Quantity = evnt.Quantity;
+    private void handle(SeatTypeQuantityChanged evnt) {
+        Linq.single(seatTypes, x -> x.id == evnt.seatTypeId).quantity = evnt.quantity;
     }
 
-    private void Handle(SeatTypeRemoved evnt) {
+    private void handle(SeatTypeRemoved evnt) {
         // remove 指定的seatTypeId
-        _seatTypes.remove(Linq.single(_seatTypes, x -> x.Id.equals(evnt.SeatTypeId)));
+        seatTypes.remove(Linq.single(seatTypes, x -> x.id.equals(evnt.seatTypeId)));
     }
 
-    private void Handle(SeatsReserved evnt) {
-        _reservations.put(evnt.ReservationId, evnt.ReservationItems);
+    private void handle(SeatsReserved evnt) {
+        reservationsMap.put(evnt.reservationId, evnt.reservationItems);
     }
 
-    private void Handle(SeatsReservationCommitted evnt) {
-        _reservations.remove(evnt.ReservationId);
-        for (SeatQuantity seatQuantity : evnt.SeatQuantities) {
-            Linq.single(_seatTypes, (x -> x.Id == seatQuantity.SeatTypeId)).Quantity = seatQuantity.Quantity;
+    private void handle(SeatsReservationCommitted evnt) {
+        reservationsMap.remove(evnt.reservationId);
+        for (SeatQuantity seatQuantity : evnt.seatQuantities) {
+            Linq.single(seatTypes, (x -> x.id == seatQuantity.seatTypeId)).quantity = seatQuantity.quantity;
         }
     }
 
-    private void Handle(SeatsReservationCancelled evnt) {
-        _reservations.remove(evnt.ReservationId);
+    private void handle(SeatsReservationCancelled evnt) {
+        reservationsMap.remove(evnt.ReservationId);
     }
 }

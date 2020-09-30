@@ -12,19 +12,19 @@ public class TransferTransactionInfo {
     /**
      * 源账户
      */
-    public String SourceAccountId;
+    public String sourceAccountId;
     /**
      * 目标账户
      */
-    public String TargetAccountId;
+    public String targetAccountId;
     /**
      * 转账金额
      */
-    public double Amount;
+    public double amount;
 
     public TransferTransactionInfo(String sourceAccountId, String targetAccountId, double amount) {
-        SourceAccountId = sourceAccountId;
-        TargetAccountId = targetAccountId;
-        Amount = amount;
+        this.sourceAccountId = sourceAccountId;
+        this.targetAccountId = targetAccountId;
+        this.amount = amount;
     }
 }
