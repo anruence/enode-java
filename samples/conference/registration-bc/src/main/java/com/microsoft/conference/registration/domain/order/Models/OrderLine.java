@@ -1,4 +1,4 @@
-package com.microsoft.conference.registration.domain.orders.models;
+package com.microsoft.conference.registration.domain.order.models;
 
 import com.microsoft.conference.registration.domain.SeatQuantity;
 

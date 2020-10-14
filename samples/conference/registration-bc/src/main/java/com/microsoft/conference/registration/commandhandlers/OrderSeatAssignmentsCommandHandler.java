@@ -3,7 +3,7 @@ package com.microsoft.conference.registration.commandhandlers;
 import com.microsoft.conference.common.registration.commands.seatassignments.AssignSeat;
 import com.microsoft.conference.common.registration.commands.seatassignments.CreateSeatAssignments;
 import com.microsoft.conference.common.registration.commands.seatassignments.UnassignSeat;
-import com.microsoft.conference.registration.domain.orders.models.Order;
+import com.microsoft.conference.registration.domain.order.models.Order;
 import com.microsoft.conference.registration.domain.seatassigning.Models.Attendee;
 import com.microsoft.conference.registration.domain.seatassigning.Models.OrderSeatAssignments;
 import org.enodeframework.annotation.Command;

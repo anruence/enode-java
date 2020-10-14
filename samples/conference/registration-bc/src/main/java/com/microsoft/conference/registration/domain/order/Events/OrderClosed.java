@@ -1,4 +1,4 @@
-package com.microsoft.conference.registration.domain.orders.Events;
+package com.microsoft.conference.registration.domain.order.events;
 
 public class OrderClosed extends OrderEvent {
     public OrderClosed() {

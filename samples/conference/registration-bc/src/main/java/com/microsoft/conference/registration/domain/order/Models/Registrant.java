@@ -1,4 +1,4 @@
-package com.microsoft.conference.registration.domain.orders.Models;
+package com.microsoft.conference.registration.domain.order.models;
 
 import org.enodeframework.common.utilities.Ensure;
 

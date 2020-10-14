@@ -1,4 +1,4 @@
-package com.microsoft.conference.registration.domain.orders.Models;
+package com.microsoft.conference.registration.domain.order.models;
 
 public enum OrderStatus {
     Placed(1),                //订单已生成

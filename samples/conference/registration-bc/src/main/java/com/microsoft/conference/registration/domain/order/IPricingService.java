@@ -1,7 +1,7 @@
-package com.microsoft.conference.registration.domain.orders;
+package com.microsoft.conference.registration.domain.order;
 
 import com.microsoft.conference.registration.domain.SeatQuantity;
-import com.microsoft.conference.registration.domain.orders.models.OrderTotal;
+import com.microsoft.conference.registration.domain.order.models.OrderTotal;
 
 import java.util.List;
 

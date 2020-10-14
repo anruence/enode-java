@@ -1,6 +1,6 @@
-package com.microsoft.conference.registration.domain.orders.Events;
+package com.microsoft.conference.registration.domain.order.events;
 
-import com.microsoft.conference.registration.domain.orders.Models.OrderStatus;
+import com.microsoft.conference.registration.domain.order.models.OrderStatus;
 
 public class OrderReservationConfirmed extends OrderEvent {
     public OrderStatus orderStatus;

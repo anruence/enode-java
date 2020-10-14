@@ -1,6 +1,6 @@
-package com.microsoft.conference.registration.domain.orders.Events;
+package com.microsoft.conference.registration.domain.order.events;
 
-import com.microsoft.conference.registration.domain.orders.Models.OrderTotal;
+import com.microsoft.conference.registration.domain.order.models.OrderTotal;
 import org.enodeframework.eventing.DomainEvent;
 
 import java.util.Date;

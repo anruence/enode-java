@@ -1,4 +1,4 @@
-package com.microsoft.conference.registration.domain.orders.events;
+package com.microsoft.conference.registration.domain.order.events;
 
 import org.enodeframework.eventing.DomainEvent;
 

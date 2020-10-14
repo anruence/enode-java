@@ -1,15 +1,15 @@
-package com.microsoft.conference.registration.domain.orders.models;
+package com.microsoft.conference.registration.domain.order.models;
 
 import com.microsoft.conference.common.exception.InvalidOperationException;
 import com.microsoft.conference.registration.domain.SeatQuantity;
-import com.microsoft.conference.registration.domain.orders.events.OrderClosed;
-import com.microsoft.conference.registration.domain.orders.events.OrderExpired;
-import com.microsoft.conference.registration.domain.orders.events.OrderPaymentConfirmed;
-import com.microsoft.conference.registration.domain.orders.events.OrderPlaced;
-import com.microsoft.conference.registration.domain.orders.events.OrderRegistrantAssigned;
-import com.microsoft.conference.registration.domain.orders.events.OrderReservationConfirmed;
-import com.microsoft.conference.registration.domain.orders.events.OrderSuccessed;
-import com.microsoft.conference.registration.domain.orders.IPricingService;
+import com.microsoft.conference.registration.domain.order.events.OrderClosed;
+import com.microsoft.conference.registration.domain.order.events.OrderExpired;
+import com.microsoft.conference.registration.domain.order.events.OrderPaymentConfirmed;
+import com.microsoft.conference.registration.domain.order.events.OrderPlaced;
+import com.microsoft.conference.registration.domain.order.events.OrderRegistrantAssigned;
+import com.microsoft.conference.registration.domain.order.events.OrderReservationConfirmed;
+import com.microsoft.conference.registration.domain.order.events.OrderSuccessed;
+import com.microsoft.conference.registration.domain.order.IPricingService;
 import com.microsoft.conference.registration.domain.seatassigning.Models.OrderSeatAssignments;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.common.utilities.ObjectId;

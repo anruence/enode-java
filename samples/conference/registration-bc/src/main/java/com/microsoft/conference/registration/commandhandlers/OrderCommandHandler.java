@@ -8,8 +8,8 @@ import com.microsoft.conference.common.registration.commands.orders.MarkAsSucces
 import com.microsoft.conference.common.registration.commands.orders.PlaceOrder;
 import com.microsoft.conference.registration.domain.SeatQuantity;
 import com.microsoft.conference.registration.domain.SeatType;
-import com.microsoft.conference.registration.domain.orders.IPricingService;
-import com.microsoft.conference.registration.domain.orders.models.Order;
+import com.microsoft.conference.registration.domain.order.IPricingService;
+import com.microsoft.conference.registration.domain.order.models.Order;
 import org.enodeframework.annotation.Command;
 import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.commanding.ICommandContext;

@@ -15,11 +15,11 @@ import com.microsoft.conference.common.registration.commands.orders.ConfirmPayme
 import com.microsoft.conference.common.registration.commands.orders.ConfirmReservation;
 import com.microsoft.conference.common.registration.commands.orders.MarkAsSuccess;
 import com.microsoft.conference.common.registration.commands.seatassignments.CreateSeatAssignments;
-import com.microsoft.conference.registration.domain.orders.events.OrderExpired;
-import com.microsoft.conference.registration.domain.orders.events.OrderPaymentConfirmed;
-import com.microsoft.conference.registration.domain.orders.events.OrderPlaced;
-import com.microsoft.conference.registration.domain.orders.events.OrderSuccessed;
-import com.microsoft.conference.registration.domain.orders.models.OrderStatus;
+import com.microsoft.conference.registration.domain.order.events.OrderExpired;
+import com.microsoft.conference.registration.domain.order.events.OrderPaymentConfirmed;
+import com.microsoft.conference.registration.domain.order.events.OrderPlaced;
+import com.microsoft.conference.registration.domain.order.events.OrderSuccessed;
+import com.microsoft.conference.registration.domain.order.models.OrderStatus;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.common.io.Task;
 

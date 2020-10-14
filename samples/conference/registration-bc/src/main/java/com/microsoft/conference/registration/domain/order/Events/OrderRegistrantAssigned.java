@@ -1,6 +1,6 @@
-package com.microsoft.conference.registration.domain.orders.events;
+package com.microsoft.conference.registration.domain.order.events;
 
-import com.microsoft.conference.registration.domain.orders.models.Registrant;
+import com.microsoft.conference.registration.domain.order.models.Registrant;
 import org.enodeframework.eventing.DomainEvent;
 
 public class OrderRegistrantAssigned extends DomainEvent<String> {
