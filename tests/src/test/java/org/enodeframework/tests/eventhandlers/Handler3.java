@@ -16,7 +16,7 @@ public class Handler3 {
     private Logger logger = LoggerFactory.getLogger(Handler3.class);
 
     @Subscribe
-    public void HandleAsync(Event1 evnt) {
+    public void handleAsync(Event1 evnt) {
         logger.info("event1 handled by handler3.");
         EnodeCoreTest.HandlerTypes.computeIfAbsent(1, k -> new ArrayList<>()).add(getClass().getName());
 

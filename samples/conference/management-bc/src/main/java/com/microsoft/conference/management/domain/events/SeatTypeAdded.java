@@ -1,9 +1,13 @@
 package com.microsoft.conference.management.domain.events;
 
 import com.microsoft.conference.management.domain.models.SeatTypeInfo;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class SeatTypeAdded extends SeatTypeEvent {
-    public int quantity;
+    private int quantity;
 
     public SeatTypeAdded() {
     }

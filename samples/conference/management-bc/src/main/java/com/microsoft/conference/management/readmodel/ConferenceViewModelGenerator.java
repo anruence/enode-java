@@ -1,5 +1,12 @@
 package com.microsoft.conference.management.readmodel;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.microsoft.conference.common.dataobject.ConferenceDO;
+import com.microsoft.conference.common.dataobject.ReservationItemDO;
+import com.microsoft.conference.common.dataobject.SeatTypeDO;
+import com.microsoft.conference.common.mapper.ConferenceMapper;
+import com.microsoft.conference.common.mapper.ReservationItemMapper;
+import com.microsoft.conference.common.mapper.SeatTypeMapper;
 import com.microsoft.conference.management.domain.events.ConferenceCreated;
 import com.microsoft.conference.management.domain.events.ConferencePublished;
 import com.microsoft.conference.management.domain.events.ConferenceUnpublished;
@@ -11,7 +18,18 @@ import com.microsoft.conference.management.domain.events.SeatTypeUpdated;
 import com.microsoft.conference.management.domain.events.SeatsReservationCancelled;
 import com.microsoft.conference.management.domain.events.SeatsReservationCommitted;
 import com.microsoft.conference.management.domain.events.SeatsReserved;
+import com.microsoft.conference.management.domain.models.ConferenceInfo;
+import com.microsoft.conference.management.domain.models.ReservationItem;
+import com.microsoft.conference.management.domain.models.SeatAvailableQuantity;
+import com.microsoft.conference.management.domain.models.SeatQuantity;
 import org.enodeframework.annotation.Event;
+import org.enodeframework.annotation.Subscribe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * IMessageHandler<ConferenceCreated>,
@@ -28,387 +46,231 @@ import org.enodeframework.annotation.Event;
  */
 @Event
 public class ConferenceViewModelGenerator {
-    public void HandleAsync(ConferenceCreated evnt) {
-//        return TryInsertRecordAsync(connection = >
-//                {
-//                        var info = evnt.Info;
-//        return connection.InsertAsync(new
-//        {
-//            Id = evnt.getAggregateRootId(),
-//                    AccessCode = info.AccessCode,
-//                    OwnerName = info.Owner.Name,
-//                    OwnerEmail = info.Owner.Email,
-//                    Slug = info.Slug,
-//                    Name = info.Name,
-//                    Description = info.Description,
-//                    Location = info.Location,
-//                    Tagline = info.Tagline,
-//                    TwitterSearch = info.TwitterSearch,
-//                    StartDate = info.StartDate,
-//                    EndDate = info.EndDate,
-//                    IsPublished = 0,
-//                    Version = evnt.Version,
-//                    EventSequence = evnt.Sequence
-//        },ConfigSettings.ConferenceTable);
-//            });
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConferenceViewModelGenerator.class);
+
+    @Autowired
+    private ConferenceMapper conferenceMapper;
+
+    @Autowired
+    private SeatTypeMapper seatTypeMapper;
+
+    @Autowired
+    private ReservationItemMapper reservationItemMapper;
+
+    @Subscribe
+    public void handleAsync(ConferenceCreated evnt) {
+        ConferenceDO conferenceDO = ConferenceConvert.INSTANCE.toDO(evnt, evnt.getInfo());
+        ConferenceInfo conferenceInfo = evnt.getInfo();
+        conferenceDO.setConferenceId(evnt.getAggregateRootId());
+        conferenceDO.setOwnerName(conferenceInfo.getOwner().getName());
+        conferenceDO.setOwnerEmail(conferenceInfo.getOwner().getEmail());
+        try {
+            conferenceMapper.insert(conferenceDO);
+        } catch (DuplicateKeyException ex) {
+            LOGGER.error("insert conference failed", ex);
+            //主键冲突，忽略即可；出现这种情况，是因为同一个消息的重复处理
+        }
     }
 
-    public void HandleAsync(ConferenceUpdated evnt) {
-//        return TryUpdateRecordAsync(connection = >
-//                {
-//                        var info = evnt.Info;
-//        return connection.UpdateAsync(new
-//        {
-//            Name = info.Name,
-//                    Description = info.Description,
-//                    Location = info.Location,
-//                    Tagline = info.Tagline,
-//                    TwitterSearch = info.TwitterSearch,
-//                    StartDate = info.StartDate,
-//                    EndDate = info.EndDate,
-//                    IsPublished = 0,
-//                    Version = evnt.Version,
-//                    EventSequence = evnt.Sequence
-//        },new
-//        {
-//            Id = evnt.getAggregateRootId(),
-//                    Version = evnt.Version - 1
-//        },ConfigSettings.ConferenceTable);
-//            });
-
+    @Subscribe
+    public void handleAsync(ConferenceUpdated evnt) {
+        ConferenceDO conferenceDO = ConferenceConvert.INSTANCE.toDO(evnt, evnt.getInfo());
+        conferenceDO.setPublished((byte) 0);
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion() - 1);
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        CompletableFuture.runAsync(() -> conferenceMapper.update(conferenceDO, updateWrapper));
     }
 
-    public void HandleAsync(ConferencePublished evnt) {
-//        return TryUpdateRecordAsync(connection = >
-//                {
-//        return connection.UpdateAsync(new
-//        {
-//            IsPublished = 1,
-//                    Version = evnt.Version,
-//                    EventSequence = evnt.Sequence
-//        },new
-//        {
-//            Id = evnt.getAggregateRootId(),
-//                    Version = evnt.Version - 1
-//        },ConfigSettings.ConferenceTable);
-//            });
-
+    @Subscribe
+    public void handleAsync(ConferencePublished evnt) {
+        ConferenceDO conferenceDO = new ConferenceDO();
+        conferenceDO.setPublished((byte) 1);
+        conferenceDO.setConferenceId(evnt.getAggregateRootId());
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion() - 1);
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        CompletableFuture.runAsync(() -> conferenceMapper.update(conferenceDO, updateWrapper));
     }
 
-    public void HandleAsync(ConferenceUnpublished evnt) {
-//        return TryUpdateRecordAsync(connection = >
-//                {
-//        return connection.UpdateAsync(new
-//        {
-//            IsPublished = 0,
-//                    Version = evnt.Version,
-//                    EventSequence = evnt.Sequence
-//        },new
-//        {
-//            Id = evnt.getAggregateRootId(),
-//                    Version = evnt.Version - 1
-//        },ConfigSettings.ConferenceTable);
-//            });
-
+    @Subscribe
+    public void handleAsync(ConferenceUnpublished evnt) {
+        ConferenceDO conferenceDO = new ConferenceDO();
+        conferenceDO.setPublished((byte) 0);
+        conferenceDO.setVersion(evnt.getVersion());
+        conferenceDO.setEventSequence(evnt.getSequence());
+        conferenceDO.setConferenceId(evnt.getAggregateRootId());
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion() - 1);
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        CompletableFuture.runAsync(() -> conferenceMapper.update(conferenceDO, updateWrapper));
     }
 
-    public void HandleAsync(SeatTypeAdded evnt) {
-//        return TryTransactionAsync(async(connection, transaction) = >
-//                {
-//                        var effectedRows = await connection.UpdateAsync(new
-//                        {
-//                                Version = evnt.Version,
-//                                EventSequence = evnt.Sequence
-//                        }, new
-//                        {
-//                                Id = evnt.getAggregateRootId(),
-//                                Version = evnt.Version - 1
-//                        }, ConfigSettings.ConferenceTable, transaction);
-//        if (effectedRows == 1) {
-//            await connection.InsertAsync(new
-//            {
-//                Id = evnt.SeatTypeId,
-//                        Name = evnt.SeatTypeInfo.Name,
-//                        Description = evnt.SeatTypeInfo.Description,
-//                        Quantity = evnt.Quantity,
-//                        AvailableQuantity = evnt.Quantity,
-//                        Price = evnt.SeatTypeInfo.Price,
-//                        ConferenceId = evnt.getAggregateRootId(),
-//            },ConfigSettings.SeatTypeTable, transaction);
-//        }
-//            });
-
+    @Subscribe
+    public void handleAsync(SeatTypeAdded evnt) {
+        // transaction
+        ConferenceDO conferenceDO = new ConferenceDO();
+        conferenceDO.setVersion(evnt.getVersion());
+        conferenceDO.setEventSequence(evnt.getSequence());
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion() - 1);
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        int effectedRows = conferenceMapper.update(conferenceDO, updateWrapper);
+        if (effectedRows == 1) {
+            SeatTypeDO seatTypeDO = new SeatTypeDO();
+            seatTypeDO.setConferenceId(evnt.getAggregateRootId());
+            seatTypeDO.setAvailableQuantity(evnt.getQuantity());
+            seatTypeDO.setQuantity(evnt.getQuantity());
+            seatTypeDO.setPrice(evnt.getSeatTypeInfo().getPrice());
+            seatTypeDO.setName(evnt.getSeatTypeInfo().getName());
+            seatTypeDO.setDescription(evnt.getSeatTypeInfo().getDescription());
+            seatTypeMapper.insert(seatTypeDO);
+        }
     }
 
-    public void HandleAsync(SeatTypeUpdated evnt) {
-//        return TryTransactionAsync(async(connection, transaction) = >
-//                {
-//                        var effectedRows = await connection.UpdateAsync(new
-//                        {
-//                                Version = evnt.Version,
-//                                EventSequence = evnt.Sequence
-//                        }, new
-//                        {
-//                                Id = evnt.getAggregateRootId(),
-//                                Version = evnt.Version - 1
-//                        }, ConfigSettings.ConferenceTable, transaction);
-//
-//        if (effectedRows == 1) {
-//            await connection.UpdateAsync(new
-//            {
-//                Name = evnt.SeatTypeInfo.Name,
-//                        Description = evnt.SeatTypeInfo.Description,
-//                        Price = evnt.SeatTypeInfo.Price
-//            },new
-//            {
-//                ConferenceId = evnt.getAggregateRootId(),
-//                        Id = evnt.SeatTypeId
-//            },ConfigSettings.SeatTypeTable, transaction);
-//        }
-//            });
+    @Subscribe
+    public void handleAsync(SeatTypeUpdated evnt) {
+        ConferenceDO conferenceDO = new ConferenceDO();
+        conferenceDO.setVersion(evnt.getVersion());
+        conferenceDO.setEventSequence(evnt.getSequence());
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion() - 1);
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        int effectedRows = conferenceMapper.update(conferenceDO, updateWrapper);
 
+        if (effectedRows == 1) {
+            SeatTypeDO seatTypeDO = new SeatTypeDO();
+            seatTypeDO.setPrice(evnt.getSeatTypeInfo().getPrice());
+            seatTypeDO.setName(evnt.getSeatTypeInfo().getName());
+            seatTypeDO.setDescription(evnt.getSeatTypeInfo().getDescription());
+            LambdaUpdateWrapper<SeatTypeDO> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.eq(SeatTypeDO::getSeatTypeId, evnt.getSeatTypeId());
+            wrapper.eq(SeatTypeDO::getConferenceId, evnt.getAggregateRootId());
+            seatTypeMapper.update(seatTypeDO, wrapper);
+        }
     }
 
-    public void HandleAsync(SeatTypeQuantityChanged evnt) {
-//        return TryTransactionAsync(async(connection, transaction) = >
-//                {
-//                        var effectedRows = await connection.UpdateAsync(new
-//                        {
-//                                EventSequence = evnt.Sequence
-//                        }, new
-//                        {
-//                                Id = evnt.getAggregateRootId(),
-//                                Version = evnt.Version,
-//                                EventSequence = evnt.Sequence - 1
-//                        }, ConfigSettings.ConferenceTable, transaction);
-//
-//        if (effectedRows == 1) {
-//            await connection.UpdateAsync(new
-//            {
-//                Quantity = evnt.Quantity,
-//                        AvailableQuantity = evnt.AvailableQuantity
-//            },new
-//            {
-//                ConferenceId = evnt.getAggregateRootId(),
-//                        Id = evnt.SeatTypeId
-//            },ConfigSettings.SeatTypeTable, transaction);
-//        }
-//            });
-
+    @Subscribe
+    public void handleAsync(SeatTypeQuantityChanged evnt) {
+        ConferenceDO conferenceDO = new ConferenceDO();
+        conferenceDO.setVersion(evnt.getVersion());
+        conferenceDO.setEventSequence(evnt.getSequence());
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion());
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        updateWrapper.eq(ConferenceDO::getEventSequence, evnt.getSequence() - 1);
+        int effectedRows = conferenceMapper.update(conferenceDO, updateWrapper);
+        if (effectedRows == 1) {
+            SeatTypeDO seatTypeDO = new SeatTypeDO();
+            seatTypeDO.setQuantity(evnt.getQuantity());
+            seatTypeDO.setAvailableQuantity(evnt.getAvailableQuantity());
+            LambdaUpdateWrapper<SeatTypeDO> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.eq(SeatTypeDO::getSeatTypeId, evnt.getSeatTypeId());
+            wrapper.eq(SeatTypeDO::getConferenceId, evnt.getAggregateRootId());
+            seatTypeMapper.update(seatTypeDO, wrapper);
+        }
     }
 
-    public void HandleAsync(SeatTypeRemoved evnt) {
-//        return TryTransactionAsync(async(connection, transaction) = >
-//                {
-//                        var effectedRows = await connection.UpdateAsync(new
-//                        {
-//                                Version = evnt.Version,
-//                                EventSequence = evnt.Sequence
-//                        }, new
-//                        {
-//                                Id = evnt.getAggregateRootId(),
-//                                Version = evnt.Version - 1
-//                        }, ConfigSettings.ConferenceTable, transaction);
-//        if (effectedRows == 1) {
-//            await connection.DeleteAsync(new
-//            {
-//                ConferenceId = evnt.getAggregateRootId(),
-//                        Id = evnt.SeatTypeId
-//            },ConfigSettings.SeatTypeTable, transaction);
-//        }
-//            });
-
+    @Subscribe
+    public void handleAsync(SeatTypeRemoved evnt) {
+        ConferenceDO conferenceDO = new ConferenceDO();
+        conferenceDO.setVersion(evnt.getVersion());
+        conferenceDO.setEventSequence(evnt.getSequence());
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion());
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        int effectedRows = conferenceMapper.update(conferenceDO, updateWrapper);
+        if (effectedRows == 1) {
+            LambdaUpdateWrapper<SeatTypeDO> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.eq(SeatTypeDO::getConferenceId, evnt.getAggregateRootId());
+            wrapper.eq(SeatTypeDO::getSeatTypeId, evnt.getSeatTypeId());
+            seatTypeMapper.delete(wrapper);
+        }
     }
 
-    public void HandleAsync(SeatsReserved evnt) {
-//        return TryTransactionAsync(async(connection, transaction) = >
-//                {
-//                        var effectedRows = await connection.UpdateAsync(new
-//                        {
-//                                Version = evnt.Version,
-//                                EventSequence = evnt.Sequence
-//                        }, new
-//                        {
-//                                Id = evnt.getAggregateRootId(),
-//                                Version = evnt.Version - 1
-//                        }, ConfigSettings.ConferenceTable, transaction);
-//
-//        if (effectedRows == 1) {
-//            var tasks = new List<Task>();
-//
-//            //插入预定记录
-//            for (var reservationItem in evnt.ReservationItems)
-//            {
-//                tasks.add(connection.InsertAsync(new
-//                {
-//                    ConferenceId = evnt.getAggregateRootId(),
-//                            ReservationId = evnt.ReservationId,
-//                            SeatTypeId = reservationItem.SeatTypeId,
-//                            Quantity = reservationItem.Quantity
-//                },ConfigSettings.ReservationItemsTable, transaction));
-//            }
-//
-//            //更新位置的可用数量
-//            for (var seatAvailableQuantity in evnt.SeatAvailableQuantities)
-//            {
-//                tasks.add(connection.UpdateAsync(new
-//                {
-//                    AvailableQuantity = seatAvailableQuantity.AvailableQuantity
-//                },new
-//                {
-//                    ConferenceId = evnt.getAggregateRootId(),
-//                            Id = seatAvailableQuantity.SeatTypeId
-//                },ConfigSettings.SeatTypeTable, transaction));
-//            }
-//
-//            await Task.WhenAll(tasks);
-//        }
-//            });
-
+    @Subscribe
+    public void handleAsync(SeatsReserved evnt) {
+        ConferenceDO conferenceDO = new ConferenceDO();
+        conferenceDO.setVersion(evnt.getVersion());
+        conferenceDO.setEventSequence(evnt.getSequence());
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion());
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        int effectedRows = conferenceMapper.update(conferenceDO, updateWrapper);
+        if (effectedRows == 1) {
+            //插入预定记录
+            for (ReservationItem reservationItem : evnt.getReservationItems()) {
+                ReservationItemDO reservationItemDO = new ReservationItemDO();
+                reservationItemDO.setConferenceId(evnt.getAggregateRootId());
+                reservationItemDO.setReservationId(evnt.getReservationId());
+                reservationItemDO.setQuantity(reservationItem.getQuantity());
+                reservationItemDO.setSeatTypeId(reservationItem.getSeatTypeId());
+                reservationItemMapper.insert(reservationItemDO);
+            }
+            //更新位置的可用数量
+            for (SeatAvailableQuantity availableQuantity : evnt.getSeatAvailableQuantities()) {
+                SeatTypeDO seatTypeDO = new SeatTypeDO();
+                seatTypeDO.setAvailableQuantity(availableQuantity.getAvailableQuantity());
+                LambdaUpdateWrapper<SeatTypeDO> wrapper = new LambdaUpdateWrapper<>();
+                wrapper.eq(SeatTypeDO::getSeatTypeId, availableQuantity.getSeatTypeId());
+                wrapper.eq(SeatTypeDO::getConferenceId, evnt.getAggregateRootId());
+                seatTypeMapper.update(seatTypeDO, wrapper);
+            }
+        }
     }
 
-    public void HandleAsync(SeatsReservationCommitted evnt) {
-//        return TryTransactionAsync(async(connection, transaction) = >
-//                {
-//                        var effectedRows = await connection.UpdateAsync(new
-//                        {
-//                                Version = evnt.Version,
-//                                EventSequence = evnt.Sequence
-//                        }, new
-//                        {
-//                                Id = evnt.getAggregateRootId(),
-//                                Version = evnt.Version - 1
-//                        }, ConfigSettings.ConferenceTable, transaction);
-//
-//        if (effectedRows == 1) {
-//            var tasks = new List<Task>();
-//
-//            //删除预定记录
-//            tasks.add(connection.DeleteAsync(new
-//            {
-//                ConferenceId = evnt.getAggregateRootId(),
-//                        ReservationId = evnt.ReservationId
-//            },ConfigSettings.ReservationItemsTable, transaction));
-//
-//            //更新位置的数量
-//            for (var seatQuantity in evnt.SeatQuantities)
-//            {
-//                tasks.add(connection.UpdateAsync(new
-//                {
-//                    Quantity = seatQuantity.Quantity
-//                },new
-//                {
-//                    ConferenceId = evnt.getAggregateRootId(),
-//                            Id = seatQuantity.SeatTypeId
-//                },ConfigSettings.SeatTypeTable, transaction));
-//            }
-//
-//            await Task.WhenAll(tasks);
-//        }
-//            });
-
+    @Subscribe
+    public void handleAsync(SeatsReservationCommitted evnt) {
+        ConferenceDO conferenceDO = new ConferenceDO();
+        conferenceDO.setVersion(evnt.getVersion());
+        conferenceDO.setEventSequence(evnt.getSequence());
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion());
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        int effectedRows = conferenceMapper.update(conferenceDO, updateWrapper);
+        if (effectedRows == 1) {
+            LambdaUpdateWrapper<ReservationItemDO> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.eq(ReservationItemDO::getReservationId, evnt.getReservationId());
+            wrapper.eq(ReservationItemDO::getConferenceId, evnt.getAggregateRootId());
+            //删除预定记录
+            reservationItemMapper.delete(wrapper);
+            //更新位置的数量
+            for (SeatQuantity seatQuantity : evnt.getSeatQuantities()) {
+                SeatTypeDO seatTypeDO = new SeatTypeDO();
+                seatTypeDO.setQuantity(seatQuantity.getQuantity());
+                LambdaUpdateWrapper<SeatTypeDO> seatTypeWrapper = new LambdaUpdateWrapper<>();
+                seatTypeWrapper.eq(SeatTypeDO::getSeatTypeId, seatQuantity.getSeatTypeId());
+                seatTypeWrapper.eq(SeatTypeDO::getConferenceId, evnt.getAggregateRootId());
+                seatTypeMapper.update(seatTypeDO, seatTypeWrapper);
+            }
+        }
     }
 
-    public void HandleAsync(SeatsReservationCancelled evnt) {
-//        return TryTransactionAsync(async(connection, transaction) = >
-//                {
-//                        var effectedRows = await connection.UpdateAsync(new
-//                        {
-//                                Version = evnt.Version,
-//                                EventSequence = evnt.Sequence
-//                        }, new
-//                        {
-//                                Id = evnt.getAggregateRootId(),
-//                                Version = evnt.Version - 1
-//                        }, ConfigSettings.ConferenceTable, transaction);
-//
-//        if (effectedRows == 1) {
-//            var tasks = new List<Task>();
-//
-//            //删除预定记录
-//            tasks.add(connection.DeleteAsync(new
-//            {
-//                ConferenceId = evnt.getAggregateRootId(),
-//                        ReservationId = evnt.ReservationId
-//            },ConfigSettings.ReservationItemsTable, transaction));
-//
-//            //更新位置的可用数量
-//            for (var seatAvailableQuantity in evnt.SeatAvailableQuantities)
-//            {
-//                tasks.add(connection.UpdateAsync(new
-//                {
-//                    AvailableQuantity = seatAvailableQuantity.AvailableQuantity
-//                },new
-//                {
-//                    ConferenceId = evnt.getAggregateRootId(),
-//                            Id = seatAvailableQuantity.SeatTypeId
-//                },ConfigSettings.SeatTypeTable, transaction));
-//            }
-//
-//            await Task.WhenAll(tasks);
-//        }
-//            });
-
+    @Subscribe
+    public void handleAsync(SeatsReservationCancelled evnt) {
+        ConferenceDO conferenceDO = new ConferenceDO();
+        conferenceDO.setVersion(evnt.getVersion());
+        conferenceDO.setEventSequence(evnt.getSequence());
+        LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion());
+        updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
+        int effectedRows = conferenceMapper.update(conferenceDO, updateWrapper);
+        if (effectedRows == 1) {
+            LambdaUpdateWrapper<ReservationItemDO> wrapper = new LambdaUpdateWrapper<>();
+            wrapper.eq(ReservationItemDO::getReservationId, evnt.getReservationId());
+            wrapper.eq(ReservationItemDO::getConferenceId, evnt.getAggregateRootId());
+            //删除预定记录
+            reservationItemMapper.delete(wrapper);
+            //更新位置的可用数量
+            for (SeatAvailableQuantity seatQuantity : evnt.getSeatAvailableQuantities()) {
+                SeatTypeDO seatTypeDO = new SeatTypeDO();
+                seatTypeDO.setAvailableQuantity(seatQuantity.getAvailableQuantity());
+                LambdaUpdateWrapper<SeatTypeDO> seatTypeWrapper = new LambdaUpdateWrapper<>();
+                seatTypeWrapper.eq(SeatTypeDO::getSeatTypeId, seatQuantity.getSeatTypeId());
+                seatTypeWrapper.eq(SeatTypeDO::getConferenceId, evnt.getAggregateRootId());
+                seatTypeMapper.update(seatTypeDO, seatTypeWrapper);
+            }
+        }
     }
-//    private  void TryInsertRecordAsync(Func<IDbConnection, Task<long>> action) {
-//        try {
-//            using(var connection = GetConnection())
-//            {
-//                await action (connection);
-//                return void.Success;
-//            }
-//        } catch (SqlException ex) {
-//            if (ex.Number == 2627)  //主键冲突，忽略即可；出现这种情况，是因为同一个消息的重复处理
-//            {
-//                return void.Success;
-//            }
-//            throw ;
-//        }
-//    }
-//    private async void TryUpdateRecordAsync(Func<IDbConnection, Task<int>> action) {
-//        using(var connection = GetConnection())
-//        {
-//            await action (connection);
-//            return void.Success;
-//        }
-//    }
-//    private async void TryTransactionAsync(Func<IDbConnection, IDbTransaction, Task> action) {
-//        using(var connection = GetConnection())
-//        {
-//            await connection.OpenAsync().ConfigureAwait(false);
-//            var transaction = await Task.Run<SqlTransaction> (() = > connection.BeginTransaction()).
-//            ConfigureAwait(false);
-//            try {
-//                await action (connection, transaction).ConfigureAwait(false);
-//                await Task.Run(() = > transaction.Commit()).ConfigureAwait(false);
-//                return void.Success;
-//            } catch
-//            {
-//                transaction.Rollback();
-//                throw ;
-//            }
-//        }
-//    }
-//
-//    private async void TryTransactionAsync(Func<IDbConnection, IDbTransaction, List<Task>> actions) {
-//        using(var connection = GetConnection())
-//        {
-//            await connection.OpenAsync().ConfigureAwait(false);
-//            var transaction = await Task.Run<SqlTransaction> (() = > connection.BeginTransaction()).
-//            ConfigureAwait(false);
-//            try {
-//                await Task.WhenAll(actions(connection, transaction)).ConfigureAwait(false);
-//                await Task.Run(() = > transaction.Commit()).ConfigureAwait(false);
-//                return void.Success;
-//            } catch
-//            {
-//                transaction.Rollback();
-//                throw ;
-//            }
-//        }
-//    }
-//
-//    private SqlConnection GetConnection() {
-//        return new SqlConnection(ConfigSettings.ConferenceConnectionString);
-//    }
 }

@@ -10,6 +10,7 @@ import com.microsoft.conference.management.domain.events.SeatsReservationCommitt
 import com.microsoft.conference.management.domain.events.SeatsReserved;
 import com.microsoft.conference.management.domain.publishableexceptions.SeatInsufficientException;
 import org.enodeframework.annotation.Event;
+import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,40 +28,41 @@ import static org.enodeframework.common.io.Task.await;
  */
 @Event
 public class ConferenceMessagePublisher {
+
     @Autowired
     private IMessagePublisher<IApplicationMessage> messagePublisher;
 
-    public ConferenceMessagePublisher(IMessagePublisher<IApplicationMessage> messagePublisher) {
-        this.messagePublisher = messagePublisher;
-    }
-
+    @Subscribe
     public void handleAsync(SeatsReserved evnt) {
         SeatsReservedMessage message = new SeatsReservedMessage();
         message.conferenceId = evnt.getAggregateRootId();
-        message.reservationId = evnt.reservationId;
-        message.reservationItems = evnt.reservationItems.stream().map(x -> {
+        message.reservationId = evnt.getReservationId();
+        message.reservationItems = evnt.getReservationItems().stream().map(x -> {
             SeatReservationItem item = new SeatReservationItem();
-            item.seatTypeId = x.seatTypeId;
-            item.quantity = x.quantity;
+            item.seatTypeId = x.getSeatTypeId();
+            item.quantity = x.getQuantity();
             return item;
         }).collect(Collectors.toList());
         await(messagePublisher.publishAsync(message));
     }
 
+    @Subscribe
     public void handleAsync(SeatsReservationCommitted evnt) {
         SeatsReservationCommittedMessage message = new SeatsReservationCommittedMessage();
         message.conferenceId = evnt.getAggregateRootId();
-        message.reservationId = evnt.reservationId;
+        message.reservationId = evnt.getReservationId();
         await(messagePublisher.publishAsync(message));
     }
 
+    @Subscribe
     public void handleAsync(SeatsReservationCancelled evnt) {
         SeatsReservationCancelledMessage message = new SeatsReservationCancelledMessage();
         message.conferenceId = evnt.getAggregateRootId();
-        message.reservationId = evnt.ReservationId;
+        message.reservationId = evnt.getReservationId();
         await(messagePublisher.publishAsync(message));
     }
 
+    @Subscribe
     public void handleAsync(SeatInsufficientException exception) {
         SeatInsufficientMessage message = new SeatInsufficientMessage();
         message.conferenceId = exception.conferenceId;

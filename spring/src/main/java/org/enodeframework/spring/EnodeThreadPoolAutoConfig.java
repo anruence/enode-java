@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ThreadFactory;
@@ -15,8 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 异步线程池
  */
-@Configuration
-public class EnodeThreadPoolConfig {
+public class EnodeThreadPoolAutoConfig {
 
     @Value("${async.executor.thread.core.size:10}")
     private final int corePoolSize = 10;
@@ -33,7 +31,7 @@ public class EnodeThreadPoolConfig {
     private final CallerRunsPolicy callerRunsPolicy = new ThreadPoolExecutor.CallerRunsPolicy();
     //线程池对拒绝任务(无线程可用)的处理策略
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnodeThreadPoolConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnodeThreadPoolAutoConfig.class);
 
     private static final Thread.UncaughtExceptionHandler MAIL_BOX_MESSAGE_EXECUTOR_EXCEPTION_HANDLER =
             (t, e) -> LOGGER.error("Uncaught Exception from asyncCommandExecutor. threadName = {}", t.getName(), e);

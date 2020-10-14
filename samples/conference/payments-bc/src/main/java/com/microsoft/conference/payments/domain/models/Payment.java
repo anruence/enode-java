@@ -17,6 +17,9 @@ public class Payment extends AggregateRoot<String> {
     private BigDecimal totalAmount;
     private List<PaymentItem> paymentItems;
 
+    public Payment() {
+    }
+
     public Payment(String id, String orderId, String conferenceId, String description, BigDecimal totalAmount, List<PaymentItem> items) {
         super(id);
         applyEvent(new PaymentInitiated(orderId, conferenceId, description, totalAmount, items));
@@ -38,12 +41,12 @@ public class Payment extends AggregateRoot<String> {
 
     private void handle(PaymentInitiated evnt) {
         id = evnt.getAggregateRootId();
-        orderId = evnt.orderId;
-        conferenceId = evnt.conferenceId;
-        description = evnt.description;
-        totalAmount = evnt.totalAmount;
+        orderId = evnt.getOrderId();
+        conferenceId = evnt.getConferenceId();
+        description = evnt.getDescription();
+        totalAmount = evnt.getTotalAmount();
         state = PaymentState.Initiated;
-        paymentItems = evnt.paymentItems;
+        paymentItems = evnt.getPaymentItems();
     }
 
     private void handle(PaymentCompleted evnt) {

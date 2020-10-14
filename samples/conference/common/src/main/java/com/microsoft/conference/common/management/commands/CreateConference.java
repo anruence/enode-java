@@ -1,19 +1,23 @@
 package com.microsoft.conference.common.management.commands;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.enodeframework.commanding.Command;
 
 import java.util.Date;
 
+@Getter
+@Setter
 public class CreateConference extends Command<String> {
-    public String accessCode;
-    public String ownerName;
-    public String ownerEmail;
-    public String slug;
-    public String name;
-    public String description;
-    public String location;
-    public String tagline;
-    public String twitterSearch;
-    public Date startDate;
-    public Date endDate;
+    private String accessCode;
+    private String ownerName;
+    private String ownerEmail;
+    private String slug;
+    private String name;
+    private String description;
+    private String location;
+    private String tagline;
+    private String twitterSearch;
+    private Date startDate;
+    private Date endDate;
 }

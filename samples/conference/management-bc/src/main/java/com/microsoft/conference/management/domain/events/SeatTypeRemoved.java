@@ -1,9 +1,13 @@
 package com.microsoft.conference.management.domain.events;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.enodeframework.eventing.DomainEvent;
 
+@Getter
+@Setter
 public class SeatTypeRemoved extends DomainEvent<String> {
-    public String seatTypeId;
+    private String seatTypeId;
 
     public SeatTypeRemoved() {
     }

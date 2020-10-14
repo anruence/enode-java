@@ -83,6 +83,7 @@ public class KafkaEventConfig {
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
+
     @Bean
     public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(applicationTopic);

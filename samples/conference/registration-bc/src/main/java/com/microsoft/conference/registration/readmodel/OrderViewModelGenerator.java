@@ -4,7 +4,7 @@ package com.microsoft.conference.registration.readmodel;
  *
  */
 public class OrderViewModelGenerator {
-//    public void HandleAsync(OrderPlaced evnt) {
+//    public void handleAsync(OrderPlaced evnt) {
 //        return TryTransactionAsync((connection, transaction) =>
 //        {
 //            var tasks = new List<Task>();
@@ -39,7 +39,7 @@ public class OrderViewModelGenerator {
 //        });
 //    }
 //
-//    public void HandleAsync(OrderRegistrantAssigned evnt) {
+//    public void handleAsync(OrderRegistrantAssigned evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -56,7 +56,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public void HandleAsync(OrderReservationConfirmed evnt) {
+//    public void handleAsync(OrderReservationConfirmed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -71,7 +71,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public void HandleAsync(OrderPaymentConfirmed evnt) {
+//    public void handleAsync(OrderPaymentConfirmed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -86,7 +86,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public void HandleAsync(OrderExpired evnt) {
+//    public void handleAsync(OrderExpired evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -101,7 +101,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public void HandleAsync(OrderClosed evnt) {
+//    public void handleAsync(OrderClosed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new
@@ -116,7 +116,7 @@ public class OrderViewModelGenerator {
 //            });
 //    }
 //
-//    public void HandleAsync(OrderSuccessed evnt) {
+//    public void handleAsync(OrderSuccessed evnt) {
 //        return TryUpdateRecordAsync(connection = >
 //                {
 //        return connection.UpdateAsync(new

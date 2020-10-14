@@ -55,28 +55,28 @@ public class TestCommandHandler {
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, CreateInheritTestAggregateCommand command) {
+    public void handleAsync(ICommandContext context, CreateInheritTestAggregateCommand command) {
         context.add(new InheritTestAggregate(command.getAggregateRootId(), command.Title));
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, ChangeInheritTestAggregateTitleCommand command) {
+    public void handleAsync(ICommandContext context, ChangeInheritTestAggregateTitleCommand command) {
         InheritTestAggregate testAggregate = Task.await(context.getAsync(command.getAggregateRootId(), InheritTestAggregate.class));
         testAggregate.ChangeMyTitle(command.Title);
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, ChangeNothingCommand command) {
+    public void handleAsync(ICommandContext context, ChangeNothingCommand command) {
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, SetResultCommand command) {
+    public void handleAsync(ICommandContext context, SetResultCommand command) {
         context.add(new TestAggregate(command.getAggregateRootId(), ""));
         context.setResult(command.Result);
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, ChangeMultipleAggregatesCommand command) {
+    public void handleAsync(ICommandContext context, ChangeMultipleAggregatesCommand command) {
         TestAggregate testAggregate1 = Task.await(context.getAsync(command.getAggregateRootId1(), TestAggregate.class));
         TestAggregate testAggregate2 = Task.await(context.getAsync(command.getAggregateRootId2(), TestAggregate.class));
         testAggregate1.testEvents();
@@ -84,57 +84,57 @@ public class TestCommandHandler {
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, ThrowExceptionCommand command) throws Exception {
+    public void handleAsync(ICommandContext context, ThrowExceptionCommand command) throws Exception {
         throw new Exception("CommandException");
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, AggregateThrowExceptionCommand command) throws Exception {
+    public void handleAsync(ICommandContext context, AggregateThrowExceptionCommand command) throws Exception {
         TestAggregate testAggregate = Task.await(context.getAsync(command.aggregateRootId, TestAggregate.class));
         testAggregate.ThrowException(command.PublishableException);
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, TestEventPriorityCommand command) {
+    public void handleAsync(ICommandContext context, TestEventPriorityCommand command) {
         TestAggregate testAggregate = Task.await(context.getAsync(command.aggregateRootId, TestAggregate.class));
         testAggregate.testEvents();
     }
 
     @Subscribe
-    public void HandleAsync1(ICommandContext context, TwoHandlersCommand command) {
+    public void handleAsync1(ICommandContext context, TwoHandlersCommand command) {
     }
 
     @Subscribe
-    public void HandleAsync2(ICommandContext context, TwoHandlersCommand command) {
+    public void handleAsync2(ICommandContext context, TwoHandlersCommand command) {
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, BaseCommand command) {
+    public void handleAsync(ICommandContext context, BaseCommand command) {
         context.setResult("ResultFromBaseCommand");
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, ChildCommand command) {
+    public void handleAsync(ICommandContext context, ChildCommand command) {
         context.setResult("ResultFromChildCommand");
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, NotCheckAsyncHandlerExistCommand command) {
+    public void handleAsync(ICommandContext context, NotCheckAsyncHandlerExistCommand command) {
 
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, NotCheckAsyncHandlerExistWithResultCommand command) {
+    public void handleAsync(ICommandContext context, NotCheckAsyncHandlerExistWithResultCommand command) {
         context.setApplicationMessage(new TestApplicationMessage(command.getAggregateRootId()));
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, AsyncHandlerBaseCommand command) {
+    public void handleAsync(ICommandContext context, AsyncHandlerBaseCommand command) {
 
     }
 
     @Subscribe
-    public void HandleAsync(ICommandContext context, AsyncHandlerChildCommand command) {
+    public void handleAsync(ICommandContext context, AsyncHandlerChildCommand command) {
 
     }
 }

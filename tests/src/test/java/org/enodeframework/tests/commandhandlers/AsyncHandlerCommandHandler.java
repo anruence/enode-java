@@ -34,10 +34,10 @@ public class AsyncHandlerCommandHandler {
     }
 
     @Subscribe
-    public void HandleAsync1(TwoAsyncHandlersCommand command) {
+    public void handleAsync1(TwoAsyncHandlersCommand command) {
     }
 
     @Subscribe
-    public void HandleAsync2(TwoAsyncHandlersCommand command) {
+    public void handleAsync2(TwoAsyncHandlersCommand command) {
     }
 }

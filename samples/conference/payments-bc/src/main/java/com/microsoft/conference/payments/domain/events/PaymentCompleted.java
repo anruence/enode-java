@@ -1,11 +1,15 @@
 package com.microsoft.conference.payments.domain.events;
 
 import com.microsoft.conference.payments.domain.models.Payment;
+import lombok.Getter;
+import lombok.Setter;
 import org.enodeframework.eventing.DomainEvent;
 
+@Getter
+@Setter
 public class PaymentCompleted extends DomainEvent<String> {
-    public String orderId;
-    public String conferenceId;
+    private String orderId;
+    private String conferenceId;
 
     public PaymentCompleted() {
     }

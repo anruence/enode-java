@@ -1,14 +1,17 @@
 package com.microsoft.conference.registration.domain.orders;
 
 import com.microsoft.conference.registration.domain.SeatQuantity;
-import com.microsoft.conference.registration.domain.orders.Models.OrderLine;
-import com.microsoft.conference.registration.domain.orders.Models.OrderTotal;
+import com.microsoft.conference.registration.domain.orders.models.OrderLine;
+import com.microsoft.conference.registration.domain.orders.models.OrderTotal;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class DefaultPricingService implements IPricingService {
+
     @Override
     public OrderTotal calculateTotal(String conferenceId, List<SeatQuantity> seatQuantityList) {
         List<OrderLine> orderLines = new ArrayList<>();

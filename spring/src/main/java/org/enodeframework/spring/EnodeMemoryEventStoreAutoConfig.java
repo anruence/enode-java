@@ -5,7 +5,7 @@ import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
-@ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "memory")
+@ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "memory", matchIfMissing = true)
 public class EnodeMemoryEventStoreAutoConfig {
 
     @Bean

@@ -1,18 +1,23 @@
 package com.microsoft.conference.management.readmodel;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 public class OrderDTO {
-    public String orderId;
-    public String conferenceId;
-    public String accessCode;
-    public String registrantFirstName;
-    public String registrantLastName;
-    public String registrantEmail;
-    public BigDecimal totalAmount;
-    public int status;
+    private String orderId;
+    private String conferenceId;
+    private String accessCode;
+    private String registrantFirstName;
+    private String registrantLastName;
+    private String registrantEmail;
+    private BigDecimal totalAmount;
+    private int status;
     private List<AttendeeDTO> attendees = new ArrayList<>();
 
     public List<AttendeeDTO> getAttendees() {

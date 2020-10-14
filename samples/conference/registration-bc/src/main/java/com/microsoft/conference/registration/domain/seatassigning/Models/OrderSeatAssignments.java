@@ -2,7 +2,7 @@ package com.microsoft.conference.registration.domain.seatassigning.Models;
 
 import com.microsoft.conference.common.Linq;
 import com.microsoft.conference.common.exception.ArgumentOutOfRangeException;
-import com.microsoft.conference.registration.domain.orders.Models.OrderLine;
+import com.microsoft.conference.registration.domain.orders.models.OrderLine;
 import com.microsoft.conference.registration.domain.seatassigning.Events.OrderSeatAssignmentsCreated;
 import com.microsoft.conference.registration.domain.seatassigning.Events.SeatAssigned;
 import com.microsoft.conference.registration.domain.seatassigning.Events.SeatUnassigned;

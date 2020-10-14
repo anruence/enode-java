@@ -27,12 +27,3 @@ public class Order {
         return orderLines;
     }
 }
-
-class OrderLine {
-    public String orderId;
-    public String seatTypeId;
-    public String seatTypeName;
-    public int quantity;
-    public BigDecimal unitPrice;
-    public BigDecimal lineTotal;
-}

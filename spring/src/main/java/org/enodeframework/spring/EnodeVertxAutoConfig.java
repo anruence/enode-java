@@ -21,13 +21,13 @@ public class EnodeVertxAutoConfig {
     @Qualifier("enodeVertx")
     protected Vertx vertx;
 
-    @Value("${spring.enode.server.port:2019}")
-    private int port;
-
-    @Bean(name = "enodeVertx")
+    @Bean(value = "enodeVertx")
     public Vertx enodeVertx() {
         return Vertx.vertx();
     }
+
+    @Value("${spring.enode.server.port:2019}")
+    private int port;
 
     @Bean(name = "defaultCommandResultProcessor")
     @ConditionalOnProperty(prefix = "spring.enode", name = "server.port")

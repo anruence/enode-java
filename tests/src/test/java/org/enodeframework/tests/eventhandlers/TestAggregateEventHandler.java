@@ -11,7 +11,7 @@ public class TestAggregateEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(TestAggregateEventHandler.class);
 
     @Subscribe
-    public void HandleAsync(TestAggregateCreated evnt) {
+    public void handleAsync(TestAggregateCreated evnt) {
         logger.info("TestAggregateCreated evnt executed:{}", evnt.Title);
 
     }

@@ -1,17 +1,21 @@
 package com.microsoft.conference.payments.domain.events;
 
 import com.microsoft.conference.payments.domain.models.PaymentItem;
+import lombok.Getter;
+import lombok.Setter;
 import org.enodeframework.eventing.DomainEvent;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+@Getter
+@Setter
 public class PaymentInitiated extends DomainEvent<String> {
-    public String orderId;
-    public String conferenceId;
-    public String description;
-    public BigDecimal totalAmount;
-    public List<PaymentItem> paymentItems;
+    private String orderId;
+    private String conferenceId;
+    private String description;
+    private BigDecimal totalAmount;
+    private List<PaymentItem> paymentItems;
 
     public PaymentInitiated() {
     }

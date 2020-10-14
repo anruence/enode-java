@@ -17,7 +17,7 @@ public class Handler1 {
 
     @Priority(4)
     @Subscribe
-    public void HandleAsync(Event1 evnt) {
+    public void handleAsync(Event1 evnt) {
         logger.info("event1 handled by handler1.");
         EnodeCoreTest.HandlerTypes.computeIfAbsent(1, k -> new ArrayList<>()).add(getClass().getName());
     }
