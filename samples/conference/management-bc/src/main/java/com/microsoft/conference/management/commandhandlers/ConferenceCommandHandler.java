@@ -10,14 +10,14 @@ import com.microsoft.conference.common.management.commands.RemoveSeatType;
 import com.microsoft.conference.common.management.commands.UnpublishConference;
 import com.microsoft.conference.common.management.commands.UpdateConference;
 import com.microsoft.conference.common.management.commands.UpdateSeatType;
-import com.microsoft.conference.management.domain.models.Conference;
-import com.microsoft.conference.management.domain.models.ConferenceEditableInfo;
-import com.microsoft.conference.management.domain.models.ConferenceInfo;
-import com.microsoft.conference.management.domain.models.ConferenceOwner;
-import com.microsoft.conference.management.domain.models.ConferenceSlugIndex;
-import com.microsoft.conference.management.domain.models.ReservationItem;
-import com.microsoft.conference.management.domain.models.SeatTypeInfo;
-import com.microsoft.conference.management.domain.services.RegisterConferenceSlugService;
+import com.microsoft.conference.management.domain.model.Conference;
+import com.microsoft.conference.management.domain.model.ConferenceEditableInfo;
+import com.microsoft.conference.management.domain.model.ConferenceInfo;
+import com.microsoft.conference.management.domain.model.ConferenceOwner;
+import com.microsoft.conference.management.domain.model.ConferenceSlugIndex;
+import com.microsoft.conference.management.domain.model.ReservationItem;
+import com.microsoft.conference.management.domain.model.SeatTypeInfo;
+import com.microsoft.conference.management.domain.service.RegisterConferenceSlugService;
 import org.enodeframework.annotation.Command;
 import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.commanding.ICommandContext;
@@ -31,7 +31,6 @@ import static org.enodeframework.common.io.Task.await;
 @Command
 public class ConferenceCommandHandler {
 
-    @Autowired
     private ILockService lockService;
 
     @Autowired
@@ -39,21 +38,24 @@ public class ConferenceCommandHandler {
 
     @Subscribe
     public void handleAsync(ICommandContext context, CreateConference command) {
-        lockService.executeInLock(ConferenceSlugIndex.class.getName(), () -> {
-            Conference conference = new Conference(command.getAggregateRootId(), new ConferenceInfo(
-                    command.getAccessCode(),
-                    new ConferenceOwner(command.getOwnerName(), command.getOwnerEmail()),
-                    command.getSlug(),
-                    command.getName(),
-                    command.getDescription(),
-                    command.getLocation(),
-                    command.getTagline(),
-                    command.getTwitterSearch(),
-                    command.getStartDate(),
-                    command.getEndDate()));
-            registerConferenceSlugService.RegisterSlug(command.getId(), conference.getId(), command.getSlug());
-            context.add(conference);
-        });
+        execInternal(context,command);
+//        lockService.executeInLock(ConferenceSlugIndex.class.getName(), () -> execInternal(context, command));
+    }
+
+    private void execInternal(ICommandContext context, CreateConference command){
+        Conference conference = new Conference(command.getAggregateRootId(), new ConferenceInfo(
+                command.getAccessCode(),
+                new ConferenceOwner(command.getOwnerName(), command.getOwnerEmail()),
+                command.getSlug(),
+                command.getName(),
+                command.getDescription(),
+                command.getLocation(),
+                command.getTagline(),
+                command.getTwitterSearch(),
+                command.getStartDate(),
+                command.getEndDate()));
+        registerConferenceSlugService.RegisterSlug(command.getId(), conference.getId(), command.getSlug());
+        context.add(conference);
     }
 
     @Subscribe

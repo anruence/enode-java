@@ -15,27 +15,25 @@ public class ExceptionHandlingControllerAdvice {
 
     @ResponseBody
     @ExceptionHandler(value = Exception.class)
-    public Result errorHandlerForUncaughtException(Exception exception) {
-
+    public ActionResult errorHandlerForUncaughtException(Exception exception) {
         log.error("Unhandled exception occurs.", exception);
-        return Result.error("500", exception.getMessage());
+        return ActionResult.error("500", exception.getMessage());
     }
 
     @ResponseBody
     @ExceptionHandler(value = BindException.class)
-    public Result errorBindException(BindException exception) {
+    public ActionResult errorBindException(BindException exception) {
         log.error("BindException", exception);
-        String errors = exception.getFieldErrors().stream().map(e -> e.getField() + e.getDefaultMessage()).collect(
-                Collectors.joining(","));
-        return Result.error("500", errors);
+        String errors = exception.getFieldErrors().stream().map(e -> e.getField() + e.getDefaultMessage()).collect(Collectors.joining(","));
+        return ActionResult.error("500", errors);
     }
 
     @ResponseBody
     @ExceptionHandler(value = MissingServletRequestParameterException.class)
-    public Result errorMissingServletRequestParameterException(
+    public ActionResult errorMissingServletRequestParameterException(
             MissingServletRequestParameterException exception) {
         log.error("MissingServletRequestParameterException", exception);
-        return Result.error("500", exception.getMessage());
+        return ActionResult.error("500", exception.getMessage());
     }
 
 }

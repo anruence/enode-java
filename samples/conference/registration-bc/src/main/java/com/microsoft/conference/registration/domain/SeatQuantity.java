@@ -1,8 +1,13 @@
 package com.microsoft.conference.registration.domain;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class SeatQuantity {
-    public SeatType seatType;
-    public int quantity;
+    private SeatType seatType;
+    private int quantity;
 
     public SeatQuantity() {
     }

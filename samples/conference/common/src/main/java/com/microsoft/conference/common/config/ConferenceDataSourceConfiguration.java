@@ -9,20 +9,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.optimize.JsqlParser
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 
-@Configuration
 @MapperScan(basePackages = {"com.microsoft.conference"},
-        sqlSessionFactoryRef = "conferenceSqlSessionFactory",
-        sqlSessionTemplateRef = "conferenceSqlSessionTemplate"
+        sqlSessionFactoryRef = "conferenceSqlSessionFactory"
 )
 public class ConferenceDataSourceConfiguration {
 
@@ -74,21 +70,9 @@ public class ConferenceDataSourceConfiguration {
         return sqlSessionFactoryBean.getObject();
     }
 
-    @Bean(name = "conferenceSqlSessionTemplate")
-    public SqlSessionTemplate conferenceSqlSessionTemplate(
-            @Qualifier("conferenceSqlSessionFactory") SqlSessionFactory conferenceSqlSessionFactory) {
-        return new SqlSessionTemplate(conferenceSqlSessionFactory);
-    }
-
     @Bean(name = "conferenceSqlTransactionManager")
     public DataSourceTransactionManager conferenceSqlTransactionManager(
             @Qualifier("conferenceSqlDataSource") DataSource conferenceSqlDataSource) {
         return new DataSourceTransactionManager(conferenceSqlDataSource);
-    }
-
-    @Bean(name = "conferenceSqlTransactionTemplate")
-    public TransactionTemplate conferenceSqlTransactionTemplate(
-            @Qualifier("conferenceSqlTransactionManager") DataSourceTransactionManager conferenceSqlTransactionManager) {
-        return new TransactionTemplate(conferenceSqlTransactionManager);
     }
 }

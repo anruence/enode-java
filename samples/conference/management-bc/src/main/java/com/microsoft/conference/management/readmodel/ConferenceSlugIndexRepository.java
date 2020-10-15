@@ -3,8 +3,8 @@ package com.microsoft.conference.management.readmodel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.microsoft.conference.common.dataobject.ConferenceSlugIndexDO;
 import com.microsoft.conference.common.mapper.ConferenceSlugIndexMapper;
-import com.microsoft.conference.management.domain.models.ConferenceSlugIndex;
-import com.microsoft.conference.management.domain.repositories.IConferenceSlugIndexRepository;
+import com.microsoft.conference.management.domain.model.ConferenceSlugIndex;
+import com.microsoft.conference.management.domain.repository.IConferenceSlugIndexRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
