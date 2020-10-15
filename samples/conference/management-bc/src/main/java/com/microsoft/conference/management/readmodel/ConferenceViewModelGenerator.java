@@ -7,21 +7,21 @@ import com.microsoft.conference.common.dataobject.SeatTypeDO;
 import com.microsoft.conference.common.mapper.ConferenceMapper;
 import com.microsoft.conference.common.mapper.ReservationItemMapper;
 import com.microsoft.conference.common.mapper.SeatTypeMapper;
-import com.microsoft.conference.management.domain.events.ConferenceCreated;
-import com.microsoft.conference.management.domain.events.ConferencePublished;
-import com.microsoft.conference.management.domain.events.ConferenceUnpublished;
-import com.microsoft.conference.management.domain.events.ConferenceUpdated;
-import com.microsoft.conference.management.domain.events.SeatTypeAdded;
-import com.microsoft.conference.management.domain.events.SeatTypeQuantityChanged;
-import com.microsoft.conference.management.domain.events.SeatTypeRemoved;
-import com.microsoft.conference.management.domain.events.SeatTypeUpdated;
-import com.microsoft.conference.management.domain.events.SeatsReservationCancelled;
-import com.microsoft.conference.management.domain.events.SeatsReservationCommitted;
-import com.microsoft.conference.management.domain.events.SeatsReserved;
-import com.microsoft.conference.management.domain.models.ConferenceInfo;
-import com.microsoft.conference.management.domain.models.ReservationItem;
-import com.microsoft.conference.management.domain.models.SeatAvailableQuantity;
-import com.microsoft.conference.management.domain.models.SeatQuantity;
+import com.microsoft.conference.management.domain.event.ConferenceCreated;
+import com.microsoft.conference.management.domain.event.ConferencePublished;
+import com.microsoft.conference.management.domain.event.ConferenceUnpublished;
+import com.microsoft.conference.management.domain.event.ConferenceUpdated;
+import com.microsoft.conference.management.domain.event.SeatTypeAdded;
+import com.microsoft.conference.management.domain.event.SeatTypeQuantityChanged;
+import com.microsoft.conference.management.domain.event.SeatTypeRemoved;
+import com.microsoft.conference.management.domain.event.SeatTypeUpdated;
+import com.microsoft.conference.management.domain.event.SeatsReservationCancelled;
+import com.microsoft.conference.management.domain.event.SeatsReservationCommitted;
+import com.microsoft.conference.management.domain.event.SeatsReserved;
+import com.microsoft.conference.management.domain.model.ConferenceInfo;
+import com.microsoft.conference.management.domain.model.ReservationItem;
+import com.microsoft.conference.management.domain.model.SeatAvailableQuantity;
+import com.microsoft.conference.management.domain.model.SeatQuantity;
 import org.enodeframework.annotation.Event;
 import org.enodeframework.annotation.Subscribe;
 import org.slf4j.Logger;
@@ -76,7 +76,7 @@ public class ConferenceViewModelGenerator {
     @Subscribe
     public void handleAsync(ConferenceUpdated evnt) {
         ConferenceDO conferenceDO = ConferenceConvert.INSTANCE.toDO(evnt, evnt.getInfo());
-        conferenceDO.setPublished((byte) 0);
+        conferenceDO.setIsPublished((byte) 0);
         LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion() - 1);
         updateWrapper.eq(ConferenceDO::getConferenceId, evnt.getAggregateRootId());
@@ -86,7 +86,7 @@ public class ConferenceViewModelGenerator {
     @Subscribe
     public void handleAsync(ConferencePublished evnt) {
         ConferenceDO conferenceDO = new ConferenceDO();
-        conferenceDO.setPublished((byte) 1);
+        conferenceDO.setIsPublished((byte) 1);
         conferenceDO.setConferenceId(evnt.getAggregateRootId());
         LambdaUpdateWrapper<ConferenceDO> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(ConferenceDO::getVersion, evnt.getVersion() - 1);
@@ -97,7 +97,7 @@ public class ConferenceViewModelGenerator {
     @Subscribe
     public void handleAsync(ConferenceUnpublished evnt) {
         ConferenceDO conferenceDO = new ConferenceDO();
-        conferenceDO.setPublished((byte) 0);
+        conferenceDO.setIsPublished((byte) 0);
         conferenceDO.setVersion(evnt.getVersion());
         conferenceDO.setEventSequence(evnt.getSequence());
         conferenceDO.setConferenceId(evnt.getAggregateRootId());

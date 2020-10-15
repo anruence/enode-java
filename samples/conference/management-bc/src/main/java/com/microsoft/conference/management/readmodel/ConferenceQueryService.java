@@ -9,20 +9,24 @@ import com.microsoft.conference.common.mapper.ConferenceMapper;
 import com.microsoft.conference.common.mapper.OrderMapper;
 import com.microsoft.conference.common.mapper.OrderSeatAssignmentMapper;
 import com.microsoft.conference.common.mapper.SeatTypeMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Service
 public class ConferenceQueryService {
 
+    @Autowired
     private ConferenceMapper conferenceMapper;
-
+    @Autowired
     private SeatTypeMapper seatTypeMapper;
-
+    @Autowired
     private OrderMapper orderMapper;
-
+    @Autowired
     private OrderSeatAssignmentMapper orderSeatAssignmentMapper;
 
     public ConferenceDTO findConference(String slug) {

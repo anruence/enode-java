@@ -4,7 +4,7 @@ import com.microsoft.conference.common.management.commands.AddSeatType;
 import com.microsoft.conference.common.management.commands.CreateConference;
 import com.microsoft.conference.common.management.commands.UpdateConference;
 import com.microsoft.conference.common.management.commands.UpdateSeatType;
-import com.microsoft.conference.management.domain.models.SeatType;
+import com.microsoft.conference.management.domain.model.SeatType;
 import com.microsoft.conference.management.readmodel.ConferenceDTO;
 import com.microsoft.conference.management.readmodel.SeatTypeDTO;
 import org.mapstruct.Mapper;

@@ -46,7 +46,7 @@ public class BankAccountCommandHandler {
      * 验证账户是否合法
      */
     @Subscribe
-    public IApplicationMessage handleAsync(ValidateAccountCommand command) {
+    public IApplicationMessage handleAsync(ICommandContext context, ValidateAccountCommand command) {
         IApplicationMessage applicationMessage = new AccountValidatePassedMessage(command.getAggregateRootId(), command.transactionId);
         //此处应该会调用外部接口验证账号是否合法，这里仅仅简单通过账号是否以INVALID字符串开头来判断是否合法；根据账号的合法性，返回不同的应用层消息
         if (command.getAggregateRootId().startsWith("INVALID")) {
