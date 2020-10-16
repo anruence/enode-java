@@ -10,8 +10,9 @@ import com.microsoft.conference.registration.domain.order.model.OrderLine;
 import com.microsoft.conference.registration.domain.seatassigning.event.OrderSeatAssignmentsCreated;
 import com.microsoft.conference.registration.domain.seatassigning.model.Attendee;
 import com.microsoft.conference.registration.domain.seatassigning.model.SeatAssignment;
-import com.microsoft.conference.registration.readmodel.service.Order;
-import com.microsoft.conference.registration.readmodel.service.OrderSeatAssignment;
+import com.microsoft.conference.registration.readmodel.service.OrderVO;
+import com.microsoft.conference.registration.readmodel.service.OrderLineVO;
+import com.microsoft.conference.registration.readmodel.service.OrderSeatAssignmentVO;
 import com.microsoft.conference.registration.readmodel.service.SeatTypeVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -34,11 +35,11 @@ public interface OrderConvert {
     @Mapping(source = "email", target = "attendeeEmail")
     OrderSeatAssignmentDO toSeatAssignment(Attendee assigned);
 
-    OrderSeatAssignment toSeatAssignment(OrderSeatAssignmentDO assignmentDO);
+    OrderSeatAssignmentVO toSeatAssignment(OrderSeatAssignmentDO assignmentDO);
 
     SeatTypeVO toDO(SeatTypeDO seatTypeDO);
 
-    Order toOrder(OrderDO orderDO);
+    OrderVO toOrder(OrderDO orderDO);
 
     @Mapping(source = "evnt.aggregateRootId", target = "orderId")
     @Mapping(source = "evnt.accessCode", target = "accessCode")
@@ -65,5 +66,5 @@ public interface OrderConvert {
     @Mapping(target = "id", ignore = true)
     OrderDO toDO(OrderRegistrantAssigned evnt);
 
-    com.microsoft.conference.registration.readmodel.service.OrderLine toOrderLine(OrderLineDO lineDO);
+    OrderLineVO toOrderLine(OrderLineDO lineDO);
 }

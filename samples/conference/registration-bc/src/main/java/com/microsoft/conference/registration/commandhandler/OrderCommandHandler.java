@@ -29,10 +29,10 @@ public class OrderCommandHandler {
     @Subscribe
     public void handleAsync(ICommandContext context, PlaceOrder command) {
         List<SeatQuantity> seats = new ArrayList<>();
-        command.seatInfos.forEach(x -> seats.add(new SeatQuantity(new SeatType(x.seatType, x.seatName, x.unitPrice), x.quantity)));
+        command.getSeatInfos().forEach(x -> seats.add(new SeatQuantity(new SeatType(x.seatType, x.seatName, x.unitPrice), x.quantity)));
         context.addAsync(new Order(
                 command.aggregateRootId,
-                command.conferenceId,
+                command.getConferenceId(),
                 seats,
                 pricingService));
     }

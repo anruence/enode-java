@@ -31,13 +31,11 @@ public class AccountEventHandler {
     @Subscribe
     public void handleAsync(AccountValidatePassedMessage message) {
         logger.info("账户验证已通过，交易ID：{}，账户：{}", message.transactionId, message.accountId);
-
     }
 
     @Subscribe
     public void handleAsync(AccountValidateFailedMessage message) {
         logger.info("无效的银行账户，交易ID：{}，账户：{}，理由：{}", message.transactionId, message.accountId, message.reason);
-
     }
 
     @Subscribe

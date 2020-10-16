@@ -49,7 +49,7 @@ public class PaymentViewModelGenerator {
         PaymentDO paymentDO = new PaymentDO();
         paymentDO.setState(PaymentState.Completed);
         paymentDO.setVersion(evnt.getVersion());
-        LambdaUpdateWrapper<PaymentDO> updateWrapper = new LambdaUpdateWrapper();
+        LambdaUpdateWrapper<PaymentDO> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(PaymentDO::getPaymentId, evnt.getAggregateRootId());
         updateWrapper.eq(PaymentDO::getVersion, evnt.getVersion() - 1);
         paymentMapper.update(paymentDO, updateWrapper);
@@ -60,7 +60,7 @@ public class PaymentViewModelGenerator {
         PaymentDO paymentDO = new PaymentDO();
         paymentDO.setState(PaymentState.Rejected);
         paymentDO.setVersion(evnt.getVersion());
-        LambdaUpdateWrapper<PaymentDO> updateWrapper = new LambdaUpdateWrapper();
+        LambdaUpdateWrapper<PaymentDO> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(PaymentDO::getPaymentId, evnt.getAggregateRootId());
         updateWrapper.eq(PaymentDO::getVersion, evnt.getVersion() - 1);
         paymentMapper.update(paymentDO, updateWrapper);

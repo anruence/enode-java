@@ -5,25 +5,24 @@ import lombok.Setter;
 
 import java.util.Date;
 
-/// <summary>
-/// Editable information about a conference.
-/// </summary>
+// Editable information about a conference.
 @Getter
 @Setter
 public class EditableConferenceInfo {
 
-    public String Name;
+    private String name;
 
-    public String Description;
+    private String description;
 
-    public String Location;
+    private String location;
 
-    public String Tagline;
-    public String TwitterSearch;
+    private String tagline;
 
-    public Date StartDate;
+    private String twitterSearch;
 
-    public Date EndDate;
+    private Date startDate;
 
-    public Boolean IsPublished;
+    private Date endDate;
+
+    private Boolean isPublished;
 }

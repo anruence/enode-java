@@ -1,5 +1,6 @@
 package com.microsoft.conference.management.controller;
 
+import com.microsoft.conference.common.ActionResult;
 import com.microsoft.conference.common.exception.InvalidOperationException;
 import com.microsoft.conference.common.management.commands.AddSeatType;
 import com.microsoft.conference.common.management.commands.CreateConference;

@@ -13,4 +13,5 @@ public interface ConferenceConvert {
     ConferenceDetails toDetail(ConferenceDO evnt);
 
     ConferenceAlias toAlias(ConferenceDO evnt);
+
 }
