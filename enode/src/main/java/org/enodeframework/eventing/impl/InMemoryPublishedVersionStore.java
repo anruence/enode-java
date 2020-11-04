@@ -14,12 +14,6 @@ public class InMemoryPublishedVersionStore implements IPublishedVersionStore {
     private final ConcurrentMap<String, Integer> versionDict = new ConcurrentHashMap<>();
 
     @Override
-    public CompletableFuture<Integer> updatePublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId, int publishedVersion) {
-        versionDict.put(buildKey(processorName, aggregateRootId), publishedVersion);
-        return CompletableFuture.completedFuture(1);
-    }
-
-    @Override
     public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
         int publishedVersion = versionDict.getOrDefault(buildKey(processorName, aggregateRootId), 0);
         return CompletableFuture.completedFuture(publishedVersion);

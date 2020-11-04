@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
-import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.EnqueueMessageResult;
 import org.enodeframework.eventing.IProcessingEventProcessor;
 import org.enodeframework.eventing.IPublishedVersionStore;
@@ -137,24 +136,12 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
         IOHelper.tryAsyncActionRecursivelyWithoutResult("DispatchProcessingMessageAsync",
                 () -> messageDispatcher.dispatchMessagesAsync(processingEvent.getMessage().getEvents()),
                 result -> {
-                    updatePublishedVersionAsync(processingEvent, 0);
+                    processingEvent.complete();
                 },
                 () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", processingEvent.getMessage().getId(), processingEvent.getMessage().getClass().getName(), processingEvent.getMessage().getAggregateRootId(), processingEvent.getMessage().getVersion()),
                 null,
                 retryTimes, true);
     }
-
-    private void updatePublishedVersionAsync(ProcessingEvent processingEvent, int retryTimes) {
-        DomainEventStreamMessage message = processingEvent.getMessage();
-        IOHelper.tryAsyncActionRecursivelyWithoutResult("UpdatePublishedVersionAsync",
-                () -> publishedVersionStore.updatePublishedVersionAsync(name, message.getAggregateRootTypeName(), message.getAggregateRootId(), message.getVersion()),
-                result -> {
-                    processingEvent.complete();
-                },
-                () -> String.format("DomainEventStreamMessage [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", message.getId(), message.getClass().getName(), message.getAggregateRootId(), message.getVersion()),
-                null, retryTimes, true);
-    }
-
 
     private void processToRefreshAggregateRootMailBoxs() {
         List<ProcessingEventMailBox> remainingMailboxList = Lists.newArrayList();

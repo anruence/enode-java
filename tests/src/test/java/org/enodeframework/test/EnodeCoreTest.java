@@ -537,9 +537,6 @@ public class EnodeCoreTest extends AbstractTest {
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
-        _logger.info("----create_concurrent_conflict_and_then_update_many_times_test, _eventStore.appendAsync success");
-        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
-        _logger.info("----create_concurrent_conflict_and_then_update_many_times_test, UpdatePublishedversion()Async success");
         //执行创建聚合根的命令
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.setId(commandId);
@@ -551,7 +548,6 @@ public class EnodeCoreTest extends AbstractTest {
         CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-        _logger.info("----create_concurrent_conflict_and_then_update_many_times_test, _commandService.executeAsync create success");
         List<ICommand> commandList = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             ChangeTestAggregateTitleCommand command1 = new ChangeTestAggregateTitleCommand();
@@ -599,7 +595,6 @@ public class EnodeCoreTest extends AbstractTest {
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
-        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
         List<ICommand> commandList = new ArrayList<>();
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.setId(commandId);
@@ -657,7 +652,7 @@ public class EnodeCoreTest extends AbstractTest {
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
-        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
+//        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
         //执行创建聚合根的命令
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = aggregateId;
@@ -722,7 +717,7 @@ public class EnodeCoreTest extends AbstractTest {
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
-        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 2));
+//        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 2));
         List<ICommand> commandList = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             ChangeTestAggregateTitleCommand command1 = new ChangeTestAggregateTitleCommand();
@@ -815,19 +810,22 @@ public class EnodeCoreTest extends AbstractTest {
         ManualResetEvent waitHandle = new ManualResetEvent(false);
         List<Integer> versionList = new ArrayList<>();
 
-        //模拟从publishedVersionStore中取到的publishedVersion不是最新的场景
+        // 1,3 先处理，此时版本为1的先处理成功，3等待
+
         processor.process(new ProcessingEvent(message1, new DomainEventStreamProcessContext(message1, waitHandle, versionList)));
         processor.process(new ProcessingEvent(message3, new DomainEventStreamProcessContext(message3, waitHandle, versionList)));
 
-        //等待5秒后更新publishedVersion为2
         Task.sleep(5000);
-        Task.await(publishedVersionStore.updatePublishedVersionAsync(processor.getName(), TestAggregate.class.getName(), aggregate.getUniqueId(), 2));
 
-        //等待Enode内部自动检测到最新的publishedVersion，并继续处理mailbox waitingList中的version=3的事件
+        // message2 开始处理
+        processor.process(new ProcessingEvent(message2, new DomainEventStreamProcessContext(message2, waitHandle, versionList)));
+
+        //等待Enode内部自动检测到最新的version，并继续处理mailbox waitingList中的version=3的事件
         waitHandle.waitOne();
 
         Assert.assertEquals(1, versionList.get(0).intValue());
-        Assert.assertEquals(3, versionList.get(1).intValue());
+        Assert.assertEquals(2, versionList.get(1).intValue());
+        Assert.assertEquals(3, versionList.get(2).intValue());
 
         //再等待3秒，等待Enode内部异步打印Removed problem aggregate的日志
         Task.sleep(3000);
@@ -860,10 +858,6 @@ public class EnodeCoreTest extends AbstractTest {
         DomainEventStream eventStream = new DomainEventStream(ObjectId.generateNewStringId(), aggregateId, TestAggregate.class.getName(), new Date(), evnts, Maps.newHashMap());
         eventStreamList.add(eventStream);
         eventStore.batchAppendAsync(eventStreamList).join();
-
-        String eventProcessorName = "DefaultEventProcessor";
-        publishedVersionStore.updatePublishedVersionAsync(eventProcessorName, TestAggregate.class.getName(), aggregateId, 2).join();
-
         //执行修改聚合根的命令
         ChangeTestAggregateTitleWhenDirtyCommand command2 = new ChangeTestAggregateTitleWhenDirtyCommand();
         command2.setAggregateRootId(aggregateId);
