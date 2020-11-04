@@ -18,25 +18,36 @@ enode是一个基于【DDD】【CQRS】【ES】【EDA】【In-Memory】架构风
 - enode实现了CQRS架构面临的大部分技术问题，让开发者可以专注于业务逻辑和业务流程的开发，而无需关心纯技术问题
 
 ## 系统设计
+
 > [enode执行过程](http://anruence.com/2019/06/13/enode-arch/)
-## 注意点
+
+## 更新历史（注意点）
+
 ### 为什么采用异步单一长连接?
 因为服务的现状大都是服务提供者少，通常只有几台机器，而服务的消费者多，可能整个网站都在访问该服务。
 在我们的这个场景里面，command-web只需要很少的机器就能满足前端大量的请求，command-consumer和event-consumer的机器相对较多些。
 如果采用常规的 "单请求单连接" 的方式，服务提供者很容易就被压跨，通过单一连接，保证单一消费者不会压死提供者，长连接，减少连接握手验证等，并使用异步 IO，复用线程池，防止 C10K 问题。
+
+### 为什么删除published_version这张表？
+使用published_version主要是为了获取当前聚合根最新的版本号，这个信息其实可以根据从event_stream获取
+性能上会有些差异，但整体来看，不用保持两表数据的一致性了，只需要保证事件表按照版本顺序写入即可
+
+### ICommandHandler和ICommandAsyncHandler区别 (现在合并成一个了，但处理思路没变)
+
+ICommandHandler是为了操作内存中的聚合根的，所以不会有异步操作，但后来ICommandHandler的Handle方法也设计为了handleAsync了，目的是为了异步到底，否则异步链路中断的话，异步就没效果了
+而ICommandAsyncHandler是为了让开发者调用外部系统的接口的，也就是访问外部IO，所以用了Async
+ICommandHandler，ICommandAsyncHandler这两个接口是用于不同的业务场景，ICommandHandler.handleAsync方法执行完成后，框架要从context中获取当前修改的聚合根的领域事件，然后去提交。而ICommandAsyncHandler.handleAsync方法执行完成后，不会有这个逻辑，而是看一下handleAsync方法执行的异步消息结果是什么，也就是IApplicationMessage。
+目前已经删除了 ICommandAsyncHandler，统一使用ICommandHandler来处理，异步结果会放在context中
+
 ### ICommandService sendAsync 和 executeAsync的区别
 sendAsync只关注发送消息的结果
 executeAsync发送消息的同时，关注命令的返回结果，返回的时机如下：
 - CommandReturnType.CommandExecuted：Command执行完成，Event发布成功后返回结果
 - CommandReturnType.EventHandled：Event处理完成后才返回结果
-### event使用哪个订阅者发送处理结果
-event的订阅者可能有很多个，所以enode只要求有一个订阅者处理完事件后发送结果给发送命令的人即可，通过AbstractDomainEventListener中sendEventHandledMessage参数来设置是否发送，最终来决定由哪个订阅者来发送命令处理结果
-### ICommandHandler和ICommandAsyncHandler区别 (合并成一个了，但处理思路没变)
-ICommandHandler是为了操作内存中的聚合根的，所以不会有异步操作，但后来ICommandHandler的Handle方法也设计为了handleAsync了，目的是为了异步到底，否则异步链路中断的话，异步就没效果了
-而ICommandAsyncHandler是为了让开发者调用外部系统的接口的，也就是访问外部IO，所以用了Async
-ICommandHandler，ICommandAsyncHandler这两个接口是用于不同的业务场景，ICommandHandler.handleAsync方法执行完成后，框架要从context中获取当前修改的聚合根的领域事件，然后去提交。而ICommandAsyncHandler.handleAsync方法执行完成后，不会有这个逻辑，而是看一下handleAsync方法执行的异步消息结果是什么，也就是IApplicationMessage。
 
-目前已经删除了 ICommandAsyncHandler，统一使用ICommandHandler来处理，异步结果 放在context中
+### event使用哪个订阅者发送处理结果
+event的订阅者可能有很多个，所以enode只要求有一个订阅者处理完事件后发送结果给发送命令的人即可，通过DefaultDomainEventListener中sendEventHandledMessage参数来设置是否发送，最终来决定由哪个订阅者来发送命令处理结果
+
 ## 使用说明
 
 ### 聚合根
@@ -164,17 +175,6 @@ spring.enode.mq.topic.exception=EnodeTestExceptionTopic
 ### eventstore 数据源配置，目前支持四种（MySQL, TiDB, MongoDB, PostgreSQL ...）
 
 ```java
-    @Bean
-    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mock")
-    public MockEventStore mockEventStore() {
-        return new MockEventStore();
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mock")
-    public MockPublishedVersionStore mockPublishedVersionStore() {
-        return new MockPublishedVersionStore();
-    }
 
     @Bean("enodeMongoClient")
     @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mongo")
@@ -215,9 +215,10 @@ spring.enode.mq.topic.exception=EnodeTestExceptionTopic
         return dataSource;
     }
 ```
+### 事件表新建
+这里做了一次更新，删除了published_version表的依赖，只存储事件信息，对事件表只有插入、查询操作
 
-### MySQL & TiDB
-需要下面两张表来存储事件
+#### MySQL & TiDB
 ```mysql
 CREATE TABLE event_stream (
   id BIGINT AUTO_INCREMENT NOT NULL,
@@ -232,19 +233,9 @@ CREATE TABLE event_stream (
   UNIQUE KEY uk_aggregate_root_id_command_id (aggregate_root_id, command_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
-CREATE TABLE published_version (
-  id BIGINT AUTO_INCREMENT NOT NULL,
-  processor_name VARCHAR(128) NOT NULL,
-  aggregate_root_type_name VARCHAR(256) NOT NULL,
-  aggregate_root_id VARCHAR(36) NOT NULL,
-  version INT NOT NULL,
-  gmt_create DATETIME NOT NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_processor_name_aggregate_root_id_version (processor_name, aggregate_root_id, version)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 ```
 
-### postgresql
+#### postgresql
 ```postgres-sql
 CREATE TABLE event_stream (
   id bigserial,
@@ -258,29 +249,18 @@ CREATE TABLE event_stream (
   CONSTRAINT uk_aggregate_root_id_version UNIQUE (aggregate_root_id, version),
   CONSTRAINT uk_aggregate_root_id_command_id UNIQUE (aggregate_root_id, command_id)
 );
-
-CREATE TABLE published_version (
-  id bigserial,
-  processor_name varchar(128),
-  aggregate_root_type_name varchar(256),
-  aggregate_root_id varchar(36),
-  version integer,
-  gmt_create date,
-  PRIMARY KEY (id),
-  CONSTRAINT uk_processor_name_aggregate_root_id_version UNIQUE (processor_name, aggregate_root_id, version)
-);
-
 ```
 
-### MongoDB
+#### MongoDB
+
 ```
 db.event_stream.createIndex({aggregateRootId:1,commandId:1},{unique:true})
 db.event_stream.createIndex({aggregateRootId:1,version:1},{unique:true})
-db.published_version.createIndex({processorName:1,aggregateRootId:1,version:1},{unique:true})
 ```
 
 ### 编程方式
 新增了三个注解，系统限定了只扫描@Command和@Event标识的类，执行的方法上需要添加@Subscribe注解
+
 - @Command
 - @Event
 - @Subscribe
@@ -288,7 +268,7 @@ db.published_version.createIndex({processorName:1,aggregateRootId:1,version:1},{
 启动时会扫描包路径下的注解，注册成Spring bean，类似@Component的作用
 
 ### 消息
-发送命令代码
+发送命令消息代码
 ```java
         CompletableFuture<CommandResult> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
 ```
@@ -347,6 +327,7 @@ public class BankAccountCommandHandler {
 
 ```
 领域事件消费
+
 ```java
 /**
  * 银行存款交易流程管理器，用于协调银行存款交易流程中各个参与者聚合根之间的消息交互
@@ -403,7 +384,7 @@ public class DepositTransactionProcessManager {
 
 ```
 ### MQ配置启动
-多选一
+多选
 #### Kafka
 https://kafka.apache.org/quickstart
 ```bash
@@ -417,6 +398,7 @@ https://rocketmq.apache.org/docs/quick-start/
 nohup sh bin/mqnamesrv &
 nohup sh bin/mqbroker -n 127.0.0.1:9876 &
 ```
+
 ### command-web启动
 - CQRS架构中的Command端应用
 > 主要用来接收Command，将Command发送到消息队列
@@ -426,6 +408,7 @@ nohup sh bin/mqbroker -n 127.0.0.1:9876 &
 ### event-consumer启动
 - 领域事件处理服务
 > 事件可能会多次投递，所以需要消费端逻辑保证幂等处理，这里框架无法完成支持，需要开发者自己实现
+
 ### 测试
 - 接入了Swagger3.0，打开swagger-ui即可
 http://localhost:8080/swagger-ui/
