@@ -69,4 +69,9 @@ public class MockEventStore implements IEventStore {
     public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
         return _inMemoryEventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion);
     }
+
+    @Override
+    public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
+        return _inMemoryEventStore.getPublishedVersionAsync(processorName,aggregateRootTypeName,aggregateRootId);
+    }
 }

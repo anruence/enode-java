@@ -49,6 +49,7 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
     private static final String SELECT_MANY_BY_VERSION_SQL = "SELECT * FROM %s WHERE aggregate_root_id = ? AND version >= ? AND Version <= ? ORDER BY version";
     private static final String SELECT_ONE_BY_VERSION_SQL = "SELECT * FROM %s WHERE aggregate_root_id = ? AND version = ?";
     private static final String SELECT_ONE_BY_COMMAND_ID_SQL = "SELECT * FROM %s WHERE aggregate_root_id = ? AND command_id = ?";
+    private static final String SELECT_MAX_VERSION_SQL = "SELECT max(version) AS version FROM %s WHERE aggregate_root_id = ? AND aggregate_root_type_name = ?";
 
     private final String tableName;
     private final int tableCount;
@@ -303,6 +304,41 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
         }, "FindEventByCommandIdAsync");
 
     }
+
+    /**
+     * Get the current published version for the given aggregate.
+     */
+    @Override
+    public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
+        return IOHelper.tryIOFuncAsync(() -> {
+            CompletableFuture<Integer> future = new CompletableFuture<>();
+            String sql = String.format(SELECT_MAX_VERSION_SQL, getTableName(aggregateRootId));
+            JsonArray array = new JsonArray();
+            array.add(aggregateRootId);
+            array.add(aggregateRootTypeName);
+            sqlClient.querySingleWithParams(sql, array, x -> {
+                if (x.succeeded()) {
+                    int result = 0;
+                    if (x.result() != null && x.result().size() > 0) {
+                        result = Optional.ofNullable(x.result().getInteger(0)).orElse(0);
+                    }
+                    future.complete(result);
+                    return;
+                }
+                future.completeExceptionally(x.cause());
+            });
+            return future.exceptionally(throwable -> {
+                if (throwable instanceof SQLException) {
+                    SQLException ex = (SQLException) throwable;
+                    logger.error("Find version by aggregateRootId has sql exception, aggregateRootId: {}, aggregateRootTypeName: {}", aggregateRootId, aggregateRootTypeName, ex);
+                    throw new IORuntimeException(throwable);
+                }
+                logger.error("Find version by aggregateRootId has unknown exception, aggregateRootId: {}, aggregateRootTypeName: {}", aggregateRootId, aggregateRootTypeName, throwable);
+                throw new EventStoreException(throwable);
+            });
+        }, "getPublishedVersionAsync");
+    }
+
 
     private int getTableIndex(String aggregateRootId) {
         int hash = aggregateRootId.hashCode();

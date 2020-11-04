@@ -111,8 +111,8 @@ public class EnodeAutoConfiguration {
     }
 
     @Bean(name = "domainEventMessageProcessor", initMethod = "start", destroyMethod = "stop")
-    public DefaultProcessingEventProcessor domainEventMessageProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore, @Qualifier("mailBoxExecutor") Executor executor) {
-        return new DefaultProcessingEventProcessor(scheduleService, messageDispatcher, publishedVersionStore, executor);
+    public DefaultProcessingEventProcessor domainEventMessageProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IEventStore eventStore, @Qualifier("mailBoxExecutor") Executor executor) {
+        return new DefaultProcessingEventProcessor(scheduleService, messageDispatcher, eventStore, executor);
     }
 
     /**

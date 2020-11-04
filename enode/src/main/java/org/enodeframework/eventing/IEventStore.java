@@ -24,4 +24,9 @@ public interface IEventStore {
      * Query a range of event streams of a single aggregate from event store async.
      */
     CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion);
+
+    /**
+     * Get the current published version for the given aggregate.
+     */
+    CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId);
 }

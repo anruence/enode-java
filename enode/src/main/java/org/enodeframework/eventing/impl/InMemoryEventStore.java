@@ -5,6 +5,7 @@ import org.enodeframework.eventing.EventAppendResult;
 import org.enodeframework.eventing.IEventStore;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,6 +68,20 @@ public class InMemoryEventStore implements IEventStore {
     @Override
     public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
         return CompletableFuture.completedFuture(queryAggregateEvents(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion));
+    }
+
+    @Override
+    public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
+        AggregateInfo aggregateInfo = aggregateInfoDict.get(aggregateRootId);
+        if (aggregateInfo == null) {
+            return CompletableFuture.completedFuture(0);
+        }
+        int version = aggregateInfo.getEventDict().entrySet()
+                .stream()
+                .map(Map.Entry::getValue)
+                .map(x -> x.getVersion())
+                .max(Comparator.naturalOrder()).orElse(0);
+        return CompletableFuture.completedFuture(version);
     }
 
     private DomainEventStream find(String aggregateRootId, int version) {

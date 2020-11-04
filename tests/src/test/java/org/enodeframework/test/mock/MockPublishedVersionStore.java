@@ -3,12 +3,13 @@ package org.enodeframework.test.mock;
 import org.enodeframework.common.exception.EnodeRuntimeException;
 import org.enodeframework.common.exception.IORuntimeException;
 import org.enodeframework.eventing.IPublishedVersionStore;
+import org.enodeframework.eventing.impl.InMemoryEventStore;
 import org.enodeframework.eventing.impl.InMemoryPublishedVersionStore;
 
 import java.util.concurrent.CompletableFuture;
 
 public class MockPublishedVersionStore implements IPublishedVersionStore {
-    private InMemoryPublishedVersionStore _inMemoryPublishedVersionStore = new InMemoryPublishedVersionStore();
+    private InMemoryEventStore _inMemoryPublishedVersionStore = new InMemoryEventStore();
     private int _expectGetFailedCount = 0;
     private int _expectUpdateFailedCount = 0;
     private int _currentGetFailedCount = 0;
@@ -40,7 +41,7 @@ public class MockPublishedVersionStore implements IPublishedVersionStore {
             } else if (_failedType == FailedType.TaskIOException) {
             }
         }
-        return _inMemoryPublishedVersionStore.updatePublishedVersionAsync(processorName, aggregateRootTypeName, aggregateRootId, publishedVersion);
+        return _inMemoryPublishedVersionStore.getPublishedVersionAsync(processorName, aggregateRootTypeName, aggregateRootId);
     }
 
     @Override

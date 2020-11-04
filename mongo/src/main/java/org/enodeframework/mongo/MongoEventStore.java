@@ -264,6 +264,11 @@ public class MongoEventStore implements IEventStore {
     }
 
     @Override
+    public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
+        return null;
+    }
+
+    @Override
     public CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, int version) {
         return IOHelper.tryIOFuncAsync(() -> {
             CompletableFuture<DomainEventStream> future = new CompletableFuture<>();
