@@ -17,10 +17,6 @@ public class DBConfiguration {
      */
     private int eventTableCount;
     /**
-     * 聚合根已发布事件表的默认名称；默认为：published_version
-     */
-    private String publishedVersionTableName;
-    /**
      * 事件表的聚合根版本唯一索引的默认名称；默认为：uk_aggregate_root_id_version
      */
     private String eventTableVersionUniqueIndexName;
@@ -36,10 +32,8 @@ public class DBConfiguration {
     public DBConfiguration() {
         eventTableName = "event_stream";
         eventTableCount = 1;
-        publishedVersionTableName = "published_version";
         eventTableVersionUniqueIndexName = "uk_aggregate_root_id_version";
         eventTableCommandIdUniqueIndexName = "uk_aggregate_root_id_command_id";
-        publishedVersionUniqueIndexName = "uk_processor_name_aggregate_root_id_version";
         sqlState = "23000";
     }
 
@@ -71,14 +65,6 @@ public class DBConfiguration {
 
     public void setEventTableCount(int eventTableCount) {
         this.eventTableCount = eventTableCount;
-    }
-
-    public String getPublishedVersionTableName() {
-        return publishedVersionTableName;
-    }
-
-    public void setPublishedVersionTableName(String publishedVersionTableName) {
-        this.publishedVersionTableName = publishedVersionTableName;
     }
 
     public String getEventTableVersionUniqueIndexName() {

@@ -32,7 +32,6 @@ import org.enodeframework.eventing.IEventCommittingService;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.eventing.IEventStore;
 import org.enodeframework.eventing.IProcessingEventProcessor;
-import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.eventing.impl.DefaultEventCommittingService;
 import org.enodeframework.eventing.impl.DefaultEventSerializer;
 import org.enodeframework.eventing.impl.DefaultProcessingEventProcessor;

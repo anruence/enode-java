@@ -5,7 +5,6 @@ import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.jdbc.DBConfiguration;
 import org.enodeframework.mysql.MysqlEventStore;
-import org.enodeframework.mysql.MysqlPublishedVersionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,17 +33,5 @@ public class EnodeMySQLEventStoreAutoConfig {
             }
         });
         return eventStore;
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mysql")
-    public MysqlPublishedVersionStore mysqlPublishedVersionStore(@Qualifier("enodeMySQLDataSource") DataSource mySQLDataSource) {
-        MysqlPublishedVersionStore publishedVersionStore = new MysqlPublishedVersionStore(mySQLDataSource, DBConfiguration.mysql());
-        vertx.deployVerticle(publishedVersionStore, res -> {
-            if (!res.succeeded()) {
-                logger.error("vertx deploy MysqlPublishedVersionStore failed.", res.cause());
-            }
-        });
-        return publishedVersionStore;
     }
 }

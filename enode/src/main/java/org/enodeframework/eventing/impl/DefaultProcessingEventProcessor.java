@@ -30,7 +30,6 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     private final String scanInactiveMailBoxTaskName;
     private final String processTryToRefreshAggregateTaskName;
     private final ConcurrentHashMap<String, ProcessingEventMailBox> toRefreshAggregateRootMailBoxDict;
-    private final String name = "DefaultEventProcessor";
     private final ConcurrentHashMap<String, ProcessingEventMailBox> mailboxDict;
     private final ConcurrentHashMap<String, Boolean> refreshingAggregateRootDict;
     private final IScheduleService scheduleService;
@@ -100,7 +99,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     private void getAggregateRootLatestPublishedEventVersion(ProcessingEventMailBox processingEventMailBox, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("GetAggregateRootLatestPublishedEventVersion",
-                () -> eventStore.getPublishedVersionAsync(name, processingEventMailBox.getAggregateRootTypeName(), processingEventMailBox.getAggregateRootId()),
+                () -> eventStore.getPublishedVersionAsync(processingEventMailBox.getAggregateRootTypeName(), processingEventMailBox.getAggregateRootId()),
                 result -> {
                     processingEventMailBox.setNextExpectingEventVersion(result + 1);
                     refreshingAggregateRootDict.remove(processingEventMailBox.getAggregateRootId());
@@ -121,14 +120,6 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     public void stop() {
         scheduleService.stopTask(scanInactiveMailBoxTaskName);
         scheduleService.stopTask(processTryToRefreshAggregateTaskName);
-    }
-
-    /**
-     * The name of the processor
-     */
-    @Override
-    public String getName() {
-        return name;
     }
 
     private void dispatchProcessingMessageAsync(ProcessingEvent processingEvent, int retryTimes) {

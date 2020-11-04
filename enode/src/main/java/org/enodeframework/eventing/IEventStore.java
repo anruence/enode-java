@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface IEventStore {
-
     /**
      * Batch append the given event streams to the event store async.
      */
@@ -28,5 +27,5 @@ public interface IEventStore {
     /**
      * Get the current published version for the given aggregate.
      */
-    CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId);
+    CompletableFuture<Integer> getPublishedVersionAsync(String aggregateRootTypeName, String aggregateRootId);
 }

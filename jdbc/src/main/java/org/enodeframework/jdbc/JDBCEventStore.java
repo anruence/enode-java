@@ -305,11 +305,8 @@ public abstract class JDBCEventStore extends AbstractVerticle implements IEventS
 
     }
 
-    /**
-     * Get the current published version for the given aggregate.
-     */
     @Override
-    public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
+    public CompletableFuture<Integer> getPublishedVersionAsync(String aggregateRootTypeName, String aggregateRootId) {
         return IOHelper.tryIOFuncAsync(() -> {
             CompletableFuture<Integer> future = new CompletableFuture<>();
             String sql = String.format(SELECT_MAX_VERSION_SQL, getTableName(aggregateRootId));

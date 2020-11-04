@@ -5,7 +5,6 @@ import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.jdbc.DBConfiguration;
 import org.enodeframework.pg.PgEventStore;
-import org.enodeframework.pg.PgPublishedVersionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,17 +32,5 @@ public class EnodePgEventStoreAutoConfig {
             }
         });
         return eventStore;
-    }
-
-    @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "pg")
-    @Bean
-    public PgPublishedVersionStore pgPublishedVersionStore(@Qualifier("enodePgDataSource") DataSource pgDataSource) {
-        PgPublishedVersionStore versionStore = new PgPublishedVersionStore(pgDataSource, DBConfiguration.postgresql());
-        vertx.deployVerticle(versionStore, res -> {
-            if (!res.succeeded()) {
-                logger.error("vertx deploy PgPublishedVersionStore failed.", res.cause());
-            }
-        });
-        return versionStore;
     }
 }

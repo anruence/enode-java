@@ -11,67 +11,87 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MockEventStore implements IEventStore {
-    public boolean SupportBatchAppendEvent;
-    private int _expectFailedCount = 0;
-    private int _currentFailedCount = 0;
-    private FailedType _failedType;
-    private InMemoryEventStore _inMemoryEventStore = new InMemoryEventStore();
+    public boolean supportBatchAppendEvent;
+
+    private int expectFailedCount = 0;
+
+    private int currentFailedCount = 0;
+
+    private FailedType failedType;
+
+    private int expectGetFailedCount = 0;
+
+    private int currentGetFailedCount = 0;
+
+    private final InMemoryEventStore memoryEventStore = new InMemoryEventStore();
 
     public MockEventStore() {
-        SupportBatchAppendEvent = true;
+        supportBatchAppendEvent = true;
     }
 
     public void Reset() {
-        _failedType = FailedType.None;
-        _expectFailedCount = 0;
-        _currentFailedCount = 0;
+        failedType = FailedType.None;
+        expectFailedCount = 0;
+        currentFailedCount = 0;
+        expectGetFailedCount = 0;
+        currentGetFailedCount = 0;
     }
 
     public void SetExpectFailedCount(FailedType failedType, int count) {
-        _failedType = failedType;
-        _expectFailedCount = count;
+        this.failedType = failedType;
+        expectFailedCount = count;
+        expectGetFailedCount = count;
     }
 
     @Override
     public CompletableFuture<EventAppendResult> batchAppendAsync(List<DomainEventStream> eventStreams) {
-        if (_currentFailedCount < _expectFailedCount) {
-            _currentFailedCount++;
-            if (_failedType == FailedType.UnKnownException) {
-                throw new EnodeRuntimeException("BatchAppendAsyncUnKnownException" + _currentFailedCount);
-            } else if (_failedType == FailedType.IOException) {
-                throw new IORuntimeException("BatchAppendAsyncIOException" + _currentFailedCount);
-            } else if (_failedType == FailedType.TaskIOException) {
+        if (currentFailedCount < expectFailedCount) {
+            currentFailedCount++;
+            if (failedType == FailedType.UnKnownException) {
+                throw new EnodeRuntimeException("BatchAppendAsyncUnKnownException" + currentFailedCount);
+            } else if (failedType == FailedType.IOException) {
+                throw new IORuntimeException("BatchAppendAsyncIOException" + currentFailedCount);
+            } else if (failedType == FailedType.TaskIOException) {
             }
         }
-        return _inMemoryEventStore.batchAppendAsync(eventStreams);
+        return memoryEventStore.batchAppendAsync(eventStreams);
     }
 
     @Override
     public CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, int version) {
-        if (_currentFailedCount < _expectFailedCount) {
-            _currentFailedCount++;
-            if (_failedType == FailedType.UnKnownException) {
-                throw new EnodeRuntimeException("AppendAsyncUnKnownException" + _currentFailedCount);
-            } else if (_failedType == FailedType.IOException) {
-                throw new IORuntimeException("AppendAsyncIOException" + _currentFailedCount);
-            } else if (_failedType == FailedType.TaskIOException) {
+        if (currentFailedCount < expectFailedCount) {
+            currentFailedCount++;
+            if (failedType == FailedType.UnKnownException) {
+                throw new EnodeRuntimeException("AppendAsyncUnKnownException" + currentFailedCount);
+            } else if (failedType == FailedType.IOException) {
+                throw new IORuntimeException("AppendAsyncIOException" + currentFailedCount);
+            } else if (failedType == FailedType.TaskIOException) {
             }
         }
-        return _inMemoryEventStore.findAsync(aggregateRootId, version);
+        return memoryEventStore.findAsync(aggregateRootId, version);
     }
 
     @Override
     public CompletableFuture<DomainEventStream> findAsync(String aggregateRootId, String commandId) {
-        return _inMemoryEventStore.findAsync(aggregateRootId, commandId);
+        return memoryEventStore.findAsync(aggregateRootId, commandId);
     }
 
     @Override
     public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
-        return _inMemoryEventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion);
+        return memoryEventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion);
     }
 
     @Override
-    public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
-        return _inMemoryEventStore.getPublishedVersionAsync(processorName,aggregateRootTypeName,aggregateRootId);
+    public CompletableFuture<Integer> getPublishedVersionAsync(String aggregateRootTypeName, String aggregateRootId) {
+        if (currentGetFailedCount < expectGetFailedCount) {
+            currentGetFailedCount++;
+            if (failedType == FailedType.UnKnownException) {
+                throw new EnodeRuntimeException("GetPublishedVersionAsyncUnKnownException" + currentGetFailedCount);
+            } else if (failedType == FailedType.IOException) {
+                throw new IORuntimeException("GetPublishedVersionAsyncIOException" + currentGetFailedCount);
+            } else if (failedType == FailedType.TaskIOException) {
+            }
+        }
+        return memoryEventStore.getPublishedVersionAsync(aggregateRootTypeName, aggregateRootId);
     }
 }

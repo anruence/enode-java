@@ -15,9 +15,4 @@ public interface IProcessingEventProcessor {
      * Stop the processor.
      */
     void stop();
-
-    /**
-     * The name of the processor
-     */
-    String getName();
 }

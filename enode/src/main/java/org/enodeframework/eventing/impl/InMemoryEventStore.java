@@ -19,9 +19,8 @@ import java.util.stream.Collectors;
  * @author anruence@gmail.com
  */
 public class InMemoryEventStore implements IEventStore {
-    private static final boolean EDITING = true;
-    private static final boolean UNEDITING = false;
     private final Object lockObj = new Object();
+
     private ConcurrentMap<String, AggregateInfo> aggregateInfoDict;
 
     public InMemoryEventStore() {
@@ -71,15 +70,13 @@ public class InMemoryEventStore implements IEventStore {
     }
 
     @Override
-    public CompletableFuture<Integer> getPublishedVersionAsync(String processorName, String aggregateRootTypeName, String aggregateRootId) {
+    public CompletableFuture<Integer> getPublishedVersionAsync(String aggregateRootTypeName, String aggregateRootId) {
         AggregateInfo aggregateInfo = aggregateInfoDict.get(aggregateRootId);
-        if (aggregateInfo == null) {
-            return CompletableFuture.completedFuture(0);
-        }
-        int version = aggregateInfo.getEventDict().entrySet()
+        int version = Optional.ofNullable(aggregateInfo)
+                .map(AggregateInfo::getEventDict)
+                .map(Map::values).orElse(new ArrayList<>())
                 .stream()
-                .map(Map.Entry::getValue)
-                .map(x -> x.getVersion())
+                .map(DomainEventStream::getVersion)
                 .max(Comparator.naturalOrder()).orElse(0);
         return CompletableFuture.completedFuture(version);
     }

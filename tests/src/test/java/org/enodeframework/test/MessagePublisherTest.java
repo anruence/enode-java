@@ -18,7 +18,6 @@ import org.enodeframework.test.mock.MockApplicationMessagePublisher;
 import org.enodeframework.test.mock.MockDomainEventPublisher;
 import org.enodeframework.test.mock.MockEventStore;
 import org.enodeframework.test.mock.MockPublishableExceptionPublisher;
-import org.enodeframework.test.mock.MockPublishedVersionStore;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,7 +127,7 @@ public class MessagePublisherTest extends AbstractTest {
 
     @Test
     public void published_version_store_failed_test() {
-        MockPublishedVersionStore mockPublishedVersionStore = (MockPublishedVersionStore) publishedVersionStore;
+        MockEventStore mockPublishedVersionStore = (MockEventStore) eventStore;
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setTitle("Sample Note");
