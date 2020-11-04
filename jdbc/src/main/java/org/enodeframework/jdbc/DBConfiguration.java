@@ -36,7 +36,7 @@ public class DBConfiguration {
     public DBConfiguration() {
         eventTableName = "event_stream";
         eventTableCount = 1;
-        publishedVersionTableName = "published_version";
+        publishedVersionTableName = "event_stream";
         eventTableVersionUniqueIndexName = "uk_aggregate_root_id_version";
         eventTableCommandIdUniqueIndexName = "uk_aggregate_root_id_command_id";
         publishedVersionUniqueIndexName = "uk_processor_name_aggregate_root_id_version";
