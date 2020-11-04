@@ -98,7 +98,6 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
         }
     }
 
-
     private void getAggregateRootLatestPublishedEventVersion(ProcessingEventMailBox processingEventMailBox, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("GetAggregateRootLatestPublishedEventVersion",
                 () -> publishedVersionStore.getPublishedVersionAsync(name, processingEventMailBox.getAggregateRootTypeName(), processingEventMailBox.getAggregateRootId()),

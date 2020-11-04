@@ -284,12 +284,9 @@ public class EnodeCoreTest extends AbstractTest {
     @Test
     public void set_result_command_test() {
         SetResultCommand command = new SetResultCommand();
-        command.aggregateRootId = (ObjectId.generateNewStringId());
+        command.aggregateRootId = ObjectId.generateNewStringId();
         command.setResult("CommandResult");
-        CommandResult asyncResult = Task.await(commandService.executeAsync(command, CommandReturnType.EventHandled));
-        Assert.assertNotNull(asyncResult);
-
-        CommandResult commandResult = asyncResult;
+        CommandResult commandResult = Task.await(commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         Assert.assertEquals("CommandResult", commandResult.getResult());
@@ -750,6 +747,7 @@ public class EnodeCoreTest extends AbstractTest {
         CreateTestAggregateCommand command1 = new CreateTestAggregateCommand();
         command1.aggregateRootId = noteId;
         command1.setTitle("Sample Title1");
+
         TestEventPriorityCommand command2 = new TestEventPriorityCommand();
         command2.aggregateRootId = noteId;
         CommandResult commandResult1 = Task.await(commandService.executeAsync(command1, CommandReturnType.EventHandled));

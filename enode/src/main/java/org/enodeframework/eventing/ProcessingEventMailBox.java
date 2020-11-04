@@ -29,7 +29,7 @@ public class ProcessingEventMailBox {
     private final ConcurrentLinkedQueue<ProcessingEvent> processingEventQueue;
     private final Action1<ProcessingEvent> handleProcessingEventAction;
     private Date lastActiveTime;
-    private Integer nextExpectingEventVersion;
+    private int nextExpectingEventVersion = 1;
 
     public ProcessingEventMailBox(String aggregateRootTypeName, String aggregateRootId, Action1<ProcessingEvent> handleProcessingEventAction, Executor executor) {
         this.executor = executor;
@@ -59,9 +59,6 @@ public class ProcessingEventMailBox {
     }
 
     private void tryEnqueueValidWaitingMessage() {
-        if (this.nextExpectingEventVersion == null) {
-            return;
-        }
         while (waitingProcessingEventDict.containsKey(this.nextExpectingEventVersion)) {
             ProcessingEvent nextProcessingEvent = waitingProcessingEventDict.remove(this.nextExpectingEventVersion);
             if (nextProcessingEvent != null) {
@@ -78,7 +75,7 @@ public class ProcessingEventMailBox {
     public void setNextExpectingEventVersion(int version) {
         synchronized (lockObj) {
             tryRemovedInvalidWaitingMessages(version);
-            if (this.nextExpectingEventVersion == null || version > this.nextExpectingEventVersion) {
+            if (this.nextExpectingEventVersion == 1 || version > this.nextExpectingEventVersion) {
                 this.nextExpectingEventVersion = version;
                 logger.info("{} refreshed nextExpectingEventVersion, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}", getClass().getName(), aggregateRootId, aggregateRootTypeName, this.nextExpectingEventVersion);
                 tryEnqueueValidWaitingMessage();
@@ -116,7 +113,7 @@ public class ProcessingEventMailBox {
                 throw new MailBoxProcessException(String.format("ProcessingEventMailBox was removed, cannot allow to enqueue message, aggregateRootTypeName: %s, aggregateRootId: %s", aggregateRootTypeName, aggregateRootId));
             }
             DomainEventStreamMessage eventStream = processingEvent.getMessage();
-            if (this.nextExpectingEventVersion == null || eventStream.getVersion() > this.nextExpectingEventVersion) {
+            if (eventStream.getVersion() > this.nextExpectingEventVersion) {
                 if (waitingProcessingEventDict.putIfAbsent(eventStream.getVersion(), processingEvent) == null) {
                     logger.warn("{} waiting message added, aggregateRootType: {}, aggregateRootId: {}, commandId: {}, eventVersion: {}, eventStreamId: {}, eventTypes: {}, eventIds: {}, nextExpectingEventVersion: {}",
                             getClass().getName(),
