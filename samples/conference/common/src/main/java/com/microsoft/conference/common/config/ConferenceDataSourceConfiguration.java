@@ -11,8 +11,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 import javax.sql.DataSource;
@@ -23,6 +23,15 @@ import javax.sql.DataSource;
 public class ConferenceDataSourceConfiguration {
 
     public static String JDBC_URL = "jdbc:mysql://127.0.0.1:3306/conference";
+
+    @Value("${spring.enode.datasource.jdbcurl:}")
+    private String jdbcUrl;
+
+    @Value("${spring.enode.datasource.username:}")
+    private String username;
+
+    @Value("${spring.enode.datasource.password:}")
+    private String password;
 
     @Bean("paginationInterceptor")
     public PaginationInterceptor paginationInterceptor() {
@@ -38,8 +47,8 @@ public class ConferenceDataSourceConfiguration {
     public DataSource conferenceSqlDataSource() {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(JDBC_URL);
-        dataSource.setUsername("root");
-        dataSource.setPassword("abcd1234&ABCD");
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
     }
@@ -47,9 +56,9 @@ public class ConferenceDataSourceConfiguration {
     @Bean(name = "enodeMySQLDataSource")
     public DataSource enodeMySQLDataSource() {
         HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl(JDBC_URL);
-        dataSource.setUsername("root");
-        dataSource.setPassword("abcd1234&ABCD");
+        dataSource.setJdbcUrl(jdbcUrl);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
     }

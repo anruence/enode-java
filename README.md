@@ -199,7 +199,7 @@ spring.enode.mq.topic.exception=EnodeTestExceptionTopic
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/enode?");
         dataSource.setUsername("root");
-        dataSource.setPassword("abcd1234&ABCD");
+        dataSource.setPassword("mysecretpassword");
         dataSource.setDriverClassName(com.mysql.cj.jdbc.Driver.class.getName());
         return dataSource;
     }
@@ -270,7 +270,7 @@ db.event_stream.createIndex({aggregateRootId:1,version:1},{unique:true})
 ### 消息
 发送命令消息代码
 ```java
-        CompletableFuture<CommandResult> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
+CompletableFuture<CommandResult> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
 ```
 消费命令消息
 ```java

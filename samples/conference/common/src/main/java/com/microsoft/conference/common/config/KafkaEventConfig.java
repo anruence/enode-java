@@ -82,7 +82,7 @@ public class KafkaEventConfig {
         RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(domainEventListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -93,7 +93,7 @@ public class KafkaEventConfig {
         RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(domainEventListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -104,7 +104,7 @@ public class KafkaEventConfig {
         RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(applicationMessageListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 
@@ -115,7 +115,7 @@ public class KafkaEventConfig {
         RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(publishableExceptionListener, retryTemplate);
         properties.setMessageListener(listenerAdapter);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
     }
 }

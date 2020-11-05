@@ -1,6 +1,5 @@
 package org.enodeframework.samples.controller.bank;
 
-import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.common.utilities.ObjectId;
 import org.enodeframework.samples.commands.bank.CreateAccountCommand;
@@ -23,8 +22,8 @@ public class BankController {
         String account2 = ObjectId.generateNewStringId();
         String account3 = "INVALID-" + ObjectId.generateNewStringId();
         //创建两个银行账户
-        commandService.executeAsync(new CreateAccountCommand(account1, "雪华"), CommandReturnType.EventHandled).join();
-        commandService.executeAsync(new CreateAccountCommand(account2, "凯锋"), CommandReturnType.EventHandled).join();
+        commandService.executeAsync(new CreateAccountCommand(account1, "雪华")).join();
+        commandService.executeAsync(new CreateAccountCommand(account2, "凯锋")).join();
         //每个账户都存入1000元
         commandService.sendAsync(new StartDepositTransactionCommand(ObjectId.generateNewStringId(), account1, 1000)).join();
         commandService.sendAsync(new StartDepositTransactionCommand(ObjectId.generateNewStringId(), account2, 1000)).join();

@@ -17,8 +17,8 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,51 +66,46 @@ public class EnodeTestKafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
-        return new KafkaTemplate<>(producerFactory);
-    }
-
-    @Bean
-    public KafkaMessageListenerContainer<String, String> commandListenerContainer(KafkaCommandListener commandListener, ConsumerFactory<String, String> consumerFactory) {
+    public ConcurrentMessageListenerContainer<String, String> commandListenerContainer(KafkaCommandListener commandListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(commandTopic);
         properties.setGroupId(Constants.DEFAULT_CONSUMER_GROUP);
         properties.setMessageListener(commandListener);
         properties.setMissingTopicsFatal(false);
-        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
+        return new ConcurrentMessageListenerContainer<>(consumerFactory, properties);
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener, ConsumerFactory<String, String> consumerFactory) {
+    public ConcurrentMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(eventTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(domainEventListener);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        return new ConcurrentMessageListenerContainer<>(consumerFactory, properties);
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, ConsumerFactory<String, String> consumerFactory) {
+    public ConcurrentMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(applicationTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(applicationMessageListener);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        return new ConcurrentMessageListenerContainer<>(consumerFactory, properties);
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, ConsumerFactory<String, String> consumerFactory) {
+    public ConcurrentMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(exceptionTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(publishableExceptionListener);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer<>(consumerFactory, properties);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        return new ConcurrentMessageListenerContainer<>(consumerFactory, properties);
     }
 
     @Bean(name = "enodeKafkaTemplate")
-    public KafkaTemplate<String, String> kafkaTemplate() {
+    public KafkaTemplate<String, String> enodeKafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }

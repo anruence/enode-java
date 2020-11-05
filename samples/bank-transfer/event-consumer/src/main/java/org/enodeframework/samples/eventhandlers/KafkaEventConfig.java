@@ -16,10 +16,8 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.listener.adapter.RetryingMessageListenerAdapter;
-import org.springframework.retry.support.RetryTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,47 +64,39 @@ public class KafkaEventConfig {
         return new DefaultKafkaProducerFactory<>(props);
     }
 
-    @Bean
-    public RetryTemplate retryTemplate() {
-        return new RetryTemplate();
-    }
-
     @Bean(name = "enodeKafkaTemplate")
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener, RetryTemplate retryTemplate) {
+    public ConcurrentMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener) {
         ContainerProperties properties = new ContainerProperties(eventTopic);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP0);
-        RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(domainEventListener, retryTemplate);
-        properties.setMessageListener(listenerAdapter);
+        properties.setMessageListener(domainEventListener);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        return new ConcurrentMessageListenerContainer<>(consumerFactory(), properties);
     }
 
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, RetryTemplate retryTemplate) {
+    public ConcurrentMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener) {
         ContainerProperties properties = new ContainerProperties(applicationTopic);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP0);
-        RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(applicationMessageListener, retryTemplate);
-        properties.setMessageListener(listenerAdapter);
+        properties.setMessageListener(applicationMessageListener);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        return new ConcurrentMessageListenerContainer<>(consumerFactory(), properties);
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, RetryTemplate retryTemplate) {
+    public ConcurrentMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener) {
         ContainerProperties properties = new ContainerProperties(exceptionTopic);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP0);
-        RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(publishableExceptionListener, retryTemplate);
-        properties.setMessageListener(listenerAdapter);
+        properties.setMessageListener(publishableExceptionListener);
         properties.setMissingTopicsFatal(false);
-        properties.setAckMode(ContainerProperties.AckMode.MANUAL);
-        return new KafkaMessageListenerContainer<>(consumerFactory(), properties);
+        properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        return new ConcurrentMessageListenerContainer<>(consumerFactory(), properties);
     }
 }
