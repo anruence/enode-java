@@ -79,7 +79,7 @@ public class RegistrationProcessManager {
     }
 
     public void handleAsync(OrderPaymentConfirmed evnt) {
-        if (evnt.getOrderStatus() == OrderStatus.PaymentSuccess) {
+        if (OrderStatus.PaymentSuccess == evnt.getOrderStatus()) {
             Task.await(commandService.sendAsync(new CommitSeatReservation(evnt.getConferenceId(), evnt.getAggregateRootId())));
         } else if (evnt.getOrderStatus() == OrderStatus.PaymentRejected) {
             Task.await(commandService.sendAsync(new CancelSeatReservation(evnt.getConferenceId(), evnt.getAggregateRootId())));

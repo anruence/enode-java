@@ -32,14 +32,14 @@ public class TransferTransaction extends AggregateRoot<String> {
      */
     public void confirmAccountValidatePassed(String accountId) {
         if (status == TransactionStatus.STARTED) {
-            if (accountId == transferTransactionInfo.sourceAccountId) {
+            if (accountId.equals(transferTransactionInfo.sourceAccountId)) {
                 if (!isSourceAccountValidatePassed) {
                     applyEvent(new SourceAccountValidatePassedConfirmedEvent(transferTransactionInfo));
                     if (isTargetAccountValidatePassed) {
                         applyEvent(new AccountValidatePassedConfirmCompletedEvent(transferTransactionInfo));
                     }
                 }
-            } else if (accountId == transferTransactionInfo.targetAccountId) {
+            } else if (accountId.equals(transferTransactionInfo.targetAccountId)) {
                 if (!isTargetAccountValidatePassed) {
                     applyEvent(new TargetAccountValidatePassedConfirmedEvent(transferTransactionInfo));
                     if (isSourceAccountValidatePassed) {
