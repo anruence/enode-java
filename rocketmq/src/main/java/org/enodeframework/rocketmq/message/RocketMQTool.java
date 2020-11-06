@@ -20,6 +20,7 @@ public class RocketMQTool {
     }
 
     public static Message covertToProducerRecord(QueueMessage queueMessage) {
-        return new Message(queueMessage.getTopic(), queueMessage.getTag(), queueMessage.getKey(), queueMessage.getBody().getBytes(StandardCharsets.UTF_8));
+        Message message = new Message(queueMessage.getTopic(), queueMessage.getTag(), queueMessage.getKey(), queueMessage.getBody().getBytes(StandardCharsets.UTF_8));
+        return message;
     }
 }

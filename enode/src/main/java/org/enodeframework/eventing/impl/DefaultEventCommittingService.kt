@@ -100,8 +100,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
                                         key,
                                         java.lang.String.join(",", value))
                                 val committingContext = committingContextOptional.get()
-                                resetCommandMailBoxConsumingSequence(committingContext, committingContext.processingCommand.sequence + 1, value)
-                                        .thenAccept { x: Void? -> tryToRepublishEventAsync(committingContext, 0) }
+                                resetCommandMailBoxConsumingSequence(committingContext, committingContext.processingCommand.sequence, value)
                             }
                         }
                     }

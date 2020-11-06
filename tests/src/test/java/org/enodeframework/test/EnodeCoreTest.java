@@ -194,7 +194,7 @@ public class EnodeCoreTest extends AbstractTest {
         command2.aggregateRootId = aggregateId;
         command2.setTitle("Changed Note");
         //执行修改聚合根的命令
-        CommandResult commandResult = Task.await(commandService.executeAsync(command2));
+        CommandResult commandResult = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         TestAggregate note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -214,7 +214,7 @@ public class EnodeCoreTest extends AbstractTest {
         CommandResult commandResult10 = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-//        Task.sleep(50);
+        Task.sleep(50);
         note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Changed Note", note.getTitle());
