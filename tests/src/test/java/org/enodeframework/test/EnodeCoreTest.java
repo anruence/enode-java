@@ -66,7 +66,7 @@ public class EnodeCoreTest extends AbstractTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EnodeCoreTest.class);
 
-    public static ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
+    public static volatile ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
 
     @Test
     public void create_and_update_aggregate_test() {
