@@ -3,6 +3,7 @@ package org.enodeframework.queue.domainevent;
 import com.google.common.base.Strings;
 import org.enodeframework.common.SysProperties;
 import org.enodeframework.common.io.ReplySocketAddress;
+import org.enodeframework.common.io.Task;
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.utilities.InetUtil;
 import org.enodeframework.eventing.DomainEventStreamMessage;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 public class DefaultDomainEventListener implements IMessageHandler {
 
@@ -94,26 +96,26 @@ public class DefaultDomainEventListener implements IMessageHandler {
         }
 
         @Override
-        public void notifyEventProcessed() {
+        public CompletableFuture<Void> notifyEventProcessed() {
             messageContext.onMessageHandled(queueMessage);
             if (!eventConsumer.isSendEventHandledMessage()) {
-                return;
+                return Task.completedTask;
             }
             String address = (String) domainEventStreamMessage.getItems().getOrDefault(SysProperties.ITEMS_COMMAND_REPLY_ADDRESS_KEY, "");
             if (Strings.isNullOrEmpty(address)) {
-                return;
+                return Task.completedTask;
             }
             ReplySocketAddress replyAddress = InetUtil.toSocketAddress(address);
             if (Objects.isNull(replyAddress)) {
                 logger.error("can not parse notify address, {}", domainEventStreamMessage);
-                return;
+                return Task.completedTask;
             }
             String commandResult = (String) domainEventStreamMessage.getItems().getOrDefault(SysProperties.ITEMS_COMMAND_RESULT_KEY, "");
             DomainEventHandledMessage domainEventHandledMessage = new DomainEventHandledMessage();
             domainEventHandledMessage.setCommandId(domainEventStreamMessage.getCommandId());
             domainEventHandledMessage.setAggregateRootId(domainEventStreamMessage.getAggregateRootId());
             domainEventHandledMessage.setCommandResult(commandResult);
-            eventConsumer.getSendReplyService().sendEventReply(domainEventHandledMessage, replyAddress);
+            return eventConsumer.getSendReplyService().sendEventReply(domainEventHandledMessage, replyAddress);
         }
     }
 }

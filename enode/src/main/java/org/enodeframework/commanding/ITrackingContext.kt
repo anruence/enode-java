@@ -6,7 +6,7 @@ interface ITrackingContext {
     /**
      * Get all the tracked aggregates.
      */
-    val trackedAggregateRoots: List<IAggregateRoot?>?
+    val trackedAggregateRoots: List<IAggregateRoot>
 
     /**
      * Clear the tracking context.

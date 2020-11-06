@@ -18,8 +18,8 @@ interface ICommandContext {
     /**
      * Get an aggregate from the current command context.
      */
-    fun <T : IAggregateRoot?> getAsync(id: Any?, firstFromCache: Boolean, clazz: Class<T>?): CompletableFuture<T>?
-    fun <T : IAggregateRoot?> getAsync(id: Any?, clazz: Class<T>?): CompletableFuture<T>?
+    fun <T : IAggregateRoot?> getAsync(id: Any, firstFromCache: Boolean, clazz: Class<T>): CompletableFuture<T>
+    fun <T : IAggregateRoot?> getAsync(id: Any, clazz: Class<T>): CompletableFuture<T>
     var result: String?
     /**
      * Get an application message.

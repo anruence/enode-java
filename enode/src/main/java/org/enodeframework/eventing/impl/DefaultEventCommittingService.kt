@@ -135,7 +135,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
         val commandMailBox = context.processingCommand.mailBox
         val eventMailBox = context.mailBox
         val aggregateRootId = context.eventStream.aggregateRootId
-        commandMailBox!!.pause()
+        commandMailBox.pause()
         eventMailBox.removeAggregateAllEventCommittingContexts(aggregateRootId)
         return memoryCache.refreshAggregateFromEventStoreAsync(context.eventStream.aggregateRootTypeName, aggregateRootId).thenAccept { x: IAggregateRoot? ->
             try {

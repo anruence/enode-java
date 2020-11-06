@@ -1,15 +1,17 @@
 package org.enodeframework.commanding
 
+import java.util.concurrent.CompletableFuture
+
 /**
  * @author anruence@gmail.com
  */
-class ProcessingCommand(val message: ICommand, val commandExecuteContext: ICommandExecuteContext, items: Map<String, Any>) {
-    val items: Map<String, Any>
+class ProcessingCommand(val message: ICommand, val commandExecuteContext: ICommandExecuteContext, items: MutableMap<String, Any>) {
+    val items: MutableMap<String, Any>
     lateinit var mailBox: ProcessingCommandMailbox
     var sequence: Long = 0
     var isDuplicated = false
-    fun completeAsync(commandResult: CommandResult?) {
-        commandExecuteContext.onCommandExecutedAsync(commandResult)
+    fun completeAsync(commandResult: CommandResult): CompletableFuture<Void> {
+        return commandExecuteContext.onCommandExecutedAsync(commandResult)
     }
 
     init {

@@ -1,8 +1,11 @@
 package org.enodeframework.messaging.impl;
 
+import org.enodeframework.common.io.Task;
 import org.enodeframework.eventing.IEventProcessContext;
 import org.enodeframework.queue.IMessageContext;
 import org.enodeframework.queue.QueueMessage;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author anruence@gmail.com
@@ -17,7 +20,8 @@ public class DefaultMessageProcessContext implements IEventProcessContext {
     }
 
     @Override
-    public void notifyEventProcessed() {
+    public CompletableFuture<Void> notifyEventProcessed() {
         messageContext.onMessageHandled(queueMessage);
+        return Task.completedTask;
     }
 }

@@ -12,7 +12,7 @@ interface ICommandService {
      * @param command The command to send.
      * @return A task which contains the send result of the command.
      */
-    fun sendAsync(command: ICommand?): CompletableFuture<Void?>?
+    fun sendAsync(command: ICommand): CompletableFuture<Void>
 
     /**
      * Execute a command asynchronously with the default command return type.
@@ -20,7 +20,7 @@ interface ICommandService {
      * @param command The command to execute.
      * @return A task which contains the result of the command.
      */
-    fun executeAsync(command: ICommand?): CompletableFuture<CommandResult?>?
+    fun executeAsync(command: ICommand): CompletableFuture<CommandResult>
 
     /**
      * Execute a command asynchronously with the specified command return type.
@@ -29,5 +29,5 @@ interface ICommandService {
      * @param commandReturnType The return type of the command.
      * @return A task which contains the result of the command.
      */
-    fun executeAsync(command: ICommand?, commandReturnType: CommandReturnType?): CompletableFuture<CommandResult?>?
+    fun executeAsync(command: ICommand, commandReturnType: CommandReturnType): CompletableFuture<CommandResult>
 }

@@ -37,7 +37,7 @@ public class SendRocketMQService implements ISendMessageService {
                 @Override
                 public void onSuccess(SendResult result) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Enode message async send success, sendResult: {}, message: {}", result, message);
+                        logger.debug("Enode message async send success, sendResult: {}, message: {}", result, new String(message.getBody()));
                     }
                     promise.complete(null);
                 }

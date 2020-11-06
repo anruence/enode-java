@@ -1,10 +1,12 @@
 package org.enodeframework.test.mock;
 
+import org.enodeframework.common.io.Task;
 import org.enodeframework.common.threading.ManualResetEvent;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IEventProcessContext;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class DomainEventStreamProcessContext implements IEventProcessContext {
     private DomainEventStreamMessage domainEventStreamMessage;
@@ -18,10 +20,11 @@ public class DomainEventStreamProcessContext implements IEventProcessContext {
     }
 
     @Override
-    public void notifyEventProcessed() {
+    public CompletableFuture<Void> notifyEventProcessed() {
         versionList.add(domainEventStreamMessage.getVersion());
         if (domainEventStreamMessage.getVersion() == 3) {
             manualResetEvent.set();
         }
+        return Task.completedTask;
     }
 }

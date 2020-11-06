@@ -136,13 +136,14 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         }
     }
 
-    fun completeMessage(message: ProcessingCommand, result: CommandResult?): CompletableFuture<Void> {
+    fun completeMessage(message: ProcessingCommand, result: CommandResult): CompletableFuture<Void> {
         try {
             val removed = messageDict.remove(message.sequence)
             if (removed != null) {
                 duplicateCommandIdDict.remove(message.message.id)
                 lastActiveTime = Date()
-                message.completeAsync(result)
+                message.completeAsync(result);
+                return Task.completedTask
             }
         } catch (ex: Exception) {
             logger.error("{} complete message with result failed, aggregateRootId: {}, messageId: {}, messageSequence: {}, result: {}", javaClass.name, aggregateRootId, message.message.id, message.sequence, result, ex)
@@ -165,7 +166,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
                         if (duplicateCommandIdDict.containsKey(message.message.id)) {
                             message.isDuplicated = true
                         }
-                        messageHandler.handleAsync(message).join();
+                        Task.await(messageHandler.handleAsync(message));
                     }
                     scannedCount++;
                     consumingSequence++;
@@ -176,21 +177,6 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             } finally {
                 completeRun()
             }
-        }
-    }
-
-    fun ProcessMessages() {
-        var scannedCount = 0;
-        while (totalUnHandledMessageCount > 0 && scannedCount < batchSize && !isPauseRequested) {
-            val message = getMessage(consumingSequence)
-            if (message != null) {
-                if (duplicateCommandIdDict.containsKey(message.message.id)) {
-                    message.isDuplicated = true
-                }
-                messageHandler.handleAsync(message)
-            }
-            scannedCount++;
-            consumingSequence++;
         }
     }
 

@@ -7,7 +7,7 @@ import org.enodeframework.queue.domainevent.DomainEventHandledMessage;
 import java.util.concurrent.CompletableFuture;
 
 public interface ISendReplyService {
-    void sendCommandReply(CommandResult replyData, ReplySocketAddress replyAddress);
+    CompletableFuture<Void> sendCommandReply(CommandResult replyData, ReplySocketAddress replyAddress);
 
-    void sendEventReply(DomainEventHandledMessage replyData, ReplySocketAddress replyAddress);
+    CompletableFuture<Void> sendEventReply(DomainEventHandledMessage replyData, ReplySocketAddress replyAddress);
 }
