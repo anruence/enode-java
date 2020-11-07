@@ -35,20 +35,25 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
             return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
         }
         val findResult = getCommandHandler(processingCommand) { commandType: Class<*>? -> commandHandlerProvider.getHandlers(commandType) }
-        if (findResult.findStatus == HandlerFindStatus.Found) {
-            return handleCommandInternal(processingCommand, findResult.findHandler as ICommandHandlerProxy, 0)
-        } else if (findResult.findStatus == HandlerFindStatus.TooManyHandlerData) {
-            logger.error("Found more than one command handler data, commandType:{}, commandId:{}", command.javaClass.name, command.id)
-            return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler data found.")
-        } else if (findResult.findStatus == HandlerFindStatus.TooManyHandler) {
-            logger.error("Found more than one command handler, commandType:{}, commandId:{}", command.javaClass.name, command.id)
-            return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler found.")
-        } else if (findResult.findStatus == HandlerFindStatus.NotFound) {
-            val errorMessage = String.format("No command handler found of command. commandType:%s, commandId:%s", command.javaClass.name, command.id)
-            logger.error(errorMessage)
-            return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
+        when (findResult.findStatus) {
+            HandlerFindStatus.Found -> {
+                return handleCommandInternal(processingCommand, findResult.findHandler as ICommandHandlerProxy, 0)
+            }
+            HandlerFindStatus.TooManyHandlerData -> {
+                logger.error("Found more than one command handler data, commandType:{}, commandId:{}", command.javaClass.name, command.id)
+                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler data found.")
+            }
+            HandlerFindStatus.TooManyHandler -> {
+                logger.error("Found more than one command handler, commandType:{}, commandId:{}", command.javaClass.name, command.id)
+                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler found.")
+            }
+            HandlerFindStatus.NotFound -> {
+                val errorMessage = String.format("No command handler found of command. commandType:%s, commandId:%s", command.javaClass.name, command.id)
+                logger.error(errorMessage)
+                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
+            }
+            else -> return Task.completedTask
         }
-        return Task.completedTask
     }
 
     private fun handleCommandInternal(processingCommand: ProcessingCommand, commandHandler: ICommandHandlerProxy, retryTimes: Int): CompletableFuture<Void> {
@@ -61,7 +66,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         }
         IOHelper.tryAsyncActionRecursivelyWithoutResult("HandleCommandAsync",
                 { commandHandler.handleAsync(commandContext, command) },
-                { result: Void? ->
+                {
                     if (logger.isDebugEnabled) {
                         logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                 commandHandler.innerObject.javaClass.name,
@@ -71,16 +76,16 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                     }
                     if (commandContext.applicationMessage != null) {
                         commitChangesAsync(processingCommand, true, commandContext.applicationMessage, null)
-                                .thenAccept { x: Void? -> taskSource.complete(null) }
+                                .thenAccept { taskSource.complete(null) }
                     } else {
                         try {
-                            commitAggregateChanges(processingCommand).thenAccept { x: Void? -> taskSource.complete(null) }.exceptionally { ex: Throwable ->
+                            commitAggregateChanges(processingCommand).thenAccept { taskSource.complete(null) }.exceptionally { ex: Throwable ->
                                 logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                         commandHandler.innerObject.javaClass.name,
                                         command.javaClass.name,
                                         command.id,
                                         command.aggregateRootId, ex)
-                                completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { x: Void? -> taskSource.complete(null) }
+                                completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(null) }
                                 null
                             }
                         } catch (aggregateRootReferenceChangedException: AggregateRootReferenceChangedException) {
@@ -91,21 +96,21 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                                     command.javaClass.name,
                                     commandHandler.innerObject.javaClass.name
                             )
-                            handleCommandInternal(processingCommand, commandHandler, 0).thenAccept { x: Void? -> taskSource.complete(null) }
+                            handleCommandInternal(processingCommand, commandHandler, 0).thenAccept { taskSource.complete(null) }
                         } catch (e: Exception) {
                             logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                     commandHandler.innerObject.javaClass.name,
                                     command.javaClass.name,
                                     command.id,
                                     command.aggregateRootId, e)
-                            completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { x: Void? -> taskSource.complete(null) }
+                            completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(null) }
                         }
                     }
                 },
                 { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.innerObject.javaClass.name, command.aggregateRootId) },
                 { ex: Throwable, errorMessage: String ->
                     handleExceptionAsync(processingCommand, commandHandler, ex, errorMessage, 0)
-                            .thenAccept { x: Void? -> taskSource.complete(null) }
+                            .thenAccept { taskSource.complete(null) }
                 }, retryTimes)
         return taskSource
     }
@@ -115,7 +120,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         val context = processingCommand.commandExecuteContext
         val trackedAggregateRoots = context.trackedAggregateRoots
         var dirtyAggregateRootCount = 0
-        var dirtyAggregateRoot: IAggregateRoot? = null;
+        var dirtyAggregateRoot: IAggregateRoot? = null
         var changedEvents: List<IDomainEvent<*>> = ArrayList()
         for (aggregateRoot in trackedAggregateRoots) {
             val events = aggregateRoot.changes
@@ -135,11 +140,11 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         //如果当前command没有对任何聚合根做修改，框架仍然需要尝试获取该command之前是否有产生事件，
         //如果有，则需要将事件再次发布到MQ；如果没有，则完成命令，返回command的结果为NothingChanged。
         //之所以要这样做是因为有可能当前command上次执行的结果可能是事件持久化完成，但是发布到MQ未完成，然后那时正好机器断电宕机了；
-        //这种情况下，如果机器重启，当前command对应的聚合根从eventstore恢复的聚合根是被当前command处理过后的；
+        //这种情况下，如果机器重启，当前command对应的聚合根从EventStore恢复的聚合根是被当前command处理过后的；
         //所以如果该command再次被处理，可能对应的聚合根就不会再产生事件了；
         //所以，我们要考虑到这种情况，尝试再次发布该命令产生的事件到MQ；
         //否则，如果我们直接将当前command设置为完成，即对MQ进行ack操作，那该command的事件就永远不会再发布到MQ了，这样就无法保证CQRS数据的最终一致性了。
-        if (dirtyAggregateRootCount == 0 || changedEvents.size == 0) {
+        if (dirtyAggregateRootCount == 0 || changedEvents.isEmpty()) {
             return republishCommandEvents(processingCommand, 0)
         }
         dirtyAggregateRoot!!
@@ -151,10 +156,10 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                 changedEvents,
                 command.items)
         //内存先接受聚合根的更新，需要检查聚合根引用是否已变化，如果已变化，会抛出异常
-        return memoryCache.acceptAggregateRootChanges(dirtyAggregateRoot).thenAccept { x: Void? ->
+        return memoryCache.acceptAggregateRootChanges(dirtyAggregateRoot).thenAccept {
             val commandResult = processingCommand.commandExecuteContext.result
             if (commandResult != null) {
-                processingCommand.items.put(SysProperties.ITEMS_COMMAND_RESULT_KEY, commandResult)
+                processingCommand.items[SysProperties.ITEMS_COMMAND_RESULT_KEY] = commandResult
             }
             //提交事件流进行后续的处理
             eventCommittingService.commitDomainEventAsync(EventCommittingContext(eventStream, processingCommand))
@@ -172,7 +177,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                         future.complete(null)
                     } else {
                         completeCommand(processingCommand, CommandStatus.NothingChanged, String::class.java.name, processingCommand.commandExecuteContext.result)
-                                .thenAccept { x: Void? -> future.complete(null) }
+                                .thenAccept { future.complete(null) }
                     }
                 },
                 { String.format("[commandId:%s]", command.id) },
@@ -199,10 +204,10 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                         val realException = getRealException(exception)
                         if (realException is IDomainException) {
                             publishExceptionAsync(processingCommand, realException as IDomainException, 0)
-                                    .thenAccept { x: Void? -> future.complete(null) }
+                                    .thenAccept { future.complete(null) }
                         } else {
                             completeCommand(processingCommand, CommandStatus.Failed, realException.javaClass.name, exception.message)
-                                    .thenAccept { x: Void? -> future.complete(null) }
+                                    .thenAccept { future.complete(null) }
                         }
                     }
                 },
@@ -227,9 +232,9 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         val future = CompletableFuture<Void?>()
         IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishExceptionAsync",
                 { exceptionPublisher.publishAsync(exception) },
-                { result: Void? ->
+                {
                     completeCommand(processingCommand, CommandStatus.Failed, exception.javaClass.name, (exception as Exception).message)
-                            .thenAccept { x: Void? -> future.complete(null) }
+                            .thenAccept { future.complete(null) }
                 },
                 {
                     val serializableInfo: Map<String, Any> = HashMap()
@@ -257,9 +262,9 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         val future = CompletableFuture<Void>()
         IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishApplicationMessageAsync",
                 { applicationMessagePublisher.publishAsync(message) },
-                { result: Void? ->
+                {
                     completeCommand(processingCommand, CommandStatus.Success, message.javaClass.name, serializeService.serialize(message))
-                            .thenAccept { x: Void? -> future.complete(null) }
+                            .thenAccept { future.complete(null) }
                 },
                 { String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.id, message.javaClass.name, command.id, command.javaClass.name) },
                 null,
@@ -270,7 +275,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
     private fun <T : IObjectProxy?> getCommandHandler(processingCommand: ProcessingCommand, getHandlersFunc: Function<Class<*>, List<MessageHandlerData<T>?>?>): HandlerFindResult<*> {
         val command = processingCommand.message
         val handlerDataList = getHandlersFunc.apply(command.javaClass)
-        if (handlerDataList == null || handlerDataList.size == 0) {
+        if (handlerDataList == null || handlerDataList.isEmpty()) {
             return HandlerFindResult.NotFound
         } else if (handlerDataList.size > 1) {
             return HandlerFindResult.TooManyHandlerData
@@ -297,7 +302,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
 
     internal class HandlerFindResult<T : IObjectProxy?>(var findStatus: HandlerFindStatus, var findHandler: T?) {
 
-        constructor(findStatus: HandlerFindStatus) : this(findStatus, null) {}
+        constructor(findStatus: HandlerFindStatus) : this(findStatus, null)
 
         companion object {
             var NotFound: HandlerFindResult<*> = HandlerFindResult<IObjectProxy>(HandlerFindStatus.NotFound)

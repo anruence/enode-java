@@ -243,8 +243,7 @@ public class EnodeCoreTest extends AbstractTest {
             ChangeTestAggregateTitleCommand updateCommand = new ChangeTestAggregateTitleCommand();
             updateCommand.aggregateRootId = aggregateId;
             updateCommand.setTitle("Changed Note");
-            commandService.executeAsync(updateCommand).thenAccept(result ->
-            {
+            commandService.executeAsync(updateCommand).thenAccept(result -> {
                 Assert.assertNotNull(result);
                 Assert.assertNotNull(result);
                 Assert.assertEquals(CommandStatus.Success, result.getStatus());
@@ -667,7 +666,6 @@ public class EnodeCoreTest extends AbstractTest {
         CreateTestAggregateCommand command1 = new CreateTestAggregateCommand();
         command1.aggregateRootId = noteId;
         command1.setTitle("Sample Title1");
-
         TestEventPriorityCommand command2 = new TestEventPriorityCommand();
         command2.aggregateRootId = noteId;
         CommandResult commandResult1 = Task.await(commandService.executeAsync(command1, CommandReturnType.EventHandled));
@@ -740,7 +738,6 @@ public class EnodeCoreTest extends AbstractTest {
         Assert.assertEquals(1, versionList.get(0).intValue());
         Assert.assertEquals(2, versionList.get(1).intValue());
         Assert.assertEquals(3, versionList.get(2).intValue());
-
         //等待Enode内部异步打印Removed problem aggregate的日志
     }
 

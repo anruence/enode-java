@@ -20,7 +20,7 @@ interface ICommandContext {
      */
     fun <T : IAggregateRoot?> getAsync(id: Any, firstFromCache: Boolean, clazz: Class<T>): CompletableFuture<T>
     fun <T : IAggregateRoot?> getAsync(id: Any, clazz: Class<T>): CompletableFuture<T>
-    var result: String?
+    var result: String
     /**
      * Get an application message.
      */

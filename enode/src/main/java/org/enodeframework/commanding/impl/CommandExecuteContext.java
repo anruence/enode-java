@@ -118,7 +118,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     @Override
     public void clear() {
         trackingAggregateRootDict.clear();
-        result = null;
+        result = "";
     }
 
     @Override
