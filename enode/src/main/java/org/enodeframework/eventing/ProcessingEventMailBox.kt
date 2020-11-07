@@ -1,12 +1,11 @@
 package org.enodeframework.eventing
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.enodeframework.common.exception.MailBoxProcessException
 import org.enodeframework.common.function.Action1
 import org.enodeframework.common.io.Task
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executor
@@ -136,7 +135,7 @@ class ProcessingEventMailBox(aggregateRootTypeName: String, aggregateRootId: Str
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, aggregateRootId: {}", javaClass.name, aggregateRootId)
             }
-            GlobalScope.launch { processMessages() }
+            CompletableFuture.runAsync({ processMessages() }, executor)
         }
     }
 

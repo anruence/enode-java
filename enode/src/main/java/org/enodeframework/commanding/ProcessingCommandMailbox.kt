@@ -1,7 +1,5 @@
 package org.enodeframework.commanding
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import org.enodeframework.common.io.Task
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -72,7 +70,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, aggregateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
             }
-            GlobalScope.async { processMessages() }
+            CompletableFuture.runAsync({ processMessages() }, executor)
         }
     }
 
