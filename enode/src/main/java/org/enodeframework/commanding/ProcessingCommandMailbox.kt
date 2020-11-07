@@ -118,7 +118,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         isPaused = false
         lastActiveTime = Date()
         if (logger.isDebugEnabled) {
-            logger.debug("{} resume requested, aggregateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
+            logger.debug("{} resume requested, agg`regateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
         }
     }
 
@@ -140,8 +140,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             if (removed != null) {
                 duplicateCommandIdDict.remove(message.message.id)
                 lastActiveTime = Date()
-                message.completeAsync(result);
-                return Task.completedTask
+                return message.completeAsync(result);
             }
         } catch (ex: Exception) {
             logger.error("{} complete message with result failed, aggregateRootId: {}, messageId: {}, messageSequence: {}, result: {}", javaClass.name, aggregateRootId, message.message.id, message.sequence, result, ex)

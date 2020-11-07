@@ -160,9 +160,7 @@ public class IOHelper {
                 });
                 return;
             }
-            asyncResult.thenAccept(result -> {
-                executeSuccessAction(result);
-            }).exceptionally(ex -> {
+            asyncResult.thenAccept(this::executeSuccessAction).exceptionally(ex -> {
                 processTaskException(ex);
                 return null;
             });

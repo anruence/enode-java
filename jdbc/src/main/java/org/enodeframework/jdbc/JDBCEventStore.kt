@@ -19,7 +19,6 @@ import org.enodeframework.common.io.IOHelper
 import org.enodeframework.common.serializing.ISerializeService
 import org.enodeframework.common.utilities.Ensure
 import org.enodeframework.eventing.*
-import org.enodeframework.jdbc.JDBCEventStore
 import org.slf4j.LoggerFactory
 import java.sql.SQLException
 import java.util.*
@@ -33,19 +32,18 @@ import javax.sql.DataSource
  */
 abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfiguration, eventSerializer: IEventSerializer, private val serializeService: ISerializeService) : CoroutineVerticle(), IEventStore {
     private val tableName: String
-    private val tableCount: Int
     private val sqlState: String
     private val versionIndexName: String
     private val commandIndexName: String
 
     /**
-     * dataSource 如果使用了分库分表的ShardDataSource，分表则不再需要
+     * 可以使用分库分表的ShardDataSource，不应该在此处提供能力
      */
     private val dataSource: DataSource
     private val eventSerializer: IEventSerializer
     private lateinit var sqlClient: SQLClient
 
-    constructor(dataSource: DataSource, eventSerializer: IEventSerializer, serializeService: ISerializeService) : this(dataSource, DBConfiguration(), eventSerializer, serializeService) {}
+    constructor(dataSource: DataSource, eventSerializer: IEventSerializer, serializeService: ISerializeService) : this(dataSource, DBConfiguration(), eventSerializer, serializeService)
 
     override suspend fun start() {
         sqlClient = JDBCClient.create(vertx, dataSource)
@@ -58,7 +56,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
     override fun batchAppendAsync(eventStreams: List<DomainEventStream>): CompletableFuture<EventAppendResult> {
         val future = CompletableFuture<EventAppendResult>()
         val appendResult = EventAppendResult()
-        if (eventStreams.size == 0) {
+        if (eventStreams.isEmpty()) {
             future.complete(appendResult)
             return future
         }
@@ -96,7 +94,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
     }
 
     private fun batchAppendAggregateEventsAsync(aggregateRootId: String, eventStreamList: List<DomainEventStream>): CompletableFuture<AggregateEventAppendResult?> {
-        val sql = String.format(INSERT_EVENT_SQL, getTableName(aggregateRootId))
+        val sql = String.format(INSERT_EVENT_SQL, tableName)
         val jsonArrays: ArrayList<JsonArray> = Lists.newArrayList()
         for (domainEventStream in eventStreamList) {
             val array = JsonArray()
@@ -111,18 +109,17 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         val future = batchInsertAsync(sql, jsonArrays)
         return future.exceptionally { throwable: Throwable? ->
             if (throwable is SQLException) {
-                val ex = throwable
-                if (sqlState == ex.sqlState && Objects.nonNull(ex.message) && ex.message!!.contains(versionIndexName)) {
+                if (sqlState == throwable.sqlState && Objects.nonNull(throwable.message) && throwable.message!!.contains(versionIndexName)) {
                     val appendResult = AggregateEventAppendResult()
                     appendResult.eventAppendStatus = EventAppendStatus.DuplicateEvent
                     return@exceptionally appendResult
                 }
-                if (sqlState == ex.sqlState && Objects.nonNull(ex.message) && ex.message!!.contains(commandIndexName)) {
+                if (sqlState == throwable.sqlState && throwable.message!!.contains(commandIndexName)) {
                     // Duplicate entry '5d3ac841d1fcfe669e9a257d-5d3ac841d1fcfe669e9a2585' for key 'IX_EventStream_AggId_CommandId'
                     // ERROR: duplicate key value violates unique constraint "event_stream_aggregate_root_id_command_id_key"\n详细：Key (aggregate_root_id, command_id)=(5ee99656d767113d73a7540f, 5ee99656d767113d73a75417) already exists.
                     val appendResult = AggregateEventAppendResult()
                     appendResult.eventAppendStatus = EventAppendStatus.DuplicateCommand
-                    val commandId = parseDuplicateCommandId(ex.message)
+                    val commandId = parseDuplicateCommandId(throwable.message!!)
                     if (!Strings.isNullOrEmpty(commandId)) {
                         appendResult.duplicateCommandIds = Lists.newArrayList(commandId)
                         return@exceptionally appendResult
@@ -153,7 +150,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         }
     }
 
-    protected abstract fun parseDuplicateCommandId(msg: String?): String
+    protected abstract fun parseDuplicateCommandId(msg: String): String
     fun batchInsertAsync(sql: String, jsonArrays: List<JsonArray>): CompletableFuture<AggregateEventAppendResult?> {
         val future = CompletableFuture<AggregateEventAppendResult?>()
         batchWithParams(sql, jsonArrays) { x: AsyncResult<List<Int?>?> ->
@@ -171,7 +168,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
     override fun queryAggregateEventsAsync(aggregateRootId: String, aggregateRootTypeName: String, minVersion: Int, maxVersion: Int): CompletableFuture<List<DomainEventStream>> {
         return IOHelper.tryIOFuncAsync({
             val future = CompletableFuture<List<DomainEventStream>>()
-            val sql = String.format(SELECT_MANY_BY_VERSION_SQL, getTableName(aggregateRootId))
+            val sql = String.format(SELECT_MANY_BY_VERSION_SQL, tableName)
             val array = JsonArray()
             array.add(aggregateRootId)
             array.add(minVersion)
@@ -201,7 +198,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
     override fun findAsync(aggregateRootId: String, version: Int): CompletableFuture<DomainEventStream> {
         return IOHelper.tryIOFuncAsync({
             val future = CompletableFuture<DomainEventStream?>()
-            val sql = String.format(SELECT_ONE_BY_VERSION_SQL, getTableName(aggregateRootId))
+            val sql = String.format(SELECT_ONE_BY_VERSION_SQL, tableName)
             val array = JsonArray()
             array.add(aggregateRootId)
             array.add(version)
@@ -232,7 +229,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
     override fun findAsync(aggregateRootId: String, commandId: String): CompletableFuture<DomainEventStream> {
         return IOHelper.tryIOFuncAsync({
             val future = CompletableFuture<DomainEventStream?>()
-            val sql = String.format(SELECT_ONE_BY_COMMAND_ID_SQL, getTableName(aggregateRootId))
+            val sql = String.format(SELECT_ONE_BY_COMMAND_ID_SQL, tableName)
             val array = JsonArray()
             array.add(aggregateRootId)
             array.add(commandId)
@@ -263,7 +260,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
     override fun getPublishedVersionAsync(aggregateRootTypeName: String, aggregateRootId: String): CompletableFuture<Int> {
         return IOHelper.tryIOFuncAsync({
             val future = CompletableFuture<Int>()
-            val sql = String.format(SELECT_MAX_VERSION_SQL, getTableName(aggregateRootId))
+            val sql = String.format(SELECT_MAX_VERSION_SQL, tableName)
             val array = JsonArray()
             array.add(aggregateRootId)
             array.add(aggregateRootTypeName)
@@ -289,29 +286,13 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         }, "getPublishedVersionAsync")
     }
 
-    private fun getTableIndex(aggregateRootId: String): Int {
-        var hash = aggregateRootId.hashCode()
-        if (hash < 0) {
-            hash = Math.abs(hash)
-        }
-        return hash % tableCount
-    }
-
-    private fun getTableName(aggregateRootId: String): String {
-        if (tableCount <= 1) {
-            return tableName
-        }
-        val tableIndex = getTableIndex(aggregateRootId)
-        return String.format(EVENT_TABLE_NAME_FORMAT, tableName, tableIndex)
-    }
-
     private fun convertFrom(record: StreamRecord): DomainEventStream {
         return DomainEventStream(
                 record.commandId,
                 record.aggregateRootId,
                 record.aggregateRootTypeName,
                 record.gmtCreated,
-                eventSerializer.deserialize(serializeService.deserialize<MutableMap<*, *>>(record.events, MutableMap::class.java) as MutableMap<String, String>?),
+                eventSerializer.deserialize(serializeService.deserialize(record.events, MutableMap::class.java) as MutableMap<String, String>?),
                 Maps.newHashMap())
     }
 
@@ -366,12 +347,11 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
 
     companion object {
         private val logger = LoggerFactory.getLogger(JDBCEventStore::class.java)
-        private const val EVENT_TABLE_NAME_FORMAT = "%s_%s"
         private const val INSERT_EVENT_SQL = "INSERT INTO %s (aggregate_root_id, aggregate_root_type_name, command_id, version, gmt_create, events) VALUES (?, ?, ?, ?, ?, ?)"
         private const val SELECT_MANY_BY_VERSION_SQL = "SELECT * FROM %s WHERE aggregate_root_id = ? AND version >= ? AND Version <= ? ORDER BY version"
         private const val SELECT_ONE_BY_VERSION_SQL = "SELECT * FROM %s WHERE aggregate_root_id = ? AND version = ?"
         private const val SELECT_ONE_BY_COMMAND_ID_SQL = "SELECT * FROM %s WHERE aggregate_root_id = ? AND command_id = ?"
-        private const val SELECT_MAX_VERSION_SQL = "SELECT max(version) AS version FROM %s WHERE aggregate_root_id = ? AND aggregate_root_type_name = ?"
+        private const val SELECT_MAX_VERSION_SQL = "SELECT MAX(version) AS version FROM %s WHERE aggregate_root_id = ? AND aggregate_root_type_name = ?"
     }
 
     init {
@@ -381,7 +361,6 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         this.eventSerializer = eventSerializer
         this.dataSource = dataSource
         tableName = dbConfiguration.eventTableName
-        tableCount = dbConfiguration.eventTableCount
         sqlState = dbConfiguration.sqlState
         versionIndexName = dbConfiguration.eventTableVersionUniqueIndexName
         commandIndexName = dbConfiguration.eventTableCommandIdUniqueIndexName

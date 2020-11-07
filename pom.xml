@@ -39,6 +39,7 @@
         <maven.flatten.version>1.1.0</maven.flatten.version>
         <maven.enforce.version>3.0.0-M2</maven.enforce.version>
         <kotlin.version>1.4.10</kotlin.version>
+        <kotlin.coroutines.version>1.4.1</kotlin.coroutines.version>
     </properties>
 
     <name>${project.artifactId}</name>
@@ -107,7 +108,7 @@
             <dependency>
                 <groupId>org.jetbrains.kotlinx</groupId>
                 <artifactId>kotlinx-coroutines-core</artifactId>
-                <version>1.4.1</version>
+                <version>${kotlin.coroutines.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -159,12 +160,10 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
                 <executions>
-                    <!-- 替换会被 maven 特别处理的 default-compile -->
                     <execution>
                         <id>default-compile</id>
                         <phase>none</phase>
                     </execution>
-                    <!-- 替换会被 maven 特别处理的 default-testCompile -->
                     <execution>
                         <id>default-testCompile</id>
                         <phase>none</phase>

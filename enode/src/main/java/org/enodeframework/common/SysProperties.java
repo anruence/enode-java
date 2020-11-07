@@ -13,18 +13,4 @@ public class SysProperties {
 
     public static final String ITEMS_COMMAND_REPLY_ADDRESS_KEY = "COMMAND_REPLY_ADDRESS";
 
-    /**
-     * socket server RecordParser 使用的分隔符
-     */
-    public static final String DELIMITED = "**|**";
-
-    /**
-     * 默认等待执行结果的超时时间，10s
-     */
-    public static final int COMPLETION_SOURCE_TIMEOUT = 10 * 1000;
-
-    /**
-     * 接收Command执行结果服务启动时默认的端口
-     */
-    public static final int PORT = 2019;
 }

@@ -158,9 +158,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         //内存先接受聚合根的更新，需要检查聚合根引用是否已变化，如果已变化，会抛出异常
         return memoryCache.acceptAggregateRootChanges(dirtyAggregateRoot).thenAccept {
             val commandResult = processingCommand.commandExecuteContext.result
-            if (commandResult != null) {
-                processingCommand.items[SysProperties.ITEMS_COMMAND_RESULT_KEY] = commandResult
-            }
+            processingCommand.items[SysProperties.ITEMS_COMMAND_RESULT_KEY] = commandResult
             //提交事件流进行后续的处理
             eventCommittingService.commitDomainEventAsync(EventCommittingContext(eventStream, processingCommand))
         }
