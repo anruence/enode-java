@@ -193,7 +193,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
                         //有可能事件持久化成功了，但那时正好机器断电了，则发布事件都没有做；
                         if (context.processingCommand.message.id == result.commandId) {
                             resetCommandMailBoxConsumingSequence(context, context.processingCommand.sequence + 1, null)
-                                    .thenAccept { x: Void? ->
+                                    .thenAccept {
                                         publishDomainEventAsync(context.processingCommand, result)
                                         future.complete(null)
                                     }
@@ -206,10 +206,10 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
                                     result.aggregateRootTypeName)
                             logger.error(errorMessage)
                             resetCommandMailBoxConsumingSequence(context, context.processingCommand.sequence + 1, null)
-                                    .thenAccept { x: Void? ->
+                                    .thenAccept {
                                         val commandResult = CommandResult(CommandStatus.Failed, context.processingCommand.message.id, context.eventStream.aggregateRootId, "Duplicate aggregate creation.", String::class.java.name)
                                         completeCommand(context.processingCommand, commandResult)
-                                                .thenAccept { c: Void? -> future.complete(null) }
+                                                .thenAccept { future.complete(null) }
                                     }
                         }
                     } else {
@@ -218,10 +218,10 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
                                 context.eventStream.aggregateRootId,
                                 context.eventStream.aggregateRootTypeName)
                         logger.error(errorMessage)
-                        resetCommandMailBoxConsumingSequence(context, context.processingCommand.sequence + 1, null).thenAccept { x: Void? ->
+                        resetCommandMailBoxConsumingSequence(context, context.processingCommand.sequence + 1, null).thenAccept {
                             val commandResult = CommandResult(CommandStatus.Failed, context.processingCommand.message.id, context.eventStream.aggregateRootId, "Duplicate aggregate creation, but we cannot find the existing eventstream from eventstore.", String::class.java.name)
                             completeCommand(context.processingCommand, commandResult)
-                                    .thenAccept { c: Void? -> future.complete(null) }
+                                    .thenAccept { future.complete(null) }
                         }
                     }
                 },
@@ -233,7 +233,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
     private fun publishDomainEventAsync(processingCommand: ProcessingCommand, eventStream: DomainEventStreamMessage, retryTimes: Int) {
         IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishDomainEventAsync",
                 { domainEventPublisher.publishAsync(eventStream) },
-                { result: Void? ->
+                {
                     if (logger.isDebugEnabled) {
                         logger.debug("Publish domain events success, {}", serializeService.serialize(eventStream))
                     }

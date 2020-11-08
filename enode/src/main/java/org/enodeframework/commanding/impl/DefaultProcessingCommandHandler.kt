@@ -111,7 +111,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                 { ex: Throwable, errorMessage: String ->
                     handleExceptionAsync(processingCommand, commandHandler, ex, errorMessage, 0)
                             .thenAccept { taskSource.complete(null) }
-                }, retryTimes)
+                }, retryTimes, false)
         return taskSource
     }
 

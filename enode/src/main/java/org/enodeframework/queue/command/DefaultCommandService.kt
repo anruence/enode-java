@@ -30,7 +30,7 @@ class DefaultCommandService(private val topic: String, private val tag: String, 
             Ensure.notNull(commandResultProcessor, "commandResultProcessor")
             commandResultProcessor.registerProcessingCommand(command, commandReturnType, taskCompletionSource)
             val sendMessageAsync = sendMessageService.sendMessageAsync(buildCommandMessage(command, true))
-            sendMessageAsync.thenAccept { sendResult: Void? -> }.exceptionally { ex: Throwable? ->
+            sendMessageAsync.exceptionally { ex: Throwable? ->
                 commandResultProcessor.processFailedSendingCommand(command)
                 taskCompletionSource.completeExceptionally(ex)
                 null

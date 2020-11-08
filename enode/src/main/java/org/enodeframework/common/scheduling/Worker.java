@@ -50,10 +50,6 @@ public class Worker {
         while (this.status == Status.Running) {
             try {
                 action.apply();
-            } catch (InterruptedException e) {
-                if (status != Status.StopRequested) {
-                    logger.info("Worker thread caught ThreadAbortException, try to resetting, actionName:{}", actionName);
-                }
             } catch (Exception ex) {
                 logger.error(String.format("Worker thread has exception, actionName:%s", actionName), ex);
             }
