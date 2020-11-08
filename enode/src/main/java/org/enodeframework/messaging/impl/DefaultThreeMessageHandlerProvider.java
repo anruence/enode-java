@@ -7,6 +7,7 @@ import org.enodeframework.infrastructure.impl.AbstractHandlerProvider;
 import org.enodeframework.infrastructure.impl.ManyType;
 import org.enodeframework.messaging.IMessageHandlerProxy3;
 import org.enodeframework.messaging.IThreeMessageHandlerProvider;
+import org.enodeframework.messaging.MessageHandlerData;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import java.util.List;
 /**
  * @author anruence@gmail.com
  */
-public class DefaultThreeMessageHandlerProvider extends AbstractHandlerProvider<ManyType, IMessageHandlerProxy3, List<Class>> implements IThreeMessageHandlerProvider {
+public class DefaultThreeMessageHandlerProvider extends AbstractHandlerProvider<ManyType, IMessageHandlerProxy3, List<Class<?>>> implements IThreeMessageHandlerProvider {
 
     @Override
     protected ManyType getKey(Method method) {
@@ -28,8 +29,8 @@ public class DefaultThreeMessageHandlerProvider extends AbstractHandlerProvider<
     }
 
     @Override
-    protected boolean isHandlerSourceMatchKey(List<Class> handlerSource, ManyType key) {
-        for (Class type : key.getTypes()) {
+    protected boolean isHandlerSourceMatchKey(List<Class<?>> handlerSource, ManyType key) {
+        for (Class<?> type : key.getTypes()) {
             if (!handlerSource.stream().anyMatch(x -> x == type)) {
                 return false;
             }

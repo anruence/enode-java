@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author anruence@gmail.com
  */
-public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<ManyType, IMessageHandlerProxy2, List<Class>> implements ITwoMessageHandlerProvider {
+public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<ManyType, IMessageHandlerProxy2, List<Class<?>>> implements ITwoMessageHandlerProvider {
 
     @Override
     protected ManyType getKey(Method method) {
@@ -28,8 +28,8 @@ public class DefaultTwoMessageHandlerProvider extends AbstractHandlerProvider<Ma
     }
 
     @Override
-    protected boolean isHandlerSourceMatchKey(List<Class> handlerSource, ManyType key) {
-        for (Class type : key.getTypes()) {
+    protected boolean isHandlerSourceMatchKey(List<Class<?>> handlerSource, ManyType key) {
+        for (Class<?> type : key.getTypes()) {
             if (!handlerSource.stream().anyMatch(x -> x == type)) {
                 return false;
             }

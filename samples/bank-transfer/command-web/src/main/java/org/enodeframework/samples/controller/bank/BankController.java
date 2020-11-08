@@ -8,7 +8,10 @@ import org.enodeframework.samples.commands.bank.StartTransferTransactionCommand;
 import org.enodeframework.samples.domain.bank.transfertransaction.TransferTransactionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.CountDownLatch;
 
 @RestController
 @RequestMapping("/bank")
@@ -17,7 +20,7 @@ public class BankController {
     private ICommandService commandService;
 
     @RequestMapping("deposit")
-    public String deposit() throws Exception {
+    public String deposit() {
         String account1 = ObjectId.generateNewStringId();
         String account2 = ObjectId.generateNewStringId();
         String account3 = "INVALID-" + ObjectId.generateNewStringId();
@@ -41,5 +44,21 @@ public class BankController {
     public String transfer() {
 
         return "success";
+    }
+
+    @RequestMapping("perf")
+    public String test(@RequestParam("count") int totalCount) throws Exception {
+        long start = System.currentTimeMillis();
+        CountDownLatch latch = new CountDownLatch(totalCount);
+        for (int i = 0; i < totalCount; i++) {
+            try {
+                deposit();
+            } finally {
+                latch.countDown();
+            }
+        }
+        latch.await();
+        long end = System.currentTimeMillis();
+        return String.valueOf(end - start);
     }
 }

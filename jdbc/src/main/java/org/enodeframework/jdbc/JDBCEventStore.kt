@@ -124,9 +124,8 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
                         appendResult.duplicateCommandIds = Lists.newArrayList(commandId)
                         return@exceptionally appendResult
                     }
-                    // 如果没有从异常信息获取到commandId(很低概率获取不到)，兜底从db查询出来，此时选择的策略是从最后一个开始查
-                    // 但是Vert.x的线程模型决定了不能再次使用eventloop线程执行阻塞的查询操作
-                    tryFindEventByCommandIdAsyncRecursion(eventStreamList.size, aggregateRootId, eventStreamList, appendResult.duplicateCommandIds, 0)
+                    // 如果没有从异常信息获取到commandId(很低概率获取不到)，需要从db查询出来
+                    // 但是Vert.x的线程模型决定了不能再次使用EventLoop线程执行阻塞的查询操作
                     return@exceptionally appendResult
                 }
                 logger.error("Batch append event has sql exception.", throwable)
@@ -134,19 +133,6 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
             }
             logger.error("Batch append event has unknown exception.", throwable)
             throw EventStoreException(throwable)
-        }
-    }
-
-    private fun tryFindEventByCommandIdAsyncRecursion(i: Int, aggregateRootId: String, eventStreamList: List<DomainEventStream>, duplicateCommandIds: MutableList<String>, retryTimes: Int) {
-        if (i == 0) {
-            return
-        }
-        val eventStream = eventStreamList[i - 1]
-        tryFindEventByCommandIdAsync(aggregateRootId, eventStream.commandId, duplicateCommandIds, retryTimes).thenAccept { x: DomainEventStream? ->
-            if (x != null) {
-                return@thenAccept
-            }
-            tryFindEventByCommandIdAsyncRecursion(i - 1, aggregateRootId, eventStreamList, duplicateCommandIds, 0)
         }
     }
 

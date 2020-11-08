@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/note")
@@ -42,8 +41,6 @@ public class NoteController {
                     @RequestParam(required = false, name = "mode", defaultValue = "0") int mode) throws Exception {
         long start = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(totalCount);
-        AtomicInteger success = new AtomicInteger(0);
-        AtomicInteger failed = new AtomicInteger(0);
         for (int i = 0; i < totalCount; i++) {
             CreateNoteCommand command = new CreateNoteCommand(ObjectId.generateNewStringId(), "Sample Note" + ObjectId.generateNewStringId());
             command.setId(String.valueOf(i));
@@ -68,8 +65,6 @@ public class NoteController {
         long end = System.currentTimeMillis();
         Map map = new HashMap();
         map.put("time", end - start);
-        map.put("success", success.get());
-        map.put("failed", failed.get());
         return map;
     }
 }

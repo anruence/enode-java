@@ -22,7 +22,7 @@ import java.util.stream.Collectors
 class DefaultEventCommittingService(private val memoryCache: IMemoryCache, private val eventStore: IEventStore, private val serializeService: ISerializeService, private val domainEventPublisher: IMessagePublisher<DomainEventStreamMessage?>, private val eventMailBoxCount: Int, private val executor: Executor?) : IEventCommittingService {
     private val eventCommittingContextMailBoxList: MutableList<EventCommittingContextMailBox>
 
-    constructor(memoryCache: IMemoryCache, eventStore: IEventStore, serializeService: ISerializeService, domainEventPublisher: IMessagePublisher<DomainEventStreamMessage?>, executor: Executor?) : this(memoryCache, eventStore, serializeService, domainEventPublisher, 4, executor) {}
+    constructor(memoryCache: IMemoryCache, eventStore: IEventStore, serializeService: ISerializeService, domainEventPublisher: IMessagePublisher<DomainEventStreamMessage?>, executor: Executor?) : this(memoryCache, eventStore, serializeService, domainEventPublisher, 4, executor)
 
     override fun commitDomainEventAsync(eventCommittingContext: EventCommittingContext) {
         val eventMailboxIndex = getEventMailBoxIndex(eventCommittingContext.eventStream.aggregateRootId)

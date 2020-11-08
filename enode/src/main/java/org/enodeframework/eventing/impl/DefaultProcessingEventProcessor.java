@@ -129,8 +129,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
                     processingEvent.complete();
                 },
                 () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", processingEvent.getMessage().getId(), processingEvent.getMessage().getClass().getName(), processingEvent.getMessage().getAggregateRootId(), processingEvent.getMessage().getVersion()),
-                null,
-                retryTimes, true);
+                null, retryTimes, true);
     }
 
     private void processToRefreshAggregateRootMailBoxs() {
