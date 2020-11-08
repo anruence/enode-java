@@ -49,7 +49,7 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
         return getAsync(aggregateRootId, IAggregateRoot::class.java)
     }
 
-    override fun acceptAggregateRootChanges(aggregateRoot: IAggregateRoot): CompletableFuture<Void> {
+    override fun acceptAggregateRootChanges(aggregateRoot: IAggregateRoot): CompletableFuture<Boolean> {
         synchronized(lockObj) {
             Ensure.notNull(aggregateRoot, "aggregateRoot")
             val cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.uniqueId) { x: String? ->
@@ -74,11 +74,6 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
         val future = CompletableFuture<IAggregateRoot>()
         return try {
             val aggregateRootType = typeNameProvider.getType(aggregateRootTypeName) as Class<IAggregateRoot>
-            if (aggregateRootType == null) {
-                logger.error("Could not find aggregate root type by aggregate root type name [{}].", aggregateRootTypeName)
-                future.complete(null)
-                return future
-            }
             refreshAggregateFromEventStoreAsync(aggregateRootType, aggregateRootId)
         } catch (e: Exception) {
             future.completeExceptionally(e)

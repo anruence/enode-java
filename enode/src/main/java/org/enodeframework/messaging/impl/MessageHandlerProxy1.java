@@ -19,14 +19,14 @@ public class MessageHandlerProxy1 implements IMessageHandlerProxy1 {
     private Method method;
 
     @Override
-    public CompletableFuture<Void> handleAsync(IMessage message) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+    public CompletableFuture<Boolean> handleAsync(IMessage message) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
         try {
             Object result = methodHandle.invoke(getInnerObject(), message);
             if (result instanceof CompletableFuture) {
-                return (CompletableFuture<Void>) result;
+                return (CompletableFuture) result;
             }
-            future.complete(null);
+            future.complete(true);
         } catch (Throwable throwable) {
             future.completeExceptionally(throwable);
         }

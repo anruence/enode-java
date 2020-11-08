@@ -8,34 +8,34 @@ import org.enodeframework.messaging.IMessagePublisher;
 import java.util.concurrent.CompletableFuture;
 
 public class MockPublishableExceptionPublisher implements IMessagePublisher<IDomainException> {
-    private static CompletableFuture<Void> _successResultTask = CompletableFuture.completedFuture(null);
-    private int _expectFailedCount = 0;
-    private int _currentFailedCount = 0;
-    private FailedType _failedType;
+    private static CompletableFuture<Boolean> successResultTask = CompletableFuture.completedFuture(true);
+    private int expectFailedCount = 0;
+    private int currentFailedCount = 0;
+    private FailedType failedType;
 
     public void Reset() {
-        _failedType = FailedType.None;
-        _expectFailedCount = 0;
-        _currentFailedCount = 0;
+        failedType = FailedType.None;
+        expectFailedCount = 0;
+        currentFailedCount = 0;
     }
 
     public void SetExpectFailedCount(FailedType failedType, int count) {
-        _failedType = failedType;
-        _expectFailedCount = count;
+        this.failedType = failedType;
+        expectFailedCount = count;
     }
 
     @Override
-    public CompletableFuture<Void> publishAsync(IDomainException message) {
-        if (_currentFailedCount < _expectFailedCount) {
-            _currentFailedCount++;
-            if (_failedType == FailedType.UnKnownException) {
-                throw new EnodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
-            } else if (_failedType == FailedType.IOException) {
-                throw new IORuntimeException("PublishPublishableExceptionAsyncIOException" + _currentFailedCount);
-            } else if (_failedType == FailedType.TaskIOException) {
-                throw new EnodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + _currentFailedCount);
+    public CompletableFuture<Boolean> publishAsync(IDomainException message) {
+        if (currentFailedCount < expectFailedCount) {
+            currentFailedCount++;
+            if (failedType == FailedType.UnKnownException) {
+                throw new EnodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + currentFailedCount);
+            } else if (failedType == FailedType.IOException) {
+                throw new IORuntimeException("PublishPublishableExceptionAsyncIOException" + currentFailedCount);
+            } else if (failedType == FailedType.TaskIOException) {
+                throw new EnodeRuntimeException("PublishPublishableExceptionAsyncUnKnownException" + currentFailedCount);
             }
         }
-        return _successResultTask;
+        return successResultTask;
     }
 }

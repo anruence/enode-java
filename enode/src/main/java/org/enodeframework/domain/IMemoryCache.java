@@ -16,7 +16,7 @@ public interface IMemoryCache {
     /**
      * Accept the given aggregate root's changes.
      */
-    CompletableFuture<Void> acceptAggregateRootChanges(IAggregateRoot aggregateRoot);
+    CompletableFuture<Boolean> acceptAggregateRootChanges(IAggregateRoot aggregateRoot);
 
     /**
      * Refresh the aggregate memory cache by replaying events of event store, and return the refreshed aggregate root.

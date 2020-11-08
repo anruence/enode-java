@@ -12,7 +12,7 @@ interface ICommandService {
      * @param command The command to send.
      * @return A task which contains the send result of the command.
      */
-    fun sendAsync(command: ICommand): CompletableFuture<Void>
+    fun sendAsync(command: ICommand): CompletableFuture<Boolean>
 
     /**
      * Execute a command asynchronously with the default command return type.

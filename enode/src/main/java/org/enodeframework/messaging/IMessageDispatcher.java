@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface IMessageDispatcher {
-    CompletableFuture<Void> dispatchMessageAsync(IMessage message);
+    CompletableFuture<Boolean> dispatchMessageAsync(IMessage message);
 
-    CompletableFuture<Void> dispatchMessagesAsync(List<? extends IMessage> messages);
+    CompletableFuture<Boolean> dispatchMessagesAsync(List<? extends IMessage> messages);
 }

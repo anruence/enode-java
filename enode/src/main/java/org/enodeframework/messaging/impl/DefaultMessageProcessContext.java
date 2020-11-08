@@ -20,7 +20,7 @@ public class DefaultMessageProcessContext implements IEventProcessContext {
     }
 
     @Override
-    public CompletableFuture<Void> notifyEventProcessed() {
+    public CompletableFuture<Boolean> notifyEventProcessed() {
         messageContext.onMessageHandled(queueMessage);
         return Task.completedTask;
     }

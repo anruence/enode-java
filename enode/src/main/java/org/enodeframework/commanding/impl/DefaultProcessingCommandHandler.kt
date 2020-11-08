@@ -27,7 +27,7 @@ import java.util.stream.Collectors
  * @author anruence@gmail.com
  */
 class DefaultProcessingCommandHandler(private val eventStore: IEventStore, private val commandHandlerProvider: ICommandHandlerProvider, private val typeNameProvider: ITypeNameProvider, private val eventCommittingService: IEventCommittingService, private val memoryCache: IMemoryCache, private val applicationMessagePublisher: IMessagePublisher<IApplicationMessage>, private val exceptionPublisher: IMessagePublisher<IDomainException>, private val serializeService: ISerializeService) : IProcessingCommandHandler {
-    override fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Void> {
+    override fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
         val command = processingCommand.message
         if (Strings.isNullOrEmpty(command.aggregateRootId)) {
             val errorMessage = String.format("The aggregateRootId of command cannot be null or empty. commandType:%s, commandId:%s", command.javaClass.name, command.id)
@@ -56,10 +56,10 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         }
     }
 
-    private fun handleCommandInternal(processingCommand: ProcessingCommand, commandHandler: ICommandHandlerProxy, retryTimes: Int): CompletableFuture<Void> {
+    private fun handleCommandInternal(processingCommand: ProcessingCommand, commandHandler: ICommandHandlerProxy, retryTimes: Int): CompletableFuture<Boolean> {
         val command = processingCommand.message
         val commandContext = processingCommand.commandExecuteContext
-        val taskSource = CompletableFuture<Void>()
+        val taskSource = CompletableFuture<Boolean>()
         commandContext.clear()
         if (processingCommand.isDuplicated) {
             return republishCommandEvents(processingCommand, 0)
@@ -76,16 +76,16 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                     }
                     if (commandContext.applicationMessage != null) {
                         commitChangesAsync(processingCommand, true, commandContext.applicationMessage, null)
-                                .thenAccept { taskSource.complete(null) }
+                                .thenAccept { taskSource.complete(true) }
                     } else {
                         try {
-                            commitAggregateChanges(processingCommand).thenAccept { taskSource.complete(null) }.exceptionally { ex: Throwable ->
+                            commitAggregateChanges(processingCommand).thenAccept { taskSource.complete(true) }.exceptionally { ex: Throwable ->
                                 logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                         commandHandler.innerObject.javaClass.name,
                                         command.javaClass.name,
                                         command.id,
                                         command.aggregateRootId, ex)
-                                completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(null) }
+                                completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
                                 null
                             }
                         } catch (aggregateRootReferenceChangedException: AggregateRootReferenceChangedException) {
@@ -96,26 +96,26 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                                     command.javaClass.name,
                                     commandHandler.innerObject.javaClass.name
                             )
-                            handleCommandInternal(processingCommand, commandHandler, 0).thenAccept { taskSource.complete(null) }
+                            handleCommandInternal(processingCommand, commandHandler, 0).thenAccept { taskSource.complete(true) }
                         } catch (e: Exception) {
                             logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                     commandHandler.innerObject.javaClass.name,
                                     command.javaClass.name,
                                     command.id,
                                     command.aggregateRootId, e)
-                            completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(null) }
+                            completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
                         }
                     }
                 },
                 { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.innerObject.javaClass.name, command.aggregateRootId) },
                 { ex: Throwable, errorMessage: String ->
                     handleExceptionAsync(processingCommand, commandHandler, ex, errorMessage, 0)
-                            .thenAccept { taskSource.complete(null) }
+                            .thenAccept { taskSource.complete(true) }
                 }, retryTimes, false)
         return taskSource
     }
 
-    private fun commitAggregateChanges(processingCommand: ProcessingCommand): CompletableFuture<Void> {
+    private fun commitAggregateChanges(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
         val command = processingCommand.message
         val context = processingCommand.commandExecuteContext
         val trackedAggregateRoots = context.trackedAggregateRoots
@@ -156,26 +156,27 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                 changedEvents,
                 command.items)
         //内存先接受聚合根的更新，需要检查聚合根引用是否已变化，如果已变化，会抛出异常
-        return memoryCache.acceptAggregateRootChanges(dirtyAggregateRoot).thenAccept {
+        return memoryCache.acceptAggregateRootChanges(dirtyAggregateRoot).thenApply {
             val commandResult = processingCommand.commandExecuteContext.result
             processingCommand.items[SysProperties.ITEMS_COMMAND_RESULT_KEY] = commandResult
             //提交事件流进行后续的处理
             eventCommittingService.commitDomainEventAsync(EventCommittingContext(eventStream, processingCommand))
+            true
         }
     }
 
-    private fun republishCommandEvents(processingCommand: ProcessingCommand, retryTimes: Int): CompletableFuture<Void> {
-        val future = CompletableFuture<Void>()
+    private fun republishCommandEvents(processingCommand: ProcessingCommand, retryTimes: Int): CompletableFuture<Boolean> {
+        val future = CompletableFuture<Boolean>()
         val command = processingCommand.message
         IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
                 { eventStore.findAsync(command.aggregateRootId, command.id) },
                 { result: DomainEventStream? ->
                     if (result != null) {
                         eventCommittingService.publishDomainEventAsync(processingCommand, result)
-                        future.complete(null)
+                        future.complete(true)
                     } else {
                         completeCommand(processingCommand, CommandStatus.NothingChanged, String::class.java.name, processingCommand.commandExecuteContext.result)
-                                .thenAccept { future.complete(null) }
+                                .thenAccept { future.complete(true) }
                     }
                 },
                 { String.format("[commandId:%s]", command.id) },
@@ -183,9 +184,9 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return future
     }
 
-    private fun handleExceptionAsync(processingCommand: ProcessingCommand, commandHandler: ICommandHandlerProxy, exception: Throwable, errorMessage: String, retryTimes: Int): CompletableFuture<Void?> {
+    private fun handleExceptionAsync(processingCommand: ProcessingCommand, commandHandler: ICommandHandlerProxy, exception: Throwable, errorMessage: String, retryTimes: Int): CompletableFuture<Boolean> {
         val command = processingCommand.message
-        val future = CompletableFuture<Void?>()
+        val future = CompletableFuture<Boolean>()
         IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
                 { eventStore.findAsync(command.aggregateRootId, command.id) },
                 { result: DomainEventStream? ->
@@ -194,7 +195,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                         //之所以要这样做是因为虽然该command产生的事件已经持久化成功，但并不表示事件已经发布出去了；
                         //因为有可能事件持久化成功了，但那时正好机器断电了，则发布事件就没有做；
                         eventCommittingService.publishDomainEventAsync(processingCommand, result)
-                        future.complete(null)
+                        future.complete(true)
                     } else {
                         //到这里，说明当前command执行遇到异常，然后当前command之前也没执行过，是第一次被执行。
                         //那就判断当前异常是否是需要被发布出去的异常，如果是，则发布该异常给所有消费者；
@@ -202,10 +203,10 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                         val realException = getRealException(exception)
                         if (realException is IDomainException) {
                             publishExceptionAsync(processingCommand, realException as IDomainException, 0)
-                                    .thenAccept { future.complete(null) }
+                                    .thenAccept { future.complete(true) }
                         } else {
                             completeCommand(processingCommand, CommandStatus.Failed, realException.javaClass.name, exception.message)
-                                    .thenAccept { future.complete(null) }
+                                    .thenAccept { future.complete(true) }
                         }
                     }
                 },
@@ -225,14 +226,14 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return exception
     }
 
-    private fun publishExceptionAsync(processingCommand: ProcessingCommand, exception: IDomainException, retryTimes: Int): CompletableFuture<Void?> {
+    private fun publishExceptionAsync(processingCommand: ProcessingCommand, exception: IDomainException, retryTimes: Int): CompletableFuture<Boolean> {
         exception.mergeItems(processingCommand.message.items)
-        val future = CompletableFuture<Void?>()
+        val future = CompletableFuture<Boolean>()
         IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishExceptionAsync",
                 { exceptionPublisher.publishAsync(exception) },
                 {
                     completeCommand(processingCommand, CommandStatus.Failed, exception.javaClass.name, (exception as Exception).message)
-                            .thenAccept { future.complete(null) }
+                            .thenAccept { future.complete(true) }
                 },
                 {
                     val serializableInfo: Map<String, Any> = HashMap()
@@ -244,7 +245,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return future
     }
 
-    private fun commitChangesAsync(processingCommand: ProcessingCommand, success: Boolean, message: IApplicationMessage?, errorMessage: String?): CompletableFuture<Void> {
+    private fun commitChangesAsync(processingCommand: ProcessingCommand, success: Boolean, message: IApplicationMessage?, errorMessage: String?): CompletableFuture<Boolean> {
         if (success) {
             if (message != null) {
                 message.mergeItems(processingCommand.message.items)
@@ -255,14 +256,14 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
     }
 
-    private fun publishMessageAsync(processingCommand: ProcessingCommand, message: IApplicationMessage, retryTimes: Int): CompletableFuture<Void> {
+    private fun publishMessageAsync(processingCommand: ProcessingCommand, message: IApplicationMessage, retryTimes: Int): CompletableFuture<Boolean> {
         val command = processingCommand.message
-        val future = CompletableFuture<Void>()
+        val future = CompletableFuture<Boolean>()
         IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishApplicationMessageAsync",
                 { applicationMessagePublisher.publishAsync(message) },
                 {
                     completeCommand(processingCommand, CommandStatus.Success, message.javaClass.name, serializeService.serialize(message))
-                            .thenAccept { future.complete(null) }
+                            .thenAccept { future.complete(true) }
                 },
                 { String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.id, message.javaClass.name, command.id, command.javaClass.name) },
                 null,
@@ -289,7 +290,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                 .orElseGet { HandlerFindResult.NotFound as HandlerFindResult<T>? }
     }
 
-    private fun completeCommand(processingCommand: ProcessingCommand, commandStatus: CommandStatus, resultType: String?, result: String?): CompletableFuture<Void> {
+    private fun completeCommand(processingCommand: ProcessingCommand, commandStatus: CommandStatus, resultType: String?, result: String?): CompletableFuture<Boolean> {
         val commandResult = CommandResult(commandStatus, processingCommand.message.id, processingCommand.message.aggregateRootId, result, resultType)
         return processingCommand.mailBox.completeMessage(processingCommand, commandResult)
     }

@@ -20,7 +20,7 @@ public class DomainEventStreamProcessContext implements IEventProcessContext {
     }
 
     @Override
-    public CompletableFuture<Void> notifyEventProcessed() {
+    public CompletableFuture<Boolean> notifyEventProcessed() {
         versionList.add(domainEventStreamMessage.getVersion());
         if (domainEventStreamMessage.getVersion() == 3) {
             manualResetEvent.set();

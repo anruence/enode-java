@@ -96,7 +96,7 @@ public class DefaultDomainEventListener implements IMessageHandler {
         }
 
         @Override
-        public CompletableFuture<Void> notifyEventProcessed() {
+        public CompletableFuture<Boolean> notifyEventProcessed() {
             messageContext.onMessageHandled(queueMessage);
             if (!eventConsumer.isSendEventHandledMessage()) {
                 return Task.completedTask;

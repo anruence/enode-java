@@ -8,7 +8,7 @@ import org.enodeframework.messaging.IMessagePublisher;
 import java.util.concurrent.CompletableFuture;
 
 public class MockApplicationMessagePublisher implements IMessagePublisher<IApplicationMessage> {
-    private static CompletableFuture<Void> successResultTask = CompletableFuture.completedFuture(null);
+    private static CompletableFuture<Boolean> successResultTask = CompletableFuture.completedFuture(null);
     private int expectFailedCount = 0;
     private int currentFailedCount = 0;
     private FailedType failedType;
@@ -25,7 +25,7 @@ public class MockApplicationMessagePublisher implements IMessagePublisher<IAppli
     }
 
     @Override
-    public CompletableFuture<Void> publishAsync(IApplicationMessage message) {
+    public CompletableFuture<Boolean> publishAsync(IApplicationMessage message) {
         if (currentFailedCount < expectFailedCount) {
             currentFailedCount++;
             if (failedType == FailedType.UnKnownException) {

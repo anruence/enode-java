@@ -24,7 +24,7 @@ public class MockDomainEventPublisher implements IMessagePublisher<DomainEventSt
     }
 
     @Override
-    public CompletableFuture<Void> publishAsync(DomainEventStreamMessage message) {
+    public CompletableFuture<Boolean> publishAsync(DomainEventStreamMessage message) {
         if (currentFailedCount < expectFailedCount) {
             currentFailedCount++;
             if (failedType == FailedType.UnKnownException) {

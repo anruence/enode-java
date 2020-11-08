@@ -9,5 +9,5 @@ interface ICommandExecuteContext : ICommandContext, ITrackingContext {
     /**
      * Notify the given command is executed.
      */
-    fun onCommandExecutedAsync(commandResult: CommandResult): CompletableFuture<Void>
+    fun onCommandExecutedAsync(commandResult: CommandResult): CompletableFuture<Boolean>
 }

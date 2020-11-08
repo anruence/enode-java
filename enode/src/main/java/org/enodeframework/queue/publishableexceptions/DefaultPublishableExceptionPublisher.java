@@ -50,7 +50,7 @@ public class DefaultPublishableExceptionPublisher implements IMessagePublisher<I
     }
 
     @Override
-    public CompletableFuture<Void> publishAsync(IDomainException message) {
+    public CompletableFuture<Boolean> publishAsync(IDomainException message) {
         return sendMessageService.sendMessageAsync(createExceptionMessage(message));
     }
 }

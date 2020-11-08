@@ -20,14 +20,14 @@ public class CommandHandlerProxy implements ICommandHandlerProxy {
     private Method method;
 
     @Override
-    public CompletableFuture<Void> handleAsync(ICommandContext context, ICommand command) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+    public CompletableFuture<Boolean> handleAsync(ICommandContext context, ICommand command) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
         try {
             Object result = methodHandle.invoke(getInnerObject(), context, command);
             if (result instanceof CompletableFuture) {
-                return (CompletableFuture<Void>) result;
+                return (CompletableFuture) result;
             }
-            future.complete(null);
+            future.complete(true);
         } catch (Throwable throwable) {
             future.completeExceptionally(throwable);
         }

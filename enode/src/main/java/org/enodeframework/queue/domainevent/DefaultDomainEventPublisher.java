@@ -49,7 +49,7 @@ public class DefaultDomainEventPublisher implements IMessagePublisher<DomainEven
     }
 
     @Override
-    public CompletableFuture<Void> publishAsync(DomainEventStreamMessage message) {
+    public CompletableFuture<Boolean> publishAsync(DomainEventStreamMessage message) {
         return sendMessageService.sendMessageAsync(createDomainEventStreamMessage(message));
     }
 }

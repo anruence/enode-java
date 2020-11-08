@@ -6,5 +6,5 @@ import org.enodeframework.infrastructure.MethodInvocation;
 import java.util.concurrent.CompletableFuture;
 
 public interface IMessageHandlerProxy2 extends IObjectProxy, MethodInvocation {
-    CompletableFuture<Void> handleAsync(IMessage message1, IMessage message2);
+    CompletableFuture<Boolean> handleAsync(IMessage message1, IMessage message2);
 }

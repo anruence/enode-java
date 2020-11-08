@@ -9,10 +9,10 @@ import java.util.concurrent.CompletableFuture;
  * @author anruence@gmail.com
  */
 public class DoNothingPublisher<TMessage extends IMessage> implements IMessagePublisher<TMessage> {
-    private static final CompletableFuture<Void> SUCCESSRESULTTASK = CompletableFuture.completedFuture(null);
+    private static final CompletableFuture<Boolean> SUCCESSRESULTTASK = CompletableFuture.completedFuture(null);
 
     @Override
-    public CompletableFuture<Void> publishAsync(TMessage message) {
+    public CompletableFuture<Boolean> publishAsync(TMessage message) {
         return SUCCESSRESULTTASK;
     }
 }

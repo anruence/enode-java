@@ -29,8 +29,8 @@ public class SendRocketMQService implements ISendMessageService {
     }
 
     @Override
-    public CompletableFuture<Void> sendMessageAsync(QueueMessage queueMessage) {
-        CompletableFuture<Void> promise = new CompletableFuture<>();
+    public CompletableFuture<Boolean> sendMessageAsync(QueueMessage queueMessage) {
+        CompletableFuture<Boolean> promise = new CompletableFuture<>();
         Message message = RocketMQTool.covertToProducerRecord(queueMessage);
         try {
             producer.send(message, new SelectMessageQueueByHash(), queueMessage.getRouteKey(), new SendCallback() {
@@ -39,7 +39,7 @@ public class SendRocketMQService implements ISendMessageService {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Enode message async send success, sendResult: {}, message: {}", result, new String(message.getBody()));
                     }
-                    promise.complete(null);
+                    promise.complete(true);
                 }
 
                 @Override

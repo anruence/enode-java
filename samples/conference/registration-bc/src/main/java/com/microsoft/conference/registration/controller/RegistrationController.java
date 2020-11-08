@@ -169,7 +169,7 @@ public class RegistrationController {
         return null;
     }
 
-    private CompletableFuture<Void> sendCommandAsync(ICommand command) {
+    private CompletableFuture<Boolean> sendCommandAsync(ICommand command) {
         return commandService.sendAsync(command);
     }
 

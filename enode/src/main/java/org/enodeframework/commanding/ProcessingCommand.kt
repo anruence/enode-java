@@ -10,7 +10,7 @@ class ProcessingCommand(val message: ICommand, val commandExecuteContext: IComma
     lateinit var mailBox: ProcessingCommandMailbox
     var sequence: Long = 0
     var isDuplicated = false
-    fun completeAsync(commandResult: CommandResult): CompletableFuture<Void> {
+    fun completeAsync(commandResult: CommandResult): CompletableFuture<Boolean> {
         return commandExecuteContext.onCommandExecutedAsync(commandResult)
     }
 

@@ -51,8 +51,8 @@ public class TransferTransactionProcessManager {
         command.setId(evnt.getId());
         ValidateAccountCommand targetCommand = new ValidateAccountCommand(evnt.transferTransactionInfo.targetAccountId, evnt.getAggregateRootId());
         targetCommand.setId(evnt.getId());
-        CompletableFuture<Void> task1 = commandService.sendAsync(command);
-        CompletableFuture<Void> task2 = commandService.sendAsync(targetCommand);
+        CompletableFuture<Boolean> task1 = commandService.sendAsync(command);
+        CompletableFuture<Boolean> task2 = commandService.sendAsync(targetCommand);
         Task.await(CompletableFuture.allOf(task1, task2));
     }
 
@@ -124,8 +124,8 @@ public class TransferTransactionProcessManager {
         command.setId(evnt.getId());
         CommitTransactionPreparationCommand targetCommand = new CommitTransactionPreparationCommand(evnt.transferTransactionInfo.targetAccountId, evnt.getAggregateRootId());
         targetCommand.setId(evnt.getId());
-        CompletableFuture<Void> task1 = commandService.sendAsync(command);
-        CompletableFuture<Void> task2 = commandService.sendAsync(targetCommand);
+        CompletableFuture<Boolean> task1 = commandService.sendAsync(command);
+        CompletableFuture<Boolean> task2 = commandService.sendAsync(targetCommand);
         Task.await(CompletableFuture.allOf(task1, task2));
     }
 

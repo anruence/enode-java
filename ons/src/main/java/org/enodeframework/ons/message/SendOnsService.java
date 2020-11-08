@@ -27,8 +27,8 @@ public class SendOnsService implements ISendMessageService {
     }
 
     @Override
-    public CompletableFuture<Void> sendMessageAsync(QueueMessage queueMessage) {
-        CompletableFuture<Void> promise = new CompletableFuture<>();
+    public CompletableFuture<Boolean> sendMessageAsync(QueueMessage queueMessage) {
+        CompletableFuture<Boolean> promise = new CompletableFuture<>();
         Message message = OnsTool.covertToProducerRecord(queueMessage);
         producer.sendAsync(message, new SendCallback() {
             @Override
@@ -36,7 +36,7 @@ public class SendOnsService implements ISendMessageService {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Enode message async send success, sendResult: {}, message: {}", result, message);
                 }
-                promise.complete(null);
+                promise.complete(true);
             }
 
             @Override

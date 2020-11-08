@@ -42,7 +42,7 @@ public class DefaultApplicationMessagePublisher implements IMessagePublisher<IAp
     }
 
     @Override
-    public CompletableFuture<Void> publishAsync(IApplicationMessage message) {
+    public CompletableFuture<Boolean> publishAsync(IApplicationMessage message) {
         return producer.sendMessageAsync(createApplicationMessage(message));
     }
 }

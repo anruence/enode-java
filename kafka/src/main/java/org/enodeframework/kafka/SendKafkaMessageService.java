@@ -25,8 +25,8 @@ public class SendKafkaMessageService implements ISendMessageService {
     }
 
     @Override
-    public CompletableFuture<Void> sendMessageAsync(QueueMessage queueMessage) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+    public CompletableFuture<Boolean> sendMessageAsync(QueueMessage queueMessage) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
         ProducerRecord<String, String> message = KafkaTool.covertToProducerRecord(queueMessage);
         producer.send(message).addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
             @Override
@@ -40,7 +40,7 @@ public class SendKafkaMessageService implements ISendMessageService {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Enode message async send success, sendResult: {}, message: {}", result, message);
                 }
-                future.complete(null);
+                future.complete(true);
             }
         });
         return future;

@@ -134,7 +134,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         }
     }
 
-    fun completeMessage(message: ProcessingCommand, result: CommandResult): CompletableFuture<Void> {
+    fun completeMessage(message: ProcessingCommand, result: CommandResult): CompletableFuture<Boolean> {
         try {
             val removed = messageDict.remove(message.sequence)
             if (removed != null) {

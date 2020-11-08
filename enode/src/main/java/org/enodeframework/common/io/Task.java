@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class Task {
 
-    public static CompletableFuture<Void> completedTask = CompletableFuture.completedFuture(null);
+    public static CompletableFuture<Boolean> completedTask = CompletableFuture.completedFuture(true);
 
     public static void await(CountDownLatch latch) {
         try {

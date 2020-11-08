@@ -1,6 +1,7 @@
 package org.enodeframework.domain.impl;
 
 import org.enodeframework.common.io.IOHelper;
+import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.domain.IAggregateRepositoryProvider;
 import org.enodeframework.domain.IAggregateRepositoryProxy;
 import org.enodeframework.domain.IAggregateRoot;
@@ -23,10 +24,7 @@ public class DefaultAggregateSnapshotter implements IAggregateSnapshotter {
     public <T extends IAggregateRoot> CompletableFuture<T> restoreFromSnapshotAsync(Class<T> aggregateRootType, String aggregateRootId) {
         CompletableFuture<T> future = new CompletableFuture<>();
         IAggregateRepositoryProxy aggregateRepository = aggregateRepositoryProvider.getRepository(aggregateRootType);
-        if (aggregateRepository == null) {
-            future.complete(null);
-            return future;
-        }
+        Ensure.notNull(aggregateRepository, "aggregateRepository");
         return tryGetAggregateAsync(aggregateRepository, aggregateRootType, aggregateRootId, 0, future);
     }
 

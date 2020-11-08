@@ -19,9 +19,9 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
     private Class<?>[] methodParameterTypes;
 
     @Override
-    public CompletableFuture<Void> handleAsync(IMessage message1, IMessage message2) {
+    public CompletableFuture<Boolean> handleAsync(IMessage message1, IMessage message2) {
         Object result;
-        CompletableFuture<Void> future = new CompletableFuture<>();
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
         try {
             if (methodParameterTypes[0].isAssignableFrom(message1.getClass())) {
                 result = methodHandle.invoke(getInnerObject(), message1, message2);
@@ -29,9 +29,9 @@ public class MessageHandlerProxy2 implements IMessageHandlerProxy2 {
                 result = methodHandle.invoke(getInnerObject(), message2, message1);
             }
             if (result instanceof CompletableFuture) {
-                return (CompletableFuture<Void>) result;
+                return (CompletableFuture) result;
             }
-            future.complete(null);
+            future.complete(true);
         } catch (Throwable throwable) {
             future.completeExceptionally(throwable);
         }

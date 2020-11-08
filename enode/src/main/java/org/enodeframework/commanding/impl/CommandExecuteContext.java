@@ -53,7 +53,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
     }
 
     @Override
-    public CompletableFuture<Void> onCommandExecutedAsync(CommandResult commandResult) {
+    public CompletableFuture<Boolean> onCommandExecutedAsync(CommandResult commandResult) {
         messageContext.onMessageHandled(queueMessage);
         if (Objects.isNull(commandMessage.getReplyAddress())) {
             return Task.completedTask;
@@ -74,7 +74,7 @@ public class CommandExecuteContext implements ICommandExecuteContext {
      * Add a new aggregate into the current command context synchronously, and then return a completed task object.
      */
     @Override
-    public CompletableFuture<Void> addAsync(IAggregateRoot aggregateRoot) {
+    public CompletableFuture<Boolean> addAsync(IAggregateRoot aggregateRoot) {
         add(aggregateRoot);
         return Task.completedTask;
     }

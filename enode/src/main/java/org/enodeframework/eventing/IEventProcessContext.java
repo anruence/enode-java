@@ -9,5 +9,5 @@ public interface IEventProcessContext {
     /**
      * Notify the event has been processed.
      */
-    CompletableFuture<Void> notifyEventProcessed();
+    CompletableFuture<Boolean> notifyEventProcessed();
 }
