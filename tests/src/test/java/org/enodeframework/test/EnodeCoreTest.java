@@ -214,7 +214,6 @@ public class EnodeCoreTest extends AbstractTest {
         CommandResult commandResult10 = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-        Task.sleep(50);
         note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Changed Note", note.getTitle());

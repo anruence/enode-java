@@ -51,6 +51,7 @@ class DefaultCommandResultProcessor constructor(private val scheduleService: ISc
         vertx.eventBus().consumer(address) { msg: Message<JsonObject> ->
             val replyMessage = msg.body().mapTo(ReplyMessage::class.java)
             processRequestInternal(replyMessage)
+            msg.reply(JsonObject().put("value", "success"))
         }
         val bridgeOptions = BridgeOptions()
         bridgeOptions.addInboundPermitted(PermittedOptions().setAddress(address))
