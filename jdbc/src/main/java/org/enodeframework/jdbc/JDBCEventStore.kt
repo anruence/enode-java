@@ -244,35 +244,6 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         }, "FindEventByCommandIdAsync")
     }
 
-    override fun getPublishedVersionAsync(aggregateRootTypeName: String, aggregateRootId: String): CompletableFuture<Int> {
-        return IOHelper.tryIOFuncAsync({
-            val future = CompletableFuture<Int>()
-            val sql = String.format(SELECT_MAX_VERSION_SQL, tableName)
-            val array = JsonArray()
-            array.add(aggregateRootId)
-            array.add(aggregateRootTypeName)
-            sqlClient.querySingleWithParams(sql, array) { x: AsyncResult<JsonArray?> ->
-                if (x.succeeded()) {
-                    var result = 0
-                    if (x.result() != null && x.result()!!.size() > 0) {
-                        result = Optional.ofNullable(x.result()!!.getInteger(0)).orElse(0)
-                    }
-                    future.complete(result)
-                    return@querySingleWithParams
-                }
-                future.completeExceptionally(x.cause())
-            }
-            future.exceptionally { throwable: Throwable? ->
-                if (throwable is SQLException) {
-                    logger.error("Find version by aggregateRootId has sql exception, aggregateRootId: {}, aggregateRootTypeName: {}", aggregateRootId, aggregateRootTypeName, throwable)
-                    throw IORuntimeException(throwable)
-                }
-                logger.error("Find version by aggregateRootId has unknown exception, aggregateRootId: {}, aggregateRootTypeName: {}", aggregateRootId, aggregateRootTypeName, throwable)
-                throw EventStoreException(throwable)
-            }
-        }, "getPublishedVersionAsync")
-    }
-
     private fun convertFrom(record: StreamRecord): DomainEventStream {
         return DomainEventStream(
                 record.commandId,
@@ -338,7 +309,6 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         private const val SELECT_MANY_BY_VERSION_SQL = "SELECT * FROM %s WHERE aggregate_root_id = ? AND version >= ? AND Version <= ? ORDER BY version"
         private const val SELECT_ONE_BY_VERSION_SQL = "SELECT * FROM %s WHERE aggregate_root_id = ? AND version = ?"
         private const val SELECT_ONE_BY_COMMAND_ID_SQL = "SELECT * FROM %s WHERE aggregate_root_id = ? AND command_id = ?"
-        private const val SELECT_MAX_VERSION_SQL = "SELECT MAX(version) AS version FROM %s WHERE aggregate_root_id = ? AND aggregate_root_type_name = ?"
     }
 
     init {

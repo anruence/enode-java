@@ -5,9 +5,10 @@ import com.google.common.collect.Lists;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
+import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.EnqueueMessageResult;
-import org.enodeframework.eventing.IEventStore;
 import org.enodeframework.eventing.IProcessingEventProcessor;
+import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.eventing.ProcessingEvent;
 import org.enodeframework.eventing.ProcessingEventMailBox;
 import org.enodeframework.messaging.IMessageDispatcher;
@@ -29,21 +30,22 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     private static final Logger logger = LoggerFactory.getLogger(DefaultProcessingEventProcessor.class);
     private final String scanInactiveMailBoxTaskName;
     private final String processTryToRefreshAggregateTaskName;
+    private final String name = "DefaultEventProcessor";
     private final ConcurrentHashMap<String, ProcessingEventMailBox> toRefreshAggregateRootMailBoxDict;
     private final ConcurrentHashMap<String, ProcessingEventMailBox> mailboxDict;
     private final ConcurrentHashMap<String, Boolean> refreshingAggregateRootDict;
     private final IScheduleService scheduleService;
     private final IMessageDispatcher messageDispatcher;
-    private final IEventStore eventStore;
+    private final IPublishedVersionStore publishedVersionStore;
     private final Executor executor;
     private int timeoutSeconds = 3600 * 24 * 3;
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
     private int processTryToRefreshAggregateIntervalMilliseconds = 1000;
 
-    public DefaultProcessingEventProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IEventStore eventStore, Executor executor) {
+    public DefaultProcessingEventProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore, Executor executor) {
         this.scheduleService = scheduleService;
         this.messageDispatcher = messageDispatcher;
-        this.eventStore = eventStore;
+        this.publishedVersionStore = publishedVersionStore;
         this.executor = executor;
         this.mailboxDict = new ConcurrentHashMap<>();
         this.toRefreshAggregateRootMailBoxDict = new ConcurrentHashMap<>();
@@ -99,7 +101,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
 
     private void getAggregateRootLatestPublishedEventVersion(ProcessingEventMailBox processingEventMailBox, int retryTimes) {
         IOHelper.tryAsyncActionRecursively("GetAggregateRootLatestPublishedEventVersion",
-                () -> eventStore.getPublishedVersionAsync(processingEventMailBox.getAggregateRootTypeName(), processingEventMailBox.getAggregateRootId()),
+                () -> publishedVersionStore.getPublishedVersionAsync(name, processingEventMailBox.getAggregateRootTypeName(), processingEventMailBox.getAggregateRootId()),
                 result -> {
                     processingEventMailBox.setNextExpectingEventVersion(result + 1);
                     refreshingAggregateRootDict.remove(processingEventMailBox.getAggregateRootId());
@@ -126,9 +128,29 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
         IOHelper.tryAsyncActionRecursivelyWithoutResult("DispatchProcessingMessageAsync",
                 () -> messageDispatcher.dispatchMessagesAsync(processingEvent.getMessage().getEvents()),
                 result -> {
-                    processingEvent.complete();
+                    updatePublishedVersionAsync(processingEvent, 0);
                 },
                 () -> String.format("sequence message [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", processingEvent.getMessage().getId(), processingEvent.getMessage().getClass().getName(), processingEvent.getMessage().getAggregateRootId(), processingEvent.getMessage().getVersion()),
+                null,
+                retryTimes, true);
+    }
+
+    /**
+     * The name of the processor
+     */
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    private void updatePublishedVersionAsync(ProcessingEvent processingEvent, int retryTimes) {
+        DomainEventStreamMessage message = processingEvent.getMessage();
+        IOHelper.tryAsyncActionRecursivelyWithoutResult("UpdatePublishedVersionAsync",
+                () -> publishedVersionStore.updatePublishedVersionAsync(name, message.getAggregateRootTypeName(), message.getAggregateRootId(), message.getVersion()),
+                result -> {
+                    processingEvent.complete();
+                },
+                () -> String.format("DomainEventStreamMessage [messageId:%s, messageType:%s, aggregateRootId:%s, aggregateRootVersion:%s]", message.getId(), message.getClass().getName(), message.getAggregateRootId(), message.getVersion()),
                 null, retryTimes, true);
     }
 

@@ -18,6 +18,11 @@ public class MongoConfiguration {
     private String databaseName;
 
     /**
+     * 聚合根已发布事件表的默认名称；默认为：published_version
+     */
+    private String publishedVersionCollectionName;
+
+    /**
      * 事件表的聚合根版本唯一索引的默认名称；默认为：aggregateRootId_1_version_1
      */
     private String eventTableVersionUniqueIndexName;
@@ -25,13 +30,18 @@ public class MongoConfiguration {
      * 事件表的聚合根已处理命令唯一索引的默认名称；默认为：aggregateRootId_1_commandId_1
      */
     private String eventTableCommandIdUniqueIndexName;
-
+    /**
+     * 聚合根已发布事件表的聚合根已发布版本唯一索引的默认名称；默认为：processorName_1_aggregateRootId_1
+     */
+    private String publishedVersionUniqueIndexName;
 
     public MongoConfiguration() {
         databaseName = "enode";
         eventCollectionName = "event_stream";
+        publishedVersionCollectionName = "published_version";
         eventTableVersionUniqueIndexName = "aggregateRootId_1_version_1";
         eventTableCommandIdUniqueIndexName = "aggregateRootId_1_commandId_1";
+        publishedVersionUniqueIndexName = "processorName_1_aggregateRootId_1";
         duplicateCode = 11000;
     }
 
@@ -41,6 +51,14 @@ public class MongoConfiguration {
 
     public void setEventCollectionName(String eventCollectionName) {
         this.eventCollectionName = eventCollectionName;
+    }
+
+    public String getPublishedVersionCollectionName() {
+        return publishedVersionCollectionName;
+    }
+
+    public void setPublishedVersionCollectionName(String publishedVersionCollectionName) {
+        this.publishedVersionCollectionName = publishedVersionCollectionName;
     }
 
     public String getEventTableVersionUniqueIndexName() {
@@ -57,6 +75,14 @@ public class MongoConfiguration {
 
     public void setEventTableCommandIdUniqueIndexName(String eventTableCommandIdUniqueIndexName) {
         this.eventTableCommandIdUniqueIndexName = eventTableCommandIdUniqueIndexName;
+    }
+
+    public String getPublishedVersionUniqueIndexName() {
+        return publishedVersionUniqueIndexName;
+    }
+
+    public void setPublishedVersionUniqueIndexName(String publishedVersionUniqueIndexName) {
+        this.publishedVersionUniqueIndexName = publishedVersionUniqueIndexName;
     }
 
     public int getDuplicateCode() {

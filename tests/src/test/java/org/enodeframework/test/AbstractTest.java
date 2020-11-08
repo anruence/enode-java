@@ -6,6 +6,7 @@ import org.enodeframework.domain.IMemoryCache;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IEventStore;
 import org.enodeframework.eventing.IProcessingEventProcessor;
+import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.test.config.EnodeTestDataSourceConfig;
@@ -26,6 +27,8 @@ public abstract class AbstractTest {
     protected IMemoryCache memoryCache;
     @Autowired
     protected IEventStore eventStore;
+    @Autowired
+    protected IPublishedVersionStore publishedVersionStore;
     @Autowired
     @Qualifier(value = "domainEventPublisher")
     protected IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;

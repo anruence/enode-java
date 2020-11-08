@@ -64,7 +64,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class EnodeCoreTest extends AbstractTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnodeCoreTest.class);
+    private static final Logger _logger = LoggerFactory.getLogger(EnodeCoreTest.class);
 
     public static volatile ConcurrentHashMap<Integer, List<String>> HandlerTypes = new ConcurrentHashMap<>();
 
@@ -75,7 +75,10 @@ public class EnodeCoreTest extends AbstractTest {
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
         //执行创建聚合根的命令
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         TestAggregate note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -86,7 +89,10 @@ public class EnodeCoreTest extends AbstractTest {
         ChangeTestAggregateTitleCommand command2 = new ChangeTestAggregateTitleCommand();
         command2.aggregateRootId = aggregateId;
         command2.setTitle("Changed Note");
-        commandResult = Task.await(commandService.executeAsync(command2));
+        asyncResult = Task.await(commandService.executeAsync(command2));
+        Assert.assertNotNull(asyncResult);
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -102,7 +108,10 @@ public class EnodeCoreTest extends AbstractTest {
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
         //执行创建聚合根的命令
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         InheritTestAggregate note = Task.await(memoryCache.getAsync(aggregateId, InheritTestAggregate.class));
@@ -113,7 +122,10 @@ public class EnodeCoreTest extends AbstractTest {
         ChangeInheritTestAggregateTitleCommand command2 = new ChangeInheritTestAggregateTitleCommand();
         command2.aggregateRootId = aggregateId;
         command2.setTitle("Changed Note");
-        commandResult = Task.await(commandService.executeAsync(command2));
+        asyncResult = Task.await(commandService.executeAsync(command2));
+        Assert.assertNotNull(asyncResult);
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         note = Task.await(memoryCache.getAsync(aggregateId, InheritTestAggregate.class));
@@ -128,6 +140,7 @@ public class EnodeCoreTest extends AbstractTest {
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
+        command.setSleepMilliseconds(3000);
         //执行创建聚合根的命令
         CommandResult commandResult = Task.await(commandService.executeAsync(command));
         Assert.assertNotNull(commandResult);
@@ -194,7 +207,7 @@ public class EnodeCoreTest extends AbstractTest {
         command2.aggregateRootId = aggregateId;
         command2.setTitle("Changed Note");
         //执行修改聚合根的命令
-        CommandResult commandResult = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
+        CommandResult commandResult = Task.await(commandService.executeAsync(command2));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         TestAggregate note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -203,15 +216,8 @@ public class EnodeCoreTest extends AbstractTest {
         Assert.assertEquals(2, note.getVersion());
         //在重复执行该命令
         commandResult = Task.await(commandService.executeAsync(command2));
-        CommandResult commandResult2 = Task.await(commandService.executeAsync(command2));
-        CommandResult commandResult3 = Task.await(commandService.executeAsync(command2));
-        CommandResult commandResult4 = Task.await(commandService.executeAsync(command2));
-        CommandResult commandResult5 = Task.await(commandService.executeAsync(command2));
-        CommandResult commandResult6 = Task.await(commandService.executeAsync(command2));
-        CommandResult commandResult7 = Task.await(commandService.executeAsync(command2));
-        CommandResult commandResult8 = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
-        CommandResult commandResult9 = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
-        CommandResult commandResult10 = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
+        commandResult = Task.await(commandService.executeAsync(command2));
+        commandResult = Task.await(commandService.executeAsync(command2));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -227,7 +233,10 @@ public class EnodeCoreTest extends AbstractTest {
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
         //执行创建聚合根的命令
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         TestAggregate note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -263,7 +272,10 @@ public class EnodeCoreTest extends AbstractTest {
     public void change_nothing_test() {
         ChangeNothingCommand command = new ChangeNothingCommand();
         command.aggregateRootId = (ObjectId.generateNewStringId());
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.NothingChanged, commandResult.getStatus());
     }
@@ -271,9 +283,12 @@ public class EnodeCoreTest extends AbstractTest {
     @Test
     public void set_result_command_test() {
         SetResultCommand command = new SetResultCommand();
-        command.aggregateRootId = ObjectId.generateNewStringId();
+        command.aggregateRootId = (ObjectId.generateNewStringId());
         command.setResult("CommandResult");
-        CommandResult commandResult = Task.await(commandService.executeAsync(command, CommandReturnType.EventHandled));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command, CommandReturnType.EventHandled));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         Assert.assertEquals("CommandResult", commandResult.getResult());
@@ -293,7 +308,10 @@ public class EnodeCoreTest extends AbstractTest {
         command3.aggregateRootId = ObjectId.generateNewStringId();
         command3.setAggregateRootId1(command1.getAggregateRootId());
         command3.setAggregateRootId2(command2.getAggregateRootId());
-        CommandResult commandResult = Task.await(commandService.executeAsync(command3));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command3));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
     }
@@ -302,7 +320,10 @@ public class EnodeCoreTest extends AbstractTest {
     public void no_handler_command_test() {
         NoHandlerCommand command = new NoHandlerCommand();
         command.aggregateRootId = (ObjectId.generateNewStringId());
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
     }
@@ -311,7 +332,10 @@ public class EnodeCoreTest extends AbstractTest {
     public void two_handlers_command_test() {
         TwoHandlersCommand command = new TwoHandlersCommand();
         command.aggregateRootId = (ObjectId.generateNewStringId());
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
     }
@@ -320,7 +344,10 @@ public class EnodeCoreTest extends AbstractTest {
     public void handler_throw_exception_command_test() {
         ThrowExceptionCommand command = new ThrowExceptionCommand();
         command.aggregateRootId = (ObjectId.generateNewStringId());
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
     }
@@ -335,13 +362,19 @@ public class EnodeCoreTest extends AbstractTest {
         AggregateThrowExceptionCommand command1 = new AggregateThrowExceptionCommand();
         command1.aggregateRootId = aggregateId;
         command1.setPublishableException(false);
-        CommandResult commandResult = Task.await(commandService.executeAsync(command1));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command1));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
         AggregateThrowExceptionCommand command2 = new AggregateThrowExceptionCommand();
         command2.aggregateRootId = aggregateId;
         command2.setPublishableException(true);
-        commandResult = Task.await(commandService.executeAsync(command2));
+        asyncResult = Task.await(commandService.executeAsync(command2));
+        Assert.assertNotNull(asyncResult);
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
     }
@@ -350,13 +383,19 @@ public class EnodeCoreTest extends AbstractTest {
     public void command_inheritance_test() {
         BaseCommand command = new BaseCommand();
         command.aggregateRootId = (ObjectId.generateNewStringId());
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.NothingChanged, commandResult.getStatus());
         Assert.assertEquals("ResultFromBaseCommand", commandResult.getResult());
         command = new ChildCommand();
         command.aggregateRootId = (ObjectId.generateNewStringId());
-        commandResult = Task.await(commandService.executeAsync(command));
+        asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.NothingChanged, commandResult.getStatus());
         Assert.assertEquals("ResultFromChildCommand", commandResult.getResult());
@@ -379,6 +418,7 @@ public class EnodeCoreTest extends AbstractTest {
         command.aggregateRootId = (ObjectId.generateNewStringId());
         command.setShouldThrowException(true);
         CommandResult commandResult = Task.await(commandService.executeAsync(command));
+
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
         AsyncHandlerCommand command1 = new AsyncHandlerCommand();
@@ -403,10 +443,16 @@ public class EnodeCoreTest extends AbstractTest {
         AsyncHandlerCommand command = new AsyncHandlerCommand();
         command.setShouldGenerateApplicationMessage(true);
         command.aggregateRootId = ObjectId.generateNewStringId();
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-        commandResult = Task.await(commandService.executeAsync(command));
+        asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
     }
@@ -416,10 +462,16 @@ public class EnodeCoreTest extends AbstractTest {
         AsyncHandlerCommand command = new AsyncHandlerCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
         command.setShouldGenerateApplicationMessage(true);
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-        commandResult = Task.await(commandService.executeAsync(command));
+        asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
     }
@@ -428,10 +480,16 @@ public class EnodeCoreTest extends AbstractTest {
     public void duplicate_async_command_not_check_handler_exist_with_result_test() {
         NotCheckAsyncHandlerExistWithResultCommand command = new NotCheckAsyncHandlerExistWithResultCommand();
         command.aggregateRootId = ObjectId.generateNewStringId();
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-        commandResult = Task.await(commandService.executeAsync(command));
+        asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
     }
@@ -440,12 +498,18 @@ public class EnodeCoreTest extends AbstractTest {
     public void async_command_inheritance_test() {
         AsyncHandlerBaseCommand command = new AsyncHandlerBaseCommand();
         command.aggregateRootId = (ObjectId.generateNewStringId());
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.NothingChanged, commandResult.getStatus());
         command = new AsyncHandlerChildCommand();
         command.aggregateRootId = (ObjectId.generateNewStringId());
-        commandResult = Task.await(commandService.executeAsync(command));
+        asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.NothingChanged, commandResult.getStatus());
     }
@@ -472,14 +536,21 @@ public class EnodeCoreTest extends AbstractTest {
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
+        _logger.info("----create_concurrent_conflict_and_then_update_many_times_test, _eventStore.appendAsync success");
+        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
+        _logger.info("----create_concurrent_conflict_and_then_update_many_times_test, UpdatePublishedversion()Async success");
         //执行创建聚合根的命令
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.setId(commandId);
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
+        _logger.info("----create_concurrent_conflict_and_then_update_many_times_test, _commandService.executeAsync create success");
         List<ICommand> commandList = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             ChangeTestAggregateTitleCommand command1 = new ChangeTestAggregateTitleCommand();
@@ -492,9 +563,12 @@ public class EnodeCoreTest extends AbstractTest {
         for (ICommand updateCommand : commandList) {
             commandService.executeAsync(updateCommand).thenAccept(t -> {
                 Assert.assertNotNull(t);
-                Assert.assertEquals(CommandStatus.Success, t.getStatus());
+
+                CommandResult updateCommandResult = t;
+                Assert.assertNotNull(updateCommandResult);
+                Assert.assertEquals(CommandStatus.Success, updateCommandResult.getStatus());
                 long totalCount = count.incrementAndGet();
-                LOGGER.info("----create_concurrent_conflict_and_then_update_many_times_test, updateCommand finished, count: {}", totalCount);
+                _logger.info("----create_concurrent_conflict_and_then_update_many_times_test, updateCommand finished, count: {}", totalCount);
                 if (totalCount == commandList.size()) {
                     waitHandle.set();
                 }
@@ -524,6 +598,7 @@ public class EnodeCoreTest extends AbstractTest {
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
+        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
         List<ICommand> commandList = new ArrayList<>();
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.setId(commandId);
@@ -540,8 +615,10 @@ public class EnodeCoreTest extends AbstractTest {
         AtomicLong count = new AtomicLong(0);
         AtomicBoolean createCommandSuccess = new AtomicBoolean(false);
         for (ICommand updateCommand : commandList) {
-            commandService.executeAsync(updateCommand).thenAccept(commandResult -> {
-                Assert.assertNotNull(commandResult);
+            commandService.executeAsync(updateCommand).thenAccept(t -> {
+                Assert.assertNotNull(t);
+
+                CommandResult commandResult = t;
                 Assert.assertNotNull(commandResult);
                 Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
                 if (!Objects.equals(commandResult.getCommandId(), commandId)) {
@@ -579,11 +656,15 @@ public class EnodeCoreTest extends AbstractTest {
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
+        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 1));
         //执行创建聚合根的命令
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Failed, commandResult.getStatus());
         Assert.assertEquals("Duplicate aggregate creation.", commandResult.getResult());
@@ -596,7 +677,10 @@ public class EnodeCoreTest extends AbstractTest {
         command.setId(commandId);
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
-        commandResult = Task.await(commandService.executeAsync(command));
+        asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -606,13 +690,17 @@ public class EnodeCoreTest extends AbstractTest {
     }
 
     @Test
+    //TODO 需要更新策略
     public void update_concurrent_conflict_test() {
         String aggregateId = ObjectId.generateNewStringId();
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
         //执行创建聚合根的命令
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        CommandResult asyncResult = Task.await(commandService.executeAsync(command));
+        Assert.assertNotNull(asyncResult);
+
+        CommandResult commandResult = asyncResult;
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         TestAggregate note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -633,6 +721,7 @@ public class EnodeCoreTest extends AbstractTest {
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
+        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 2));
         List<ICommand> commandList = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             ChangeTestAggregateTitleCommand command1 = new ChangeTestAggregateTitleCommand();
@@ -669,6 +758,7 @@ public class EnodeCoreTest extends AbstractTest {
         command2.aggregateRootId = noteId;
         CommandResult commandResult1 = Task.await(commandService.executeAsync(command1, CommandReturnType.EventHandled));
         CommandResult commandResult2 = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
+        Task.sleep(1000);
         Assert.assertEquals(CommandStatus.Success, commandResult1.getStatus());
         Assert.assertEquals(CommandStatus.Success, commandResult2.getStatus());
         Assert.assertEquals(3, HandlerTypes.get(1).size());
@@ -724,20 +814,22 @@ public class EnodeCoreTest extends AbstractTest {
         ManualResetEvent waitHandle = new ManualResetEvent(false);
         List<Integer> versionList = new ArrayList<>();
 
-        // 1,3 先处理，此时版本为1的先处理成功，3等待
-
+        //模拟从publishedVersionStore中取到的publishedVersion不是最新的场景
         processor.process(new ProcessingEvent(message1, new DomainEventStreamProcessContext(message1, waitHandle, versionList)));
         processor.process(new ProcessingEvent(message3, new DomainEventStreamProcessContext(message3, waitHandle, versionList)));
-        // message2 开始处理
-        processor.process(new ProcessingEvent(message2, new DomainEventStreamProcessContext(message2, waitHandle, versionList)));
 
-        //等待Enode内部自动检测到最新的version，并继续处理mailbox waitingList中的version=3的事件
+        //等待5秒后更新publishedVersion为2
+        Task.sleep(5000);
+        Task.await(publishedVersionStore.updatePublishedVersionAsync(processor.getName(), TestAggregate.class.getName(), aggregate.getUniqueId(), 2));
+
+        //等待Enode内部自动检测到最新的publishedVersion，并继续处理mailbox waitingList中的version=3的事件
         waitHandle.waitOne();
 
         Assert.assertEquals(1, versionList.get(0).intValue());
-        Assert.assertEquals(2, versionList.get(1).intValue());
-        Assert.assertEquals(3, versionList.get(2).intValue());
-        //等待Enode内部异步打印Removed problem aggregate的日志
+        Assert.assertEquals(3, versionList.get(1).intValue());
+
+        //再等待3秒，等待Enode内部异步打印Removed problem aggregate的日志
+        Task.sleep(3000);
     }
 
     @Test
@@ -767,6 +859,10 @@ public class EnodeCoreTest extends AbstractTest {
         DomainEventStream eventStream = new DomainEventStream(ObjectId.generateNewStringId(), aggregateId, TestAggregate.class.getName(), new Date(), evnts, Maps.newHashMap());
         eventStreamList.add(eventStream);
         eventStore.batchAppendAsync(eventStreamList).join();
+
+        String eventProcessorName = "DefaultEventProcessor";
+        publishedVersionStore.updatePublishedVersionAsync(eventProcessorName, TestAggregate.class.getName(), aggregateId, 2).join();
+
         //执行修改聚合根的命令
         ChangeTestAggregateTitleWhenDirtyCommand command2 = new ChangeTestAggregateTitleWhenDirtyCommand();
         command2.setAggregateRootId(aggregateId);

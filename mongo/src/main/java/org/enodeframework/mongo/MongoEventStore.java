@@ -14,7 +14,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.enodeframework.common.exception.EventStoreException;
 import org.enodeframework.common.exception.IORuntimeException;
-import org.enodeframework.common.exception.PublishedVersionStoreException;
 import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.AggregateEventAppendResult;
@@ -33,7 +32,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -363,53 +361,5 @@ public class MongoEventStore implements IEventStore {
                 throw new EventStoreException(throwable);
             });
         }, "FindEventByCommandIdAsync");
-    }
-
-    @Override
-    public CompletableFuture<Integer> getPublishedVersionAsync(String aggregateRootTypeName, String aggregateRootId) {
-        return IOHelper.tryIOFuncAsync(() -> {
-            CompletableFuture<Integer> future = new CompletableFuture<>();
-            Bson queryFilter = Filters.and(
-                    Filters.eq("aggregateRootTypeName", aggregateRootTypeName),
-                    Filters.eq("aggregateRootId", aggregateRootId)
-            );
-            Bson sortFilter = Filters.eq("version", 1);
-            mongoClient.getDatabase(mongoConfiguration.getDatabaseName())
-                    .getCollection(mongoConfiguration.getEventCollectionName())
-                    .find(queryFilter)
-                    .sort(sortFilter).limit(1)
-                    .subscribe(new Subscriber<Document>() {
-                        private Integer version = 0;
-
-                        @Override
-                        public void onSubscribe(Subscription s) {
-                            s.request(1);
-                        }
-
-                        @Override
-                        public void onNext(Document document) {
-                            version = Optional.ofNullable(document.getInteger("version")).orElse(0);
-                        }
-
-                        @Override
-                        public void onError(Throwable t) {
-                            future.completeExceptionally(t);
-                        }
-
-                        @Override
-                        public void onComplete() {
-                            future.complete(version);
-                        }
-                    });
-            return future.exceptionally(throwable -> {
-                if (throwable instanceof MongoWriteException) {
-                    MongoWriteException ex = (MongoWriteException) throwable;
-                    logger.error("Get aggregate published version has sql exception.", ex);
-                    throw new IORuntimeException(throwable);
-                }
-                logger.error("Get aggregate published version has unknown exception.", throwable);
-                throw new PublishedVersionStoreException(throwable);
-            });
-        }, "GetPublishedVersionAsync");
     }
 }

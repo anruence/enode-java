@@ -32,6 +32,7 @@ import org.enodeframework.eventing.IEventCommittingService;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.eventing.IEventStore;
 import org.enodeframework.eventing.IProcessingEventProcessor;
+import org.enodeframework.eventing.IPublishedVersionStore;
 import org.enodeframework.eventing.impl.DefaultEventCommittingService;
 import org.enodeframework.eventing.impl.DefaultEventSerializer;
 import org.enodeframework.eventing.impl.DefaultProcessingEventProcessor;
@@ -110,8 +111,8 @@ public class EnodeAutoConfiguration {
     }
 
     @Bean(name = "domainEventMessageProcessor", initMethod = "start", destroyMethod = "stop")
-    public DefaultProcessingEventProcessor domainEventMessageProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IEventStore eventStore, @Qualifier("mailBoxExecutor") Executor executor) {
-        return new DefaultProcessingEventProcessor(scheduleService, messageDispatcher, eventStore, executor);
+    public DefaultProcessingEventProcessor domainEventMessageProcessor(IScheduleService scheduleService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore, @Qualifier("mailBoxExecutor") Executor executor) {
+        return new DefaultProcessingEventProcessor(scheduleService, messageDispatcher, publishedVersionStore, executor);
     }
 
     /**

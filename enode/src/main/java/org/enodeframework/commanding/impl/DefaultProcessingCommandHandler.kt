@@ -163,7 +163,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
             true
         }
     }
-    
+
     private fun republishCommandEvents(processingCommand: ProcessingCommand, retryTimes: Int): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
         val command = processingCommand.message

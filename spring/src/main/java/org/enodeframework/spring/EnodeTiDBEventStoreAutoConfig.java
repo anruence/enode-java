@@ -5,6 +5,7 @@ import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.jdbc.DBConfiguration;
 import org.enodeframework.tidb.TiDBEventStore;
+import org.enodeframework.tidb.TiDBPublishedVersionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,5 +33,16 @@ public class EnodeTiDBEventStoreAutoConfig {
             }
         });
         return eventStore;
+    }
+
+    @Bean
+    public TiDBPublishedVersionStore tidbPublishedVersionStore(@Qualifier("enodeTiDBDataSource") DataSource tidbDataSource) {
+        TiDBPublishedVersionStore publishedVersionStore = new TiDBPublishedVersionStore(tidbDataSource, DBConfiguration.mysql());
+        vertx.deployVerticle(publishedVersionStore, res -> {
+            if (!res.succeeded()) {
+                logger.error("vertx deploy TiDBPublishedVersionStore failed.", res.cause());
+            }
+        });
+        return publishedVersionStore;
     }
 }

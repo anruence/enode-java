@@ -80,18 +80,4 @@ public class MockEventStore implements IEventStore {
     public CompletableFuture<List<DomainEventStream>> queryAggregateEventsAsync(String aggregateRootId, String aggregateRootTypeName, int minVersion, int maxVersion) {
         return memoryEventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion);
     }
-
-    @Override
-    public CompletableFuture<Integer> getPublishedVersionAsync(String aggregateRootTypeName, String aggregateRootId) {
-        if (currentGetFailedCount < expectGetFailedCount) {
-            currentGetFailedCount++;
-            if (failedType == FailedType.UnKnownException) {
-                throw new EnodeRuntimeException("GetPublishedVersionAsyncUnKnownException" + currentGetFailedCount);
-            } else if (failedType == FailedType.IOException) {
-                throw new IORuntimeException("GetPublishedVersionAsyncIOException" + currentGetFailedCount);
-            } else if (failedType == FailedType.TaskIOException) {
-            }
-        }
-        return memoryEventStore.getPublishedVersionAsync(aggregateRootTypeName, aggregateRootId);
-    }
 }
