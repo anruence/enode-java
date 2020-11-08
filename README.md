@@ -28,10 +28,6 @@ enode是一个基于【DDD】【CQRS】【ES】【EDA】【In-Memory】架构风
 在我们的这个场景里面，command-web只需要很少的机器就能满足前端大量的请求，command-consumer和event-consumer的机器相对较多些。
 如果采用常规的 "单请求单连接" 的方式，服务提供者很容易就被压跨，通过单一连接，保证单一消费者不会压死提供者，长连接，减少连接握手验证等，并使用异步 IO，复用线程池，防止 C10K 问题。
 
-### 为什么删除published_version这张表？
-使用published_version主要是为了获取当前聚合根最新的版本号，这个信息其实可以根据从event_stream获取
-性能上会有些差异，但整体来看，不用保持两表数据的一致性了，只需要保证事件表按照版本顺序写入即可
-
 ### ICommandHandler和ICommandAsyncHandler区别 (现在合并成一个了，但处理思路没变)
 
 ICommandHandler是为了操作内存中的聚合根的，所以不会有异步操作，但后来ICommandHandler的Handle方法也设计为了handleAsync了，目的是为了异步到底，否则异步链路中断的话，异步就没效果了
@@ -233,6 +229,18 @@ CREATE TABLE event_stream (
   UNIQUE KEY uk_aggregate_root_id_command_id (aggregate_root_id, command_id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
+CREATE TABLE published_version (
+  id BIGINT AUTO_INCREMENT NOT NULL,
+  processor_name VARCHAR(128) NOT NULL,
+  aggregate_root_type_name VARCHAR(256) NOT NULL,
+  aggregate_root_id VARCHAR(36) NOT NULL,
+  version INT NOT NULL,
+  gmt_create DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_processor_name_aggregate_root_id (processor_name, aggregate_root_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+
 ```
 
 #### postgresql
@@ -249,6 +257,18 @@ CREATE TABLE event_stream (
   CONSTRAINT uk_aggregate_root_id_version UNIQUE (aggregate_root_id, version),
   CONSTRAINT uk_aggregate_root_id_command_id UNIQUE (aggregate_root_id, command_id)
 );
+
+CREATE TABLE published_version (
+  id bigserial,
+  processor_name varchar(128),
+  aggregate_root_type_name varchar(256),
+  aggregate_root_id varchar(36),
+  version integer,
+  gmt_create date,
+  PRIMARY KEY (id),
+  CONSTRAINT uk_processor_name_aggregate_root_id UNIQUE (processor_name, aggregate_root_id)
+);
+
 ```
 
 #### MongoDB
@@ -256,6 +276,7 @@ CREATE TABLE event_stream (
 ```
 db.event_stream.createIndex({aggregateRootId:1,commandId:1},{unique:true})
 db.event_stream.createIndex({aggregateRootId:1,version:1},{unique:true})
+db.published_version.createIndex({processorName:1,aggregateRootId:1},{unique:true})
 ```
 
 ### 编程方式
