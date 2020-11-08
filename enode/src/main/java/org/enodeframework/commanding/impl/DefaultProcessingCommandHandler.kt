@@ -26,7 +26,7 @@ import java.util.stream.Collectors
  * @author anruence@gmail.com
  */
 class DefaultProcessingCommandHandler(private val eventStore: IEventStore, private val commandHandlerProvider: ICommandHandlerProvider, private val typeNameProvider: ITypeNameProvider, private val eventCommittingService: IEventCommittingService, private val memoryCache: IMemoryCache, private val applicationMessagePublisher: IMessagePublisher<IApplicationMessage>, private val exceptionPublisher: IMessagePublisher<IDomainException>, private val serializeService: ISerializeService) : IProcessingCommandHandler {
-    override fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
+    override suspend fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
         val command = processingCommand.message
         if (Strings.isNullOrEmpty(command.aggregateRootId)) {
             val errorMessage = String.format("The aggregateRootId of command cannot be null or empty. commandType:%s, commandId:%s", command.javaClass.name, command.id)
@@ -163,7 +163,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
             true
         }
     }
-
+    
     private fun republishCommandEvents(processingCommand: ProcessingCommand, retryTimes: Int): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
         val command = processingCommand.message

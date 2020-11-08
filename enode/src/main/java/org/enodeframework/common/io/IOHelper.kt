@@ -108,7 +108,7 @@ object IOHelper {
                 return
             }
             asyncResult
-                    .thenAccept { result: TAsyncResult? ->
+                    .thenAccept { result: TAsyncResult ->
                         executeSuccessAction(result)
                     }
                     .exceptionally { ex: Throwable ->
@@ -120,7 +120,7 @@ object IOHelper {
         private fun executeRetryAction() {
             try {
                 if (currentRetryTimes >= maxRetryTimes) {
-                    DelayedTask.startDelayedTask(Duration.ofMillis(retryInterval.toLong())) { doRetry() }
+                    DelayedTask.startDelayedTask(Duration.ofMillis(retryInterval.toLong()), { doRetry() })
                 } else {
                     doRetry()
                 }
@@ -134,7 +134,7 @@ object IOHelper {
             execute()
         }
 
-        private fun executeSuccessAction(result: TAsyncResult?) {
+        private fun executeSuccessAction(result: TAsyncResult) {
             try {
                 successAction.apply(result)
             } catch (ex: Exception) {

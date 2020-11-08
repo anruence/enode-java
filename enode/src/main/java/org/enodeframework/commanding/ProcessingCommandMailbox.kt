@@ -1,5 +1,8 @@
 package org.enodeframework.commanding
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.enodeframework.common.io.Task
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -13,7 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcessingCommandHandler, batchSize: Int, private val executor: Executor) {
     private val lockObj = Any()
-    private val asyncLock = Any()
+
+    val asyncLock = Mutex()
 
     /**
      * Sequence 对应 ProcessingCommand
@@ -70,7 +74,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, aggregateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
             }
-            CompletableFuture.runAsync({ processMessages() }, executor)
+            GlobalScope.launch { processMessages() }
         }
     }
 
@@ -152,8 +156,8 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         return System.currentTimeMillis() - lastActiveTime.time >= timeoutSeconds
     }
 
-    fun processMessages() {
-        synchronized(asyncLock) {
+    suspend fun processMessages() {
+        this.asyncLock.withLock {
             lastActiveTime = Date()
             try {
                 var scannedCount = 0
@@ -163,7 +167,10 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
                         if (duplicateCommandIdDict.containsKey(message.message.id)) {
                             message.isDuplicated = true
                         }
-                        Task.await(messageHandler.handleAsync(message))
+
+                        withContext(Dispatchers.Default) {
+                            messageHandler.handleAsync(message).join()
+                        }
                     }
                     scannedCount++
                     consumingSequence++
