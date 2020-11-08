@@ -51,14 +51,14 @@ class DefaultSendReplyService(private val serializeService: ISerializeService) :
 
     override fun sendCommandReply(commandResult: CommandResult, replyAddress: ReplySocketAddress): CompletableFuture<Boolean> {
         val replyMessage = ReplyMessage()
-        replyMessage.code = CommandReturnType.CommandExecuted.value.toInt()
+        replyMessage.code = CommandReturnType.CommandExecuted.value
         replyMessage.commandResult = commandResult
         return sendReply(replyMessage, replyAddress)
     }
 
     override fun sendEventReply(eventHandledMessage: DomainEventHandledMessage, replyAddress: ReplySocketAddress): CompletableFuture<Boolean> {
         val replyMessage = ReplyMessage()
-        replyMessage.code = CommandReturnType.EventHandled.value.toInt()
+        replyMessage.code = CommandReturnType.EventHandled.value
         replyMessage.eventHandledMessage = eventHandledMessage
         return sendReply(replyMessage, replyAddress)
     }

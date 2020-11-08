@@ -45,7 +45,7 @@ class DefaultCommandResultProcessor constructor(private val scheduleService: ISc
     private lateinit var tcpEventBusBridge: TcpEventBusBridge
     private var started = false
 
-    fun startServer(port: Int) {
+    private fun startServer(port: Int) {
         bindAddress = InetSocketAddress(InetAddress.getLocalHost(), port)
         val address = InetUtil.toUri(bindAddress)
         vertx.eventBus().consumer(address) { msg: Message<JsonObject> ->

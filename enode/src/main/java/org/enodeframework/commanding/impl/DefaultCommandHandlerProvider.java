@@ -13,20 +13,20 @@ import java.lang.reflect.Method;
 /**
  * @author anruence@gmail.com
  */
-public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class, ICommandHandlerProxy, Class> implements ICommandHandlerProvider {
+public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class<?>, ICommandHandlerProxy, Class<?>> implements ICommandHandlerProvider {
 
     @Override
-    protected Class getKey(Method method) {
+    protected Class<?> getKey(Method method) {
         return method.getParameterTypes()[1];
     }
 
     @Override
-    protected Class getHandlerProxyImplementationType() {
+    protected Class<? extends CommandHandlerProxy> getHandlerProxyImplementationType() {
         return CommandHandlerProxy.class;
     }
 
     @Override
-    protected boolean isHandlerSourceMatchKey(Class handlerSource, Class key) {
+    protected boolean isHandlerSourceMatchKey(Class<?> handlerSource, Class<?> key) {
         return key.equals(handlerSource);
     }
 

@@ -47,7 +47,7 @@ public class BankController {
     }
 
     @RequestMapping("perf")
-    public String test(@RequestParam("count") int totalCount) throws Exception {
+    public String perf(@RequestParam("count") int totalCount) throws Exception {
         long start = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(totalCount);
         for (int i = 0; i < totalCount; i++) {

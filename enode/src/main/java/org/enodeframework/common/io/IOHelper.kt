@@ -107,7 +107,10 @@ object IOHelper {
                 }
                 return
             }
-            asyncResult.thenAccept { result: TAsyncResult? -> executeSuccessAction(result) }
+            asyncResult
+                    .thenAccept { result: TAsyncResult? ->
+                        executeSuccessAction(result)
+                    }
                     .exceptionally { ex: Throwable ->
                         processTaskException(ex)
                         null

@@ -44,8 +44,8 @@ public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryP
             if (!IAggregateRepository.class.equals(superGenericInterfaceType.getRawType())) {
                 return;
             }
-            IAggregateRepository resolve = (IAggregateRepository) ObjectContainer.INSTANCE.resolve(aggregateRepositoryType);
-            AggregateRepositoryProxy aggregateRepositoryProxy = new AggregateRepositoryProxy<>(resolve);
+            IAggregateRepository<IAggregateRoot> resolve = (IAggregateRepository<IAggregateRoot>) ObjectContainer.INSTANCE.resolve(aggregateRepositoryType);
+            AggregateRepositoryProxy<IAggregateRoot> aggregateRepositoryProxy = new AggregateRepositoryProxy<>(resolve);
             repositoryDict.put((Class<?>) superGenericInterfaceType.getActualTypeArguments()[0], aggregateRepositoryProxy);
         });
     }

@@ -9,5 +9,5 @@ interface ICommandHandlerProvider {
     /**
      * Get all the handlers for the given command type.
      */
-    fun getHandlers(commandType: Class<*>?): List<MessageHandlerData<ICommandHandlerProxy?>?>?
+    fun getHandlers(commandType: Class<*>): List<MessageHandlerData<ICommandHandlerProxy>>
 }

@@ -140,7 +140,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             if (removed != null) {
                 duplicateCommandIdDict.remove(message.message.id)
                 lastActiveTime = Date()
-                return message.completeAsync(result);
+                return message.completeAsync(result)
             }
         } catch (ex: Exception) {
             logger.error("{} complete message with result failed, aggregateRootId: {}, messageId: {}, messageSequence: {}, result: {}", javaClass.name, aggregateRootId, message.message.id, message.sequence, result, ex)
@@ -156,17 +156,17 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         synchronized(asyncLock) {
             lastActiveTime = Date()
             try {
-                var scannedCount = 0;
+                var scannedCount = 0
                 while (totalUnHandledMessageCount > 0 && scannedCount < batchSize && !isPauseRequested) {
                     val message = getMessage(consumingSequence)
                     if (message != null) {
                         if (duplicateCommandIdDict.containsKey(message.message.id)) {
                             message.isDuplicated = true
                         }
-                        Task.await(messageHandler.handleAsync(message));
+                        Task.await(messageHandler.handleAsync(message))
                     }
-                    scannedCount++;
-                    consumingSequence++;
+                    scannedCount++
+                    consumingSequence++
                 }
             } catch (ex: Exception) {
                 logger.error("{} run has unknown exception, aggregateRootId: {}", javaClass.name, aggregateRootId, ex)

@@ -11,7 +11,6 @@ import org.enodeframework.domain.IAggregateRoot
 import org.enodeframework.domain.IDomainException
 import org.enodeframework.domain.IMemoryCache
 import org.enodeframework.eventing.*
-import org.enodeframework.infrastructure.IObjectProxy
 import org.enodeframework.infrastructure.ITypeNameProvider
 import org.enodeframework.messaging.IApplicationMessage
 import org.enodeframework.messaging.IMessagePublisher
@@ -34,7 +33,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
             logger.error(errorMessage)
             return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
         }
-        val findResult = getCommandHandler(processingCommand) { commandType: Class<*>? -> commandHandlerProvider.getHandlers(commandType) }
+        val findResult = getCommandHandler(processingCommand) { commandType: Class<*> -> commandHandlerProvider.getHandlers(commandType) }
         when (findResult.findStatus) {
             HandlerFindStatus.Found -> {
                 return handleCommandInternal(processingCommand, findResult.findHandler as ICommandHandlerProxy, 0)
@@ -271,23 +270,21 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return future
     }
 
-    private fun <T : IObjectProxy?> getCommandHandler(processingCommand: ProcessingCommand, getHandlersFunc: Function<Class<*>, List<MessageHandlerData<T>?>?>): HandlerFindResult<*> {
+    private fun getCommandHandler(processingCommand: ProcessingCommand, getHandlersFunc: Function<Class<*>, List<MessageHandlerData<ICommandHandlerProxy>>>): HandlerFindResult {
         val command = processingCommand.message
         val handlerDataList = getHandlersFunc.apply(command.javaClass)
-        if (handlerDataList == null || handlerDataList.isEmpty()) {
+        if (handlerDataList.isEmpty()) {
             return HandlerFindResult.NotFound
         } else if (handlerDataList.size > 1) {
             return HandlerFindResult.TooManyHandlerData
         }
         val handlerData = handlerDataList.stream().findFirst().orElse(MessageHandlerData())
-        if (handlerData!!.listHandlers == null || handlerData.listHandlers.size == 0) {
+        if (handlerData.listHandlers == null || handlerData.listHandlers.size == 0) {
             return HandlerFindResult.NotFound
         } else if (handlerData.listHandlers.size > 1) {
             return HandlerFindResult.TooManyHandler
         }
-        return handlerData.listHandlers.stream().findFirst()
-                .map { t: T -> HandlerFindResult(HandlerFindStatus.Found, t) }
-                .orElseGet { HandlerFindResult.NotFound as HandlerFindResult<T>? }
+        return HandlerFindResult(HandlerFindStatus.Found, handlerData.listHandlers.get(0));
     }
 
     private fun completeCommand(processingCommand: ProcessingCommand, commandStatus: CommandStatus, resultType: String?, result: String?): CompletableFuture<Boolean> {
@@ -295,18 +292,14 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return processingCommand.mailBox.completeMessage(processingCommand, commandResult)
     }
 
-    internal enum class HandlerFindStatus {
-        NotFound, Found, TooManyHandlerData, TooManyHandler
-    }
-
-    internal class HandlerFindResult<T : IObjectProxy?>(var findStatus: HandlerFindStatus, var findHandler: T?) {
+    internal class HandlerFindResult(var findStatus: HandlerFindStatus, var findHandler: ICommandHandlerProxy?) {
 
         constructor(findStatus: HandlerFindStatus) : this(findStatus, null)
 
         companion object {
-            var NotFound: HandlerFindResult<*> = HandlerFindResult<IObjectProxy>(HandlerFindStatus.NotFound)
-            var TooManyHandlerData: HandlerFindResult<*> = HandlerFindResult<IObjectProxy>(HandlerFindStatus.TooManyHandlerData)
-            var TooManyHandler: HandlerFindResult<*> = HandlerFindResult<IObjectProxy>(HandlerFindStatus.TooManyHandler)
+            var NotFound: HandlerFindResult = HandlerFindResult(HandlerFindStatus.NotFound)
+            var TooManyHandlerData: HandlerFindResult = HandlerFindResult(HandlerFindStatus.TooManyHandlerData)
+            var TooManyHandler: HandlerFindResult = HandlerFindResult(HandlerFindStatus.TooManyHandler)
         }
 
     }

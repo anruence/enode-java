@@ -8,5 +8,5 @@ interface ICommandHandlerProxy : IObjectProxy, MethodInvocation {
     /**
      * Handle the given application command async. deal with aggregate in memory
      */
-    fun handleAsync(context: ICommandContext?, command: ICommand?): CompletableFuture<Boolean>?
+    fun handleAsync(context: ICommandContext, command: ICommand): CompletableFuture<Boolean>
 }
