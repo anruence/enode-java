@@ -55,7 +55,7 @@ class DefaultCommandProcessor(private val processingCommandHandler: IProcessingC
     }
 
     private fun isMailBoxAllowRemove(mailbox: ProcessingCommandMailbox): Boolean {
-        return mailbox.isInactive(aggregateRootMaxInactiveSeconds) && !mailbox.isRunning && mailbox.totalUnHandledMessageCount == 0L
+        return mailbox.isInactive(aggregateRootMaxInactiveSeconds) && !mailbox.isRunning && mailbox.getTotalUnHandledMessageCount() == 0L
     }
 
     private fun cleanInactiveMailbox() {

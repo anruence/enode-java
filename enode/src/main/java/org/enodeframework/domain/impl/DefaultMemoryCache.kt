@@ -49,7 +49,7 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
         return getAsync(aggregateRootId, IAggregateRoot::class.java)
     }
 
-    override fun acceptAggregateRootChanges(aggregateRoot: IAggregateRoot): CompletableFuture<Boolean> {
+    override fun acceptAggregateRootChanges(aggregateRoot: IAggregateRoot) {
         synchronized(lockObj) {
             Ensure.notNull(aggregateRoot, "aggregateRoot")
             val cacheInfo = aggregateRootInfoDict.computeIfAbsent(aggregateRoot.uniqueId) { x: String? ->
@@ -66,7 +66,6 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
             cacheInfo.updateAggregateRoot(aggregateRoot)
             logger.info("Aggregate root in-memory cache changed, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.javaClass.name, aggregateRoot.uniqueId, aggregateRoot.version, aggregateRootOldVersion)
         }
-        return Task.completedTask
     }
 
     override fun refreshAggregateFromEventStoreAsync(aggregateRootTypeName: String, aggregateRootId: String): CompletableFuture<IAggregateRoot> {

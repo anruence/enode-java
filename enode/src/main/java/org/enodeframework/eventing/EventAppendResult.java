@@ -8,14 +8,13 @@ import java.util.Map;
 
 public class EventAppendResult {
 
-    private Object lockObj = new Object();
+    private final Object lockObj = new Object();
 
     private List<String> successAggregateRootIdList = Lists.newArrayList();
 
     private List<String> duplicateEventAggregateRootIdList = Lists.newArrayList();
 
     private Map<String, List<String>> duplicateCommandAggregateRootIdList = Maps.newHashMap();
-
 
     public List<String> getSuccessAggregateRootIdList() {
         return successAggregateRootIdList;
@@ -32,7 +31,6 @@ public class EventAppendResult {
     public void setDuplicateEventAggregateRootIdList(List<String> duplicateEventAggregateRootIdList) {
         this.duplicateEventAggregateRootIdList = duplicateEventAggregateRootIdList;
     }
-
 
     public Map<String, List<String>> getDuplicateCommandAggregateRootIdList() {
         return duplicateCommandAggregateRootIdList;

@@ -78,15 +78,16 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                                 .thenAccept { taskSource.complete(true) }
                     } else {
                         try {
-                            commitAggregateChanges(processingCommand).thenAccept { taskSource.complete(true) }.exceptionally { ex: Throwable ->
-                                logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                        commandHandler.innerObject.javaClass.name,
-                                        command.javaClass.name,
-                                        command.id,
-                                        command.aggregateRootId, ex)
-                                completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
-                                null
-                            }
+                            commitAggregateChanges(processingCommand).thenAccept { taskSource.complete(true) }
+                                    .exceptionally { ex: Throwable ->
+                                        logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                                                commandHandler.innerObject.javaClass.name,
+                                                command.javaClass.name,
+                                                command.id,
+                                                command.aggregateRootId, ex)
+                                        completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
+                                        null
+                                    }
                         } catch (aggregateRootReferenceChangedException: AggregateRootReferenceChangedException) {
                             logger.info("Aggregate root reference changed when processing command, try to re-handle the command. aggregateRootId: {}, aggregateRootType: {}, commandId: {}, commandType: {}, handlerType: {}",
                                     aggregateRootReferenceChangedException.aggregateRoot.uniqueId,
@@ -155,13 +156,12 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                 changedEvents,
                 command.items)
         //内存先接受聚合根的更新，需要检查聚合根引用是否已变化，如果已变化，会抛出异常
-        return memoryCache.acceptAggregateRootChanges(dirtyAggregateRoot).thenApply {
-            val commandResult = processingCommand.commandExecuteContext.result
-            processingCommand.items[SysProperties.ITEMS_COMMAND_RESULT_KEY] = commandResult
-            //提交事件流进行后续的处理
-            eventCommittingService.commitDomainEventAsync(EventCommittingContext(eventStream, processingCommand))
-            true
-        }
+        memoryCache.acceptAggregateRootChanges(dirtyAggregateRoot)
+        val commandResult = processingCommand.commandExecuteContext.result
+        processingCommand.items[SysProperties.ITEMS_COMMAND_RESULT_KEY] = commandResult
+        //提交事件流进行后续的处理
+        eventCommittingService.commitDomainEventAsync(EventCommittingContext(eventStream, processingCommand))
+        return Task.completedTask
     }
 
     private fun republishCommandEvents(processingCommand: ProcessingCommand, retryTimes: Int): CompletableFuture<Boolean> {

@@ -18,8 +18,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = App.class)
 @ContextConfiguration(classes = {EnodeTestDataSourceConfig.class})
+@SpringBootTest(classes = App.class)
 public abstract class AbstractTest {
     @Autowired
     protected ICommandService commandService;

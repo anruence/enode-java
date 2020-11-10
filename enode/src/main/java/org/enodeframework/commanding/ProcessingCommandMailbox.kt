@@ -37,8 +37,10 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         private set
     val maxMessageSequence: Long
         get() = nextSequence - 1
-    val totalUnHandledMessageCount: Long
-        get() = nextSequence - consumingSequence
+
+    fun getTotalUnHandledMessageCount(): Long {
+        return nextSequence - consumingSequence
+    }
 
     /**
      * 放入一个消息到MailBox，并自动尝试运行MailBox
@@ -70,7 +72,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, aggregateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
             }
-            CompletableFuture.runAsync({ processMessages() }, executor)
+            CompletableFuture.runAsync({ processMessagesAwait() }, executor)
         }
     }
 
@@ -83,7 +85,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             logger.debug("{} complete run, aggregateRootId: {}", javaClass.name, aggregateRootId)
         }
         setAsNotRunning()
-        if (totalUnHandledMessageCount > 0) {
+        if (getTotalUnHandledMessageCount() > 0) {
             tryRun()
         }
     }
@@ -152,18 +154,18 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         return System.currentTimeMillis() - lastActiveTime.time >= timeoutSeconds
     }
 
-    fun processMessages() {
+    fun processMessagesAwait() {
         synchronized(asyncLock) {
             lastActiveTime = Date()
             try {
                 var scannedCount = 0
-                while (totalUnHandledMessageCount > 0 && scannedCount < batchSize && !isPauseRequested) {
+                while (getTotalUnHandledMessageCount() > 0 && scannedCount < batchSize && !isPauseRequested) {
                     val message = getMessage(consumingSequence)
                     if (message != null) {
                         if (duplicateCommandIdDict.containsKey(message.message.id)) {
                             message.isDuplicated = true
                         }
-                        messageHandler.handleAsync(message).join()
+                        Task.await(messageHandler.handleAsync(message))
                     }
                     scannedCount++
                     consumingSequence++
@@ -174,6 +176,43 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             } finally {
                 completeRun()
             }
+        }
+    }
+
+    private fun processMessages() {
+        synchronized(asyncLock) {
+            lastActiveTime = Date()
+            try {
+                processMessagesRecursively(getTotalUnHandledMessageCount(), 0)
+            } catch (ex: Exception) {
+                logger.error("{} run has unknown exception, aggregateRootId: {}", javaClass.name, aggregateRootId, ex)
+                Task.sleep(1)
+            } finally {
+                completeRun()
+            }
+        }
+    }
+
+    /**
+     * 处理消息的递归实现
+     */
+    private fun processMessagesRecursively(unHandledMessageCount: Long, scannedCount: Long) {
+        if (!(unHandledMessageCount > 0 && scannedCount < batchSize && !isPauseRequested)) {
+            completeRun()
+            return
+        }
+        val message = getMessage(consumingSequence)
+        if (message != null) {
+            if (duplicateCommandIdDict.containsKey(message.message.id)) {
+                message.isDuplicated = true
+            }
+            messageHandler.handleAsync(message).thenAccept {
+                consumingSequence++
+                processMessagesRecursively(getTotalUnHandledMessageCount(), scannedCount + 1)
+            }
+        } else {
+            consumingSequence++
+            processMessagesRecursively(getTotalUnHandledMessageCount(), scannedCount + 1)
         }
     }
 
