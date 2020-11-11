@@ -165,9 +165,9 @@ class DefaultCommandResultProcessor constructor(private val scheduleService: ISc
                 logger.warn("event arrived early than command: {}", serializeService.serialize(message));
                 return
             }
+            commandTaskDict.asMap().remove(message.commandId)
             val commandResult = CommandResult(CommandStatus.Success, message.commandId, message.aggregateRootId, message.commandResult, if (message.commandResult != null) String::class.java.name else null)
             commandTaskCompletionSource.taskCompletionSource.complete(commandResult)
-            commandTaskDict.asMap().remove(message.commandId)
             if (logger.isDebugEnabled) {
                 logger.debug("DomainEvent result return, {}", serializeService.serialize(message))
             }

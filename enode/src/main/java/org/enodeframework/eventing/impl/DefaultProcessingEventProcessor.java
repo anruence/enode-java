@@ -146,7 +146,9 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     private void updatePublishedVersionAsync(ProcessingEvent processingEvent, int retryTimes) {
         DomainEventStreamMessage message = processingEvent.getMessage();
         IOHelper.tryAsyncActionRecursivelyWithoutResult("UpdatePublishedVersionAsync",
-                () -> publishedVersionStore.updatePublishedVersionAsync(name, message.getAggregateRootTypeName(), message.getAggregateRootId(), message.getVersion()),
+                () -> {
+                    return publishedVersionStore.updatePublishedVersionAsync(name, message.getAggregateRootTypeName(), message.getAggregateRootId(), message.getVersion());
+                },
                 result -> {
                     processingEvent.complete();
                 },

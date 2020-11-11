@@ -198,7 +198,7 @@ public class EnodeCoreTest extends AbstractTest {
         command2.aggregateRootId = aggregateId;
         command2.setTitle("Changed Note");
         //执行修改聚合根的命令
-        CommandResult commandResult = Task.await(commandService.executeAsync(command2));
+        CommandResult commandResult = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         TestAggregate note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -206,14 +206,15 @@ public class EnodeCoreTest extends AbstractTest {
         Assert.assertEquals("Changed Note", note.getTitle());
         Assert.assertEquals(2, note.getVersion());
         //在重复执行该命令
-        commandResult = Task.await(commandService.executeAsync(command2));
-        commandResult = Task.await(commandService.executeAsync(command2));
-        commandResult = Task.await(commandService.executeAsync(command2));
-        commandResult = Task.await(commandService.executeAsync(command2));
-        commandResult = Task.await(commandService.executeAsync(command2));
-        commandResult = Task.await(commandService.executeAsync(command2));
-        commandResult = Task.await(commandService.executeAsync(command2));
         commandResult = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
+        commandResult = Task.await(commandService.executeAsync(command2, CommandReturnType.EventHandled));
+        commandResult = Task.await(commandService.executeAsync(command2));
+        commandResult = Task.await(commandService.executeAsync(command2));
+        commandResult = Task.await(commandService.executeAsync(command2));
+        commandResult = Task.await(commandService.executeAsync(command2));
+        commandResult = Task.await(commandService.executeAsync(command2));
+        commandResult = Task.await(commandService.executeAsync(command2));
+        commandResult = Task.await(commandService.executeAsync(command2));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));

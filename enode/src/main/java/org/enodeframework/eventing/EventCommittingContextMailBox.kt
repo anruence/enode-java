@@ -23,8 +23,10 @@ class EventCommittingContextMailBox(number: Int, batchSize: Int, handleMessageAc
         private set
     var isRunning = false
         private set
-    val totalUnHandledMessageCount: Long
-        get() = messageQueue.size.toLong()
+
+    fun totalUnHandledMessageCount(): Long {
+        return messageQueue.size.toLong()
+    }
 
     /**
      * 放入一个消息到MailBox，并自动尝试运行MailBox
@@ -80,7 +82,7 @@ class EventCommittingContextMailBox(number: Int, batchSize: Int, handleMessageAc
             logger.debug("{} complete run, mailboxNumber: {}", javaClass.name, number)
         }
         setAsNotRunning()
-        if (totalUnHandledMessageCount > 0) {
+        if (totalUnHandledMessageCount() > 0) {
             tryRun()
         }
     }
