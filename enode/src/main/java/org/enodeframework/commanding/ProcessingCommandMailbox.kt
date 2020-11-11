@@ -72,7 +72,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, aggregateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
             }
-            CompletableFuture.runAsync({ processMessagesAwait() }, executor)
+            CompletableFuture.runAsync({ processMessages() }, executor)
         }
     }
 
@@ -187,7 +187,6 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             } catch (ex: Exception) {
                 logger.error("{} run has unknown exception, aggregateRootId: {}", javaClass.name, aggregateRootId, ex)
                 Task.sleep(1)
-            } finally {
                 completeRun()
             }
         }

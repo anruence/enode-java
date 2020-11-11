@@ -163,7 +163,7 @@ class DefaultCommandResultProcessor constructor(private val scheduleService: ISc
         if (commandTaskCompletionSource != null) {
             if (!CommandReturnType.EventHandled.equals(commandTaskCompletionSource.commandReturnType)) {
                 logger.warn("event arrived early than command: {}", serializeService.serialize(message));
-//                return
+                return
             }
             val commandResult = CommandResult(CommandStatus.Success, message.commandId, message.aggregateRootId, message.commandResult, if (message.commandResult != null) String::class.java.name else null)
             commandTaskCompletionSource.taskCompletionSource.complete(commandResult)
