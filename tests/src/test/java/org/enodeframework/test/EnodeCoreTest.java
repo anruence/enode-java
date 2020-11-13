@@ -500,7 +500,7 @@ public class EnodeCoreTest extends AbstractTest {
         for (int i = 0; i < 50; i++) {
             ChangeTestAggregateTitleCommand command1 = new ChangeTestAggregateTitleCommand();
             command1.aggregateRootId = aggregateId;
-            command1.setTitle("Changed Note Title");
+            command1.setTitle("Changed Note Title" + i);
             commandList.add(command1);
         }
         ManualResetEvent waitHandle = new ManualResetEvent(false);
@@ -508,10 +508,7 @@ public class EnodeCoreTest extends AbstractTest {
         for (ICommand updateCommand : commandList) {
             commandService.executeAsync(updateCommand).thenAccept(t -> {
                 Assert.assertNotNull(t);
-
-                CommandResult updateCommandResult = t;
-                Assert.assertNotNull(updateCommandResult);
-                Assert.assertEquals(CommandStatus.Success, updateCommandResult.getStatus());
+                Assert.assertEquals(CommandStatus.Success, t.getStatus());
                 long totalCount = count.incrementAndGet();
                 LOGGER.info("----create_concurrent_conflict_and_then_update_many_times_test, updateCommand finished, count: {}", totalCount);
                 if (totalCount == commandList.size()) {
@@ -553,17 +550,14 @@ public class EnodeCoreTest extends AbstractTest {
         for (int i = 0; i < 50; i++) {
             ChangeTestAggregateTitleCommand command1 = new ChangeTestAggregateTitleCommand();
             command1.aggregateRootId = aggregateId;
-            command1.setTitle("Changed Note Title");
+            command1.setTitle("Changed Note Title" + i);
             commandList.add(command1);
         }
         ManualResetEvent waitHandle = new ManualResetEvent(false);
         AtomicLong count = new AtomicLong(0);
         AtomicBoolean createCommandSuccess = new AtomicBoolean(false);
         for (ICommand updateCommand : commandList) {
-            commandService.executeAsync(updateCommand).thenAccept(t -> {
-                Assert.assertNotNull(t);
-
-                CommandResult commandResult = t;
+            commandService.executeAsync(updateCommand).thenAccept(commandResult -> {
                 Assert.assertNotNull(commandResult);
                 Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
                 if (!Objects.equals(commandResult.getCommandId(), commandId)) {
@@ -634,8 +628,9 @@ public class EnodeCoreTest extends AbstractTest {
         CreateTestAggregateCommand command = new CreateTestAggregateCommand();
         command.aggregateRootId = aggregateId;
         command.setTitle("Sample Note");
-        //执行创建聚合根的命令
-        CommandResult commandResult = Task.await(commandService.executeAsync(command));
+        //执行创建聚合根的命令，因为 publishedVersionStore.updatePublishedVersionAsync 是收到event消息后才执行的。
+        //可以认为在下面模拟插入数据时 更新版本为2和插入操作是并行的，如果发生更新版本 先执行，版本的进度就会一直落后
+        CommandResult commandResult = Task.await(commandService.executeAsync(command, CommandReturnType.EventHandled));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         TestAggregate note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -656,7 +651,8 @@ public class EnodeCoreTest extends AbstractTest {
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
-        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor", TestAggregate.class.getName(), aggregateId, 2));
+        Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor",
+                TestAggregate.class.getName(), aggregateId, 2));
         List<ICommand> commandList = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             ChangeTestAggregateTitleCommand command1 = new ChangeTestAggregateTitleCommand();
@@ -773,10 +769,10 @@ public class EnodeCoreTest extends AbstractTest {
         command.setAggregateRootId(aggregateId);
         command.setTitle("Sample Note");
         //执行创建聚合根的命令
-        CommandResult commandResult = commandService.executeAsync(command).join();
+        CommandResult commandResult = Task.await(commandService.executeAsync(command,CommandReturnType.EventHandled));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-        TestAggregate note = memoryCache.getAsync(aggregateId, TestAggregate.class).join();
+        TestAggregate note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Sample Note", note.getTitle());
         Assert.assertEquals(1, note.getVersion());
@@ -792,20 +788,20 @@ public class EnodeCoreTest extends AbstractTest {
         evnts.add(evnt);
         DomainEventStream eventStream = new DomainEventStream(ObjectId.generateNewStringId(), aggregateId, TestAggregate.class.getName(), new Date(), evnts, Maps.newHashMap());
         eventStreamList.add(eventStream);
-        eventStore.batchAppendAsync(eventStreamList).join();
+        Task.await(eventStore.batchAppendAsync(eventStreamList));
 
         String eventProcessorName = "DefaultEventProcessor";
-        publishedVersionStore.updatePublishedVersionAsync(eventProcessorName, TestAggregate.class.getName(), aggregateId, 2).join();
+        Task.await(publishedVersionStore.updatePublishedVersionAsync(eventProcessorName, TestAggregate.class.getName(), aggregateId, 2));
 
         //执行修改聚合根的命令
         ChangeTestAggregateTitleWhenDirtyCommand command2 = new ChangeTestAggregateTitleWhenDirtyCommand();
         command2.setAggregateRootId(aggregateId);
         command2.setTitle("Changed Note");
         command2.setFirstExecute(true);
-        commandResult = commandService.executeAsync(command2).join();
+        commandResult = Task.await(commandService.executeAsync(command2));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
-        note = memoryCache.getAsync(aggregateId, TestAggregate.class).join();
+        note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
         Assert.assertNotNull(note);
         Assert.assertEquals("Changed Note", note.getTitle());
         Assert.assertEquals(3, note.getVersion());

@@ -8,7 +8,7 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <properties>
-        <revision>1.0.10</revision>
+        <revision>1.0.11</revision>
         <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
         <vertx.version>3.9.4</vertx.version>
         <slfj4.version>1.7.30</slfj4.version>

@@ -6,9 +6,11 @@ public class TestAggregateTitleChanged extends DomainEvent<String> {
     private String title;
 
     public TestAggregateTitleChanged() {
+        super();
     }
 
     public TestAggregateTitleChanged(String title) {
+        super();
         this.title = title;
     }
 
