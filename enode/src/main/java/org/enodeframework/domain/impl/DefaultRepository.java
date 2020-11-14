@@ -31,11 +31,13 @@ public class DefaultRepository implements IRepository {
         });
     }
 
-    /**
-     * Get an aggregate from memory cache, if not exist, get it from event store.
-     */
     @Override
     public CompletableFuture<IAggregateRoot> getAsync(Object aggregateRootId) {
         return getAsync(IAggregateRoot.class, aggregateRootId);
+    }
+
+    @Override
+    public <T extends IAggregateRoot> void refreshAggregate(T aggregateRoot) {
+        memoryCache.refreshAggregate(aggregateRoot);
     }
 }

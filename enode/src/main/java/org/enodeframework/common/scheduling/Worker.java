@@ -51,7 +51,7 @@ public class Worker {
             try {
                 action.apply();
             } catch (Exception ex) {
-                logger.error(String.format("Worker thread has exception, actionName:%s", actionName), ex);
+                logger.error("Worker thread has exception, actionName: {}", actionName, ex);
             }
         }
     }

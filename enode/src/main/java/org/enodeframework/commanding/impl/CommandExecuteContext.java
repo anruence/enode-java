@@ -99,7 +99,8 @@ public class CommandExecuteContext implements ICommandExecuteContext {
         }
         return future.thenApply(aggregateRoot -> {
             if (aggregateRoot != null) {
-                trackingAggregateRootDict.putIfAbsent(aggregateRoot.getUniqueId(), aggregateRoot);
+                trackingAggregateRootDict.put(aggregateRoot.getUniqueId(), aggregateRoot);
+                repository.refreshAggregate(aggregateRoot);
             }
             return aggregateRoot;
         });

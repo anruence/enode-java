@@ -1,6 +1,5 @@
 package org.enodeframework.samples.controller.note;
 
-import com.google.common.base.Strings;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.common.io.Task;
@@ -25,20 +24,21 @@ public class NoteController {
     private ICommandService commandService;
 
     @RequestMapping("create")
-    public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title, @RequestParam(value = "c", required = false) String cid) {
+    public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title) {
         CreateNoteCommand createNoteCommand = new CreateNoteCommand(noteId, title);
-        if (!Strings.isNullOrEmpty(cid)) {
-            createNoteCommand.setId(cid);
-        }
-        commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled).join();
+        Task.await(commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled));
         ChangeNoteTitleCommand titleCommand = new ChangeNoteTitleCommand(noteId, title + " change");
-        // always block here
+        return Task.await(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
+    }
+
+    @RequestMapping("update")
+    public Object update(@RequestParam("id") String noteId, @RequestParam("t") String title) {
+        ChangeNoteTitleCommand titleCommand = new ChangeNoteTitleCommand(noteId, title + " change");
         return Task.await(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
     }
 
     @RequestMapping("test")
-    public Map test(@RequestParam("id") int totalCount,
-                    @RequestParam(required = false, name = "mode", defaultValue = "0") int mode) throws Exception {
+    public Map test(@RequestParam("id") int totalCount, @RequestParam(required = false, name = "mode", defaultValue = "0") int mode) throws Exception {
         long start = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(totalCount);
         for (int i = 0; i < totalCount; i++) {
