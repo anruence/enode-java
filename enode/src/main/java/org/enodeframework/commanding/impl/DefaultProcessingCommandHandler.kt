@@ -68,7 +68,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                 {
                     if (logger.isDebugEnabled) {
                         logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                commandHandler.innerObject.javaClass.name,
+                                commandHandler.getInnerObject().javaClass.name,
                                 command.javaClass.name,
                                 command.id,
                                 command.aggregateRootId)
@@ -81,7 +81,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                             commitAggregateChanges(processingCommand).thenAccept { taskSource.complete(true) }
                                     .exceptionally { ex: Throwable ->
                                         logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                                commandHandler.innerObject.javaClass.name,
+                                                commandHandler.getInnerObject().javaClass.name,
                                                 command.javaClass.name,
                                                 command.id,
                                                 command.aggregateRootId, ex)
@@ -94,12 +94,12 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                                     aggregateRootReferenceChangedException.aggregateRoot.javaClass.name,
                                     command.id,
                                     command.javaClass.name,
-                                    commandHandler.innerObject.javaClass.name
+                                    commandHandler.getInnerObject().javaClass.name
                             )
                             handleCommandInternal(processingCommand, commandHandler, 0).thenAccept { taskSource.complete(true) }
                         } catch (e: Exception) {
                             logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                    commandHandler.innerObject.javaClass.name,
+                                    commandHandler.getInnerObject().javaClass.name,
                                     command.javaClass.name,
                                     command.id,
                                     command.aggregateRootId, e)
@@ -107,7 +107,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                         }
                     }
                 },
-                { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.innerObject.javaClass.name, command.aggregateRootId) },
+                { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.getInnerObject().javaClass.name, command.aggregateRootId) },
                 { ex: Throwable, errorMessage: String ->
                     handleExceptionAsync(processingCommand, commandHandler, ex, errorMessage, 0)
                             .thenAccept { taskSource.complete(true) }
@@ -207,7 +207,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                         }
                     }
                 },
-                { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.innerObject.javaClass.name, command.aggregateRootId) },
+                { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.getInnerObject().javaClass.name, command.aggregateRootId) },
                 null, retryTimes, true
         )
         return future

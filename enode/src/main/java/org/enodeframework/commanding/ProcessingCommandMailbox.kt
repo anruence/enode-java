@@ -72,7 +72,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, aggregateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
             }
-            CompletableFuture.runAsync({ processMessages() }, executor)
+            CompletableFuture.runAsync({ processMessagesAwait() }, executor)
         }
     }
 
