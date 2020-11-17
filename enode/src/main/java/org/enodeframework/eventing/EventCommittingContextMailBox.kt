@@ -1,30 +1,28 @@
 package org.enodeframework.eventing
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.enodeframework.common.exception.DuplicateEventStreamException
 import org.enodeframework.common.function.Action1
 import org.enodeframework.common.io.Task
 import org.slf4j.LoggerFactory
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.Executor
 import java.util.stream.Collectors
 
-class EventCommittingContextMailBox(number: Int, batchSize: Int, handleMessageAction: Action1<List<EventCommittingContext>>, private val executor: Executor?) {
+class EventCommittingContextMailBox(val number: Int, private val batchSize: Int, handleEventAction: Action1<List<EventCommittingContext>>) {
     private val lockObj = Any()
     private val processMessageLockObj = Any()
-    val number: Int
-    private val aggregateDictDict: ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>>
-    private val messageQueue: ConcurrentLinkedQueue<EventCommittingContext>
-    private val handleMessageAction: Action1<List<EventCommittingContext>>
-    private val batchSize: Int
-    var lastActiveTime: Date
+    private val aggregateDictDict: ConcurrentHashMap<String, ConcurrentHashMap<String, Byte>> = ConcurrentHashMap()
+    private val messageQueue: ConcurrentLinkedQueue<EventCommittingContext> = ConcurrentLinkedQueue()
+    private val handleMessageAction: Action1<List<EventCommittingContext>> = handleEventAction
+    private var lastActiveTime: Date = Date()
         private set
     var isRunning = false
         private set
 
-    fun totalUnHandledMessageCount(): Long {
+    private fun totalUnHandledMessageCount(): Long {
         return messageQueue.size.toLong()
     }
 
@@ -69,7 +67,7 @@ class EventCommittingContextMailBox(number: Int, batchSize: Int, handleMessageAc
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, mailboxNumber: {}", javaClass.name, number)
             }
-            CompletableFuture.runAsync({ processMessages() }, executor)
+            GlobalScope.async { processMessages() }
         }
     }
 
@@ -140,11 +138,6 @@ class EventCommittingContextMailBox(number: Int, batchSize: Int, handleMessageAc
     }
 
     init {
-        aggregateDictDict = ConcurrentHashMap()
-        messageQueue = ConcurrentLinkedQueue()
-        this.handleMessageAction = handleMessageAction
-        this.number = number
-        this.batchSize = batchSize
         lastActiveTime = Date()
     }
 }

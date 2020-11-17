@@ -45,7 +45,7 @@ public class DepositTransactionProcessManager {
     public void handleAsync(TransactionPreparationAddedEvent evnt) {
         if (evnt.transactionPreparation.transactionType == TransactionType.DEPOSIT_TRANSACTION
                 && evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
-            ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.transactionPreparation.TransactionId);
+            ConfirmDepositPreparationCommand command = new ConfirmDepositPreparationCommand(evnt.transactionPreparation.transactionId);
             command.setId(evnt.getId());
             Task.await(commandService.sendAsync(command));
         }
@@ -62,7 +62,7 @@ public class DepositTransactionProcessManager {
     public void handleAsync(TransactionPreparationCommittedEvent evnt) {
         if (evnt.transactionPreparation.transactionType == TransactionType.DEPOSIT_TRANSACTION &&
                 evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
-            ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.transactionPreparation.TransactionId);
+            ConfirmDepositCommand command = new ConfirmDepositCommand(evnt.transactionPreparation.transactionId);
             command.setId(evnt.getId());
             Task.await(commandService.sendAsync(command));
         }

@@ -12,16 +12,15 @@ import org.enodeframework.eventing.*
 import org.enodeframework.messaging.IMessagePublisher
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.stream.Collectors
 
 /**
  * @author anruence@gmail.com
  */
-class DefaultEventCommittingService(private val memoryCache: IMemoryCache, private val eventStore: IEventStore, private val serializeService: ISerializeService, private val domainEventPublisher: IMessagePublisher<DomainEventStreamMessage?>, private val eventMailBoxCount: Int, executor: Executor?) : IEventCommittingService {
+class DefaultEventCommittingService(private val memoryCache: IMemoryCache, private val eventStore: IEventStore, private val serializeService: ISerializeService, private val domainEventPublisher: IMessagePublisher<DomainEventStreamMessage>, private val eventMailBoxCount: Int) : IEventCommittingService {
     private val eventCommittingContextMailBoxList: MutableList<EventCommittingContextMailBox>
 
-    constructor(memoryCache: IMemoryCache, eventStore: IEventStore, serializeService: ISerializeService, domainEventPublisher: IMessagePublisher<DomainEventStreamMessage?>, executor: Executor?) : this(memoryCache, eventStore, serializeService, domainEventPublisher, 4, executor)
+    constructor(memoryCache: IMemoryCache, eventStore: IEventStore, serializeService: ISerializeService, domainEventPublisher: IMessagePublisher<DomainEventStreamMessage>) : this(memoryCache, eventStore, serializeService, domainEventPublisher, 4)
 
     override fun commitDomainEventAsync(eventCommittingContext: EventCommittingContext) {
         val eventMailboxIndex = getEventMailBoxIndex(eventCommittingContext.eventStream.aggregateRootId)
@@ -274,7 +273,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
     init {
         eventCommittingContextMailBoxList = ArrayList()
         for (i in 0 until eventMailBoxCount) {
-            val mailBox = EventCommittingContextMailBox(i, 1000, { x: List<EventCommittingContext> -> batchPersistEventAsync(x, 0) }, executor)
+            val mailBox = EventCommittingContextMailBox(i, 1000, { x: List<EventCommittingContext> -> batchPersistEventAsync(x, 0) })
             eventCommittingContextMailBoxList.add(mailBox)
         }
     }

@@ -13,11 +13,11 @@ public class TransactionPreparation {
     /**
      * 账户ID
      */
-    public String AccountId;
+    public String accountId;
     /**
      * 交易ID
      */
-    public String TransactionId;
+    public String transactionId;
     /**
      * 预借或预贷
      */
@@ -29,7 +29,7 @@ public class TransactionPreparation {
     /**
      * 交易金额
      */
-    public double Amount;
+    public double amount;
 
     public TransactionPreparation(String accountId, String transactionId, int transactionType, int preparationType, double amount) {
         if (transactionType == TransactionType.TRANSFER_TRANSACTION && preparationType != PreparationType.CREDIT_PREPARATION) {
@@ -38,10 +38,10 @@ public class TransactionPreparation {
         if (transactionType == TransactionType.WITHDRAW_TRANSACTION && preparationType != PreparationType.DEBIT_PREPARATION) {
             throw new MismatchTransactionPreparationException(transactionType, preparationType);
         }
-        AccountId = accountId;
-        TransactionId = transactionId;
+        this.accountId = accountId;
+        this.transactionId = transactionId;
         this.transactionType = transactionType;
         this.preparationType = preparationType;
-        Amount = amount;
+        this.amount = amount;
     }
 }

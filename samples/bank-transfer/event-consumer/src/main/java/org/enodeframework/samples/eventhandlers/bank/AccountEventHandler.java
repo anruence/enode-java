@@ -42,9 +42,9 @@ public class AccountEventHandler {
     public void handleAsync(TransactionPreparationAddedEvent evnt) {
         if (evnt.transactionPreparation.transactionType == TransactionType.TRANSFER_TRANSACTION) {
             if (evnt.transactionPreparation.preparationType == PreparationType.DEBIT_PREPARATION) {
-                logger.info("账户预转出成功，交易ID：{}，账户：{}，金额：{}", evnt.transactionPreparation.TransactionId, evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount);
+                logger.info("账户预转出成功，交易ID：{}，账户：{}，金额：{}", evnt.transactionPreparation.transactionId, evnt.transactionPreparation.accountId, evnt.transactionPreparation.amount);
             } else if (evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
-                logger.info("账户预转入成功，交易ID：{}，账户：{}，金额：{}", evnt.transactionPreparation.TransactionId, evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount);
+                logger.info("账户预转入成功，交易ID：{}，账户：{}，金额：{}", evnt.transactionPreparation.transactionId, evnt.transactionPreparation.accountId, evnt.transactionPreparation.amount);
             }
         }
 
@@ -54,15 +54,15 @@ public class AccountEventHandler {
     public void handleAsync(TransactionPreparationCommittedEvent evnt) {
         if (evnt.transactionPreparation.transactionType == TransactionType.DEPOSIT_TRANSACTION) {
             if (evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
-                logger.info("账户存款已成功，账户：{}，金额：{}，当前余额：{}", evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount, evnt.currentBalance);
+                logger.info("账户存款已成功，账户：{}，金额：{}，当前余额：{}", evnt.transactionPreparation.accountId, evnt.transactionPreparation.amount, evnt.currentBalance);
             }
         }
         if (evnt.transactionPreparation.transactionType == TransactionType.TRANSFER_TRANSACTION) {
             if (evnt.transactionPreparation.preparationType == PreparationType.DEBIT_PREPARATION) {
-                logger.info("账户转出已成功，交易ID：{}，账户：{}，金额：{}，当前余额：{}", evnt.transactionPreparation.TransactionId, evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount, evnt.currentBalance);
+                logger.info("账户转出已成功，交易ID：{}，账户：{}，金额：{}，当前余额：{}", evnt.transactionPreparation.transactionId, evnt.transactionPreparation.accountId, evnt.transactionPreparation.amount, evnt.currentBalance);
             }
             if (evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
-                logger.info("账户转入已成功，交易ID：{}，账户：{}，金额：{}，当前余额：{}", evnt.transactionPreparation.TransactionId, evnt.transactionPreparation.AccountId, evnt.transactionPreparation.Amount, evnt.currentBalance);
+                logger.info("账户转入已成功，交易ID：{}，账户：{}，金额：{}，当前余额：{}", evnt.transactionPreparation.transactionId, evnt.transactionPreparation.accountId, evnt.transactionPreparation.amount, evnt.currentBalance);
             }
         }
 

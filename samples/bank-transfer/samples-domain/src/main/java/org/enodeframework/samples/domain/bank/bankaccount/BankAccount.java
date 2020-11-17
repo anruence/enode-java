@@ -40,9 +40,9 @@ public class BankAccount extends AggregateRoot<String> {
         TransactionPreparation transactionPreparation = getTransactionPreparation(transactionId);
         double currentBalance = balance;
         if (transactionPreparation.preparationType == PreparationType.DEBIT_PREPARATION) {
-            currentBalance -= transactionPreparation.Amount;
+            currentBalance -= transactionPreparation.amount;
         } else if (transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
-            currentBalance += transactionPreparation.Amount;
+            currentBalance += transactionPreparation.amount;
         }
         applyEvent(new TransactionPreparationCommittedEvent(currentBalance, transactionPreparation));
     }
@@ -77,7 +77,7 @@ public class BankAccount extends AggregateRoot<String> {
         }
         double totalDebitTransactionPreparationAmount = 0;
         for (TransactionPreparation debitTransactionPreparation : transactionPreparations.values().stream().filter(x -> x.preparationType == PreparationType.DEBIT_PREPARATION).collect(Collectors.toList())) {
-            totalDebitTransactionPreparationAmount += debitTransactionPreparation.Amount;
+            totalDebitTransactionPreparationAmount += debitTransactionPreparation.amount;
         }
         return balance - totalDebitTransactionPreparationAmount;
     }
@@ -88,15 +88,15 @@ public class BankAccount extends AggregateRoot<String> {
     }
 
     private void handle(TransactionPreparationAddedEvent evnt) {
-        transactionPreparations.put(evnt.transactionPreparation.TransactionId, evnt.transactionPreparation);
+        transactionPreparations.put(evnt.transactionPreparation.transactionId, evnt.transactionPreparation);
     }
 
     private void handle(TransactionPreparationCommittedEvent evnt) {
-        transactionPreparations.remove(evnt.transactionPreparation.TransactionId);
+        transactionPreparations.remove(evnt.transactionPreparation.transactionId);
         balance = evnt.currentBalance;
     }
 
     private void handle(TransactionPreparationCanceledEvent evnt) {
-        transactionPreparations.remove(evnt.transactionPreparation.TransactionId);
+        transactionPreparations.remove(evnt.transactionPreparation.transactionId);
     }
 }

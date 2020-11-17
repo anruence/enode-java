@@ -11,14 +11,13 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
-import java.util.concurrent.Executor
 import java.util.function.Consumer
 import java.util.stream.Collectors
 
 /**
  * @author anruence@gmail.com
  */
-class DefaultCommandProcessor(private val processingCommandHandler: IProcessingCommandHandler, private val scheduleService: IScheduleService, private val executor: Executor) : ICommandProcessor {
+class DefaultCommandProcessor(private val processingCommandHandler: IProcessingCommandHandler, private val scheduleService: IScheduleService) : ICommandProcessor {
     private val mailboxDict: ConcurrentMap<String, ProcessingCommandMailbox>
     private val taskName: String
     var aggregateRootMaxInactiveSeconds = 3600 * 24 * 3
@@ -27,7 +26,7 @@ class DefaultCommandProcessor(private val processingCommandHandler: IProcessingC
     override fun process(processingCommand: ProcessingCommand) {
         val aggregateRootId = processingCommand.message.aggregateRootId
         require(!Strings.isNullOrEmpty(aggregateRootId)) { String.format("aggregateRootId of command cannot be null or empty, commandId: %s", processingCommand.message.id) }
-        var mailbox = mailboxDict.computeIfAbsent(aggregateRootId) { x: String -> ProcessingCommandMailbox(x, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize, executor) }
+        var mailbox = mailboxDict.computeIfAbsent(aggregateRootId) { x: String -> ProcessingCommandMailbox(x, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize) }
         var mailboxTryUsingCount = 0L
         while (!mailbox.tryUsing()) {
             Task.sleep(1)
@@ -37,7 +36,7 @@ class DefaultCommandProcessor(private val processingCommandHandler: IProcessingC
             }
         }
         if (mailbox.isRemoved()) {
-            mailbox = ProcessingCommandMailbox(aggregateRootId, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize, executor)
+            mailbox = ProcessingCommandMailbox(aggregateRootId, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize)
             mailboxDict.putIfAbsent(aggregateRootId, mailbox)
         }
         mailbox.enqueueMessage(processingCommand)

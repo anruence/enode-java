@@ -86,11 +86,11 @@ public class TransferTransactionProcessManager {
     public void handleAsync(TransactionPreparationAddedEvent evnt) {
         if (evnt.transactionPreparation.transactionType == TransactionType.TRANSFER_TRANSACTION) {
             if (evnt.transactionPreparation.preparationType == PreparationType.DEBIT_PREPARATION) {
-                ConfirmTransferOutPreparationCommand command = new ConfirmTransferOutPreparationCommand(evnt.transactionPreparation.TransactionId);
+                ConfirmTransferOutPreparationCommand command = new ConfirmTransferOutPreparationCommand(evnt.transactionPreparation.transactionId);
                 command.setId(evnt.getId());
                 Task.await(commandService.sendAsync(command));
             } else if (evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
-                ConfirmTransferInPreparationCommand command = new ConfirmTransferInPreparationCommand(evnt.transactionPreparation.TransactionId);
+                ConfirmTransferInPreparationCommand command = new ConfirmTransferInPreparationCommand(evnt.transactionPreparation.transactionId);
                 command.setId(evnt.getId());
                 Task.await(commandService.sendAsync(command));
             }
@@ -133,11 +133,11 @@ public class TransferTransactionProcessManager {
     public void handleAsync(TransactionPreparationCommittedEvent evnt) {
         if (evnt.transactionPreparation.transactionType == TransactionType.TRANSFER_TRANSACTION) {
             if (evnt.transactionPreparation.preparationType == PreparationType.DEBIT_PREPARATION) {
-                ConfirmTransferOutCommand command = new ConfirmTransferOutCommand(evnt.transactionPreparation.TransactionId);
+                ConfirmTransferOutCommand command = new ConfirmTransferOutCommand(evnt.transactionPreparation.transactionId);
                 command.setId(evnt.getId());
                 Task.await(commandService.sendAsync(command));
             } else if (evnt.transactionPreparation.preparationType == PreparationType.CREDIT_PREPARATION) {
-                ConfirmTransferInCommand command = new ConfirmTransferInCommand(evnt.transactionPreparation.TransactionId);
+                ConfirmTransferInCommand command = new ConfirmTransferInCommand(evnt.transactionPreparation.transactionId);
                 command.setId(evnt.getId());
                 Task.await(commandService.sendAsync(command));
             }

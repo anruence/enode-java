@@ -285,24 +285,12 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         } else if (handlerData.listHandlers.size > 1) {
             return HandlerFindResult.TooManyHandler
         }
-        return HandlerFindResult(HandlerFindStatus.Found, handlerData.listHandlers.get(0));
+        return HandlerFindResult(HandlerFindStatus.Found, handlerData.listHandlers[0])
     }
 
     private fun completeCommand(processingCommand: ProcessingCommand, commandStatus: CommandStatus, resultType: String, result: String?): CompletableFuture<Boolean> {
         val commandResult = CommandResult(commandStatus, processingCommand.message.id, processingCommand.message.aggregateRootId, result, resultType)
         return processingCommand.mailBox.completeMessage(processingCommand, commandResult)
-    }
-
-    internal class HandlerFindResult(var findStatus: HandlerFindStatus, var findHandler: ICommandHandlerProxy?) {
-
-        constructor(findStatus: HandlerFindStatus) : this(findStatus, null)
-
-        companion object {
-            var NotFound: HandlerFindResult = HandlerFindResult(HandlerFindStatus.NotFound)
-            var TooManyHandlerData: HandlerFindResult = HandlerFindResult(HandlerFindStatus.TooManyHandlerData)
-            var TooManyHandler: HandlerFindResult = HandlerFindResult(HandlerFindStatus.TooManyHandler)
-        }
-
     }
 
     companion object {

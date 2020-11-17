@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 /**
@@ -39,17 +38,15 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     private final ISerializeService serializeService;
     private final IMessageDispatcher messageDispatcher;
     private final IPublishedVersionStore publishedVersionStore;
-    private final Executor executor;
     private int timeoutSeconds = 3600 * 24 * 3;
     private int scanExpiredAggregateIntervalMilliseconds = 5000;
     private int processTryToRefreshAggregateIntervalMilliseconds = 1000;
 
-    public DefaultProcessingEventProcessor(IScheduleService scheduleService, ISerializeService serializeService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore, Executor executor) {
+    public DefaultProcessingEventProcessor(IScheduleService scheduleService, ISerializeService serializeService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore) {
         this.scheduleService = scheduleService;
         this.serializeService = serializeService;
         this.messageDispatcher = messageDispatcher;
         this.publishedVersionStore = publishedVersionStore;
-        this.executor = executor;
         this.mailboxDict = new ConcurrentHashMap<>();
         this.toRefreshAggregateRootMailBoxDict = new ConcurrentHashMap<>();
         this.refreshingAggregateRootDict = new ConcurrentHashMap<>();
@@ -93,7 +90,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
     }
 
     private ProcessingEventMailBox buildProcessingEventMailBox(ProcessingEvent processingMessage) {
-        return new ProcessingEventMailBox(processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootId(), y -> dispatchProcessingMessageAsync(y, 0), executor);
+        return new ProcessingEventMailBox(processingMessage.getMessage().getAggregateRootTypeName(), processingMessage.getMessage().getAggregateRootId(), y -> dispatchProcessingMessageAsync(y, 0));
     }
 
     private void tryToRefreshAggregateMailBoxNextExpectingEventVersion(ProcessingEventMailBox processingEventMailBox) {

@@ -120,7 +120,7 @@ object IOHelper {
         private fun executeRetryAction() {
             try {
                 if (currentRetryTimes >= maxRetryTimes) {
-                    DelayedTask.startDelayedTask(Duration.ofMillis(retryInterval.toLong()), { doRetry() })
+                    DelayedTask.startDelayedTask(Duration.ofMillis(retryInterval.toLong())) { doRetry() }
                 } else {
                     doRetry()
                 }

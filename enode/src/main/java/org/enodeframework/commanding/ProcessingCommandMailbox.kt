@@ -1,42 +1,35 @@
 package org.enodeframework.commanding
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.enodeframework.common.io.Task
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author anruence@gmail.com
  */
-class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcessingCommandHandler, batchSize: Int, private val executor: Executor) {
+class ProcessingCommandMailbox(var aggregateRootId: String, private val messageHandler: IProcessingCommandHandler, private val batchSize: Int) {
     private val lockObj = Any()
-    private val asyncLock = Any()
-
-    /**
-     * Sequence 对应 ProcessingCommand
-     */
-    private var messageDict: ConcurrentHashMap<Long, ProcessingCommand>
-    private var duplicateCommandIdDict: ConcurrentHashMap<String, Byte>
-    private val messageHandler: IProcessingCommandHandler
-    private val batchSize: Int
+    private val mutex = Mutex()
+    private var messageDict: ConcurrentHashMap<Long, ProcessingCommand> = ConcurrentHashMap()
+    private var duplicateCommandIdDict: ConcurrentHashMap<String, Byte> = ConcurrentHashMap()
     private val isUsing = AtomicInteger(0)
     private val isRemoved = AtomicInteger(0)
-    var aggregateRootId: String
-    var lastActiveTime: Date
+    private var lastActiveTime: Date
     var isRunning = false
         private set
-    var isPauseRequested = false
-        private set
+    private var isPauseRequested = false
     var isPaused = false
         private set
     private var nextSequence: Long = 0
     var consumingSequence: Long = 0
         private set
-    val maxMessageSequence: Long
-        get() = nextSequence - 1
 
     fun getTotalUnHandledMessageCount(): Long {
         return nextSequence - consumingSequence
@@ -72,7 +65,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, aggregateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
             }
-            CompletableFuture.runAsync({ processMessagesAwait() }, executor)
+            GlobalScope.async { processMessagesAwait() }
         }
     }
 
@@ -120,7 +113,7 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         isPaused = false
         lastActiveTime = Date()
         if (logger.isDebugEnabled) {
-            logger.debug("{} resume requested, agg`regateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
+            logger.debug("{} resume requested, aggregateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence)
         }
     }
 
@@ -154,8 +147,8 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         return System.currentTimeMillis() - lastActiveTime.time >= timeoutSeconds
     }
 
-    fun processMessagesAwait() {
-        synchronized(asyncLock) {
+    private suspend fun processMessagesAwait() {
+        mutex.withLock {
             lastActiveTime = Date()
             try {
                 var scannedCount = 0
@@ -179,42 +172,6 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         }
     }
 
-    private fun processMessages() {
-        synchronized(asyncLock) {
-            lastActiveTime = Date()
-            try {
-                processMessagesRecursively(getTotalUnHandledMessageCount(), 0)
-            } catch (ex: Exception) {
-                logger.error("{} run has unknown exception, aggregateRootId: {}", javaClass.name, aggregateRootId, ex)
-                Task.sleep(1)
-                completeRun()
-            }
-        }
-    }
-
-    /**
-     * 处理消息的递归实现
-     */
-    private fun processMessagesRecursively(unHandledMessageCount: Long, scannedCount: Long) {
-        if (!(unHandledMessageCount > 0 && scannedCount < batchSize && !isPauseRequested)) {
-            completeRun()
-            return
-        }
-        val message = getMessage(consumingSequence)
-        if (message != null) {
-            if (duplicateCommandIdDict.containsKey(message.message.id)) {
-                message.isDuplicated = true
-            }
-            messageHandler.handleAsync(message).thenAccept {
-                consumingSequence++
-                processMessagesRecursively(getTotalUnHandledMessageCount(), scannedCount + 1)
-            }
-        } else {
-            consumingSequence++
-            processMessagesRecursively(getTotalUnHandledMessageCount(), scannedCount + 1)
-        }
-    }
-
     private fun getMessage(sequence: Long): ProcessingCommand? {
         return messageDict.getOrDefault(sequence, null)
     }
@@ -235,10 +192,6 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
         isRemoved.set(1)
     }
 
-    fun isUsing(): Boolean {
-        return isUsing.get() == 1
-    }
-
     fun isRemoved(): Boolean {
         return isRemoved.get() == 1
     }
@@ -252,11 +205,6 @@ class ProcessingCommandMailbox(aggregateRootId: String, messageHandler: IProcess
     }
 
     init {
-        messageDict = ConcurrentHashMap()
-        duplicateCommandIdDict = ConcurrentHashMap()
-        this.messageHandler = messageHandler
-        this.batchSize = batchSize
-        this.aggregateRootId = aggregateRootId
         lastActiveTime = Date()
     }
 }
