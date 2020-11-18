@@ -3,7 +3,7 @@ package org.enodeframework.samples.domain.note;
 import org.enodeframework.domain.AggregateRoot;
 
 public class Note extends AggregateRoot<String> {
-    private String _title;
+    private String title;
 
     public Note() {
     }
@@ -19,14 +19,14 @@ public class Note extends AggregateRoot<String> {
     }
 
     protected void handle(NoteCreated evnt) {
-        _title = evnt.getTitle();
+        title = evnt.getTitle();
     }
 
     protected void handle(NoteTitleChanged evnt) {
-        _title = evnt.getTitle();
+        title = evnt.getTitle();
     }
 
     protected void handle(NoteTitleChanged2 evnt) {
-        _title = evnt.getTitle();
+        title = evnt.getTitle();
     }
 }

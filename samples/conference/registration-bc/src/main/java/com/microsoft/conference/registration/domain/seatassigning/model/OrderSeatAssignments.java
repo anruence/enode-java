@@ -7,7 +7,7 @@ import com.microsoft.conference.registration.domain.seatassigning.event.OrderSea
 import com.microsoft.conference.registration.domain.seatassigning.event.SeatAssigned;
 import com.microsoft.conference.registration.domain.seatassigning.event.SeatUnassigned;
 import org.enodeframework.common.utilities.Ensure;
-import org.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.common.utilities.IdGenerator;
 import org.enodeframework.domain.AggregateRoot;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class OrderSeatAssignments extends AggregateRoot<String> {
     private List<SeatAssignment> seatAssignments;
 
     public OrderSeatAssignments(String orderId, List<OrderLine> orderLines) {
-        super(ObjectId.generateNewStringId());
+        super(IdGenerator.nextId());
         Ensure.notNullOrEmpty(orderId, "orderId");
         Ensure.notNull(orderLines, "orderLines");
         if (orderLines.isEmpty()) {

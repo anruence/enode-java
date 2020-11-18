@@ -3,7 +3,7 @@ package org.enodeframework.samples.controller.note;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.common.io.Task;
-import org.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.common.utilities.IdGenerator;
 import org.enodeframework.samples.commands.note.ChangeNoteTitleCommand;
 import org.enodeframework.samples.commands.note.CreateNoteCommand;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ public class NoteController {
         long start = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(totalCount);
         for (int i = 0; i < totalCount; i++) {
-            CreateNoteCommand command = new CreateNoteCommand(ObjectId.generateNewStringId(), "Sample Note" + ObjectId.generateNewStringId());
+            CreateNoteCommand command = new CreateNoteCommand(IdGenerator.nextId(), "Sample Note" + IdGenerator.nextId());
             command.setId(String.valueOf(i));
             command.setId(String.valueOf(i));
             try {

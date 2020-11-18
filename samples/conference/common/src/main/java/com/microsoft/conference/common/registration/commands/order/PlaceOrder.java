@@ -3,7 +3,7 @@ package com.microsoft.conference.common.registration.commands.order;
 import lombok.Getter;
 import lombok.Setter;
 import org.enodeframework.commanding.Command;
-import org.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.common.utilities.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class PlaceOrder extends Command<String> {
     private List<SeatInfo> seatInfos;
 
     public PlaceOrder() {
-        super(ObjectId.generateNewStringId());
+        super(IdGenerator.nextId());
         seatInfos = new ArrayList<>();
     }
 }

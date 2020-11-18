@@ -20,7 +20,7 @@ import org.enodeframework.commanding.CommandStatus;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.common.io.Task;
-import org.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.common.utilities.IdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -126,7 +126,7 @@ public class RegistrationController {
         String name = alias.getName();
         String description = "Payment for the order of " + name;
         CreatePayment createPayment = new CreatePayment();
-        createPayment.setAggregateRootId(ObjectId.generateNewStringId());
+        createPayment.setAggregateRootId(IdGenerator.nextId());
         createPayment.setConferenceId(alias.getId());
         createPayment.setOrderId(order.getOrderId());
         createPayment.setDescription(description);

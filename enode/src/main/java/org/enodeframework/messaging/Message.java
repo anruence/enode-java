@@ -1,6 +1,6 @@
 package org.enodeframework.messaging;
 
-import org.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.common.utilities.IdGenerator;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ public abstract class Message implements IMessage {
     protected Map<String, Object> items;
 
     public Message() {
-        id = ObjectId.generateNewStringId();
+        id = IdGenerator.nextId();
         timestamp = new Date();
         items = new HashMap<>();
     }

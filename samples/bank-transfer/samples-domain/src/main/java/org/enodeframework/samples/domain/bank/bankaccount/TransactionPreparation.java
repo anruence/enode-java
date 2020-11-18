@@ -32,7 +32,7 @@ public class TransactionPreparation {
     public double amount;
 
     public TransactionPreparation(String accountId, String transactionId, int transactionType, int preparationType, double amount) {
-        if (transactionType == TransactionType.TRANSFER_TRANSACTION && preparationType != PreparationType.CREDIT_PREPARATION) {
+        if (transactionType == TransactionType.DEPOSIT_TRANSACTION && preparationType != PreparationType.CREDIT_PREPARATION) {
             throw new MismatchTransactionPreparationException(transactionType, preparationType);
         }
         if (transactionType == TransactionType.WITHDRAW_TRANSACTION && preparationType != PreparationType.DEBIT_PREPARATION) {

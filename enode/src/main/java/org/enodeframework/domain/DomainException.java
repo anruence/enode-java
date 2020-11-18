@@ -1,6 +1,6 @@
 package org.enodeframework.domain;
 
-import org.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.common.utilities.IdGenerator;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ public abstract class DomainException extends RuntimeException implements IDomai
     private Map<String, Object> items;
 
     public DomainException() {
-        id = ObjectId.generateNewStringId();
+        id = IdGenerator.nextId();
         timestamp = new Date();
         items = new HashMap<>();
     }

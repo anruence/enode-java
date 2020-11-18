@@ -12,7 +12,7 @@ import com.microsoft.conference.registration.domain.order.event.OrderReservation
 import com.microsoft.conference.registration.domain.order.event.OrderSuccessed;
 import com.microsoft.conference.registration.domain.seatassigning.model.OrderSeatAssignments;
 import org.enodeframework.common.utilities.Ensure;
-import org.enodeframework.common.utilities.ObjectId;
+import org.enodeframework.common.utilities.IdGenerator;
 import org.enodeframework.domain.AggregateRoot;
 
 import java.util.Date;
@@ -39,7 +39,7 @@ public class Order extends AggregateRoot<String> {
             throw new IllegalArgumentException("The seats of order cannot be empty.");
         }
         OrderTotal orderTotal = pricingService.calculateTotal(conferenceId, seats);
-        applyEvent(new OrderPlaced(conferenceId, orderTotal, new Date(), ObjectId.generateNewStringId()));
+        applyEvent(new OrderPlaced(conferenceId, orderTotal, new Date(), IdGenerator.nextId()));
     }
 
     public void assignRegistrant(String firstName, String lastName, String email) {
