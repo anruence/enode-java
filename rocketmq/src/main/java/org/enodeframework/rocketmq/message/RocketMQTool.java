@@ -35,6 +35,15 @@ public class RocketMQTool {
         Task.await(latch);
     }
 
+    private static void handleConcurrently(int index, int total, List<MessageExt> msgs, CountDownLatch latch, IMessageHandler messageHandler) {
+        msgs.forEach(msg -> {
+            QueueMessage queueMessage = covertToQueueMessage(msgs.get(index));
+            messageHandler.handle(queueMessage, message -> {
+                latch.countDown();
+            });
+        });
+    }
+
     private static void handleRecursively(int index, int total, List<MessageExt> msgs, CountDownLatch latch, IMessageHandler messageHandler) {
         if (index == total) {
             return;

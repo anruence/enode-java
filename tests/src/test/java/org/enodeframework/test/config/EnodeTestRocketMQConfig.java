@@ -35,6 +35,7 @@ public class EnodeTestRocketMQConfig {
         defaultMQPushConsumer.setNamesrvAddr(Constants.NAMESRVADDR);
         defaultMQPushConsumer.subscribe(commandTopic, "*");
         defaultMQPushConsumer.setMessageListener(commandListener);
+        defaultMQPushConsumer.setConsumeMessageBatchMaxSize(200);
         return defaultMQPushConsumer;
     }
 

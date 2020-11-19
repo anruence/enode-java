@@ -6,7 +6,6 @@ public class CreateNoteCommand extends Command<String> {
     private String title;
 
     public CreateNoteCommand() {
-
     }
 
     public CreateNoteCommand(String aggregateRootId, String title) {

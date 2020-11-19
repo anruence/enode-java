@@ -6,13 +6,13 @@ import org.enodeframework.commanding.ProcessingCommand
 import org.enodeframework.common.exception.MailBoxInvalidException
 import org.enodeframework.common.io.IOHelper
 import org.enodeframework.common.serializing.ISerializeService
-import org.enodeframework.domain.IAggregateRoot
 import org.enodeframework.domain.IMemoryCache
 import org.enodeframework.eventing.*
 import org.enodeframework.messaging.IMessagePublisher
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.stream.Collectors
+import kotlin.math.abs
 
 /**
  * @author anruence@gmail.com
@@ -29,7 +29,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
     }
 
     override fun publishDomainEventAsync(processingCommand: ProcessingCommand, eventStream: DomainEventStream): CompletableFuture<Boolean> {
-        if (eventStream.items == null || eventStream.items.size == 0) {
+        if (eventStream.items == null || eventStream.items.isEmpty()) {
             eventStream.items = processingCommand.items
         }
         val eventStreamMessage = DomainEventStreamMessage(
@@ -48,7 +48,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
             hash = (hash shl 5) - hash + c.toInt()
         }
         if (hash < 0) {
-            hash = Math.abs(hash)
+            hash = abs(hash)
         }
         return hash % eventMailBoxCount
     }
@@ -85,7 +85,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
                         }
                     }
                     //针对持久化出现重复的命令ID，在命令MailBox中标记为已重复，在事件MailBox中清除对应聚合根产生的事件，且重新发布这些命令对应的领域事件到Q端
-                    if (result.duplicateCommandAggregateRootIdList.size > 0) {
+                    if (result.duplicateCommandAggregateRootIdList.isNotEmpty()) {
                         for ((key, value) in result.duplicateCommandAggregateRootIdList) {
                             committingContexts.stream().filter { x: EventCommittingContext -> key == x.eventStream.aggregateRootId }.findFirst().ifPresent { eventCommittingContext: EventCommittingContext ->
                                 val context = EventAppendContext()
@@ -129,7 +129,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
             eventMailBox.completeRun()
             return
         }
-        val context = contexts.get(index);
+        val context = contexts[index]
         val eventCommittingContext = context.committingContext
         val duplicateCommandIdList = context.duplicateCommandIdList
         if (context.success) {
@@ -151,7 +151,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
         val aggregateRootId = context.eventStream.aggregateRootId
         commandMailBox.pause()
         eventMailBox.removeAggregateAllEventCommittingContexts(aggregateRootId)
-        return memoryCache.refreshAggregateFromEventStoreAsync(context.eventStream.aggregateRootTypeName, aggregateRootId).thenApply { x: IAggregateRoot? ->
+        return memoryCache.refreshAggregateFromEventStoreAsync(context.eventStream.aggregateRootTypeName, aggregateRootId).thenApply {
             try {
                 if (duplicateCommandIdList != null) {
                     for (commandId in duplicateCommandIdList) {
@@ -273,7 +273,7 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
     init {
         eventCommittingContextMailBoxList = ArrayList()
         for (i in 0 until eventMailBoxCount) {
-            val mailBox = EventCommittingContextMailBox(i, 1000, { x: List<EventCommittingContext> -> batchPersistEventAsync(x, 0) })
+            val mailBox = EventCommittingContextMailBox(i, 1000) { x: List<EventCommittingContext> -> batchPersistEventAsync(x, 0) }
             eventCommittingContextMailBoxList.add(mailBox)
         }
     }

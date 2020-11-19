@@ -6,5 +6,5 @@ interface IProcessingCommandHandler {
     /**
      * process given processing command.
      */
-    fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean>
+    suspend fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean>
 }

@@ -1,6 +1,8 @@
 package org.enodeframework.commanding.impl
 
 import com.google.common.base.Strings
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.enodeframework.commanding.*
 import org.enodeframework.common.SysProperties
 import org.enodeframework.common.io.IOHelper
@@ -26,7 +28,7 @@ import java.util.stream.Collectors
  * @author anruence@gmail.com
  */
 class DefaultProcessingCommandHandler(private val eventStore: IEventStore, private val commandHandlerProvider: ICommandHandlerProvider, private val typeNameProvider: ITypeNameProvider, private val eventCommittingService: IEventCommittingService, private val memoryCache: IMemoryCache, private val applicationMessagePublisher: IMessagePublisher<IApplicationMessage>, private val exceptionPublisher: IMessagePublisher<IDomainException>, private val serializeService: ISerializeService) : IProcessingCommandHandler {
-    override fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
+    override suspend fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
         val command = processingCommand.message
         if (Strings.isNullOrEmpty(command.aggregateRootId)) {
             val errorMessage = String.format("The aggregateRootId of command cannot be null or empty. commandType:%s, commandId:%s", command.javaClass.name, command.id)
@@ -66,6 +68,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         IOHelper.tryAsyncActionRecursivelyWithoutResult("HandleCommandAsync",
                 { commandHandler.handleAsync(commandContext, command) },
                 {
+                    GlobalScope.async {
                     if (logger.isDebugEnabled) {
                         logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                 commandHandler.getInnerObject().javaClass.name,
@@ -105,6 +108,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                                     command.aggregateRootId, e)
                             completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
                         }
+                    }
                     }
                 },
                 { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.getInnerObject().javaClass.name, command.aggregateRootId) },

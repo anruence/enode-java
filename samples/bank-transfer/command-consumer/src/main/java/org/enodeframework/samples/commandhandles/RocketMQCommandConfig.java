@@ -24,6 +24,7 @@ public class RocketMQCommandConfig {
         defaultMQPushConsumer.setNamesrvAddr(QueueProperties.NAMESRVADDR);
         defaultMQPushConsumer.subscribe(commandTopic, "*");
         defaultMQPushConsumer.setMessageListener(commandListener);
+        defaultMQPushConsumer.setConsumeMessageBatchMaxSize(200);
         return defaultMQPushConsumer;
     }
 
