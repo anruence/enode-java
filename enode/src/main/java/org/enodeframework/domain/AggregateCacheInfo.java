@@ -1,5 +1,7 @@
 package org.enodeframework.domain;
 
+import org.enodeframework.common.utilities.SystemClock;
+
 import java.util.Date;
 
 /**
@@ -20,7 +22,7 @@ public class AggregateCacheInfo {
     }
 
     public boolean isExpired(int timeoutSeconds) {
-        return ((System.currentTimeMillis() - lastUpdateTime.getTime())) / 1000 >= timeoutSeconds;
+        return ((SystemClock.now() - lastUpdateTime.getTime())) / 1000 >= timeoutSeconds;
     }
 
     public IAggregateRoot getAggregateRoot() {

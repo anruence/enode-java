@@ -21,6 +21,7 @@ import org.enodeframework.common.scheduling.Worker
 import org.enodeframework.common.serializing.ISerializeService
 import org.enodeframework.common.utilities.InetUtil
 import org.enodeframework.common.utilities.ReplyMessage
+import org.enodeframework.common.utilities.SystemClock
 import org.enodeframework.queue.domainevent.DomainEventHandledMessage
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit
  * @author anruence@gmail.com
  */
 class DefaultCommandResultProcessor constructor(private val scheduleService: IScheduleService, private val serializeService: ISerializeService, private val port: Int, private val completionSourceTimeout: Int) : CoroutineVerticle(), ICommandResultProcessor {
-    private val scanExpireCommandTaskName: String = "CleanTimeoutCommandTask_" + System.currentTimeMillis() + Random().nextInt(10000)
+    private val scanExpireCommandTaskName: String = "CleanTimeoutCommandTask_" + SystemClock.now() + Random().nextInt(10000)
     private val commandTaskDict: Cache<String, CommandTaskCompletionSource>
     private val commandExecutedMessageLocalQueue: BlockingQueue<CommandResult>
     private val domainEventHandledMessageLocalQueue: BlockingQueue<DomainEventHandledMessage>

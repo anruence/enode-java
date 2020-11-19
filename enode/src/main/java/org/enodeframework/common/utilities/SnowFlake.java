@@ -56,10 +56,6 @@ public class SnowFlake {
         this.machineId = machineId;
     }
 
-
-    /**
-     * 获取 maxWorkerId
-     */
     private long getMachineId(long datacenterId) {
         StringBuilder machineId = new StringBuilder();
         machineId.append(datacenterId);
@@ -136,6 +132,6 @@ public class SnowFlake {
     }
 
     private long getStamp() {
-        return System.currentTimeMillis();
+        return SystemClock.now();
     }
 }

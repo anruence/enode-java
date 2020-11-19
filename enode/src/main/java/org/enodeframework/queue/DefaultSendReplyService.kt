@@ -87,7 +87,7 @@ class DefaultSendReplyService(private val serializeService: ISerializeService) :
             }
             socket.handler(FrameParser { parse: AsyncResult<JsonObject?> ->
                 if (parse.succeeded()) {
-                    logger.info("receive server req: {}, res: {}", message, parse)
+                    logger.info("receive server response: {}, {}", message, parse)
                 }
             })
             socket.endHandler { netSocketCache.invalidate(address) }

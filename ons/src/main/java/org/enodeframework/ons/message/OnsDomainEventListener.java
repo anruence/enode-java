@@ -1,19 +1,21 @@
 package org.enodeframework.ons.message;
 
+import com.aliyun.openservices.ons.api.Action;
+import com.aliyun.openservices.ons.api.ConsumeContext;
 import com.aliyun.openservices.ons.api.Message;
+import com.aliyun.openservices.ons.api.batch.BatchMessageListener;
 import com.aliyun.openservices.ons.api.order.ConsumeOrderContext;
 import com.aliyun.openservices.ons.api.order.MessageOrderListener;
 import com.aliyun.openservices.ons.api.order.OrderAction;
-import org.enodeframework.common.io.Task;
+import com.google.common.collect.Lists;
 import org.enodeframework.queue.IMessageHandler;
-import org.enodeframework.queue.QueueMessage;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.List;
 
 /**
  * @author anruence@gmail.com
  */
-public class OnsDomainEventListener implements MessageOrderListener {
+public class OnsDomainEventListener implements MessageOrderListener, BatchMessageListener {
     private final IMessageHandler domainEventListener;
 
     public OnsDomainEventListener(IMessageHandler domainEventListener) {
@@ -22,12 +24,13 @@ public class OnsDomainEventListener implements MessageOrderListener {
 
     @Override
     public OrderAction consume(Message message, ConsumeOrderContext context) {
-        final CountDownLatch latch = new CountDownLatch(1);
-        QueueMessage queueMessage = OnsTool.covertToQueueMessage(message);
-        domainEventListener.handle(queueMessage, m -> {
-            latch.countDown();
-        });
-        Task.await(latch);
+        OnsTool.handle(Lists.newArrayList(message), domainEventListener);
         return OrderAction.Success;
+    }
+
+    @Override
+    public Action consume(List<Message> messages, ConsumeContext context) {
+        OnsTool.handle(messages, domainEventListener);
+        return Action.CommitMessage;
     }
 }

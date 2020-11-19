@@ -5,6 +5,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.enodeframework.common.io.Task
+import org.enodeframework.common.utilities.SystemClock
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -144,7 +145,7 @@ class ProcessingCommandMailbox(var aggregateRootId: String, private val messageH
     }
 
     fun isInactive(timeoutSeconds: Int): Boolean {
-        return System.currentTimeMillis() - lastActiveTime.time >= timeoutSeconds
+        return SystemClock.now() - lastActiveTime.time >= timeoutSeconds
     }
 
     private suspend fun processMessagesAwait() {

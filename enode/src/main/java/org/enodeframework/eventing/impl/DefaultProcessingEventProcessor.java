@@ -6,6 +6,7 @@ import org.enodeframework.common.io.IOHelper;
 import org.enodeframework.common.io.Task;
 import org.enodeframework.common.scheduling.IScheduleService;
 import org.enodeframework.common.serializing.ISerializeService;
+import org.enodeframework.common.utilities.SystemClock;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.EnqueueMessageResult;
 import org.enodeframework.eventing.IProcessingEventProcessor;
@@ -50,8 +51,8 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
         this.mailboxDict = new ConcurrentHashMap<>();
         this.toRefreshAggregateRootMailBoxDict = new ConcurrentHashMap<>();
         this.refreshingAggregateRootDict = new ConcurrentHashMap<>();
-        this.scanInactiveMailBoxTaskName = "CleanInactiveProcessingEventMailBoxes_" + System.currentTimeMillis() + new Random().nextInt(10000);
-        this.processTryToRefreshAggregateTaskName = "ProcessTryToRefreshAggregate_" + System.currentTimeMillis() + new Random().nextInt(10000);
+        this.scanInactiveMailBoxTaskName = "CleanInactiveProcessingEventMailBoxes_" + SystemClock.now() + new Random().nextInt(10000);
+        this.processTryToRefreshAggregateTaskName = "ProcessTryToRefreshAggregate_" + SystemClock.now() + new Random().nextInt(10000);
     }
 
     @Override

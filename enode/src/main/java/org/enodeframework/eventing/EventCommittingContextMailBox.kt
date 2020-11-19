@@ -5,6 +5,7 @@ import kotlinx.coroutines.async
 import org.enodeframework.common.exception.DuplicateEventStreamException
 import org.enodeframework.common.function.Action1
 import org.enodeframework.common.io.Task
+import org.enodeframework.common.utilities.SystemClock
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -90,7 +91,7 @@ class EventCommittingContextMailBox(val number: Int, private val batchSize: Int,
     }
 
     fun isInactive(timeoutSeconds: Int): Boolean {
-        return System.currentTimeMillis() - lastActiveTime.time >= timeoutSeconds
+        return SystemClock.now() - lastActiveTime.time >= timeoutSeconds
     }
 
     private fun processMessages() {

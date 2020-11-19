@@ -5,6 +5,7 @@ import kotlinx.coroutines.async
 import org.enodeframework.common.exception.MailBoxProcessException
 import org.enodeframework.common.function.Action1
 import org.enodeframework.common.io.Task
+import org.enodeframework.common.utilities.SystemClock
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -20,7 +21,7 @@ class ProcessingEventMailBox(aggregateRootTypeName: String, aggregateRootId: Str
     private val isRemoved = AtomicInteger(0)
     private val isRunning = AtomicInteger(0)
     private var waitingProcessingEventDict = ConcurrentHashMap<Int, ProcessingEvent>()
-    private var processingEventQueue: ConcurrentLinkedQueue<ProcessingEvent>
+    private var processingEventQueue: ConcurrentLinkedQueue<ProcessingEvent> = ConcurrentLinkedQueue()
     private var handleProcessingEventAction: Action1<ProcessingEvent>
     private var lastActiveTime: Date
     private var nextExpectingEventVersion: Int? = null
@@ -162,7 +163,7 @@ class ProcessingEventMailBox(aggregateRootTypeName: String, aggregateRootId: Str
     }
 
     fun isInactive(timeoutSeconds: Int): Boolean {
-        return System.currentTimeMillis() - lastActiveTime.time >= timeoutSeconds
+        return SystemClock.now() - lastActiveTime.time >= timeoutSeconds
     }
 
     fun processMessages() {
@@ -218,10 +219,9 @@ class ProcessingEventMailBox(aggregateRootTypeName: String, aggregateRootId: Str
     }
 
     init {
-        processingEventQueue = ConcurrentLinkedQueue()
         this.aggregateRootId = aggregateRootId
         this.aggregateRootTypeName = aggregateRootTypeName
         this.handleProcessingEventAction = handleProcessingEventAction
-        lastActiveTime = Date()
+        this.lastActiveTime = Date()
     }
 }
