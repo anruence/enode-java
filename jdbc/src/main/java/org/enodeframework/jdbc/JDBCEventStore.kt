@@ -68,10 +68,10 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         return batchAggregateEventAppendResult.taskCompletionSource
     }
 
-    fun batchAppendAggregateEventsAsync(aggregateRootId: String, eventStreamList: List<DomainEventStream>, batchAggregateEventAppendResult: BatchAggregateEventAppendResult, retryTimes: Int) {
+    private fun batchAppendAggregateEventsAsync(aggregateRootId: String, eventStreamList: List<DomainEventStream>, batchAggregateEventAppendResult: BatchAggregateEventAppendResult, retryTimes: Int) {
         IOHelper.tryAsyncActionRecursively("BatchAppendAggregateEventsAsync",
                 { batchAppendAggregateEventsAsync(aggregateRootId, eventStreamList) },
-                { result: AggregateEventAppendResult? -> batchAggregateEventAppendResult.addCompleteAggregate(aggregateRootId, result) },
+                { result: AggregateEventAppendResult -> batchAggregateEventAppendResult.addCompleteAggregate(aggregateRootId, result) },
                 { String.format("[aggregateRootId: %s, eventStreamCount: %s]", aggregateRootId, eventStreamList.size) },
                 null,
                 retryTimes, true)
@@ -93,7 +93,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         return future
     }
 
-    fun batchAppendAggregateEventsAsync(aggregateRootId: String, eventStreamList: List<DomainEventStream>): CompletableFuture<AggregateEventAppendResult?> {
+    fun batchAppendAggregateEventsAsync(aggregateRootId: String, eventStreamList: List<DomainEventStream>): CompletableFuture<AggregateEventAppendResult> {
         val sql = String.format(INSERT_EVENT_SQL, tableName)
         val jsonArrays: ArrayList<JsonArray> = Lists.newArrayList()
         for (domainEventStream in eventStreamList) {
@@ -109,7 +109,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         val future = batchInsertAsync(sql, jsonArrays)
         return future.exceptionally { throwable: Throwable? ->
             if (throwable is SQLException) {
-                if (sqlState == throwable.sqlState && Objects.nonNull(throwable.message) && throwable.message!!.contains(versionIndexName)) {
+                if (sqlState == throwable.sqlState && throwable.message!!.contains(versionIndexName)) {
                     val appendResult = AggregateEventAppendResult()
                     appendResult.eventAppendStatus = EventAppendStatus.DuplicateEvent
                     return@exceptionally appendResult
@@ -138,8 +138,8 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
 
     protected abstract fun parseDuplicateCommandId(msg: String): String
 
-    fun batchInsertAsync(sql: String, jsonArrays: List<JsonArray>): CompletableFuture<AggregateEventAppendResult?> {
-        val future = CompletableFuture<AggregateEventAppendResult?>()
+    fun batchInsertAsync(sql: String, jsonArrays: List<JsonArray>): CompletableFuture<AggregateEventAppendResult> {
+        val future = CompletableFuture<AggregateEventAppendResult>()
         batchWithParams(sql, jsonArrays) { x: AsyncResult<List<Int?>?> ->
             if (x.succeeded()) {
                 val appendResult = AggregateEventAppendResult()
@@ -182,7 +182,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         }, "QueryAggregateEventsAsync")
     }
 
-    override fun findAsync(aggregateRootId: String, version: Int): CompletableFuture<DomainEventStream> {
+    override fun findAsync(aggregateRootId: String, version: Int): CompletableFuture<DomainEventStream?> {
         return IOHelper.tryIOFuncAsync({
             val future = CompletableFuture<DomainEventStream>()
             val sql = String.format(SELECT_ONE_BY_VERSION_SQL, tableName)
@@ -213,7 +213,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         }, "FindEventByVersionAsync")
     }
 
-    override fun findAsync(aggregateRootId: String, commandId: String): CompletableFuture<DomainEventStream> {
+    override fun findAsync(aggregateRootId: String, commandId: String): CompletableFuture<DomainEventStream?> {
         return IOHelper.tryIOFuncAsync({
             val future = CompletableFuture<DomainEventStream>()
             val sql = String.format(SELECT_ONE_BY_COMMAND_ID_SQL, tableName)

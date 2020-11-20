@@ -1,7 +1,9 @@
 package org.enodeframework.eventing
 
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.enodeframework.common.exception.MailBoxProcessException
 import org.enodeframework.common.function.Action1
 import org.enodeframework.common.io.Task
@@ -144,7 +146,7 @@ class ProcessingEventMailBox(aggregateRootTypeName: String, aggregateRootId: Str
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, aggregateRootId: {}", javaClass.name, aggregateRootId)
             }
-            GlobalScope.async { processMessages() }
+            CoroutineScope(Dispatchers.Default).launch { processMessages() }
         }
     }
 

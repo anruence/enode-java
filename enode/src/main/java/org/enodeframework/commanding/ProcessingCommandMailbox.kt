@@ -1,7 +1,8 @@
 package org.enodeframework.commanding
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.enodeframework.common.io.Task
@@ -67,7 +68,7 @@ class ProcessingCommandMailbox(var aggregateRootId: String, private val messageH
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, aggregateRootId: {}, consumingSequence: {}", javaClass.name, aggregateRootId, consumingSequence.get())
             }
-            GlobalScope.async { processMessagesAwait() }
+            CoroutineScope(Dispatchers.Default).launch { processMessagesAwait() }
         }
     }
 
@@ -160,7 +161,7 @@ class ProcessingCommandMailbox(var aggregateRootId: String, private val messageH
                         if (duplicateCommandIdDict.containsKey(message.message.id)) {
                             message.isDuplicated = true
                         }
-                        messageHandler.handleAsync(message)
+                        Task.await(messageHandler.handleAsync(message))
                     }
                     consumingSequence.incrementAndGet();
                     scannedCount++

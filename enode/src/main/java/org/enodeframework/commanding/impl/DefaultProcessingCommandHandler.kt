@@ -1,8 +1,6 @@
 package org.enodeframework.commanding.impl
 
 import com.google.common.base.Strings
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import org.enodeframework.commanding.*
 import org.enodeframework.common.SysProperties
 import org.enodeframework.common.io.IOHelper
@@ -68,7 +66,6 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         IOHelper.tryAsyncActionRecursivelyWithoutResult("HandleCommandAsync",
                 { commandHandler.handleAsync(commandContext, command) },
                 {
-                    GlobalScope.async {
                     if (logger.isDebugEnabled) {
                         logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                 commandHandler.getInnerObject().javaClass.name,
@@ -108,7 +105,6 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
                                     command.aggregateRootId, e)
                             completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
                         }
-                    }
                     }
                 },
                 { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.getInnerObject().javaClass.name, command.aggregateRootId) },

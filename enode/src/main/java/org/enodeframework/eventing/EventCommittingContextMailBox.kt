@@ -1,6 +1,7 @@
 package org.enodeframework.eventing
 
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -70,7 +71,7 @@ class EventCommittingContextMailBox(val number: Int, private val batchSize: Int,
             if (logger.isDebugEnabled) {
                 logger.debug("{} start run, mailboxNumber: {}", javaClass.name, number)
             }
-            GlobalScope.async { processMessages() }
+            CoroutineScope(Dispatchers.Default).async { processMessages() }
         }
     }
 

@@ -44,7 +44,7 @@ public class MockEventStore implements IEventStore {
     }
 
     @Override
-    public CompletableFuture<EventAppendResult> batchAppendAsync(List<DomainEventStream> eventStreams) {
+    public CompletableFuture<EventAppendResult> batchAppendAsync(List<? extends DomainEventStream> eventStreams) {
         if (currentFailedCount < expectFailedCount) {
             currentFailedCount++;
             if (failedType == FailedType.UnKnownException) {
