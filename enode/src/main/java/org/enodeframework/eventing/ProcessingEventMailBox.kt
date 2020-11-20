@@ -2,7 +2,6 @@ package org.enodeframework.eventing
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.enodeframework.common.exception.MailBoxProcessException
 import org.enodeframework.common.function.Action1
@@ -15,16 +14,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 
-class ProcessingEventMailBox(aggregateRootTypeName: String, aggregateRootId: String, handleProcessingEventAction: Action1<ProcessingEvent>) {
+class ProcessingEventMailBox(val aggregateRootTypeName: String, val aggregateRootId: String, private var handleProcessingEventAction: Action1<ProcessingEvent>) {
     private val lockObj = Any()
-    val aggregateRootId: String
-    val aggregateRootTypeName: String
     private val isUsing = AtomicInteger(0)
     private val isRemoved = AtomicInteger(0)
     private val isRunning = AtomicInteger(0)
     private var waitingProcessingEventDict = ConcurrentHashMap<Int, ProcessingEvent>()
     private var processingEventQueue: ConcurrentLinkedQueue<ProcessingEvent> = ConcurrentLinkedQueue()
-    private var handleProcessingEventAction: Action1<ProcessingEvent>
     private var lastActiveTime: Date
     private var nextExpectingEventVersion: Int? = null
 
@@ -74,7 +70,6 @@ class ProcessingEventMailBox(aggregateRootTypeName: String, aggregateRootId: Str
                 lastActiveTime = Date()
                 tryRun()
             } else if (version == this.nextExpectingEventVersion){
-                val processingEvent = waitingProcessingEventDict.get(nextExpectingEventVersion)
                 logger.info("{} equals nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}, current nextExpectingEventVersion: {}", javaClass.name, aggregateRootId, aggregateRootTypeName, version, nextExpectingEventVersion)
             } else {
                 logger.info("{} nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}, current nextExpectingEventVersion: {}", javaClass.name, aggregateRootId, aggregateRootTypeName, version, nextExpectingEventVersion)
@@ -168,7 +163,7 @@ class ProcessingEventMailBox(aggregateRootTypeName: String, aggregateRootId: Str
         return SystemClock.now() - lastActiveTime.time >= timeoutSeconds
     }
 
-    fun processMessages() {
+    private fun processMessages() {
         val message = processingEventQueue.poll()
         if (message != null) {
             lastActiveTime = Date()
@@ -221,9 +216,6 @@ class ProcessingEventMailBox(aggregateRootTypeName: String, aggregateRootId: Str
     }
 
     init {
-        this.aggregateRootId = aggregateRootId
-        this.aggregateRootTypeName = aggregateRootTypeName
-        this.handleProcessingEventAction = handleProcessingEventAction
         this.lastActiveTime = Date()
     }
 }
