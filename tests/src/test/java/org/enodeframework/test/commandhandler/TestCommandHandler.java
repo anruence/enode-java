@@ -42,16 +42,16 @@ public class TestCommandHandler {
 
     @Subscribe
     public void handleAsync(ICommandContext context, CreateTestAggregateCommand command) {
-        if (command.SleepMilliseconds > 0) {
-            Task.sleep(command.SleepMilliseconds);
+        if (command.sleepMilliseconds > 0) {
+            Task.sleep(command.sleepMilliseconds);
         }
-        context.add(new TestAggregate(command.getAggregateRootId(), command.Title));
+        context.add(new TestAggregate(command.getAggregateRootId(), command.title));
     }
 
     @Subscribe
     public void handleAsync(ICommandContext context, ChangeTestAggregateTitleCommand command) {
         TestAggregate testAggregate = Task.await(context.getAsync(command.aggregateRootId, TestAggregate.class));
-        testAggregate.changeTitle(command.Title);
+        testAggregate.changeTitle(command.title);
     }
 
     @Subscribe

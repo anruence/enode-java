@@ -3,22 +3,24 @@ package org.enodeframework.test.command;
 import org.enodeframework.commanding.Command;
 
 public class CreateTestAggregateCommand extends Command<String> {
-    public String Title;
-    public int SleepMilliseconds;
+
+    public String title;
+
+    public int sleepMilliseconds;
 
     public String getTitle() {
-        return Title;
+        return title;
     }
 
     public void setTitle(String title) {
-        Title = title;
+        this.title = title;
     }
 
     public int getSleepMilliseconds() {
-        return SleepMilliseconds;
+        return sleepMilliseconds;
     }
 
     public void setSleepMilliseconds(int sleepMilliseconds) {
-        SleepMilliseconds = sleepMilliseconds;
+        this.sleepMilliseconds = sleepMilliseconds;
     }
 }

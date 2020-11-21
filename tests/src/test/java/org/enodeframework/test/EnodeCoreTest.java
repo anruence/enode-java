@@ -58,7 +58,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -704,6 +706,28 @@ public class EnodeCoreTest extends AbstractTest {
         Assert.assertEquals(Handler1231.class.getName(), HandlerTypes.get(3).get(1));
         Assert.assertEquals(Handler1233.class.getName(), HandlerTypes.get(3).get(2));
         HandlerTypes.clear();
+    }
+
+
+    @Test
+    public void note_update_many_times_test() {
+        String noteId = IdGenerator.nextId();
+        CountDownLatch latch = new CountDownLatch(500);
+        for (int i = 0; i < 500; i++) {
+            CompletableFuture.runAsync(() -> {
+                String title = "Create Note";
+                CreateTestAggregateCommand createNoteCommand = new CreateTestAggregateCommand();
+                createNoteCommand.setTitle(title);
+                createNoteCommand.setAggregateRootId(noteId);
+                Task.await(commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled));
+                ChangeTestAggregateTitleCommand titleCommand = new ChangeTestAggregateTitleCommand();
+                titleCommand.setTitle(title + "Changed");
+                titleCommand.setAggregateRootId(noteId);
+                Task.await(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
+                latch.countDown();
+            });
+        }
+        Task.await(latch);
     }
 
     @Test

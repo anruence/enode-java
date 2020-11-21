@@ -2,14 +2,14 @@ package org.enodeframework.test.command;
 
 import org.enodeframework.commanding.Command;
 
-public class ChangeTestAggregateTitleCommand extends Command {
-    public String Title;
+public class ChangeTestAggregateTitleCommand extends Command<String> {
+    public String title;
 
     public String getTitle() {
-        return Title;
+        return title;
     }
 
     public void setTitle(String title) {
-        Title = title;
+        this.title = title;
     }
 }
