@@ -1,10 +1,8 @@
 package org.enodeframework.commanding.impl
 
 import com.google.common.base.Strings
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.future.asDeferred
 import org.enodeframework.commanding.*
 import org.enodeframework.common.SysProperties
 import org.enodeframework.common.io.IOHelper
@@ -30,32 +28,32 @@ import java.util.function.Function
  * @author anruence@gmail.com
  */
 class DefaultProcessingCommandHandler(private val eventStore: IEventStore, private val commandHandlerProvider: ICommandHandlerProvider, private val typeNameProvider: ITypeNameProvider, private val eventCommittingService: IEventCommittingService, private val memoryCache: IMemoryCache, private val applicationMessagePublisher: IMessagePublisher<IApplicationMessage>, private val exceptionPublisher: IMessagePublisher<IDomainException>, private val serializeService: ISerializeService) : IProcessingCommandHandler {
-    override suspend fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
+    override suspend fun handleAsync(processingCommand: ProcessingCommand): Deferred<Boolean> {
         val command = processingCommand.message
         if (Strings.isNullOrEmpty(command.aggregateRootId)) {
             val errorMessage = String.format("The aggregateRootId of command cannot be null or empty. commandType:%s, commandId:%s", command.javaClass.name, command.id)
             logger.error(errorMessage)
-            return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
+            return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage).asDeferred()
         }
         val findResult = getCommandHandler(processingCommand) { commandType: Class<*> -> commandHandlerProvider.getHandlers(commandType) }
         when (findResult.findStatus) {
             HandlerFindStatus.Found -> {
-                return handleCommandInternal(processingCommand, findResult.findHandler as ICommandHandlerProxy, 0)
+                return handleCommandInternal(processingCommand, findResult.findHandler as ICommandHandlerProxy, 0).asDeferred()
             }
             HandlerFindStatus.TooManyHandlerData -> {
                 logger.error("Found more than one command handler data, commandType:{}, commandId:{}", command.javaClass.name, command.id)
-                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler data found.")
+                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler data found.").asDeferred()
             }
             HandlerFindStatus.TooManyHandler -> {
                 logger.error("Found more than one command handler, commandType:{}, commandId:{}", command.javaClass.name, command.id)
-                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler found.")
+                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler found.").asDeferred()
             }
             HandlerFindStatus.NotFound -> {
                 val errorMessage = String.format("No command handler found of command. commandType:%s, commandId:%s", command.javaClass.name, command.id)
                 logger.error(errorMessage)
-                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
+                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage).asDeferred()
             }
-            else -> return Task.completedTask
+            else -> return Task.completedTask.asDeferred()
         }
     }
 

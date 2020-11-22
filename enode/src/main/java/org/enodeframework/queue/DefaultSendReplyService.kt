@@ -90,10 +90,12 @@ class DefaultSendReplyService(private val serializeService: ISerializeService) :
                     logger.info("receive server response: {}, {}", message, parse)
                 }
             })
-            socket.endHandler { netSocketCache.invalidate(address) }
+            socket.endHandler {
+                netSocketCache.invalidate(address)
+            }
             FrameHelper.sendFrame("send", address, replyAddress, JsonObject(message), socket)
         }
-        return Task.completedTask
+        return Task.completedTask;
     }
 
     companion object {

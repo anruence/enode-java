@@ -11,7 +11,7 @@ import org.enodeframework.eventing.IDomainEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Represents an abstract base aggregate root.
@@ -29,8 +29,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     private Queue<IDomainEvent<?>> uncommittedEvents;
 
     protected AggregateRoot() {
-        uncommittedEvents = new ConcurrentLinkedDeque<IDomainEvent<?>>() {
-        };
+        uncommittedEvents = new ConcurrentLinkedQueue<>();
     }
 
     protected AggregateRoot(TAggregateRootId id) {
@@ -82,7 +81,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     private void appendUncommittedEvent(IDomainEvent<TAggregateRootId> domainEvent) {
         if (uncommittedEvents == null) {
-            uncommittedEvents = new ConcurrentLinkedDeque<>();
+            uncommittedEvents = new ConcurrentLinkedQueue<>();
         }
         if (uncommittedEvents.stream().anyMatch(x -> x.getClass().equals(domainEvent.getClass()))) {
             throw new UnsupportedOperationException(String.format("Cannot apply duplicated domain event type: %s, current aggregateRoot type: %s, id: %s", domainEvent.getClass(), this.getClass().getName(), id));

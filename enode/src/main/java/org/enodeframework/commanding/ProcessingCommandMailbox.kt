@@ -161,7 +161,7 @@ class ProcessingCommandMailbox(var aggregateRootId: String, private val messageH
                         if (duplicateCommandIdDict.containsKey(message.message.id)) {
                             message.isDuplicated = true
                         }
-                        Task.await(messageHandler.handleAsync(message))
+                        messageHandler.handleAsync(message).await()
                     }
                     consumingSequence.incrementAndGet();
                     scannedCount++

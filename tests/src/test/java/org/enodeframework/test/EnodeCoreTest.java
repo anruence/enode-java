@@ -712,8 +712,8 @@ public class EnodeCoreTest extends AbstractTest {
     @Test
     public void note_update_many_times_test() {
         String noteId = IdGenerator.nextId();
-        CountDownLatch latch = new CountDownLatch(500);
-        for (int i = 0; i < 500; i++) {
+        CountDownLatch latch = new CountDownLatch(200);
+        for (int i = 0; i < 200; i++) {
             CompletableFuture.runAsync(() -> {
                 String title = "Create Note";
                 CreateTestAggregateCommand createNoteCommand = new CreateTestAggregateCommand();

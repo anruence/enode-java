@@ -1,10 +1,10 @@
 package org.enodeframework.commanding
 
-import java.util.concurrent.CompletableFuture
+import kotlinx.coroutines.Deferred
 
 interface IProcessingCommandHandler {
     /**
      * process given processing command.
      */
-    suspend fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean>
+    suspend fun handleAsync(processingCommand: ProcessingCommand): Deferred<Boolean>
 }

@@ -32,10 +32,10 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
             throw AggregateRootTypeNotMatchException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRootInfo.aggregateRoot.javaClass, aggregateRootType))
         }
         if (aggregateRoot.changes.size > 0) {
-            val lastestAggregateRootFuture = aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString())
-            return lastestAggregateRootFuture.thenApply { lastestAggregateRoot: IAggregateRoot ->
-                resetAggregateRootCache(aggregateRootType, aggregateRootId.toString(), lastestAggregateRoot)
-                lastestAggregateRoot as T
+            val latestAggregateRootFuture = aggregateStorage.getAsync(aggregateRootType, aggregateRootId.toString())
+            return latestAggregateRootFuture.thenApply { latestAggregateRoot: IAggregateRoot ->
+                resetAggregateRootCache(aggregateRootType, aggregateRootId.toString(), latestAggregateRoot)
+                latestAggregateRoot as T
             }
         }
         return CompletableFuture.completedFuture(aggregateRoot)

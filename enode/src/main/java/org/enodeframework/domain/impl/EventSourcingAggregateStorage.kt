@@ -2,7 +2,7 @@ package org.enodeframework.domain.impl
 
 import org.enodeframework.common.exception.AggregateRootInvalidException
 import org.enodeframework.common.exception.AggregateRootNotFoundException
-import org.enodeframework.common.io.IOHelper.tryAsyncActionRecursively
+import org.enodeframework.common.io.IOHelper
 import org.enodeframework.common.utilities.Ensure
 import org.enodeframework.domain.IAggregateRoot
 import org.enodeframework.domain.IAggregateRootFactory
@@ -34,7 +34,7 @@ class EventSourcingAggregateStorage(private val eventStore: IEventStore, private
     }
 
     private fun <T : IAggregateRoot?> tryRestoreFromSnapshotAsync(aggregateRootType: Class<T>, aggregateRootId: String, retryTimes: Int, taskSource: CompletableFuture<T>): CompletableFuture<T> {
-        tryAsyncActionRecursively("TryRestoreFromSnapshotAsync",
+        IOHelper.tryAsyncActionRecursively("TryRestoreFromSnapshotAsync",
                 { aggregateSnapshotter.restoreFromSnapshotAsync(aggregateRootType, aggregateRootId) }, { value: T -> taskSource.complete(value) },
                 { String.format("tryRestoreFromSnapshotAsync has unknown exception, aggregateRootType: %s, aggregateRootId: %s", aggregateRootType.name, aggregateRootId) },
                 null,
@@ -43,7 +43,7 @@ class EventSourcingAggregateStorage(private val eventStore: IEventStore, private
     }
 
     private fun tryQueryAggregateEventsAsync(aggregateRootType: Class<*>, aggregateRootTypeName: String, aggregateRootId: String, minVersion: Int, maxVersion: Int, retryTimes: Int, taskSource: CompletableFuture<List<DomainEventStream>>): CompletableFuture<List<DomainEventStream>> {
-        tryAsyncActionRecursively("TryQueryAggregateEventsAsync",
+        IOHelper.tryAsyncActionRecursively("TryQueryAggregateEventsAsync",
                 { eventStore.queryAggregateEventsAsync(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion) }, { value: List<DomainEventStream> -> taskSource.complete(value) },
                 { String.format("eventStore.queryAggregateEventsAsync has unknown exception, aggregateRootTypeName: %s, aggregateRootId: %s", aggregateRootTypeName, aggregateRootId) },
                 null,

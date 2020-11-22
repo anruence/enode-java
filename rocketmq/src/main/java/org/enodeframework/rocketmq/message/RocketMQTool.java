@@ -31,7 +31,7 @@ public class RocketMQTool {
     public static void handle(List<MessageExt> msgs, IMessageHandler messageHandler) {
         int size = msgs.size();
         CountDownLatch latch = new CountDownLatch(size);
-        handleConcurrently(0, size, msgs, latch, messageHandler);
+        handleRecursively(0, size, msgs, latch, messageHandler);
         Task.await(latch);
     }
 
