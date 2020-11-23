@@ -57,7 +57,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         }
     }
 
-    private suspend fun handleCommandInternal(processingCommand: ProcessingCommand, commandHandler: ICommandHandlerProxy, retryTimes: Int): CompletableFuture<Boolean> {
+    private fun handleCommandInternal(processingCommand: ProcessingCommand, commandHandler: ICommandHandlerProxy, retryTimes: Int): CompletableFuture<Boolean> {
         val command = processingCommand.message
         val commandContext = processingCommand.commandExecuteContext
         val taskSource = CompletableFuture<Boolean>()
@@ -67,47 +67,46 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         }
         IOHelperAwait.tryAsyncActionRecursivelyWithoutResult("HandleCommandAsync",
                 { CoroutineScope(Dispatchers.Default).async { commandHandler.handleAsync(commandContext, command) } },
+                { handleCommandInternal(processingCommand, commandHandler, retryTimes) },
                 {
-                    CoroutineScope(Dispatchers.Default).launch {
-                        if (logger.isDebugEnabled) {
-                            logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                    if (logger.isDebugEnabled) {
+                        logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                                commandHandler.getInnerObject().javaClass.name,
+                                command.javaClass.name,
+                                command.id,
+                                command.aggregateRootId)
+                    }
+                    if (commandContext.applicationMessage != null) {
+                        commitChangesAsync(processingCommand, true, commandContext.applicationMessage, "")
+                                .thenAccept { taskSource.complete(true) }
+                    } else {
+                        try {
+                            commitAggregateChanges(processingCommand).thenAccept { taskSource.complete(true) }
+                                    .exceptionally { ex: Throwable ->
+                                        logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                                                commandHandler.getInnerObject().javaClass.name,
+                                                command.javaClass.name,
+                                                command.id,
+                                                command.aggregateRootId, ex)
+                                        completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
+                                        null
+                                    }
+                        } catch (aggregateRootReferenceChangedException: AggregateRootReferenceChangedException) {
+                            logger.info("Aggregate root reference changed when processing command, try to re-handle the command. aggregateRootId: {}, aggregateRootType: {}, commandId: {}, commandType: {}, handlerType: {}",
+                                    aggregateRootReferenceChangedException.aggregateRoot.uniqueId,
+                                    aggregateRootReferenceChangedException.aggregateRoot.javaClass.name,
+                                    command.id,
+                                    command.javaClass.name,
+                                    commandHandler.getInnerObject().javaClass.name
+                            )
+                            handleCommandInternal(processingCommand, commandHandler, 0).thenAccept { taskSource.complete(true) }
+                        } catch (e: Exception) {
+                            logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
                                     commandHandler.getInnerObject().javaClass.name,
                                     command.javaClass.name,
                                     command.id,
-                                    command.aggregateRootId)
-                        }
-                        if (commandContext.applicationMessage != null) {
-                            commitChangesAsync(processingCommand, true, commandContext.applicationMessage, "")
-                                    .thenAccept { taskSource.complete(true) }
-                        } else {
-                            try {
-                                commitAggregateChanges(processingCommand).thenAccept { taskSource.complete(true) }
-                                        .exceptionally { ex: Throwable ->
-                                            logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                                    commandHandler.getInnerObject().javaClass.name,
-                                                    command.javaClass.name,
-                                                    command.id,
-                                                    command.aggregateRootId, ex)
-                                            completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
-                                            null
-                                        }
-                            } catch (aggregateRootReferenceChangedException: AggregateRootReferenceChangedException) {
-                                logger.info("Aggregate root reference changed when processing command, try to re-handle the command. aggregateRootId: {}, aggregateRootType: {}, commandId: {}, commandType: {}, handlerType: {}",
-                                        aggregateRootReferenceChangedException.aggregateRoot.uniqueId,
-                                        aggregateRootReferenceChangedException.aggregateRoot.javaClass.name,
-                                        command.id,
-                                        command.javaClass.name,
-                                        commandHandler.getInnerObject().javaClass.name
-                                )
-                                handleCommandInternal(processingCommand, commandHandler, 0).thenAccept { taskSource.complete(true) }
-                            } catch (e: Exception) {
-                                logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                        commandHandler.getInnerObject().javaClass.name,
-                                        command.javaClass.name,
-                                        command.id,
-                                        command.aggregateRootId, e)
-                                completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
-                            }
+                                    command.aggregateRootId, e)
+                            completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
                         }
                     }
                 },
@@ -119,7 +118,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return taskSource
     }
 
-    private suspend fun commitAggregateChanges(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
+    private fun commitAggregateChanges(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
         val command = processingCommand.message
         val context = processingCommand.commandExecuteContext
         val trackedAggregateRoots = context.trackedAggregateRoots
@@ -168,7 +167,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return Task.completedTask
     }
 
-    private suspend fun republishCommandEvents(processingCommand: ProcessingCommand, retryTimes: Int): CompletableFuture<Boolean> {
+    private fun republishCommandEvents(processingCommand: ProcessingCommand, retryTimes: Int): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
         val command = processingCommand.message
         IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
@@ -255,7 +254,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return future
     }
 
-    private suspend fun commitChangesAsync(processingCommand: ProcessingCommand, success: Boolean, message: IApplicationMessage?, errorMessage: String): CompletableFuture<Boolean> {
+    private fun commitChangesAsync(processingCommand: ProcessingCommand, success: Boolean, message: IApplicationMessage?, errorMessage: String): CompletableFuture<Boolean> {
         if (success) {
             if (message != null) {
                 message.mergeItems(processingCommand.message.items)
@@ -266,7 +265,7 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
     }
 
-    private suspend fun publishMessageAsync(processingCommand: ProcessingCommand, message: IApplicationMessage, retryTimes: Int): CompletableFuture<Boolean> {
+    private fun publishMessageAsync(processingCommand: ProcessingCommand, message: IApplicationMessage, retryTimes: Int): CompletableFuture<Boolean> {
         val command = processingCommand.message
         val future = CompletableFuture<Boolean>()
         IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishApplicationMessageAsync",

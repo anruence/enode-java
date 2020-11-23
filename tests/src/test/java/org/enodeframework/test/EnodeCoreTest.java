@@ -216,7 +216,7 @@ public class EnodeCoreTest extends AbstractTest {
         commandResult = Task.await(commandService.executeAsync(command2));
         commandResult = Task.await(commandService.executeAsync(command2));
         commandResult = Task.await(commandService.executeAsync(command2));
-        commandResult = Task.await(commandService.executeAsync(command2));
+        commandResult = Task.await(commandService.executeAsync(command2,CommandReturnType.EventHandled));
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         note = Task.await(memoryCache.getAsync(aggregateId, TestAggregate.class));
@@ -709,11 +709,11 @@ public class EnodeCoreTest extends AbstractTest {
     }
 
 
-    @Test
+//    @Test
     public void note_update_many_times_test() {
         String noteId = IdGenerator.nextId();
-        CountDownLatch latch = new CountDownLatch(200);
-        for (int i = 0; i < 200; i++) {
+        CountDownLatch latch = new CountDownLatch(300);
+        for (int i = 0; i < 300; i++) {
             CompletableFuture.runAsync(() -> {
                 String title = "Create Note";
                 CreateTestAggregateCommand createNoteCommand = new CreateTestAggregateCommand();
@@ -724,6 +724,7 @@ public class EnodeCoreTest extends AbstractTest {
                 titleCommand.setTitle(title + "Changed");
                 titleCommand.setAggregateRootId(noteId);
                 Task.await(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
+                LOGGER.info("latchxxxxxx{}",latch.getCount());
                 latch.countDown();
             });
         }

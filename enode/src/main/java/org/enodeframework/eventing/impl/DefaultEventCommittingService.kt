@@ -1,8 +1,5 @@
 package org.enodeframework.eventing.impl
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.enodeframework.commanding.CommandResult
 import org.enodeframework.commanding.CommandStatus
 import org.enodeframework.commanding.ProcessingCommand
@@ -63,58 +60,56 @@ class DefaultEventCommittingService(private val memoryCache: IMemoryCache, priva
         IOHelper.tryAsyncActionRecursively("BatchPersistEventAsync",
                 { eventStore.batchAppendAsync(committingContexts.stream().map { obj: EventCommittingContext -> obj.eventStream }.collect(Collectors.toList())) },
                 { result: EventAppendResult? ->
-                    CoroutineScope(Dispatchers.Default).launch {
-                        val eventMailBox = committingContexts.stream()
-                                .findFirst()
-                                .orElseThrow { MailBoxInvalidException("eventMailBox can not be null") }
-                                .mailBox
-                        if (result == null) {
-                            logger.error("Batch persist events success, but the persist result is null, the current event committing mailbox should be pending, mailboxNumber: {}", eventMailBox.number)
-                            return@launch
-                        }
-                        val appendContextList = ArrayList<EventAppendContext>()
-                        //针对持久化成功的聚合根，正常发布这些聚合根的事件到Q端
-                        if (result.successAggregateRootIdList.size > 0) {
-                            for (aggregateRootId in result.successAggregateRootIdList) {
-                                committingContexts.stream().filter { x: EventCommittingContext -> x.eventStream.aggregateRootId == aggregateRootId }.forEach { eventCommittingContext ->
-                                    val context = EventAppendContext()
-                                    context.success = true
-                                    context.duplicateCommandIdList = ArrayList()
-                                    context.committingContext = eventCommittingContext
-                                    appendContextList.add(context)
-                                }
-                            }
-                            if (logger.isDebugEnabled) {
-                                logger.debug("Batch persist events success, mailboxNumber: {}, result: {}", eventMailBox.number, serializeService.serialize(result.successAggregateRootIdList))
-                            }
-                        }
-                        //针对持久化出现重复的命令ID，在命令MailBox中标记为已重复，在事件MailBox中清除对应聚合根产生的事件，且重新发布这些命令对应的领域事件到Q端
-                        if (result.duplicateCommandAggregateRootIdList.isNotEmpty()) {
-                            for ((key, value) in result.duplicateCommandAggregateRootIdList) {
-                                committingContexts.stream().filter { x: EventCommittingContext -> key == x.eventStream.aggregateRootId }.findFirst().ifPresent { eventCommittingContext: EventCommittingContext ->
-                                    val context = EventAppendContext()
-                                    context.duplicateCommandIdList = value
-                                    context.committingContext = eventCommittingContext
-                                    appendContextList.add(context)
-                                }
-                            }
-                            logger.warn("Batch persist events has duplicate commandIds, mailboxNumber: {}, result: {}", eventMailBox.number, serializeService.serialize(result.duplicateCommandAggregateRootIdList))
-                        }
-                        //针对持久化出现版本冲突的聚合根，则自动处理每个聚合根的冲突
-                        if (result.duplicateEventAggregateRootIdList.size > 0) {
-                            for (aggregateRootId in result.duplicateEventAggregateRootIdList) {
-                                committingContexts.stream().filter { x: EventCommittingContext -> x.eventStream.aggregateRootId == aggregateRootId }.findFirst().ifPresent { eventCommittingContext ->
-                                    val context = EventAppendContext()
-                                    context.duplicateCommandIdList = ArrayList()
-                                    context.committingContext = eventCommittingContext
-                                    appendContextList.add(context)
-                                }
-                            }
-                            logger.warn("Batch persist events duplicated, mailboxNumber: {}, result: {}", eventMailBox.number, serializeService.serialize(result.duplicateEventAggregateRootIdList))
-                        }
-                        processDuplicateAggregateRootRecursively(0, appendContextList, eventMailBox)
-                        //最终将当前的EventMailBox的本次处理标记为处理完成，然后继续可以处理下一批事件
+                    val eventMailBox = committingContexts.stream()
+                            .findFirst()
+                            .orElseThrow { MailBoxInvalidException("eventMailBox can not be null") }
+                            .mailBox
+                    if (result == null) {
+                        logger.error("Batch persist events success, but the persist result is null, the current event committing mailbox should be pending, mailboxNumber: {}", eventMailBox.number)
+                        return@tryAsyncActionRecursively
                     }
+                    val appendContextList = ArrayList<EventAppendContext>()
+                    //针对持久化成功的聚合根，正常发布这些聚合根的事件到Q端
+                    if (result.successAggregateRootIdList.size > 0) {
+                        for (aggregateRootId in result.successAggregateRootIdList) {
+                            committingContexts.stream().filter { x: EventCommittingContext -> x.eventStream.aggregateRootId == aggregateRootId }.forEach { eventCommittingContext ->
+                                val context = EventAppendContext()
+                                context.success = true
+                                context.duplicateCommandIdList = ArrayList()
+                                context.committingContext = eventCommittingContext
+                                appendContextList.add(context)
+                            }
+                        }
+                        if (logger.isDebugEnabled) {
+                            logger.debug("Batch persist events success, mailboxNumber: {}, result: {}", eventMailBox.number, serializeService.serialize(result.successAggregateRootIdList))
+                        }
+                    }
+                    //针对持久化出现重复的命令ID，在命令MailBox中标记为已重复，在事件MailBox中清除对应聚合根产生的事件，且重新发布这些命令对应的领域事件到Q端
+                    if (result.duplicateCommandAggregateRootIdList.isNotEmpty()) {
+                        for ((key, value) in result.duplicateCommandAggregateRootIdList) {
+                            committingContexts.stream().filter { x: EventCommittingContext -> key == x.eventStream.aggregateRootId }.findFirst().ifPresent { eventCommittingContext: EventCommittingContext ->
+                                val context = EventAppendContext()
+                                context.duplicateCommandIdList = value
+                                context.committingContext = eventCommittingContext
+                                appendContextList.add(context)
+                            }
+                        }
+                        logger.warn("Batch persist events has duplicate commandIds, mailboxNumber: {}, result: {}", eventMailBox.number, serializeService.serialize(result.duplicateCommandAggregateRootIdList))
+                    }
+                    //针对持久化出现版本冲突的聚合根，则自动处理每个聚合根的冲突
+                    if (result.duplicateEventAggregateRootIdList.size > 0) {
+                        for (aggregateRootId in result.duplicateEventAggregateRootIdList) {
+                            committingContexts.stream().filter { x: EventCommittingContext -> x.eventStream.aggregateRootId == aggregateRootId }.findFirst().ifPresent { eventCommittingContext ->
+                                val context = EventAppendContext()
+                                context.duplicateCommandIdList = ArrayList()
+                                context.committingContext = eventCommittingContext
+                                appendContextList.add(context)
+                            }
+                        }
+                        logger.warn("Batch persist events duplicated, mailboxNumber: {}, result: {}", eventMailBox.number, serializeService.serialize(result.duplicateEventAggregateRootIdList))
+                    }
+                    processDuplicateAggregateRootRecursively(0, appendContextList, eventMailBox)
+                    //最终将当前的EventMailBox的本次处理标记为处理完成，然后继续可以处理下一批事件
                 },
                 { String.format("[contextListCount:%d]", committingContexts.size) },
                 null, retryTimes, true)
