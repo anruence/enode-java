@@ -145,7 +145,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         }, "QueryAggregateEventsAsync")
     }
 
-    suspend fun queryAggregateEvents(aggregateRootId: String, aggregateRootTypeName: String, minVersion: Int, maxVersion: Int): List<DomainEventStream> {
+    private suspend fun queryAggregateEvents(aggregateRootId: String, aggregateRootTypeName: String, minVersion: Int, maxVersion: Int): List<DomainEventStream> {
         val sql = String.format(SELECT_MANY_BY_VERSION_SQL, tableName)
         val array = JsonArray()
         array.add(aggregateRootId)

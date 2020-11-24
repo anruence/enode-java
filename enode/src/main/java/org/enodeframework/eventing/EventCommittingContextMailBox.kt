@@ -27,7 +27,7 @@ class EventCommittingContextMailBox(val number: Int, private val batchSize: Int,
         private set
 
     private fun totalUnHandledMessageCount(): Long {
-        return messageQueue.size.toLong()
+        return messageQueue.count().toLong()
     }
 
     /**

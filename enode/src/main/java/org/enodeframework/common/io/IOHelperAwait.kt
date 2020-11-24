@@ -50,13 +50,12 @@ object IOHelperAwait {
     fun <TAsyncResult> tryAsyncActionRecursivelyWithoutResult(
             asyncActionName: String,
             asyncAction: Func<Deferred<TAsyncResult>>,
-            mainAction: Action1<Int>,
             successAction: Action1<TAsyncResult>,
             getContextInfoFunc: Func<String?>,
             failedAction: Action2<Throwable, String>?,
             retryTimes: Int,
             retryWhenFailed: Boolean) {
-        val asyncTaskExecutionContext = AsyncTaskExecutionContextMain(asyncActionName, asyncAction, mainAction, successAction, getContextInfoFunc, failedAction, retryTimes, retryWhenFailed, 3, 1000)
+        val asyncTaskExecutionContext = AsyncTaskExecutionContext(asyncActionName, asyncAction, successAction, getContextInfoFunc, failedAction, retryTimes, retryWhenFailed, 3, 1000)
         asyncTaskExecutionContext.execute()
     }
 

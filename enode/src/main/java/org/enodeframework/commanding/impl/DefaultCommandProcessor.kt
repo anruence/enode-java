@@ -36,8 +36,7 @@ class DefaultCommandProcessor(private val processingCommandHandler: IProcessingC
             }
         }
         if (mailbox.isRemoved()) {
-            mailbox = ProcessingCommandMailbox(aggregateRootId, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize)
-            mailboxDict.putIfAbsent(aggregateRootId, mailbox)
+            mailbox = mailboxDict.computeIfAbsent(aggregateRootId) { x: String -> ProcessingCommandMailbox(x, processingCommandHandler, commandMailBoxPersistenceMaxBatchSize) }
         }
         mailbox.enqueueMessage(processingCommand)
         mailbox.exitUsing()

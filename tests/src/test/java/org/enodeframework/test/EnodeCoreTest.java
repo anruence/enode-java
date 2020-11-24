@@ -709,7 +709,7 @@ public class EnodeCoreTest extends AbstractTest {
     }
 
 
-//    @Test
+    @Test
     public void note_update_many_times_test() {
         String noteId = IdGenerator.nextId();
         CountDownLatch latch = new CountDownLatch(300);

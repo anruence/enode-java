@@ -1,5 +1,6 @@
 package org.enodeframework.eventing
 
+import kotlinx.coroutines.Deferred
 import java.util.concurrent.CompletableFuture
 
 interface IEventStore {

@@ -57,19 +57,19 @@ class ProcessingEventMailBox(val aggregateRootTypeName: String, val aggregateRoo
     }
 
     fun getTotalUnHandledMessageCount(): Int {
-        return processingEventQueue.size
+        return processingEventQueue.count()
     }
 
     fun setNextExpectingEventVersion(version: Int) {
         synchronized(lockObj) {
             tryRemovedInvalidWaitingMessages(version)
-            if (nextExpectingEventVersion == null || version > this.nextExpectingEventVersion!!) {
+            if (this.nextExpectingEventVersion == null || version > this.nextExpectingEventVersion!!) {
                 nextExpectingEventVersion = version
                 logger.info("{} refreshed nextExpectingEventVersion, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}", javaClass.name, aggregateRootId, aggregateRootTypeName, nextExpectingEventVersion)
                 tryEnqueueValidWaitingMessage()
                 lastActiveTime = Date()
                 tryRun()
-            } else if (version == this.nextExpectingEventVersion){
+            } else if (version == this.nextExpectingEventVersion) {
                 logger.info("{} equals nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}, current nextExpectingEventVersion: {}", javaClass.name, aggregateRootId, aggregateRootTypeName, version, nextExpectingEventVersion)
             } else {
                 logger.info("{} nextExpectingEventVersion ignored, aggregateRootId: {}, aggregateRootTypeName: {}, version: {}, current nextExpectingEventVersion: {}", javaClass.name, aggregateRootId, aggregateRootTypeName, version, nextExpectingEventVersion)

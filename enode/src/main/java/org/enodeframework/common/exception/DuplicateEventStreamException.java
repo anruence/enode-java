@@ -8,6 +8,6 @@ import org.enodeframework.eventing.DomainEventStream;
 public class DuplicateEventStreamException extends RuntimeException {
     public DuplicateEventStreamException(DomainEventStream domainEventStream) {
         super(String.format("Aggregate root [type=%s,id=%s] event stream already exist in the EventCommittingContextMailBox, eventStreamId: %s",
-                domainEventStream.getAggregateRootTypeName(), domainEventStream.getAggregateRootId(), domainEventStream.getVersion()));
+                domainEventStream.getAggregateRootTypeName(), domainEventStream.getAggregateRootId(), domainEventStream.getId()));
     }
 }

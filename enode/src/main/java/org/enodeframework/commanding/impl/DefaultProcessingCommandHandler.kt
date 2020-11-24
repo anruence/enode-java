@@ -1,8 +1,10 @@
 package org.enodeframework.commanding.impl
 
 import com.google.common.base.Strings
-import kotlinx.coroutines.*
-import kotlinx.coroutines.future.asDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.future.asCompletableFuture
 import org.enodeframework.commanding.*
 import org.enodeframework.common.SysProperties
 import org.enodeframework.common.io.IOHelper
@@ -28,93 +30,96 @@ import java.util.function.Function
  * @author anruence@gmail.com
  */
 class DefaultProcessingCommandHandler(private val eventStore: IEventStore, private val commandHandlerProvider: ICommandHandlerProvider, private val typeNameProvider: ITypeNameProvider, private val eventCommittingService: IEventCommittingService, private val memoryCache: IMemoryCache, private val applicationMessagePublisher: IMessagePublisher<IApplicationMessage>, private val exceptionPublisher: IMessagePublisher<IDomainException>, private val serializeService: ISerializeService) : IProcessingCommandHandler {
-    override suspend fun handleAsync(processingCommand: ProcessingCommand): Deferred<Boolean> {
+    override fun handleAsync(processingCommand: ProcessingCommand): CompletableFuture<Boolean> {
         val command = processingCommand.message
         if (Strings.isNullOrEmpty(command.aggregateRootId)) {
             val errorMessage = String.format("The aggregateRootId of command cannot be null or empty. commandType:%s, commandId:%s", command.javaClass.name, command.id)
             logger.error(errorMessage)
-            return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage).asDeferred()
+            return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
         }
         val findResult = getCommandHandler(processingCommand) { commandType: Class<*> -> commandHandlerProvider.getHandlers(commandType) }
         when (findResult.findStatus) {
             HandlerFindStatus.Found -> {
-                return handleCommandInternal(processingCommand, findResult.findHandler as ICommandHandlerProxy, 0).asDeferred()
+                return handleCommandInternal(processingCommand, findResult.findHandler as ICommandHandlerProxy, 0)
             }
             HandlerFindStatus.TooManyHandlerData -> {
                 logger.error("Found more than one command handler data, commandType:{}, commandId:{}", command.javaClass.name, command.id)
-                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler data found.").asDeferred()
+                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler data found.")
             }
             HandlerFindStatus.TooManyHandler -> {
                 logger.error("Found more than one command handler, commandType:{}, commandId:{}", command.javaClass.name, command.id)
-                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler found.").asDeferred()
+                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, "More than one command handler found.")
             }
             HandlerFindStatus.NotFound -> {
                 val errorMessage = String.format("No command handler found of command. commandType:%s, commandId:%s", command.javaClass.name, command.id)
                 logger.error(errorMessage)
-                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage).asDeferred()
+                return completeCommand(processingCommand, CommandStatus.Failed, String::class.java.name, errorMessage)
             }
-            else -> return Task.completedTask.asDeferred()
+            else -> return Task.completedTask
         }
     }
 
     private fun handleCommandInternal(processingCommand: ProcessingCommand, commandHandler: ICommandHandlerProxy, retryTimes: Int): CompletableFuture<Boolean> {
         val command = processingCommand.message
         val commandContext = processingCommand.commandExecuteContext
-        val taskSource = CompletableFuture<Boolean>()
-        commandContext.clear()
         if (processingCommand.isDuplicated) {
             return republishCommandEvents(processingCommand, 0)
         }
-        IOHelperAwait.tryAsyncActionRecursivelyWithoutResult("HandleCommandAsync",
-                { CoroutineScope(Dispatchers.Default).async { commandHandler.handleAsync(commandContext, command) } },
-                { handleCommandInternal(processingCommand, commandHandler, retryTimes) },
-                {
-                    if (logger.isDebugEnabled) {
-                        logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                commandHandler.getInnerObject().javaClass.name,
-                                command.javaClass.name,
-                                command.id,
-                                command.aggregateRootId)
-                    }
-                    if (commandContext.applicationMessage != null) {
-                        commitChangesAsync(processingCommand, true, commandContext.applicationMessage, "")
-                                .thenAccept { taskSource.complete(true) }
-                    } else {
-                        try {
-                            commitAggregateChanges(processingCommand).thenAccept { taskSource.complete(true) }
-                                    .exceptionally { ex: Throwable ->
-                                        logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                                commandHandler.getInnerObject().javaClass.name,
-                                                command.javaClass.name,
-                                                command.id,
-                                                command.aggregateRootId, ex)
-                                        completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
-                                        null
-                                    }
-                        } catch (aggregateRootReferenceChangedException: AggregateRootReferenceChangedException) {
-                            logger.info("Aggregate root reference changed when processing command, try to re-handle the command. aggregateRootId: {}, aggregateRootType: {}, commandId: {}, commandType: {}, handlerType: {}",
-                                    aggregateRootReferenceChangedException.aggregateRoot.uniqueId,
-                                    aggregateRootReferenceChangedException.aggregateRoot.javaClass.name,
-                                    command.id,
-                                    command.javaClass.name,
-                                    commandHandler.getInnerObject().javaClass.name
-                            )
-                            handleCommandInternal(processingCommand, commandHandler, 0).thenAccept { taskSource.complete(true) }
-                        } catch (e: Exception) {
-                            logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
-                                    commandHandler.getInnerObject().javaClass.name,
-                                    command.javaClass.name,
-                                    command.id,
-                                    command.aggregateRootId, e)
-                            completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.").thenAccept { taskSource.complete(true) }
-                        }
-                    }
-                },
-                { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.getInnerObject().javaClass.name, command.aggregateRootId) },
-                { ex: Throwable, errorMessage: String ->
-                    handleExceptionAsync(processingCommand, commandHandler, ex, errorMessage, 0)
-                            .thenAccept { taskSource.complete(true) }
-                }, retryTimes, false)
+        val taskSource = CompletableFuture<Boolean>()
+        IOHelperAwait.tryAsyncActionRecursivelyWithoutResult("HandleCommandAsync", {
+            commandContext.clear()
+            CoroutineScope(Dispatchers.Default).async {
+                commandHandler.handleAsync(commandContext, command)
+            }
+        }, {
+            if (logger.isDebugEnabled) {
+                logger.debug("Handle command success. handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                        commandHandler.getInnerObject().javaClass.name,
+                        command.javaClass.name,
+                        command.id,
+                        command.aggregateRootId)
+            }
+            if (commandContext.applicationMessage != null) {
+                commitChangesAsync(processingCommand, true, commandContext.applicationMessage, "")
+                        .whenComplete { _, _ -> taskSource.complete(true) }
+            } else {
+                try {
+                    commitAggregateChanges(processingCommand).whenComplete { _, _ -> taskSource.complete(true) }
+                            .exceptionally { ex: Throwable ->
+                                logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                                        commandHandler.getInnerObject().javaClass.name,
+                                        command.javaClass.name,
+                                        command.id,
+                                        command.aggregateRootId, ex)
+                                completeCommand(processingCommand, CommandStatus.Failed, ex.javaClass.name, "Unknown exception caught when committing changes of command.")
+                                        .whenComplete { _, _ -> taskSource.complete(true) }
+                                null
+                            }
+                } catch (aggregateRootReferenceChangedException: AggregateRootReferenceChangedException) {
+                    logger.info("Aggregate root reference changed when processing command, try to re-handle the command. aggregateRootId: {}, aggregateRootType: {}, commandId: {}, commandType: {}, handlerType: {}",
+                            aggregateRootReferenceChangedException.aggregateRoot.uniqueId,
+                            aggregateRootReferenceChangedException.aggregateRoot.javaClass.name,
+                            command.id,
+                            command.javaClass.name,
+                            commandHandler.getInnerObject().javaClass.name
+                    )
+                    handleCommandInternal(processingCommand, commandHandler, 0).whenComplete { _, _ -> taskSource.complete(true) }
+                } catch (e: Exception) {
+                    logger.error("Commit aggregate changes has unknown exception, this should not be happen, and we just complete the command, handlerType:{}, commandType:{}, commandId:{}, aggregateRootId:{}",
+                            commandHandler.getInnerObject().javaClass.name,
+                            command.javaClass.name,
+                            command.id,
+                            command.aggregateRootId, e)
+                    completeCommand(processingCommand, CommandStatus.Failed, e.javaClass.name, "Unknown exception caught when committing changes of command.")
+                            .whenComplete { _, _ -> taskSource.complete(true) }
+                }
+            }
+        }, {
+            String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.getInnerObject().javaClass.name, command.aggregateRootId)
+        }, { ex: Throwable, errorMessage: String ->
+            handleExceptionAsync(processingCommand, commandHandler, ex, errorMessage, 0)
+                    .whenComplete { _, _ -> taskSource.complete(true) }
+        }, retryTimes, false)
         return taskSource
     }
 
@@ -170,53 +175,50 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
     private fun republishCommandEvents(processingCommand: ProcessingCommand, retryTimes: Int): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
         val command = processingCommand.message
-        IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand",
-                { eventStore.findAsync(command.aggregateRootId, command.id) },
-                { result: DomainEventStream? ->
-                    CoroutineScope(Dispatchers.Default).launch {
-                        if (result != null) {
-                            eventCommittingService.publishDomainEventAsync(processingCommand, result).thenAccept { future.complete(true) }
-                        } else {
-                            completeCommand(processingCommand, CommandStatus.NothingChanged, String::class.java.name, processingCommand.commandExecuteContext.result)
-                                    .thenAccept { future.complete(true) }
-                        }
-                    }
-                },
-                { String.format("[commandId:%s]", command.id) },
-                null, retryTimes, true)
+        IOHelper.tryAsyncActionRecursively("ProcessIfNoEventsOfCommand", {
+            eventStore.findAsync(command.aggregateRootId, command.id)
+        }, { result: DomainEventStream? ->
+            if (result != null) {
+                eventCommittingService.publishDomainEventAsync(processingCommand, result)
+                future.complete(true)
+            } else {
+                completeCommand(processingCommand, CommandStatus.NothingChanged, String::class.java.name, processingCommand.commandExecuteContext.result)
+                        .whenComplete { _, _ -> future.complete(true) }
+            }
+        }, {
+            String.format("[commandId:%s]", command.id)
+        }, null, retryTimes, true)
         return future
     }
 
     private fun handleExceptionAsync(processingCommand: ProcessingCommand, commandHandler: ICommandHandlerProxy, exception: Throwable, errorMessage: String, retryTimes: Int): CompletableFuture<Boolean> {
         val command = processingCommand.message
         val future = CompletableFuture<Boolean>()
-        IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync",
-                { eventStore.findAsync(command.aggregateRootId, command.id) },
-                { result: DomainEventStream? ->
-                    CoroutineScope(Dispatchers.Default).launch {
-                        if (result != null) {
-                            //这里，我们需要再重新做一遍发布事件这个操作；
-                            //之所以要这样做是因为虽然该command产生的事件已经持久化成功，但并不表示事件已经发布出去了；
-                            //因为有可能事件持久化成功了，但那时正好机器断电了，则发布事件就没有做；
-                            eventCommittingService.publishDomainEventAsync(processingCommand, result).thenAccept { future.complete(true) }
-                        } else {
-                            //到这里，说明当前command执行遇到异常，然后当前command之前也没执行过，是第一次被执行。
-                            //那就判断当前异常是否是需要被发布出去的异常，如果是，则发布该异常给所有消费者；
-                            //否则，就记录错误日志，然后认为该command处理失败即可；
-                            val realException = getRealException(exception)
-                            if (realException is IDomainException) {
-                                publishExceptionAsync(processingCommand, realException as IDomainException, 0)
-                                        .thenAccept { future.complete(true) }
-                            } else {
-                                completeCommand(processingCommand, CommandStatus.Failed, realException.javaClass.name, realException.message)
-                                        .thenAccept { future.complete(true) }
-                            }
-                        }
-                    }
-                },
-                { String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.getInnerObject().javaClass.name, command.aggregateRootId) },
-                null, retryTimes, true
-        )
+        IOHelper.tryAsyncActionRecursively("FindEventByCommandIdAsync", {
+            eventStore.findAsync(command.aggregateRootId, command.id)
+        }, { result: DomainEventStream? ->
+            if (result != null) {
+                //这里，我们需要再重新做一遍发布事件这个操作；
+                //之所以要这样做是因为虽然该command产生的事件已经持久化成功，但并不表示事件已经发布出去了；
+                //因为有可能事件持久化成功了，但那时正好机器断电了，则发布事件就没有做；
+                eventCommittingService.publishDomainEventAsync(processingCommand, result)
+                future.complete(true)
+            } else {
+                //到这里，说明当前command执行遇到异常，然后当前command之前也没执行过，是第一次被执行。
+                //那就判断当前异常是否是需要被发布出去的异常，如果是，则发布该异常给所有消费者；
+                //否则，就记录错误日志，然后认为该command处理失败即可；
+                val realException = getRealException(exception)
+                if (realException is IDomainException) {
+                    publishExceptionAsync(processingCommand, realException as IDomainException, 0)
+                            .whenComplete { _, _ -> future.complete(true) }
+                } else {
+                    completeCommand(processingCommand, CommandStatus.Failed, realException.javaClass.name, realException.message)
+                            .whenComplete { _, _ -> future.complete(true) }
+                }
+            }
+        }, {
+            String.format("[command:[id:%s,type:%s],handlerType:%s,aggregateRootId:%s]", command.id, command.javaClass.name, commandHandler.getInnerObject().javaClass.name, command.aggregateRootId)
+        }, null, retryTimes, true)
         return future
     }
 
@@ -233,24 +235,20 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
         return exception
     }
 
-    private suspend fun publishExceptionAsync(processingCommand: ProcessingCommand, exception: IDomainException, retryTimes: Int): CompletableFuture<Boolean> {
+    private fun publishExceptionAsync(processingCommand: ProcessingCommand, exception: IDomainException, retryTimes: Int): CompletableFuture<Boolean> {
         exception.mergeItems(processingCommand.message.items)
         val future = CompletableFuture<Boolean>()
-        IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishExceptionAsync",
-                { exceptionPublisher.publishAsync(exception) },
-                {
-                    CoroutineScope(Dispatchers.Default).launch {
-                        completeCommand(processingCommand, CommandStatus.Failed, exception.javaClass.name, (exception as Exception).message)
-                                .thenAccept { future.complete(true) }
-                    }
-                },
-                {
-                    val serializableInfo: Map<String, Any> = HashMap()
-                    exception.serializeTo(serializableInfo)
-                    val exceptionInfo = serializableInfo.entries.joinToString(",") { x: Map.Entry<String, Any> -> String.format("%s:%s", x.key, x.value) }
-                    String.format("[commandId: %s, exceptionInfo: %s]", processingCommand.message.id, exceptionInfo)
-                },
-                null, retryTimes, true)
+        IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishExceptionAsync", {
+            exceptionPublisher.publishAsync(exception)
+        }, {
+            completeCommand(processingCommand, CommandStatus.Failed, exception.javaClass.name, (exception as Exception).message)
+                    .whenComplete { _, _ -> future.complete(true) }
+        }, {
+            val serializableInfo: Map<String, Any> = HashMap()
+            exception.serializeTo(serializableInfo)
+            val exceptionInfo = serializableInfo.entries.joinToString(",") { x: Map.Entry<String, Any> -> String.format("%s:%s", x.key, x.value) }
+            String.format("[commandId: %s, exceptionInfo: %s]", processingCommand.message.id, exceptionInfo)
+        }, null, retryTimes, true)
         return future
     }
 
@@ -268,15 +266,14 @@ class DefaultProcessingCommandHandler(private val eventStore: IEventStore, priva
     private fun publishMessageAsync(processingCommand: ProcessingCommand, message: IApplicationMessage, retryTimes: Int): CompletableFuture<Boolean> {
         val command = processingCommand.message
         val future = CompletableFuture<Boolean>()
-        IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishApplicationMessageAsync",
-                { applicationMessagePublisher.publishAsync(message) },
-                {
-                    completeCommand(processingCommand, CommandStatus.Success, message.javaClass.name, serializeService.serialize(message))
-                            .thenAccept { future.complete(true) }
-                },
-                { String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.id, message.javaClass.name, command.id, command.javaClass.name) },
-                null,
-                retryTimes, true)
+        IOHelper.tryAsyncActionRecursivelyWithoutResult("PublishApplicationMessageAsync", {
+            applicationMessagePublisher.publishAsync(message)
+        }, {
+            completeCommand(processingCommand, CommandStatus.Success, message.javaClass.name, serializeService.serialize(message))
+                    .whenComplete { _, _ -> future.complete(true) }
+        }, {
+            String.format("[application message:[id:%s,type:%s],command:[id:%s,type:%s]]", message.id, message.javaClass.name, command.id, command.javaClass.name)
+        }, null, retryTimes, true)
         return future
     }
 

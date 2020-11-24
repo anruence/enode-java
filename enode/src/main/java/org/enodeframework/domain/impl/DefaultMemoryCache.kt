@@ -55,13 +55,13 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
                 logger.info("Aggregate root in-memory cache initialized, aggregateRootType: {}, aggregateRootId: {}, aggregateRootVersion: {}", aggregateRoot.javaClass.name, aggregateRoot.uniqueId, aggregateRoot.version)
                 AggregateCacheInfo(aggregateRoot)
             }
+            val aggregateRootOldVersion = cacheInfo!!.aggregateRoot.version
+            aggregateRoot.acceptChanges()
             //更新到内存缓存前需要先检查聚合根引用是否有变化，有变化说明此聚合根已经被重置过状态了
-            if (aggregateRoot.version > 1 && cacheInfo!!.aggregateRoot !== aggregateRoot) {
+            if (aggregateRoot.version > 1 && cacheInfo.aggregateRoot !== aggregateRoot) {
                 throw AggregateRootReferenceChangedException(aggregateRoot)
             }
             //接受聚合根的最新事件修改，更新聚合根版本号
-            val aggregateRootOldVersion = cacheInfo!!.aggregateRoot.version
-            aggregateRoot.acceptChanges()
             cacheInfo.updateAggregateRoot(aggregateRoot)
             logger.info("Aggregate root in-memory cache changed, aggregateRootType: {}, aggregateRootId: {}, aggregateRootNewVersion: {}, aggregateRootOldVersion: {}", aggregateRoot.javaClass.name, aggregateRoot.uniqueId, aggregateRoot.version, aggregateRootOldVersion)
         }

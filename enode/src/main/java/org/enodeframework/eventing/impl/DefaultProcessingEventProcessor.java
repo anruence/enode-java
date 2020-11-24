@@ -71,8 +71,7 @@ public class DefaultProcessingEventProcessor implements IProcessingEventProcesso
             }
         }
         if (mailbox.isRemoved()) {
-            mailbox = buildProcessingEventMailBox(processingMessage);
-            mailboxDict.putIfAbsent(aggregateRootId, mailbox);
+            mailbox = mailboxDict.computeIfAbsent(aggregateRootId, key -> buildProcessingEventMailBox(processingMessage));
         }
         EnqueueMessageResult enqueueResult = mailbox.enqueueMessage(processingMessage);
         if (enqueueResult == EnqueueMessageResult.Ignored) {

@@ -65,10 +65,9 @@ class DefaultCommandResultProcessor constructor(private val scheduleService: ISc
     }
 
     override fun registerProcessingCommand(command: ICommand, commandReturnType: CommandReturnType, taskCompletionSource: CompletableFuture<CommandResult>) {
-        if (commandTaskDict.asMap().containsKey(command.id)) {
+        if (commandTaskDict.asMap().putIfAbsent(command.id, CommandTaskCompletionSource(command.aggregateRootId, commandReturnType, taskCompletionSource)) != null) {
             throw DuplicateCommandRegisterException(String.format("Duplicate processing command registration, type:%s, id:%s", command.javaClass.name, command.id))
         }
-        commandTaskDict.asMap()[command.id] = CommandTaskCompletionSource(command.aggregateRootId, commandReturnType, taskCompletionSource)
     }
 
     override suspend fun start() {
