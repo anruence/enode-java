@@ -708,7 +708,6 @@ public class EnodeCoreTest extends AbstractTest {
         HandlerTypes.clear();
     }
 
-
     @Test
     public void note_update_many_times_test() {
         String noteId = IdGenerator.nextId();
