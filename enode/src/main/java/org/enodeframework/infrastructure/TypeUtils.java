@@ -18,7 +18,7 @@ public class TypeUtils {
         return type != null && !Modifier.isAbstract(type.getModifiers()) && IAggregateRepository.class.isAssignableFrom(type);
     }
 
-    public static Class getGenericType(Class clazz) {
-        return (Class) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[0];
+    public static Class<?> getGenericType(Class<?> clazz) {
+        return (Class<?>) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[0];
     }
 }

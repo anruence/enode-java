@@ -16,12 +16,22 @@ interface ICommandContext {
     fun addAsync(aggregateRoot: IAggregateRoot): CompletableFuture<Boolean>
 
     /**
-     * Get an aggregate from the current command context.
+     * Get an aggregate sync from the current command context.
+     */
+    fun <T : IAggregateRoot> get(id: Any, firstFromCache: Boolean, clazz: Class<T>): T
+
+    /**
+     * Get an aggregate async from the current command context.
      */
     fun <T : IAggregateRoot> getAsync(id: Any, firstFromCache: Boolean, clazz: Class<T>): CompletableFuture<T>
 
     /**
-     * Get an aggregate from the current command context, default from cache.
+     * Get an aggregate sync from the current command context, default from cache.
+     */
+    fun <T : IAggregateRoot> get(id: Any, clazz: Class<T>): T
+
+    /**
+     * Get an aggregate async from the current command context, default from cache.
      */
     fun <T : IAggregateRoot> getAsync(id: Any, clazz: Class<T>): CompletableFuture<T>
 

@@ -20,6 +20,10 @@ class DefaultCommandService(private val topic: String, private val tag: String, 
         return sendMessageService.sendMessageAsync(buildCommandMessage(command, false))
     }
 
+    override fun send(command: ICommand): Boolean {
+        return this.sendAsync(command).join()
+    }
+
     override fun executeAsync(command: ICommand): CompletableFuture<CommandResult> {
         return executeAsync(command, CommandReturnType.CommandExecuted)
     }
@@ -39,6 +43,14 @@ class DefaultCommandService(private val topic: String, private val tag: String, 
             taskCompletionSource.completeExceptionally(ex)
         }
         return taskCompletionSource
+    }
+
+    override fun execute(command: ICommand): CommandResult {
+        return this.executeAsync(command).join()
+    }
+
+    override fun execute(command: ICommand, commandReturnType: CommandReturnType): CommandResult {
+        return this.executeAsync(command, commandReturnType).join()
     }
 
     protected fun buildCommandMessage(command: ICommand, needReply: Boolean): QueueMessage {

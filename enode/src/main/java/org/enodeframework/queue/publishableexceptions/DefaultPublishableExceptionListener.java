@@ -42,7 +42,7 @@ public class DefaultPublishableExceptionListener implements IMessageHandler {
         exception.setTimestamp(exceptionMessage.getTimestamp());
         exception.setItems(exceptionMessage.getItems());
         exception.restoreFrom(exceptionMessage.getSerializableInfo());
-        messageDispatcher.dispatchMessageAsync(exception).thenAccept(x -> {
+        messageDispatcher.dispatchMessageAsync(exception).whenComplete((x, y) -> {
             context.onMessageHandled(queueMessage);
         });
     }

@@ -19,6 +19,12 @@ public abstract class DomainEvent<TAggregateRootId> extends Message implements I
         this.sequence = 1;
     }
 
+    public DomainEvent(String id) {
+        super(id);
+        this.version = 1;
+        this.sequence = 1;
+    }
+
     @Override
     public String getCommandId() {
         return commandId;

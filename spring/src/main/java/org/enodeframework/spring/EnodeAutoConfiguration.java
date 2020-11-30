@@ -13,12 +13,14 @@ import org.enodeframework.common.scheduling.ScheduleService;
 import org.enodeframework.common.serializing.ISerializeService;
 import org.enodeframework.common.serializing.JacksonSerializeService;
 import org.enodeframework.domain.IAggregateRepositoryProvider;
+import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IAggregateRootFactory;
 import org.enodeframework.domain.IAggregateSnapshotter;
 import org.enodeframework.domain.IAggregateStorage;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.domain.IMemoryCache;
 import org.enodeframework.domain.IRepository;
+import org.enodeframework.domain.impl.AggregateRepositoryProxy;
 import org.enodeframework.domain.impl.DefaultAggregateRepositoryProvider;
 import org.enodeframework.domain.impl.DefaultAggregateRootFactory;
 import org.enodeframework.domain.impl.DefaultAggregateRootInternalHandlerProvider;
@@ -120,6 +122,12 @@ public class EnodeAutoConfiguration {
     @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public CommandHandlerProxy commandHandlerProxy() {
         return new CommandHandlerProxy();
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public AggregateRepositoryProxy<IAggregateRoot> aggregateRepositoryProxy() {
+        return new AggregateRepositoryProxy<>();
     }
 
     @Bean

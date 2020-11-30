@@ -5,6 +5,7 @@ import org.enodeframework.annotation.Event;
 import org.enodeframework.annotation.Priority;
 import org.enodeframework.annotation.Subscribe;
 import org.enodeframework.common.container.IObjectContainer;
+import org.enodeframework.common.container.ObjectContainer;
 import org.enodeframework.common.exception.HandlerRegisterException;
 import org.enodeframework.common.utilities.Ensure;
 import org.enodeframework.infrastructure.IAssemblyInitializer;
@@ -37,9 +38,19 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
 
     protected abstract boolean isHandlerSourceMatchKey(THandlerSource handlerSource, TKey key);
 
+    /**
+     * kotlin suspend 方法会多一个参数 kotlin.coroutines.Continuation
+     */
     protected abstract boolean isHandleMethodMatch(Method method);
 
-    protected abstract IObjectContainer getObjectContainer();
+    /**
+     * 是否是一个可挂起的方法
+     */
+    protected abstract boolean isSuspendMethod(Method method);
+
+    protected IObjectContainer getObjectContainer() {
+        return ObjectContainer.INSTANCE;
+    }
 
     @Override
     public void initialize(Set<Class<?>> componentTypes) {
@@ -127,7 +138,7 @@ public abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface exten
                 Ensure.notNull(objectContainer, "objectContainer");
                 THandlerProxyInterface handlerProxy = objectContainer.resolve(getHandlerProxyImplementationType());
                 Ensure.notNull(handlerProxy, String.format("handlerProxy: %s", getHandlerProxyImplementationType().getName()));
-                handlerProxy.setHandlerType(handlerType);
+                handlerProxy.setInnerObject(objectContainer.resolve(handlerType));
                 handlerProxy.setMethod(method);
                 handlerProxy.setMethodHandle(handleMethod);
                 handlers.add(handlerProxy);

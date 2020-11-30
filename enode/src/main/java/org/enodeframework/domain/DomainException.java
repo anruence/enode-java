@@ -13,9 +13,13 @@ public abstract class DomainException extends RuntimeException implements IDomai
     private Map<String, Object> items;
 
     public DomainException() {
-        id = IdGenerator.nextId();
-        timestamp = new Date();
-        items = new HashMap<>();
+        this(IdGenerator.nextId());
+    }
+
+    public DomainException(String id) {
+        this.id = id;
+        this.timestamp = new Date();
+        this.items = new HashMap<>();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.enodeframework.commanding.impl;
 
+import kotlin.coroutines.Continuation;
 import org.enodeframework.commanding.ICommand;
 import org.enodeframework.commanding.ICommandContext;
 import org.enodeframework.commanding.ICommandHandlerProvider;
@@ -32,8 +33,11 @@ public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class
 
     @Override
     protected boolean isHandleMethodMatch(Method method) {
-        if (method.getParameterTypes().length != 2) {
-            return false;
+        int paramCount = method.getParameterTypes().length;
+        if (paramCount != 2) {
+            if (!(isSuspendMethod(method))) {
+                return false;
+            }
         }
         if (!ICommandContext.class.equals(method.getParameterTypes()[0])) {
             return false;
@@ -45,6 +49,11 @@ public class DefaultCommandHandlerProvider extends AbstractHandlerProvider<Class
             return false;
         }
         return isMethodAnnotationSubscribe(method);
+    }
+
+    @Override
+    protected boolean isSuspendMethod(Method method) {
+        return method.getParameterTypes().length == 3 && Continuation.class.equals(method.getParameterTypes()[2]);
     }
 
     @Override

@@ -11,10 +11,14 @@ public abstract class Message implements IMessage {
     protected Date timestamp;
     protected Map<String, Object> items;
 
+    public Message(String id) {
+        this.id = id;
+        this.timestamp = new Date();
+        this.items = new HashMap<>();
+    }
+
     public Message() {
-        id = IdGenerator.nextId();
-        timestamp = new Date();
-        items = new HashMap<>();
+        this(IdGenerator.nextId());
     }
 
     @Override

@@ -28,6 +28,20 @@ public class Command<TAggregateRootId> extends Message implements ICommand {
         this.items = items;
     }
 
+    /**
+     * Init command with id and aggregateRootId
+     */
+    public Command(String id, TAggregateRootId aggregateRootId) {
+        this(id, aggregateRootId, Maps.newHashMap());
+    }
+
+    public Command(String id, TAggregateRootId aggregateRootId, Map<String, Object> items) {
+        super(id);
+        Ensure.notNull(aggregateRootId, "aggregateRootId");
+        this.aggregateRootId = aggregateRootId;
+        this.items = items;
+    }
+
     @Override
     public String getAggregateRootId() {
         return aggregateRootId.toString();
@@ -36,5 +50,4 @@ public class Command<TAggregateRootId> extends Message implements ICommand {
     public void setAggregateRootId(TAggregateRootId aggregateRootId) {
         this.aggregateRootId = aggregateRootId;
     }
-
 }

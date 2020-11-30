@@ -1,5 +1,6 @@
 package org.enodeframework.messaging.impl;
 
+import kotlin.coroutines.Continuation;
 import org.enodeframework.common.container.IObjectContainer;
 import org.enodeframework.common.container.ObjectContainer;
 import org.enodeframework.eventing.IDomainEvent;
@@ -7,7 +8,6 @@ import org.enodeframework.infrastructure.impl.AbstractHandlerProvider;
 import org.enodeframework.infrastructure.impl.ManyType;
 import org.enodeframework.messaging.IMessageHandlerProxy3;
 import org.enodeframework.messaging.IThreeMessageHandlerProvider;
-import org.enodeframework.messaging.MessageHandlerData;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -40,8 +40,11 @@ public class DefaultThreeMessageHandlerProvider extends AbstractHandlerProvider<
 
     @Override
     protected boolean isHandleMethodMatch(Method method) {
-        if (method.getParameterTypes().length != 3) {
-            return false;
+        int paramCount = method.getParameterTypes().length;
+        if (paramCount != 3) {
+            if (!isSuspendMethod(method)) {
+                return false;
+            }
         }
         if (!IDomainEvent.class.isAssignableFrom(method.getParameterTypes()[0])) {
             return false;
@@ -53,6 +56,11 @@ public class DefaultThreeMessageHandlerProvider extends AbstractHandlerProvider<
             return false;
         }
         return isMethodAnnotationSubscribe(method);
+    }
+
+    @Override
+    protected boolean isSuspendMethod(Method method) {
+        return method.getParameterTypes().length == 4 && Continuation.class.equals(method.getParameterTypes()[3]);
     }
 
     @Override

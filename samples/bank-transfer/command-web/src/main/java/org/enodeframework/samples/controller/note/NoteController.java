@@ -2,7 +2,6 @@ package org.enodeframework.samples.controller.note;
 
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommandService;
-import org.enodeframework.common.io.Task;
 import org.enodeframework.common.utilities.IdGenerator;
 import org.enodeframework.samples.commands.note.ChangeNoteTitleCommand;
 import org.enodeframework.samples.commands.note.CreateNoteCommand;
@@ -10,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,17 +24,17 @@ public class NoteController {
     private ICommandService commandService;
 
     @RequestMapping("create")
-    public Object create(@RequestParam("id") String noteId, @RequestParam("t") String title) {
+    public Mono create(@RequestParam("id") String noteId, @RequestParam("t") String title) {
         CreateNoteCommand createNoteCommand = new CreateNoteCommand(noteId, title);
-        Task.await(commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled));
-        ChangeNoteTitleCommand titleCommand = new ChangeNoteTitleCommand(noteId, title + " change");
-        return Task.await(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
+        Mono mono = Mono.fromFuture(commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled));
+        return mono;
     }
 
     @RequestMapping("update")
-    public Object update(@RequestParam("id") String noteId, @RequestParam("t") String title) {
+    public Mono update(@RequestParam("id") String noteId, @RequestParam("t") String title) {
         ChangeNoteTitleCommand titleCommand = new ChangeNoteTitleCommand(noteId, title + " change");
-        return Task.await(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
+        Mono mono = Mono.fromFuture(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
+        return mono;
     }
 
     @RequestMapping("test")

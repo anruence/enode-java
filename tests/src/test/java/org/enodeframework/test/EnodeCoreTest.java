@@ -721,14 +721,20 @@ public class EnodeCoreTest extends AbstractTest {
                 String title = "Create Note";
                 CreateTestAggregateCommand createNoteCommand = new CreateTestAggregateCommand();
                 createNoteCommand.setTitle(title);
+//                createNoteCommand.setId("CC");
                 createNoteCommand.setAggregateRootId(noteId);
-                Task.await(commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled));
+                Task.await(commandService.executeAsync(createNoteCommand, CommandReturnType.CommandExecuted));
                 ChangeTestAggregateTitleCommand titleCommand = new ChangeTestAggregateTitleCommand();
                 titleCommand.setTitle(title + "Changed");
+//                titleCommand.setId("CU");
                 titleCommand.setAggregateRootId(noteId);
-                Task.await(commandService.executeAsync(titleCommand, CommandReturnType.EventHandled));
+                Task.await(commandService.executeAsync(titleCommand, CommandReturnType.CommandExecuted));
+                LOGGER.info("latchxxxxxx{}",latch.getCount());
                 latch.countDown();
-            }, executor);
+            }, executor).exceptionally( x->{
+                latch.countDown();
+                return null;
+            });
         }
         Task.await(latch);
     }

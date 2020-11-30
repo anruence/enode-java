@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -22,7 +23,7 @@ public class BankController {
     private ICommandService commandService;
 
     @RequestMapping("deposit")
-    public String deposit() {
+    public Mono deposit() {
         String account1 = IdGenerator.nextId();
         String account2 = IdGenerator.nextId();
         String account3 = "INVALID-" + IdGenerator.nextId();
@@ -39,11 +40,11 @@ public class BankController {
         Task.await(commandService.sendAsync(new StartTransferTransactionCommand(IdGenerator.nextId(), new TransferTransactionInfo(account1, account2, 1200D))));
         //账户2向账户1转账500元，交易成功
         Task.await(commandService.sendAsync(new StartTransferTransactionCommand(IdGenerator.nextId(), new TransferTransactionInfo(account2, account1, 500D))));
-        return "success";
+        return Mono.justOrEmpty("success");
     }
 
     @RequestMapping("perf")
-    public String perf(@RequestParam("count") int totalCount) throws Exception {
+    public Mono perf(@RequestParam("count") int totalCount) throws Exception {
         long start = System.currentTimeMillis();
         CountDownLatch latch = new CountDownLatch(totalCount);
         for (int i = 0; i < totalCount; i++) {
@@ -55,6 +56,6 @@ public class BankController {
         }
         latch.await();
         long end = System.currentTimeMillis();
-        return String.valueOf(end - start);
+        return Mono.justOrEmpty(end - start);
     }
 }

@@ -91,6 +91,14 @@ class CommandExecuteContext(
         return getAsync(id, true, clazz)
     }
 
+    override fun <T : IAggregateRoot> get(id: Any, firstFromCache: Boolean, clazz: Class<T>): T {
+        return getAsync(id, firstFromCache, clazz).join()
+    }
+
+    override fun <T : IAggregateRoot> get(id: Any, clazz: Class<T>): T {
+        return getAsync(id, clazz).join()
+    }
+
     override val trackedAggregateRoots: List<IAggregateRoot>
         get() = ArrayList(trackingAggregateRootDict.values)
 
