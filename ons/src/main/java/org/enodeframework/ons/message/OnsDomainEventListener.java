@@ -3,7 +3,6 @@ package org.enodeframework.ons.message;
 import com.aliyun.openservices.ons.api.Action;
 import com.aliyun.openservices.ons.api.ConsumeContext;
 import com.aliyun.openservices.ons.api.Message;
-import com.aliyun.openservices.ons.api.batch.BatchMessageListener;
 import com.aliyun.openservices.ons.api.order.ConsumeOrderContext;
 import com.aliyun.openservices.ons.api.order.MessageOrderListener;
 import com.aliyun.openservices.ons.api.order.OrderAction;
@@ -15,7 +14,7 @@ import java.util.List;
 /**
  * @author anruence@gmail.com
  */
-public class OnsDomainEventListener implements MessageOrderListener, BatchMessageListener {
+public class OnsDomainEventListener implements MessageOrderListener {
     private final IMessageHandler domainEventListener;
 
     public OnsDomainEventListener(IMessageHandler domainEventListener) {
@@ -28,7 +27,7 @@ public class OnsDomainEventListener implements MessageOrderListener, BatchMessag
         return OrderAction.Success;
     }
 
-    @Override
+
     public Action consume(List<Message> messages, ConsumeContext context) {
         OnsTool.handle(messages, domainEventListener);
         return Action.CommitMessage;

@@ -21,20 +21,20 @@ public class SeatTypeInfo {
         return this.name;
     }
 
-    public String getDescription() {
-        return this.description;
-    }
-
-    public BigDecimal getPrice() {
-        return this.price;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
 
+    public String getDescription() {
+        return this.description;
+    }
+
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public BigDecimal getPrice() {
+        return this.price;
     }
 
     public void setPrice(BigDecimal price) {

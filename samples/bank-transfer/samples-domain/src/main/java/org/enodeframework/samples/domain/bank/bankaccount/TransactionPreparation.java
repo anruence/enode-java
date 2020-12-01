@@ -6,10 +6,6 @@ import org.enodeframework.samples.domain.bank.TransactionType;
  * 实体，表示账户聚合内的一笔预操作（如预存款、预取款、预转入、预转出）
  */
 public class TransactionPreparation {
-    public TransactionPreparation() {
-
-    }
-
     /**
      * 账户ID
      */
@@ -30,6 +26,10 @@ public class TransactionPreparation {
      * 交易金额
      */
     public double amount;
+
+    public TransactionPreparation() {
+
+    }
 
     public TransactionPreparation(String accountId, String transactionId, int transactionType, int preparationType, double amount) {
         if (transactionType == TransactionType.DEPOSIT_TRANSACTION && preparationType != PreparationType.CREDIT_PREPARATION) {

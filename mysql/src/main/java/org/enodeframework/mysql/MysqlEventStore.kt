@@ -12,8 +12,11 @@ import javax.sql.DataSource
  */
 class MysqlEventStore(dataSource: DataSource, setting: DBConfiguration, eventSerializer: IEventSerializer, serializeService: ISerializeService) : JDBCEventStore(dataSource, setting, eventSerializer, serializeService) {
 
-    public override fun parseCommandId(msg: String): String {
-        val matcher = PATTERN_MYSQL.matcher(msg)
+    /**
+     * Duplicate entry '5d3ac841d1fcfe669e9a257d-5d3ac841d1fcfe669e9a2585' for key 'IX_EventStream_AggId_CommandId'
+     */
+    override fun getDuplicatedId(throwable: Throwable): String {
+        val matcher = PATTERN_MYSQL.matcher(throwable.message!!)
         if (!matcher.find()) {
             return ""
         }

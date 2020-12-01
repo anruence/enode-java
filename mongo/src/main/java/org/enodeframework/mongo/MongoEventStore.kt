@@ -27,7 +27,7 @@ import java.util.stream.Collectors
 /**
  * @author anruence@gmail.com
  */
-class MongoEventStore(private val mongoClient: MongoClient, private val mongoConfiguration: MongoConfiguration, private val eventSerializer: IEventSerializer, private val serializeService: ISerializeService) : IEventStore {
+class MongoEventStore(private val mongoClient: MongoClient, private val mongoConfiguration: MongoConfiguration, private val eventSerializer: IEventSerializer, private val serializeService: ISerializeService) : IEventStore, SQLDialect {
     private val duplicateCode: Int = mongoConfiguration.duplicateCode
     private val versionIndexName: String = mongoConfiguration.eventTableVersionUniqueIndexName
     private val commandIndexName: String = mongoConfiguration.eventTableCommandIdUniqueIndexName
@@ -87,7 +87,7 @@ class MongoEventStore(private val mongoClient: MongoClient, private val mongoCon
             documents.add(document)
         }
         val future = batchInsertAsync(documents)
-        return future.exceptionally { throwable: Throwable? ->
+        return future.exceptionally { throwable: Throwable ->
             var code = 0
             var message = ""
             if (throwable is MongoWriteException) {
@@ -107,10 +107,9 @@ class MongoEventStore(private val mongoClient: MongoClient, private val mongoCon
                 return@exceptionally appendResult
             }
             if (code == duplicateCode && message.contains(commandIndexName)) {
-                // E11000 duplicate key error collection: enode.event_stream index: aggregateRootId_1_commandId_1 dup key: { aggregateRootId: "5ee8b610d7671114741829c7", commandId: "5ee8b61bd7671114741829cf" }
                 val appendResult = AggregateEventAppendResult()
                 appendResult.eventAppendStatus = EventAppendStatus.DuplicateCommand
-                val commandId = parseDuplicateCommandId(message)
+                val commandId = getDuplicatedId(throwable)
                 if (!Strings.isNullOrEmpty(commandId)) {
                     appendResult.duplicateCommandIds = Lists.newArrayList(commandId)
                     return@exceptionally appendResult
@@ -122,7 +121,7 @@ class MongoEventStore(private val mongoClient: MongoClient, private val mongoCon
         }
     }
 
-    fun batchInsertAsync(documents: List<Document>?): CompletableFuture<AggregateEventAppendResult> {
+    private fun batchInsertAsync(documents: List<Document>?): CompletableFuture<AggregateEventAppendResult> {
         val future = CompletableFuture<AggregateEventAppendResult>()
         mongoClient.getDatabase(mongoConfiguration.databaseName)
                 .getCollection(mongoConfiguration.eventCollectionName)
@@ -148,16 +147,6 @@ class MongoEventStore(private val mongoClient: MongoClient, private val mongoCon
                     }
                 })
         return future
-    }
-
-    private fun parseDuplicateCommandId(errMsg: String): String {
-        val matcher = PATTERN.matcher(errMsg)
-        if (matcher.find()) {
-            if (matcher.groupCount() == 1) {
-                return matcher.group(1)
-            }
-        }
-        return ""
     }
 
     override fun queryAggregateEventsAsync(aggregateRootId: String, aggregateRootTypeName: String, minVersion: Int, maxVersion: Int): CompletableFuture<List<DomainEventStream>> {
@@ -292,7 +281,20 @@ class MongoEventStore(private val mongoClient: MongoClient, private val mongoCon
 
     companion object {
         private val logger = LoggerFactory.getLogger(MongoEventStore::class.java)
-        private val PATTERN = Pattern.compile("\\{.+?commandId: \"(.+?)\" }$")
+        private val PATTERN_MONGO = Pattern.compile("\\{.+?commandId: \"(.+?)\" }$")
+    }
+
+    /**
+     * E11000 duplicate key error collection: enode.event_stream index: aggregateRootId_1_commandId_1 dup key: { aggregateRootId: "5ee8b610d7671114741829c7", commandId: "5ee8b61bd7671114741829cf" }
+     */
+    override fun getDuplicatedId(throwable: Throwable): String {
+        val matcher = PATTERN_MONGO.matcher(throwable.message!!)
+        if (matcher.find()) {
+            if (matcher.groupCount() == 1) {
+                return matcher.group(1)
+            }
+        }
+        return ""
     }
 
 }

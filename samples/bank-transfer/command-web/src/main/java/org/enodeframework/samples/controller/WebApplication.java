@@ -2,7 +2,6 @@ package org.enodeframework.samples.controller;
 
 import org.enodeframework.spring.EnableEnode;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.reactive.config.EnableWebFlux;
 import springfox.documentation.oas.annotations.EnableOpenApi;

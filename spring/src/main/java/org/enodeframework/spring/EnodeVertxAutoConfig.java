@@ -20,17 +20,15 @@ public class EnodeVertxAutoConfig {
     @Autowired
     @Qualifier("enodeVertx")
     protected Vertx vertx;
+    @Value("${spring.enode.server.port:2019}")
+    private int port;
+    @Value("${spring.enode.server.wait.timeout:10000}")
+    private int timeout;
 
     @Bean(value = "enodeVertx")
     public Vertx enodeVertx() {
         return Vertx.vertx();
     }
-
-    @Value("${spring.enode.server.port:2019}")
-    private int port;
-
-    @Value("${spring.enode.server.wait.timeout:10000}")
-    private int timeout;
 
     @Bean(name = "defaultCommandResultProcessor")
     @ConditionalOnProperty(prefix = "spring.enode", name = "server.port")

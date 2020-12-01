@@ -42,15 +42,6 @@ public class MessagePublisherTest extends AbstractTest {
     @Qualifier("mockPublishableExceptionPublisher")
     protected IMessagePublisher<IDomainException> publishableExceptionPublisher;
 
-    static class MyPropertyInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
-        @Override
-        public void initialize(ConfigurableApplicationContext applicationContext) {
-            TestPropertyValues.of("spring.enode.eventstore=mock").applyTo(applicationContext);
-        }
-
-    }
-
     @Test
     public void event_store_failed_test() {
         MockEventStore mockEventStore = (MockEventStore) eventStore;
@@ -237,5 +228,14 @@ public class MessagePublisherTest extends AbstractTest {
         Assert.assertNotNull(commandResult);
         Assert.assertEquals(CommandStatus.Success, commandResult.getStatus());
         mockApplicationMessagePublisher.Reset();
+    }
+
+    static class MyPropertyInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+        @Override
+        public void initialize(ConfigurableApplicationContext applicationContext) {
+            TestPropertyValues.of("spring.enode.eventstore=mock").applyTo(applicationContext);
+        }
+
     }
 }

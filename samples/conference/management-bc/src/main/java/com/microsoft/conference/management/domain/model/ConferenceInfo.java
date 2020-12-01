@@ -34,76 +34,76 @@ public class ConferenceInfo {
         return this.accessCode;
     }
 
-    public ConferenceOwner getOwner() {
-        return this.owner;
-    }
-
-    public String getSlug() {
-        return this.slug;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getDescription() {
-        return this.description;
-    }
-
-    public String getLocation() {
-        return this.location;
-    }
-
-    public String getTagline() {
-        return this.tagline;
-    }
-
-    public String getTwitterSearch() {
-        return this.twitterSearch;
-    }
-
-    public Date getStartDate() {
-        return this.startDate;
-    }
-
-    public Date getEndDate() {
-        return this.endDate;
-    }
-
     public void setAccessCode(String accessCode) {
         this.accessCode = accessCode;
+    }
+
+    public ConferenceOwner getOwner() {
+        return this.owner;
     }
 
     public void setOwner(ConferenceOwner owner) {
         this.owner = owner;
     }
 
+    public String getSlug() {
+        return this.slug;
+    }
+
     public void setSlug(String slug) {
         this.slug = slug;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
+    public String getDescription() {
+        return this.description;
+    }
+
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getLocation() {
+        return this.location;
     }
 
     public void setLocation(String location) {
         this.location = location;
     }
 
+    public String getTagline() {
+        return this.tagline;
+    }
+
     public void setTagline(String tagline) {
         this.tagline = tagline;
+    }
+
+    public String getTwitterSearch() {
+        return this.twitterSearch;
     }
 
     public void setTwitterSearch(String twitterSearch) {
         this.twitterSearch = twitterSearch;
     }
 
+    public Date getStartDate() {
+        return this.startDate;
+    }
+
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
+    }
+
+    public Date getEndDate() {
+        return this.endDate;
     }
 
     public void setEndDate(Date endDate) {

@@ -58,8 +58,8 @@ aggregateRootType.getDeclaredConstructor().newInstance();
 ### enode启动配置
 ```java
 @SpringBootApplication
-@EnableEnode(basePackages = "org.enodeframework.tests")
-@ComponentScan(value = "org.enodeframework")
+@EnableEnode(value = "org.enodeframework.tests")
+@ComponentScan(value = "org.enodeframework.tests")
 public class App {
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
@@ -288,11 +288,15 @@ db.published_version.createIndex({processorName:1,aggregateRootId:1},{unique:tru
 
 启动时会扫描包路径下的注解，注册成Spring bean，类似@Component的作用
 
+
 ### 消息
+**_更新了kotlin支持，@Subscribe 方法体支持suspend标记_**
+
 发送命令消息代码
 ```java
 CompletableFuture<CommandResult> future = commandService.executeAsync(createNoteCommand, CommandReturnType.EventHandled);
 ```
+
 消费命令消息
 ```java
 /**

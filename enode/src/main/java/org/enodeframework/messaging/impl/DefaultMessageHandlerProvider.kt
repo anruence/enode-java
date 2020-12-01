@@ -1,18 +1,18 @@
 package org.enodeframework.messaging.impl
 
-import org.enodeframework.common.container.IObjectContainer
-import org.enodeframework.common.container.ObjectContainer
+import org.enodeframework.eventing.IDomainEvent
 import org.enodeframework.infrastructure.impl.AbstractHandlerProvider
 import org.enodeframework.messaging.IMessage
 import org.enodeframework.messaging.IMessageHandlerProvider
 import org.enodeframework.messaging.IMessageHandlerProxy1
+import org.enodeframework.messaging.MessageHandlerData
 import java.lang.reflect.Method
-import kotlin.reflect.jvm.kotlinFunction
+import kotlin.coroutines.Continuation
 
 /**
  * @author anruence@gmail.com
  */
-class DefaultMessageHandlerProvider : AbstractHandlerProvider<Class<*>?, IMessageHandlerProxy1?, Class<*>?>(), IMessageHandlerProvider {
+class DefaultMessageHandlerProvider : AbstractHandlerProvider<Class<*>, IMessageHandlerProxy1, Class<*>>(), IMessageHandlerProvider {
     override fun getKey(method: Method): Class<*> {
         return method.parameterTypes[0]
     }
@@ -22,29 +22,46 @@ class DefaultMessageHandlerProvider : AbstractHandlerProvider<Class<*>?, IMessag
     }
 
     override fun isHandleMethodMatch(method: Method): Boolean {
-        val paramCount = method.parameterTypes.size
-        if (paramCount != 1) {
-            if (!isSuspendMethod(method)) {
-                return false
-            }
+        if (isSuspendMethod(method)) {
+            return methodMatchSuspend(method)
+        }
+        return methodMatch(method)
+    }
+
+    private fun methodMatch(method: Method): Boolean {
+        if (method.parameterTypes.size != 1) {
+            return false
         }
         if (IMessage::class.java == method.parameterTypes[0]) {
             return false
         }
-        return if (!IMessage::class.java.isAssignableFrom(method.parameterTypes[0])) {
-            false
-        } else isMethodAnnotationSubscribe(method)
+        if (!IDomainEvent::class.java.isAssignableFrom(method.parameterTypes[0])) {
+            return false
+        }
+        return isMethodAnnotationSubscribe(method)
     }
 
-    override fun isSuspendMethod(method: Method): Boolean {
-        return method.kotlinFunction?.isSuspend == true
+    private fun methodMatchSuspend(method: Method): Boolean {
+        if (method.parameterTypes.size != 2) {
+            return false
+        }
+        if (IMessage::class.java == method.parameterTypes[0]) {
+            return false
+        }
+        if (!IDomainEvent::class.java.isAssignableFrom(method.parameterTypes[0])) {
+            return false
+        }
+        if (Continuation::class.java != method.parameterTypes[1]) {
+            return false
+        }
+        return isMethodAnnotationSubscribe(method)
     }
 
-    override fun getObjectContainer(): IObjectContainer {
-        return ObjectContainer.INSTANCE
-    }
-
-    override fun isHandlerSourceMatchKey(handlerSource: Class<*>?, key: Class<*>?): Boolean {
+    override fun isHandlerSourceMatchKey(handlerSource: Class<*>, key: Class<*>): Boolean {
         return key == handlerSource
+    }
+
+    override fun getHandlers(messageType: Class<*>): List<MessageHandlerData<IMessageHandlerProxy1>> {
+        return getHandlersInternal(messageType)
     }
 }

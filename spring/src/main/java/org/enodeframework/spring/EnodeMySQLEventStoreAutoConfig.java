@@ -18,11 +18,10 @@ import javax.sql.DataSource;
 @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mysql")
 public class EnodeMySQLEventStoreAutoConfig {
 
+    private final static Logger logger = LoggerFactory.getLogger(EnodeMySQLEventStoreAutoConfig.class);
     @Autowired
     @Qualifier("enodeVertx")
     private Vertx vertx;
-
-    private final static Logger logger = LoggerFactory.getLogger(EnodeMySQLEventStoreAutoConfig.class);
 
     @Bean
     @ConditionalOnProperty(prefix = "spring.enode", name = "eventstore", havingValue = "mysql")

@@ -77,14 +77,14 @@ public class DefaultAggregateRootInternalHandlerProvider implements IAggregateRo
 
     @Override
     public Action2<IAggregateRoot, IDomainEvent<?>> getInternalEventHandler(Class<? extends IAggregateRoot> aggregateRootType, Class<? extends IDomainEvent> eventType) {
-        Class currentAggregateType = aggregateRootType;
+        Class<? extends IAggregateRoot> currentAggregateType = aggregateRootType;
         while (currentAggregateType != null) {
             Action2<IAggregateRoot, IDomainEvent<?>> handler = getEventHandler(currentAggregateType, eventType);
             if (handler != null) {
                 return handler;
             }
             if (currentAggregateType.getSuperclass() != null && Arrays.asList(currentAggregateType.getSuperclass().getInterfaces()).contains(IAggregateRoot.class)) {
-                currentAggregateType = currentAggregateType.getSuperclass();
+                currentAggregateType = (Class<? extends IAggregateRoot>) currentAggregateType.getSuperclass();
             } else {
                 break;
             }

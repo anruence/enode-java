@@ -12,17 +12,17 @@ import javax.sql.DataSource
  */
 class TiDBEventStore(dataSource: DataSource, setting: DBConfiguration, eventSerializer: IEventSerializer, serializeService: ISerializeService) : JDBCEventStore(dataSource, setting, eventSerializer, serializeService) {
 
-    public override fun parseCommandId(msg: String): String {
-        val matcher = PATTERN_MYSQL.matcher(msg)
+    companion object {
+        private val PATTERN_TIDB = Pattern.compile("^Duplicate entry '.*-(.*)' for key")
+    }
+
+    override fun getDuplicatedId(throwable: Throwable): String {
+        val matcher = PATTERN_TIDB.matcher(throwable.message!!)
         if (!matcher.find()) {
             return ""
         }
         return if (matcher.groupCount() == 0) {
             ""
         } else matcher.group(1)
-    }
-
-    companion object {
-        private val PATTERN_MYSQL = Pattern.compile("^Duplicate entry '.*-(.*)' for key")
     }
 }

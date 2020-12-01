@@ -17,20 +17,20 @@ public class SeatType {
         return this.id;
     }
 
-    public SeatTypeInfo getSeatTypeInfo() {
-        return this.seatTypeInfo;
-    }
-
-    public int getQuantity() {
-        return this.quantity;
-    }
-
     public void setId(String id) {
         this.id = id;
     }
 
+    public SeatTypeInfo getSeatTypeInfo() {
+        return this.seatTypeInfo;
+    }
+
     public void setSeatTypeInfo(SeatTypeInfo seatTypeInfo) {
         this.seatTypeInfo = seatTypeInfo;
+    }
+
+    public int getQuantity() {
+        return this.quantity;
     }
 
     public void setQuantity(int quantity) {

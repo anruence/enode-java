@@ -27,8 +27,7 @@
         </encoder>
     </appender>
 
-    <logger name="org.enodeframework" level="DEBUG" addtivity="false">
-        <appender-ref ref="CONSOLE"/>
+    <logger name="org.enodeframework" level="DEBUG">
     </logger>
 
     <root level="INFO">

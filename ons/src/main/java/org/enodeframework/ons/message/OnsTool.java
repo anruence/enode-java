@@ -33,8 +33,17 @@ public class OnsTool {
     public static void handle(List<Message> msgs, IMessageHandler messageHandler) {
         int size = msgs.size();
         CountDownLatch latch = new CountDownLatch(size);
-        handleRecursively(0, size, msgs, latch, messageHandler);
+        handleConcurrently(0, size, msgs, latch, messageHandler);
         Task.await(latch);
+    }
+
+    private static void handleConcurrently(int index, int total, List<Message> msgs, CountDownLatch latch, IMessageHandler messageHandler) {
+        msgs.forEach(msg -> {
+            QueueMessage queueMessage = covertToQueueMessage(msg);
+            messageHandler.handle(queueMessage, message -> {
+                latch.countDown();
+            });
+        });
     }
 
     private static void handleRecursively(int index, int total, List<Message> msgs, CountDownLatch latch, IMessageHandler messageHandler) {

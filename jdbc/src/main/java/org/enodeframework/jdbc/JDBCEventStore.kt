@@ -30,7 +30,7 @@ import javax.sql.DataSource
 /**
  * @author anruence@gmail.com
  */
-abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfiguration, eventSerializer: IEventSerializer, private val serializeService: ISerializeService) : CoroutineVerticle(), IEventStore {
+abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfiguration, eventSerializer: IEventSerializer, private val serializeService: ISerializeService) : CoroutineVerticle(), IEventStore, SQLDialect {
     private val tableName: String
     private val sqlState: String
     private val versionIndexName: String
@@ -78,8 +78,6 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
         }, null, retryTimes, true)
     }
 
-    protected abstract fun parseCommandId(msg: String): String
-
     private suspend fun batchAppendAggregateEvents(aggregateRootId: String, eventStreamList: List<DomainEventStream>): AggregateEventAppendResult {
         val sql = String.format(INSERT_EVENT_SQL, tableName)
         val jsonArrays: ArrayList<JsonArray> = Lists.newArrayList()
@@ -123,7 +121,7 @@ abstract class JDBCEventStore(dataSource: DataSource, dbConfiguration: DBConfigu
                     // PG: ** ERROR: duplicate key value violates unique constraint "event_stream_aggregate_root_id_command_id_key"\n详细：Key (aggregate_root_id, command_id)=(5ee99656d767113d73a7540f, 5ee99656d767113d73a75417) already exists. **
                     val appendResult = AggregateEventAppendResult()
                     appendResult.eventAppendStatus = EventAppendStatus.DuplicateCommand
-                    val commandId = parseCommandId(throwable.message!!)
+                    val commandId = getDuplicatedId(throwable)
                     if (!Strings.isNullOrEmpty(commandId)) {
                         appendResult.duplicateCommandIds = Lists.newArrayList(commandId)
                         return appendResult

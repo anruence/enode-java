@@ -11,19 +11,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MockEventStore implements IEventStore {
-    public boolean supportBatchAppendEvent;
-
-    private int expectFailedCount = 0;
-
-    private int currentFailedCount = 0;
-
-    private FailedType failedType;
-
-    private int expectGetFailedCount = 0;
-
-    private int currentGetFailedCount = 0;
-
     private final InMemoryEventStore memoryEventStore = new InMemoryEventStore();
+    public boolean supportBatchAppendEvent;
+    private int expectFailedCount = 0;
+    private int currentFailedCount = 0;
+    private FailedType failedType;
+    private int expectGetFailedCount = 0;
+    private int currentGetFailedCount = 0;
 
     public MockEventStore() {
         supportBatchAppendEvent = true;

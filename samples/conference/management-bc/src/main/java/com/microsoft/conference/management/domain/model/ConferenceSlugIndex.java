@@ -18,20 +18,20 @@ public class ConferenceSlugIndex {
         return this.indexId;
     }
 
-    public String getConferenceId() {
-        return this.conferenceId;
-    }
-
-    public String getSlug() {
-        return this.slug;
-    }
-
     public void setIndexId(String indexId) {
         this.indexId = indexId;
     }
 
+    public String getConferenceId() {
+        return this.conferenceId;
+    }
+
     public void setConferenceId(String conferenceId) {
         this.conferenceId = conferenceId;
+    }
+
+    public String getSlug() {
+        return this.slug;
     }
 
     public void setSlug(String slug) {

@@ -28,15 +28,15 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class SendCommandTest {
 
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder().include(SendCommandTest.class.getSimpleName()).resultFormat(ResultFormatType.JSON).build();
+        new Runner(opt).run();
+    }
+
     @Benchmark
     public void testSendCommand(Blackhole blackhole) {
         //TODO
         int x = 0;
         blackhole.consume(x);
-    }
-
-    public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder().include(SendCommandTest.class.getSimpleName()).resultFormat(ResultFormatType.JSON).build();
-        new Runner(opt).run();
     }
 }

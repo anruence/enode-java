@@ -37,10 +37,10 @@ public class ConferenceCommandHandler {
 
     @Subscribe
     public void handleAsync(ICommandContext context, CreateConference command) {
-        execInternal(context,command);
+        execInternal(context, command);
     }
 
-    private void execInternal(ICommandContext context, CreateConference command){
+    private void execInternal(ICommandContext context, CreateConference command) {
         Conference conference = new Conference(command.getAggregateRootId(), new ConferenceInfo(
                 command.getAccessCode(),
                 new ConferenceOwner(command.getOwnerName(), command.getOwnerEmail()),

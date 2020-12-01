@@ -13,12 +13,12 @@ public class SeatQuantity {
         return this.seatTypeId;
     }
 
-    public int getQuantity() {
-        return this.quantity;
-    }
-
     public void setSeatTypeId(String seatTypeId) {
         this.seatTypeId = seatTypeId;
+    }
+
+    public int getQuantity() {
+        return this.quantity;
     }
 
     public void setQuantity(int quantity) {

@@ -1,6 +1,7 @@
 package com.microsoft.conference.management.controller;
 
 import com.microsoft.conference.common.ActionResult;
+import com.microsoft.conference.common.ErrCode;
 import com.microsoft.conference.common.management.commands.AddSeatType;
 import com.microsoft.conference.common.management.commands.CreateConference;
 import com.microsoft.conference.common.management.commands.PublishConference;
@@ -9,14 +10,13 @@ import com.microsoft.conference.common.management.commands.UnpublishConference;
 import com.microsoft.conference.common.management.commands.UpdateConference;
 import com.microsoft.conference.common.management.commands.UpdateSeatType;
 import com.microsoft.conference.management.domain.model.SeatType;
-import com.microsoft.conference.management.request.ConferenceInfo;
-import com.microsoft.conference.management.readmodel.DTOExtensions;
-import com.microsoft.conference.management.request.EditableConferenceInfo;
-import com.microsoft.conference.common.ErrCode;
-import com.microsoft.conference.management.request.LocateConference;
 import com.microsoft.conference.management.readmodel.ConferenceQueryService;
 import com.microsoft.conference.management.readmodel.ConferenceVO;
+import com.microsoft.conference.management.readmodel.DTOExtensions;
 import com.microsoft.conference.management.readmodel.SeatTypeVO;
+import com.microsoft.conference.management.request.ConferenceInfo;
+import com.microsoft.conference.management.request.EditableConferenceInfo;
+import com.microsoft.conference.management.request.LocateConference;
 import io.swagger.annotations.Api;
 import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;

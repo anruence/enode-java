@@ -18,12 +18,12 @@ public class AggregateRepositoryProxy<TAggregateRoot extends IAggregateRoot> imp
     }
 
     @Override
-    public <T extends IAggregateRoot> CompletableFuture<T> getAsync(String aggregateRootId) {
-        return (CompletableFuture<T>) aggregateRepository.getAsync(aggregateRootId);
+    public void setInnerObject(Object innerObject) {
+        this.aggregateRepository = (IAggregateRepository<TAggregateRoot>) innerObject;
     }
 
     @Override
-    public void setInnerObject(Object innerObject) {
-        this.aggregateRepository = (IAggregateRepository<TAggregateRoot>) innerObject;
+    public <T extends IAggregateRoot> CompletableFuture<T> getAsync(String aggregateRootId) {
+        return (CompletableFuture<T>) aggregateRepository.getAsync(aggregateRootId);
     }
 }

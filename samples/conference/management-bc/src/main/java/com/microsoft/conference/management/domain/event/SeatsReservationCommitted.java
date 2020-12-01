@@ -21,12 +21,12 @@ public class SeatsReservationCommitted extends DomainEvent<String> {
         return this.reservationId;
     }
 
-    public List<SeatQuantity> getSeatQuantities() {
-        return this.seatQuantities;
-    }
-
     public void setReservationId(String reservationId) {
         this.reservationId = reservationId;
+    }
+
+    public List<SeatQuantity> getSeatQuantities() {
+        return this.seatQuantities;
     }
 
     public void setSeatQuantities(List<SeatQuantity> seatQuantities) {

@@ -2,7 +2,6 @@ package org.enodeframework.samples.eventhandlers;
 
 import org.enodeframework.spring.EnableEnode;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**

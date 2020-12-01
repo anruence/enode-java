@@ -41,14 +41,14 @@ class DefaultMessageDispatcher(private val typeNameProvider: ITypeNameProvider, 
         dispatchSingleMessage(queueMessageDispatching.dequeueMessage(), queueMessageDispatching)
         //如果有至少两个事件，则尝试调用针对两个事件的Handler
         if (messageCount >= 2) {
-            val twoMessageHandlers = twoMessageHandlerProvider.getHandlers(messages.stream().map { x: IMessage -> x.javaClass }.collect(Collectors.toList()) as List<Class<*>>?)
+            val twoMessageHandlers = twoMessageHandlerProvider.getHandlers(messages.stream().map { x: IMessage -> x.javaClass }.collect(Collectors.toList()) as List<Class<*>>)
             if (twoMessageHandlers.isNotEmpty()) {
                 dispatchMultiMessage(messages, twoMessageHandlers, rootDispatching) { multiMessageDispatching: MultiMessageDispatching, handlerProxy: IMessageHandlerProxy2, queueHandler: QueuedHandler<IMessageHandlerProxy2>?, retryTimes: Int -> dispatchTwoMessageToHandlerAsync(multiMessageDispatching, handlerProxy, queueHandler, retryTimes) }
             }
         }
         //如果有至少三个事件，则尝试调用针对三个事件的Handler
         if (messageCount >= 3) {
-            val threeMessageHandlers = threeMessageHandlerProvider.getHandlers(messages.stream().map { x: IMessage -> x.javaClass }.collect(Collectors.toList()) as List<Class<*>>?)
+            val threeMessageHandlers = threeMessageHandlerProvider.getHandlers(messages.stream().map { x: IMessage -> x.javaClass }.collect(Collectors.toList()) as List<Class<*>>)
             if (threeMessageHandlers.isNotEmpty()) {
                 dispatchMultiMessage(messages, threeMessageHandlers, rootDispatching) { multiMessageDispatching: MultiMessageDispatching, handlerProxy: IMessageHandlerProxy3, queueHandler: QueuedHandler<IMessageHandlerProxy3>?, retryTimes: Int -> dispatchThreeMessageToHandlerAsync(multiMessageDispatching, handlerProxy, queueHandler, retryTimes) }
             }
@@ -64,10 +64,10 @@ class DefaultMessageDispatcher(private val typeNameProvider: ITypeNameProvider, 
         }
         messageHandlerDataList.forEach(Consumer { messageHandlerData: MessageHandlerData<IMessageHandlerProxy1> ->
             val singleMessageDispatching = SingleMessageDispatching(message, queueMessageDispatching, messageHandlerData.allHandlers, typeNameProvider)
-            if (messageHandlerData.listHandlers != null && !messageHandlerData.listHandlers.isEmpty()) {
+            if (messageHandlerData.listHandlers != null && messageHandlerData.listHandlers.isNotEmpty()) {
                 messageHandlerData.listHandlers.forEach(Consumer { handler: IMessageHandlerProxy1 -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, handler, null, 0) })
             }
-            if (messageHandlerData.queuedHandlers != null && !messageHandlerData.queuedHandlers.isEmpty()) {
+            if (messageHandlerData.queuedHandlers != null && messageHandlerData.queuedHandlers.isNotEmpty()) {
                 val queueHandler = QueuedHandler(messageHandlerData.queuedHandlers) { queuedHandler: QueuedHandler<IMessageHandlerProxy1>?, nextHandler: IMessageHandlerProxy1 -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, nextHandler, queuedHandler, 0) }
                 dispatchSingleMessageToHandlerAsync(singleMessageDispatching, queueHandler.dequeueHandler(), queueHandler, 0)
             }
@@ -77,10 +77,10 @@ class DefaultMessageDispatcher(private val typeNameProvider: ITypeNameProvider, 
     private fun <T : IObjectProxy?> dispatchMultiMessage(messages: List<IMessage>, messageHandlerDataList: List<MessageHandlerData<T>>, rootDispatching: RootDispatching, dispatchAction: Action4<MultiMessageDispatching, T, QueuedHandler<T>?, Int>) {
         messageHandlerDataList.forEach(Consumer { messageHandlerData: MessageHandlerData<T> ->
             val multiMessageDispatching = MultiMessageDispatching(messages, messageHandlerData.allHandlers, rootDispatching, typeNameProvider)
-            if (messageHandlerData.listHandlers != null && !messageHandlerData.listHandlers.isEmpty()) {
+            if (messageHandlerData.listHandlers != null && messageHandlerData.listHandlers.isNotEmpty()) {
                 messageHandlerData.listHandlers.forEach(Consumer { handler: T -> dispatchAction.apply(multiMessageDispatching, handler, null, 0) })
             }
-            if (messageHandlerData.queuedHandlers != null && !messageHandlerData.queuedHandlers.isEmpty()) {
+            if (messageHandlerData.queuedHandlers != null && messageHandlerData.queuedHandlers.isNotEmpty()) {
                 val queuedHandler = QueuedHandler(messageHandlerData.queuedHandlers
                 ) { currentQueuedHandler: QueuedHandler<T>?, nextHandler: T -> dispatchAction.apply(multiMessageDispatching, nextHandler, currentQueuedHandler, 0) }
                 dispatchAction.apply(multiMessageDispatching, queuedHandler.dequeueHandler(), queuedHandler, 0)
