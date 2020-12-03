@@ -112,12 +112,12 @@ public class EnodeAutoConfiguration {
         return new DefaultEventSerializer(typeNameProvider, serializeService);
     }
 
-    @Bean(name = "aggregateRootInternalHandlerProvider")
-    public DefaultAggregateRootInternalHandlerProvider aggregateRootInternalHandlerProvider() {
+    @Bean(name = "defaultAggregateRootInternalHandlerProvider")
+    public DefaultAggregateRootInternalHandlerProvider defaultAggregateRootInternalHandlerProvider() {
         return new DefaultAggregateRootInternalHandlerProvider();
     }
 
-    @Bean(name = "messageDispatcher")
+    @Bean(name = "defaultMessageDispatcher")
     public DefaultMessageDispatcher defaultMessageDispatcher(
             ITypeNameProvider typeNameProvider,
             IMessageHandlerProvider messageHandlerProvider,
@@ -143,33 +143,33 @@ public class EnodeAutoConfiguration {
         return new DefaultAggregateRepositoryProvider();
     }
 
-    @Bean(name = "threeMessageHandlerProvider")
-    public DefaultThreeMessageHandlerProvider threeMessageHandlerProvider() {
+    @Bean(name = "defaultThreeMessageHandlerProvider")
+    public DefaultThreeMessageHandlerProvider defaultThreeMessageHandlerProvider() {
         return new DefaultThreeMessageHandlerProvider();
     }
 
-    @Bean(name = "twoMessageHandlerProvider")
-    public DefaultTwoMessageHandlerProvider twoMessageHandlerProvider() {
+    @Bean(name = "defaultTwoMessageHandlerProvider")
+    public DefaultTwoMessageHandlerProvider defaultTwoMessageHandlerProvider() {
         return new DefaultTwoMessageHandlerProvider();
     }
 
-    @Bean(name = "messageHandlerProvider")
-    public DefaultMessageHandlerProvider messageHandlerProvider() {
+    @Bean(name = "defaultMessageHandlerProvider")
+    public DefaultMessageHandlerProvider defaultMessageHandlerProvider() {
         return new DefaultMessageHandlerProvider();
     }
 
-    @Bean(name = "commandHandlerProvider")
-    public DefaultCommandHandlerProvider commandHandlerProvider() {
+    @Bean(name = "defaultCommandHandlerProvider")
+    public DefaultCommandHandlerProvider defaultCommandHandlerProvider() {
         return new DefaultCommandHandlerProvider();
     }
 
-    @Bean(name = "aggregateRootFactory")
-    public DefaultAggregateRootFactory aggregateRootFactory() {
+    @Bean(name = "defaultAggregateRootFactory")
+    public DefaultAggregateRootFactory defaultAggregateRootFactory() {
         return new DefaultAggregateRootFactory();
     }
 
-    @Bean(name = "aggregateSnapshotter")
-    public DefaultAggregateSnapshotter aggregateSnapshotter(IAggregateRepositoryProvider aggregateRepositoryProvider) {
+    @Bean(name = "defaultAggregateSnapshotter")
+    public DefaultAggregateSnapshotter defaultAggregateSnapshotter(IAggregateRepositoryProvider aggregateRepositoryProvider) {
         return new DefaultAggregateSnapshotter(aggregateRepositoryProvider);
     }
 
@@ -180,8 +180,8 @@ public class EnodeAutoConfiguration {
             ITypeNameProvider typeNameProvider,
             IEventCommittingService eventService,
             IMemoryCache memoryCache,
-            @Qualifier(value = "applicationMessagePublisher") IMessagePublisher<IApplicationMessage> applicationMessagePublisher,
-            @Qualifier(value = "publishableExceptionPublisher") IMessagePublisher<IDomainException> publishableExceptionPublisher,
+            @Qualifier(value = "defaultApplicationMessagePublisher") IMessagePublisher<IApplicationMessage> applicationMessagePublisher,
+            @Qualifier(value = "defaultPublishableExceptionPublisher") IMessagePublisher<IDomainException> publishableExceptionPublisher,
             ISerializeService serializeService) {
         return new DefaultProcessingCommandHandler(eventStore, commandHandlerProvider, typeNameProvider, eventService, memoryCache, applicationMessagePublisher, publishableExceptionPublisher, serializeService);
     }
@@ -191,7 +191,7 @@ public class EnodeAutoConfiguration {
             IMemoryCache memoryCache,
             IEventStore eventStore,
             ISerializeService serializeService,
-            @Qualifier("domainEventPublisher") IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
+            @Qualifier("defaultDomainEventPublisher") IMessagePublisher<DomainEventStreamMessage> domainEventPublisher) {
         return new DefaultEventCommittingService(memoryCache, eventStore, serializeService, domainEventPublisher);
     }
 
@@ -227,38 +227,38 @@ public class EnodeAutoConfiguration {
         return new DefaultCommandService(commandTopic, commandTag, commandResultProcessor, sendMessageService, serializeService);
     }
 
-    @Bean(name = "domainEventPublisher")
-    public DefaultDomainEventPublisher domainEventPublisher(IEventSerializer eventSerializer, ISendMessageService sendMessageService, ISerializeService serializeService) {
+    @Bean(name = "defaultDomainEventPublisher")
+    public DefaultDomainEventPublisher defaultDomainEventPublisher(IEventSerializer eventSerializer, ISendMessageService sendMessageService, ISerializeService serializeService) {
         return new DefaultDomainEventPublisher(eventTopic, eventTag, eventSerializer, sendMessageService, serializeService);
     }
 
-    @Bean(name = "applicationMessagePublisher")
-    public DefaultApplicationMessagePublisher applicationMessagePublisher(ISendMessageService sendMessageService, ISerializeService serializeService) {
+    @Bean(name = "defaultApplicationMessagePublisher")
+    public DefaultApplicationMessagePublisher defaultApplicationMessagePublisher(ISendMessageService sendMessageService, ISerializeService serializeService) {
         return new DefaultApplicationMessagePublisher(applicationTopic, applicationTag, sendMessageService, serializeService);
     }
 
-    @Bean(name = "publishableExceptionPublisher")
-    public DefaultPublishableExceptionPublisher publishableExceptionPublisher(ISendMessageService sendMessageService, ISerializeService serializeService) {
+    @Bean(name = "defaultPublishableExceptionPublisher")
+    public DefaultPublishableExceptionPublisher defaultPublishableExceptionPublisher(ISendMessageService sendMessageService, ISerializeService serializeService) {
         return new DefaultPublishableExceptionPublisher(exceptionTopic, eventTag, sendMessageService, serializeService);
     }
 
     @Bean(name = "defaultCommandListener")
-    public DefaultCommandListener commandListener(ISendReplyService sendReplyService, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateRootStorage, ISerializeService serializeService) {
+    public DefaultCommandListener defaultCommandListener(ISendReplyService sendReplyService, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateRootStorage, ISerializeService serializeService) {
         return new DefaultCommandListener(sendReplyService, typeNameProvider, commandProcessor, repository, aggregateRootStorage, serializeService);
     }
 
     @Bean(name = "defaultDomainEventListener")
-    public DefaultDomainEventListener domainEventListener(ISendReplyService sendReplyService, IProcessingEventProcessor domainEventMessageProcessor, IEventSerializer eventSerializer, ISerializeService serializeService) {
+    public DefaultDomainEventListener defaultDomainEventListener(ISendReplyService sendReplyService, IProcessingEventProcessor domainEventMessageProcessor, IEventSerializer eventSerializer, ISerializeService serializeService) {
         return new DefaultDomainEventListener(sendReplyService, domainEventMessageProcessor, eventSerializer, serializeService);
     }
 
     @Bean(name = "defaultPublishableExceptionListener")
-    public DefaultPublishableExceptionListener publishableExceptionListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
+    public DefaultPublishableExceptionListener defaultPublishableExceptionListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
         return new DefaultPublishableExceptionListener(typeNameProvider, messageDispatcher, serializeService);
     }
 
     @Bean(name = "defaultApplicationMessageListener")
-    public DefaultApplicationMessageListener applicationMessageListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
+    public DefaultApplicationMessageListener defaultApplicationMessageListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
         return new DefaultApplicationMessageListener(typeNameProvider, messageDispatcher, serializeService);
     }
 }

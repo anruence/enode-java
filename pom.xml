@@ -33,13 +33,11 @@
         <maven.source.version>3.2.0</maven.source.version>
         <maven.war.version>3.2.3</maven.war.version>
         <maven.javadoc.version>3.2.0</maven.javadoc.version>
-        <maven.jetty.version>9.4.11.v20180605</maven.jetty.version>
         <nexus.staging.version>1.6.8</nexus.staging.version>
         <maven.gpg.version>1.6</maven.gpg.version>
         <maven.flatten.version>1.1.0</maven.flatten.version>
         <maven.enforce.version>3.0.0-M2</maven.enforce.version>
         <dokka.version>0.10.1</dokka.version>
-        <kotlin.version>1.4.10</kotlin.version>
     </properties>
 
     <name>${project.artifactId}</name>
@@ -101,7 +99,6 @@
                         </goals>
                         <configuration>
                             <sourceDirs>
-                                <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
                                 <sourceDir>${project.basedir}/src/main/java</sourceDir>
                             </sourceDirs>
                         </configuration>
@@ -114,7 +111,6 @@
                         </goals>
                         <configuration>
                             <sourceDirs>
-                                <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
                                 <sourceDir>${project.basedir}/src/test/java</sourceDir>
                             </sourceDirs>
                         </configuration>

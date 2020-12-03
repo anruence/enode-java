@@ -13,15 +13,15 @@
         <vertx.version>3.9.4</vertx.version>
         <slfj4.version>1.7.30</slfj4.version>
         <guava.version>30.0-jre</guava.version>
-        <jackson.version>2.11.3</jackson.version>
+        <jackson.version>2.12.0</jackson.version>
         <mongodb.version>4.1.1</mongodb.version>
         <junit.version>4.13.1</junit.version>
         <rocketmq.version>4.7.1</rocketmq.version>
         <ons.version>1.8.7.1.Final</ons.version>
         <mysql.version>8.0.22</mysql.version>
         <reflections.version>0.9.12</reflections.version>
-        <kotlin.version>1.4.10</kotlin.version>
-        <kotlinx-coroutines.version>1.4.1</kotlinx-coroutines.version>
+        <kotlin.version>1.4.20</kotlin.version>
+        <kotlinx-coroutines.version>1.4.2</kotlinx-coroutines.version>
         <maven.flatten.version>1.1.0</maven.flatten.version>
         <maven.gpg.version>1.6</maven.gpg.version>
     </properties>

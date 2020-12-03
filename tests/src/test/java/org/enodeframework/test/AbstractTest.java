@@ -30,13 +30,13 @@ public abstract class AbstractTest {
     @Autowired
     protected IPublishedVersionStore publishedVersionStore;
     @Autowired
-    @Qualifier(value = "domainEventPublisher")
+    @Qualifier(value = "defaultDomainEventPublisher")
     protected IMessagePublisher<DomainEventStreamMessage> domainEventPublisher;
     @Autowired
-    @Qualifier(value = "applicationMessagePublisher")
+    @Qualifier(value = "defaultApplicationMessagePublisher")
     protected IMessagePublisher<IApplicationMessage> applicationMessagePublisher;
     @Autowired
-    @Qualifier(value = "publishableExceptionPublisher")
+    @Qualifier(value = "defaultPublishableExceptionPublisher")
     protected IMessagePublisher<IDomainException> publishableExceptionPublisher;
     @Autowired
     protected IProcessingEventProcessor processor;
