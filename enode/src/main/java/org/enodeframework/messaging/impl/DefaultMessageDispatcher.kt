@@ -7,13 +7,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.future.asCompletableFuture
 import org.enodeframework.common.function.Action4
 import org.enodeframework.common.io.IOHelper
-
 import org.enodeframework.common.io.Task
+import org.enodeframework.common.serializing.ISerializeService
 import org.enodeframework.infrastructure.IObjectProxy
 import org.enodeframework.infrastructure.ITypeNameProvider
 import org.enodeframework.messaging.*
 import org.slf4j.LoggerFactory
-import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.stream.Collectors
@@ -21,7 +20,13 @@ import java.util.stream.Collectors
 /**
  * @author anruence@gmail.com
  */
-class DefaultMessageDispatcher(private val typeNameProvider: ITypeNameProvider, private val messageHandlerProvider: IMessageHandlerProvider, private val twoMessageHandlerProvider: ITwoMessageHandlerProvider, private val threeMessageHandlerProvider: IThreeMessageHandlerProvider) : IMessageDispatcher {
+class DefaultMessageDispatcher(
+        private val typeNameProvider: ITypeNameProvider,
+        private val messageHandlerProvider: IMessageHandlerProvider,
+        private val twoMessageHandlerProvider: ITwoMessageHandlerProvider,
+        private val threeMessageHandlerProvider: IThreeMessageHandlerProvider,
+        private val serializeService: ISerializeService
+) : IMessageDispatcher {
     override fun dispatchMessageAsync(message: IMessage): CompletableFuture<Boolean> {
         return dispatchMessages(Lists.newArrayList(message))
     }
@@ -65,7 +70,7 @@ class DefaultMessageDispatcher(private val typeNameProvider: ITypeNameProvider, 
         messageHandlerDataList.forEach(Consumer { messageHandlerData: MessageHandlerData<IMessageHandlerProxy1> ->
             val singleMessageDispatching = SingleMessageDispatching(message, queueMessageDispatching, messageHandlerData.allHandlers, typeNameProvider)
             if (messageHandlerData.listHandlers != null && messageHandlerData.listHandlers.isNotEmpty()) {
-                messageHandlerData.listHandlers.forEach(Consumer { handler: IMessageHandlerProxy1 -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, handler, null, 0) })
+                messageHandlerData.listHandlers.forEach { handler: IMessageHandlerProxy1 -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, handler, null, 0) }
             }
             if (messageHandlerData.queuedHandlers != null && messageHandlerData.queuedHandlers.isNotEmpty()) {
                 val queueHandler = QueuedHandler(messageHandlerData.queuedHandlers) { queuedHandler: QueuedHandler<IMessageHandlerProxy1>?, nextHandler: IMessageHandlerProxy1 -> dispatchSingleMessageToHandlerAsync(singleMessageDispatching, nextHandler, queuedHandler, 0) }
@@ -74,15 +79,14 @@ class DefaultMessageDispatcher(private val typeNameProvider: ITypeNameProvider, 
         })
     }
 
-    private fun <T : IObjectProxy?> dispatchMultiMessage(messages: List<IMessage>, messageHandlerDataList: List<MessageHandlerData<T>>, rootDispatching: RootDispatching, dispatchAction: Action4<MultiMessageDispatching, T, QueuedHandler<T>?, Int>) {
+    private fun <T : IObjectProxy> dispatchMultiMessage(messages: List<IMessage>, messageHandlerDataList: List<MessageHandlerData<T>>, rootDispatching: RootDispatching, dispatchAction: Action4<MultiMessageDispatching, T, QueuedHandler<T>?, Int>) {
         messageHandlerDataList.forEach(Consumer { messageHandlerData: MessageHandlerData<T> ->
             val multiMessageDispatching = MultiMessageDispatching(messages, messageHandlerData.allHandlers, rootDispatching, typeNameProvider)
             if (messageHandlerData.listHandlers != null && messageHandlerData.listHandlers.isNotEmpty()) {
                 messageHandlerData.listHandlers.forEach(Consumer { handler: T -> dispatchAction.apply(multiMessageDispatching, handler, null, 0) })
             }
             if (messageHandlerData.queuedHandlers != null && messageHandlerData.queuedHandlers.isNotEmpty()) {
-                val queuedHandler = QueuedHandler(messageHandlerData.queuedHandlers
-                ) { currentQueuedHandler: QueuedHandler<T>?, nextHandler: T -> dispatchAction.apply(multiMessageDispatching, nextHandler, currentQueuedHandler, 0) }
+                val queuedHandler = QueuedHandler(messageHandlerData.queuedHandlers) { currentQueuedHandler: QueuedHandler<T>?, nextHandler: T -> dispatchAction.apply(multiMessageDispatching, nextHandler, currentQueuedHandler, 0) }
                 dispatchAction.apply(multiMessageDispatching, queuedHandler.dequeueHandler(), queuedHandler, 0)
             }
         })
@@ -118,10 +122,11 @@ class DefaultMessageDispatcher(private val typeNameProvider: ITypeNameProvider, 
             singleMessageDispatching.removeHandledHandler(handlerTypeName)
             queueHandler?.onHandlerFinished(handlerProxy)
             if (logger.isDebugEnabled) {
-                logger.debug("Message handled success, handlerType:{}, messageType:{}, messageId:{}", handlerTypeName, message.javaClass.name, message.id)
+                logger.debug("message handled success, messages: {}", serializeService.serialize(message))
             }
-        }, { String.format("[messageId:%s, messageType:%s, handlerType:%s]", message.id, message.javaClass.name, handlerProxy.getInnerObject().javaClass.name) },
-                null, retryTimes, true)
+        }, {
+            String.format("[message: %s, handlerType: %s]", serializeService.serialize(message), handlerProxy.getInnerObject().javaClass.name)
+        }, null, retryTimes, true)
     }
 
     private fun handleTwoMessageAsync(multiMessageDispatching: MultiMessageDispatching, handlerProxy: IMessageHandlerProxy2, handlerTypeName: String, queueHandler: QueuedHandler<IMessageHandlerProxy2>?, retryTimes: Int) {
@@ -136,10 +141,10 @@ class DefaultMessageDispatcher(private val typeNameProvider: ITypeNameProvider, 
             multiMessageDispatching.removeHandledHandler(handlerTypeName)
             queueHandler?.onHandlerFinished(handlerProxy)
             if (logger.isDebugEnabled) {
-                logger.debug("TwoMessage handled success, [messages:{}], handlerType:{}]", java.lang.String.join("|", Arrays.stream(messages).map { x: IMessage -> String.format("id:%s,type:%s", x.id, x.javaClass.name) }.collect(Collectors.toList())), handlerTypeName)
+                logger.debug("TwoMessage handled success, messages: {}", serializeService.serialize(messages))
             }
         }, {
-            String.format("[messages:%s, handlerType:%s]", java.lang.String.join("|", Arrays.stream(messages).map { x: IMessage -> String.format("id:%s,type:%s", x.id, x.javaClass.name) }.collect(Collectors.toList())), handlerProxy.getInnerObject().javaClass.name)
+            String.format("[messages: %s, handlerType: %s]", serializeService.serialize(messages), handlerProxy.getInnerObject().javaClass.name)
         }, null, retryTimes, true)
     }
 
@@ -158,10 +163,11 @@ class DefaultMessageDispatcher(private val typeNameProvider: ITypeNameProvider, 
             multiMessageDispatching.removeHandledHandler(handlerTypeName)
             queueHandler?.onHandlerFinished(handlerProxy)
             if (logger.isDebugEnabled) {
-                logger.debug("ThreeMessage handled success, [messages:{}, handlerType:{}]", Arrays.stream(messages).map { x: IMessage -> String.format("id:%s,type:%s", x.id, x.javaClass.name) }.collect(Collectors.joining("|")), handlerTypeName)
+                logger.debug("ThreeMessage handled success, messages: {}", serializeService.serialize(messages))
             }
-        }, { String.format("[messages:%s, handlerType:%s]", Arrays.stream(messages).map { x: IMessage -> String.format("id:%s,type:%s", x.id, x.javaClass.name) }.collect(Collectors.joining("|")), handlerProxy.getInnerObject().javaClass.name) },
-                null, retryTimes, true)
+        }, {
+            String.format("[messages: %s, handlerType: %s]", serializeService.serialize(messages), handlerProxy.getInnerObject().javaClass.name)
+        }, null, retryTimes, true)
     }
 
     companion object {

@@ -22,24 +22,24 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     /**
      * dynamic inject through ApplicationContext instance
      */
-    private static IAggregateRootInternalHandlerProvider aggregateRootInternalHandlerProvider;
+    private final IAggregateRootInternalHandlerProvider aggregateRootInternalHandlerProvider;
     protected TAggregateRootId id;
     protected int version;
     private List<IDomainEvent<?>> emptyEvents = new ArrayList<>();
-    private Queue<IDomainEvent<?>> uncommittedEvents;
+    private Queue<IDomainEvent<?>> uncommittedEvents = new ConcurrentLinkedQueue<>();
 
     protected AggregateRoot() {
-        uncommittedEvents = new ConcurrentLinkedQueue<>();
+        aggregateRootInternalHandlerProvider = ObjectContainer.resolve(IAggregateRootInternalHandlerProvider.class);
     }
 
     protected AggregateRoot(TAggregateRootId id) {
-        this();
-        Ensure.notNull(id, "id");
-        this.id = id;
+        this(id, 0);
     }
 
     protected AggregateRoot(TAggregateRootId id, int version) {
-        this(id);
+        this();
+        Ensure.notNull(id, "id");
+        this.id = id;
         if (version < 0) {
             throw new IllegalArgumentException(String.format("Version cannot small than zero, aggregateRootId: %s, version: %d", id, version));
         }
@@ -66,10 +66,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     }
 
     private void handleEvent(IDomainEvent<?> domainEvent) {
-        if (aggregateRootInternalHandlerProvider == null) {
-            aggregateRootInternalHandlerProvider = ObjectContainer.resolve(IAggregateRootInternalHandlerProvider.class);
-        }
-        Action2<IAggregateRoot, IDomainEvent<?>> handler = aggregateRootInternalHandlerProvider.getInternalEventHandler(getClass(), domainEvent.getClass());
+        Action2<IAggregateRoot, IDomainEvent<?>> handler = aggregateRootInternalHandlerProvider.getInternalEventHandler(getClass(), (Class<? extends IDomainEvent<?>>) domainEvent.getClass());
         if (handler == null) {
             throw new HandlerNotFoundException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
         }

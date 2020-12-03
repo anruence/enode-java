@@ -26,8 +26,12 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
     override fun <T : IAggregateRoot> getAsync(aggregateRootId: Any, aggregateRootType: Class<T>): CompletableFuture<T> {
         Ensure.notNull(aggregateRootId, "aggregateRootId")
         Ensure.notNull(aggregateRootType, "aggregateRootType")
+        val future = CompletableFuture<T>()
         val aggregateRootInfo = aggregateRootInfoDict[aggregateRootId.toString()]
-                ?: return CompletableFuture.completedFuture(null)
+        if (aggregateRootInfo == null) {
+            future.complete(null)
+            return future
+        }
         val aggregateRoot = aggregateRootInfo.aggregateRoot as T
         if (aggregateRootInfo.aggregateRoot.javaClass != aggregateRootType) {
             throw AggregateRootTypeNotMatchException(String.format("Incorrect aggregate root type, aggregateRootId:%s, type:%s, expecting type:%s", aggregateRootId, aggregateRootInfo.aggregateRoot.javaClass, aggregateRootType))
@@ -39,7 +43,8 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
                 latestAggregateRoot as T
             }
         }
-        return CompletableFuture.completedFuture(aggregateRoot)
+        future.complete(aggregateRoot)
+        return future
     }
 
     /**

@@ -16,7 +16,7 @@ import kotlin.coroutines.Continuation
  */
 class DefaultTwoMessageHandlerProvider : AbstractHandlerProvider<ManyType, IMessageHandlerProxy2, List<Class<*>>>(), ITwoMessageHandlerProvider {
     override fun getKey(method: Method): ManyType {
-        return ManyType(Arrays.asList(*method.parameterTypes))
+        return ManyType(listOf(*method.parameterTypes))
     }
 
     override fun getHandlerProxyImplementationType(): Class<out IMessageHandlerProxy2> {

@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import org.enodeframework.commanding.ICommandHandlerProvider;
 import org.enodeframework.commanding.ICommandProcessor;
 import org.enodeframework.commanding.IProcessingCommandHandler;
-import org.enodeframework.commanding.impl.CommandHandlerProxy;
 import org.enodeframework.commanding.impl.DefaultCommandHandlerProvider;
 import org.enodeframework.commanding.impl.DefaultCommandProcessor;
 import org.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
@@ -48,9 +47,6 @@ import org.enodeframework.messaging.impl.DefaultMessageDispatcher;
 import org.enodeframework.messaging.impl.DefaultMessageHandlerProvider;
 import org.enodeframework.messaging.impl.DefaultThreeMessageHandlerProvider;
 import org.enodeframework.messaging.impl.DefaultTwoMessageHandlerProvider;
-import org.enodeframework.messaging.impl.MessageHandlerProxy1;
-import org.enodeframework.messaging.impl.MessageHandlerProxy2;
-import org.enodeframework.messaging.impl.MessageHandlerProxy3;
 import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.ISendReplyService;
 import org.enodeframework.queue.applicationmessage.DefaultApplicationMessageListener;
@@ -64,10 +60,8 @@ import org.enodeframework.queue.publishableexceptions.DefaultPublishableExceptio
 import org.enodeframework.queue.publishableexceptions.DefaultPublishableExceptionPublisher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
 
 /**
  * @author anruence@gmail.com
@@ -113,33 +107,6 @@ public class EnodeAutoConfiguration {
         return new DefaultProcessingEventProcessor(scheduleService, serializeService, messageDispatcher, publishedVersionStore);
     }
 
-    /**
-     * 原型模式获取bean，每次新建代理执行
-     */
-    @Bean
-    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public CommandHandlerProxy commandHandlerProxy() {
-        return new CommandHandlerProxy();
-    }
-
-    @Bean
-    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public MessageHandlerProxy1 messageHandlerProxy1() {
-        return new MessageHandlerProxy1();
-    }
-
-    @Bean
-    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public MessageHandlerProxy2 messageHandlerProxy2() {
-        return new MessageHandlerProxy2();
-    }
-
-    @Bean
-    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public MessageHandlerProxy3 messageHandlerProxy3() {
-        return new MessageHandlerProxy3();
-    }
-
     @Bean(name = "defaultEventSerializer")
     public DefaultEventSerializer defaultEventSerializer(ITypeNameProvider typeNameProvider, ISerializeService serializeService) {
         return new DefaultEventSerializer(typeNameProvider, serializeService);
@@ -155,8 +122,10 @@ public class EnodeAutoConfiguration {
             ITypeNameProvider typeNameProvider,
             IMessageHandlerProvider messageHandlerProvider,
             ITwoMessageHandlerProvider twoMessageHandlerProvider,
-            IThreeMessageHandlerProvider threeMessageHandlerProvider) {
-        return new DefaultMessageDispatcher(typeNameProvider, messageHandlerProvider, twoMessageHandlerProvider, threeMessageHandlerProvider);
+            IThreeMessageHandlerProvider threeMessageHandlerProvider,
+            ISerializeService serializeService
+    ) {
+        return new DefaultMessageDispatcher(typeNameProvider, messageHandlerProvider, twoMessageHandlerProvider, threeMessageHandlerProvider, serializeService);
     }
 
     @Bean(name = "defaultRepository")

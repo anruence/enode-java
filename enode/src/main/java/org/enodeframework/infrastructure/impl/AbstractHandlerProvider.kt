@@ -6,7 +6,6 @@ import org.enodeframework.annotation.Priority
 import org.enodeframework.annotation.Subscribe
 import org.enodeframework.common.container.IObjectContainer
 import org.enodeframework.common.container.ObjectContainer
-import org.enodeframework.common.exception.HandlerRegisterException
 import org.enodeframework.infrastructure.IAssemblyInitializer
 import org.enodeframework.infrastructure.IObjectProxy
 import org.enodeframework.infrastructure.MethodInvocation
@@ -116,19 +115,15 @@ abstract class AbstractHandlerProvider<TKey, THandlerProxyInterface, THandlerSou
     private fun registerHandler(handlerType: Class<*>) {
         val handleMethods = ReflectionUtils.getMethods(handlerType, { method: Method -> isHandleMethodMatch(method) })
         handleMethods.forEach { method: Method ->
-            try {
-                // 反射Method转换为MethodHandle，提高效率
-                val handleMethod = lookup.findVirtual(handlerType, method.name, MethodType.methodType(method.returnType, method.parameterTypes))
-                val key = getKey(method)
-                val handlers = handlerDict.computeIfAbsent(key, { ArrayList() })
-                val handlerProxy = objectContainer.resolve(getHandlerProxyImplementationType())
-                handlerProxy.setInnerObject(objectContainer.resolve(handlerType))
-                handlerProxy.setMethod(method)
-                handlerProxy.setMethodHandle(handleMethod)
-                handlers.add(handlerProxy)
-            } catch (e: Exception) {
-                throw HandlerRegisterException(e)
-            }
+            // 反射Method转换为MethodHandle，提高效率
+            val handleMethod = lookup.findVirtual(handlerType, method.name, MethodType.methodType(method.returnType, method.parameterTypes))
+            val key = this.getKey(method)
+            val handlers = handlerDict.computeIfAbsent(key, { ArrayList() })
+            val handlerProxy = this.getHandlerProxyImplementationType().getDeclaredConstructor().newInstance()
+            handlerProxy.setInnerObject(objectContainer.resolve(handlerType))
+            handlerProxy.setMethod(method)
+            handlerProxy.setMethodHandle(handleMethod)
+            handlers.add(handlerProxy)
         }
     }
 }

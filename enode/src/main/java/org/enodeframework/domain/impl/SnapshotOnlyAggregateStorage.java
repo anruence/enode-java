@@ -42,8 +42,7 @@ public class SnapshotOnlyAggregateStorage implements IAggregateStorage {
                 () -> aggregateSnapshotter.restoreFromSnapshotAsync(aggregateRootType, aggregateRootId),
                 taskSource::complete,
                 () -> String.format("aggregateSnapshotter.tryRestoreFromSnapshotAsync has unknown exception, aggregateRootType: %s, aggregateRootId: %s", aggregateRootType.getName(), aggregateRootId),
-                null,
-                retryTimes, true);
+                null, retryTimes, true);
         return taskSource;
     }
 }

@@ -1,7 +1,6 @@
 package org.enodeframework.domain.impl
 
 import org.enodeframework.common.exception.AggregateRootInvalidException
-import org.enodeframework.common.exception.AggregateRootNotFoundException
 import org.enodeframework.common.io.IOHelper
 import org.enodeframework.common.utilities.Ensure
 import org.enodeframework.domain.IAggregateRoot
@@ -26,9 +25,7 @@ class EventSourcingAggregateStorage(private val eventStore: IEventStore, private
             }
             val aggregateRootTypeName = typeNameProvider.getTypeName(aggregateRootType)
             tryQueryAggregateEventsAsync(aggregateRootType, aggregateRootTypeName, aggregateRootId, MIN_VERSION, MAX_VERSION, 0).thenApply { eventStreams: List<DomainEventStream> ->
-                val rebuild = rebuildAggregateRoot(aggregateRootType, eventStreams)
-                        ?: throw AggregateRootNotFoundException(String.format("aggregateRoot not found, [aggregateRootType: %s, aggregateRootId: %s]", aggregateRootType.name, aggregateRootId))
-                rebuild
+                rebuildAggregateRoot(aggregateRootType, eventStreams)
             }
         }
     }

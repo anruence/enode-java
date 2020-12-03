@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 public class TestAggregateRepository implements IAggregateRepository<TestAggregate> {
     @Override
     public CompletableFuture<TestAggregate> getAsync(String aggregateRootId) {
+        TestAggregate aggregate = new TestAggregate();
         return CompletableFuture.completedFuture(null);
     }
 }

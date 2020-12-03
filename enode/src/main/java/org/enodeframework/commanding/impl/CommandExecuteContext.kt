@@ -3,6 +3,7 @@ package org.enodeframework.commanding.impl
 import org.enodeframework.commanding.CommandResult
 import org.enodeframework.commanding.ICommandExecuteContext
 import org.enodeframework.common.exception.AggregateRootAlreadyExistException
+import org.enodeframework.common.exception.AggregateRootNotFoundException
 import org.enodeframework.common.io.Task
 import org.enodeframework.common.utilities.Ensure
 import org.enodeframework.domain.IAggregateRoot
@@ -79,10 +80,11 @@ class CommandExecuteContext(
             aggregateRootStorage.getAsync(aggregateRootType, aggregateRootId)
         }
         return future.thenApply { aggregateRoot: T? ->
-            if (aggregateRoot != null) {
-                trackingAggregateRootDict[aggregateRoot.uniqueId] = aggregateRoot
-                repository.refreshAggregate(aggregateRoot)
+            if (aggregateRoot == null) {
+                throw AggregateRootNotFoundException(aggregateRootId, aggregateRootType)
             }
+            trackingAggregateRootDict[aggregateRoot.uniqueId] = aggregateRoot
+            repository.refreshAggregate(aggregateRoot)
             aggregateRoot
         }
     }

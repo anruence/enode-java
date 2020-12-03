@@ -34,8 +34,6 @@ public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryP
 
     /**
      * 获取继承AggregateRoot的class，IAggregateRepository接口的泛型
-     *
-     * @param aggregateRepositoryType
      */
     private void registerAggregateRepository(Class<?> aggregateRepositoryType) {
         Type[] genericInterfaces = aggregateRepositoryType.getGenericInterfaces();
@@ -44,9 +42,8 @@ public class DefaultAggregateRepositoryProvider implements IAggregateRepositoryP
             if (!IAggregateRepository.class.equals(superGenericInterfaceType.getRawType())) {
                 return;
             }
-            IAggregateRepository<IAggregateRoot> resolve = (IAggregateRepository<IAggregateRoot>) ObjectContainer.INSTANCE.resolve(aggregateRepositoryType);
             AggregateRepositoryProxy<IAggregateRoot> aggregateRepositoryProxy = new AggregateRepositoryProxy<>();
-            aggregateRepositoryProxy.setInnerObject(resolve);
+            aggregateRepositoryProxy.setInnerObject(ObjectContainer.INSTANCE.resolve(aggregateRepositoryType));
             repositoryDict.put((Class<?>) superGenericInterfaceType.getActualTypeArguments()[0], aggregateRepositoryProxy);
         });
     }

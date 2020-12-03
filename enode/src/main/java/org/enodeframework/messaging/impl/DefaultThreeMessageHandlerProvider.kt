@@ -17,7 +17,7 @@ import kotlin.coroutines.Continuation
 class DefaultThreeMessageHandlerProvider : AbstractHandlerProvider<ManyType, IMessageHandlerProxy3, List<Class<*>>>(), IThreeMessageHandlerProvider {
 
     override fun getKey(method: Method): ManyType {
-        return ManyType(Arrays.asList(*method.parameterTypes))
+        return ManyType(listOf(*method.parameterTypes))
     }
 
     override fun getHandlerProxyImplementationType(): Class<out IMessageHandlerProxy3> {
