@@ -1,6 +1,7 @@
 package org.enodeframework.queue
 
 import com.google.common.cache.CacheBuilder
+import io.vertx.core.AbstractVerticle
 import io.vertx.core.AsyncResult
 import io.vertx.core.Promise
 import io.vertx.core.json.JsonObject
@@ -9,7 +10,6 @@ import io.vertx.core.net.NetSocket
 import io.vertx.core.net.SocketAddress
 import io.vertx.ext.eventbus.bridge.tcp.impl.protocol.FrameHelper
 import io.vertx.ext.eventbus.bridge.tcp.impl.protocol.FrameParser
-import io.vertx.kotlin.coroutines.CoroutineVerticle
 import org.enodeframework.commanding.CommandResult
 import org.enodeframework.commanding.CommandReturnType
 import org.enodeframework.common.io.ReplySocketAddress
@@ -25,23 +25,23 @@ import java.util.concurrent.CompletableFuture
 /**
  * @author anruence@gmail.com
  */
-class DefaultSendReplyService(private val serializeService: ISerializeService) : CoroutineVerticle(), ISendReplyService {
+class DefaultSendReplyService(private val serializeService: ISerializeService) : AbstractVerticle(), ISendReplyService {
     private var started = false
     private var stoped = false
     private lateinit var netClient: NetClient
     private val netSocketCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(Duration.ofMinutes(10))
-            .maximumSize(10)
-            .build<String, Promise<NetSocket>>()
+        .expireAfterWrite(Duration.ofMinutes(10))
+        .maximumSize(10)
+        .build<String, Promise<NetSocket>>()
 
-    override suspend fun start() {
+    override fun start() {
         if (!started) {
             netClient = vertx.createNetClient()
             started = true
         }
     }
 
-    override suspend fun stop() {
+    override fun stop() {
         if (!stoped) {
             netClient.close()
             stoped = true

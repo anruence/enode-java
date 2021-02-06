@@ -18,7 +18,6 @@ public class EnodeConfigurationSelector implements DeferredImportSelector {
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
         return new String[]{
-                EnodeVertxAutoConfig.class.getName(),
                 EnodeBootstrapRegistrar.class.getName(),
                 EnodeAutoConfiguration.class.getName(),
                 EnodeMemoryEventStoreAutoConfig.class.getName(),

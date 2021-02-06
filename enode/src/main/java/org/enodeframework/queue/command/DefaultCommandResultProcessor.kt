@@ -4,13 +4,13 @@ import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.RemovalCause
 import com.google.common.cache.RemovalNotification
+import io.vertx.core.AbstractVerticle
 import io.vertx.core.AsyncResult
 import io.vertx.core.eventbus.Message
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.bridge.BridgeOptions
 import io.vertx.ext.bridge.PermittedOptions
 import io.vertx.ext.eventbus.bridge.tcp.TcpEventBusBridge
-import io.vertx.kotlin.coroutines.CoroutineVerticle
 import org.enodeframework.commanding.CommandResult
 import org.enodeframework.commanding.CommandReturnType
 import org.enodeframework.commanding.CommandStatus
@@ -35,8 +35,14 @@ import java.util.concurrent.TimeUnit
 /**
  * @author anruence@gmail.com
  */
-class DefaultCommandResultProcessor constructor(private val scheduleService: IScheduleService, private val serializeService: ISerializeService, private val port: Int, private val completionSourceTimeout: Int) : CoroutineVerticle(), ICommandResultProcessor {
-    private val scanExpireCommandTaskName: String = "CleanTimeoutCommandTask_" + SystemClock.now() + Random().nextInt(10000)
+class DefaultCommandResultProcessor constructor(
+    private val scheduleService: IScheduleService,
+    private val serializeService: ISerializeService,
+    private val port: Int,
+    private val completionSourceTimeout: Int
+) : AbstractVerticle(), ICommandResultProcessor {
+    private val scanExpireCommandTaskName: String =
+        "CleanTimeoutCommandTask_" + SystemClock.now() + Random().nextInt(10000)
     private val commandTaskDict: Cache<String, CommandTaskCompletionSource>
     private val commandExecutedMessageLocalQueue: BlockingQueue<CommandResult>
     private val domainEventHandledMessageLocalQueue: BlockingQueue<DomainEventHandledMessage>
@@ -70,18 +76,23 @@ class DefaultCommandResultProcessor constructor(private val scheduleService: ISc
         }
     }
 
-    override suspend fun start() {
+    override fun start() {
         if (started) {
             return
         }
         startServer(port)
         commandExecutedMessageWorker.start()
         domainEventHandledMessageWorker.start()
-        scheduleService.startTask(scanExpireCommandTaskName, { commandTaskDict.cleanUp() }, completionSourceTimeout, completionSourceTimeout)
+        scheduleService.startTask(
+            scanExpireCommandTaskName,
+            { commandTaskDict.cleanUp() },
+            completionSourceTimeout,
+            completionSourceTimeout
+        )
         started = true
     }
 
-    override suspend fun stop() {
+    override fun stop() {
         scheduleService.stopTask(scanExpireCommandTaskName)
         commandExecutedMessageWorker.stop()
         domainEventHandledMessageWorker.stop()

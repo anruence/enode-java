@@ -1,7 +1,9 @@
 package org.enodeframework.jdbc;
 
+import io.vertx.core.AbstractVerticle
 import io.vertx.core.AsyncResult
 import io.vertx.core.json.JsonArray
+import io.vertx.ext.jdbc.JDBCClient
 import io.vertx.ext.sql.SQLClient
 import io.vertx.ext.sql.UpdateResult
 import org.enodeframework.common.DbType
@@ -14,14 +16,29 @@ import org.slf4j.LoggerFactory
 import java.sql.SQLException
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import javax.sql.DataSource
 
 /**
  * @author anruence@gmail.com
  */
-class JDBCPublishedVersionStore(private val client: SQLClient, private val configuration: EventStoreConfiguration) :
-    IPublishedVersionStore {
+class JDBCPublishedVersionStore(
+    private val dataSource: DataSource,
+    private val configuration: EventStoreConfiguration
+) : AbstractVerticle(), IPublishedVersionStore {
+
+    private lateinit var sqlClient: SQLClient
 
     private var code: String = ""
+
+    override fun start() {
+        super.start()
+        this.sqlClient = JDBCClient.create(vertx, this.dataSource)
+    }
+
+    override fun stop() {
+        super.stop()
+        this.sqlClient.close()
+    }
 
     override fun updatePublishedVersionAsync(
         processorName: String,
@@ -61,7 +78,7 @@ class JDBCPublishedVersionStore(private val client: SQLClient, private val confi
         array.add(aggregateRootId)
         array.add(publishedVersion - 1)
         val sql = String.format(UPDATE_SQL, configuration.publishedTableName)
-        client.updateWithParams(sql, array) { ar: AsyncResult<UpdateResult> ->
+        sqlClient.updateWithParams(sql, array) { ar: AsyncResult<UpdateResult> ->
             if (ar.succeeded()) {
                 if (ar.result().updated == 0) {
                     future.completeExceptionally(
@@ -104,7 +121,7 @@ class JDBCPublishedVersionStore(private val client: SQLClient, private val confi
         array.add(1)
         array.add(Date().toInstant())
         val sql = String.format(INSERT_SQL, configuration.publishedTableName)
-        client.updateWithParams(sql, array) { ar: AsyncResult<UpdateResult> ->
+        sqlClient.updateWithParams(sql, array) { ar: AsyncResult<UpdateResult> ->
             if (ar.succeeded()) {
                 if (ar.result().updated == 0) {
                     future.completeExceptionally(
@@ -157,7 +174,7 @@ class JDBCPublishedVersionStore(private val client: SQLClient, private val confi
         val array = JsonArray()
         array.add(processorName)
         array.add(aggregateRootId)
-        client.querySingleWithParams(sql, array) { ar: AsyncResult<JsonArray?> ->
+        sqlClient.querySingleWithParams(sql, array) { ar: AsyncResult<JsonArray?> ->
             if (ar.succeeded()) {
                 ar.result().let { row ->
                     if (row == null) {

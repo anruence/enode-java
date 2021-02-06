@@ -47,11 +47,13 @@ import org.enodeframework.messaging.impl.DefaultMessageDispatcher;
 import org.enodeframework.messaging.impl.DefaultMessageHandlerProvider;
 import org.enodeframework.messaging.impl.DefaultThreeMessageHandlerProvider;
 import org.enodeframework.messaging.impl.DefaultTwoMessageHandlerProvider;
+import org.enodeframework.queue.DefaultSendReplyService;
 import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.ISendReplyService;
 import org.enodeframework.queue.applicationmessage.DefaultApplicationMessageListener;
 import org.enodeframework.queue.applicationmessage.DefaultApplicationMessagePublisher;
 import org.enodeframework.queue.command.DefaultCommandListener;
+import org.enodeframework.queue.command.DefaultCommandResultProcessor;
 import org.enodeframework.queue.command.DefaultCommandService;
 import org.enodeframework.queue.command.ICommandResultProcessor;
 import org.enodeframework.queue.domainevent.DefaultDomainEventListener;
@@ -92,6 +94,24 @@ public class EnodeAutoConfiguration {
     @Value("${spring.enode.mq.tag.exception:*}")
     private String exceptionTag;
 
+    @Value("${spring.enode.server.port:2019}")
+    private int port;
+
+    @Value("${spring.enode.server.wait.timeout:10000}")
+    private int timeout;
+
+    @Bean(name = "commandResultProcessor")
+    @ConditionalOnProperty(prefix = "spring.enode", name = "server.port")
+    public DefaultCommandResultProcessor commandResultProcessor(IScheduleService scheduleService, ISerializeService serializeService) {
+        DefaultCommandResultProcessor processor = new DefaultCommandResultProcessor(scheduleService, serializeService, port, timeout);
+        return processor;
+    }
+
+    @Bean(name = "sendReplyService")
+    public DefaultSendReplyService sendReplyService(ISerializeService serializeService) {
+        DefaultSendReplyService sendReplyService = new DefaultSendReplyService(serializeService);
+        return sendReplyService;
+    }
     @Bean(name = "scheduleService")
     public ScheduleService scheduleService() {
         return new ScheduleService();

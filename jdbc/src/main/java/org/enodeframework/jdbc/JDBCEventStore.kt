@@ -3,11 +3,13 @@ package org.enodeframework.jdbc
 import com.google.common.base.Strings
 import com.google.common.collect.Lists
 import com.google.common.collect.Maps
+import io.vertx.core.AbstractVerticle
 import io.vertx.core.AsyncResult
 import io.vertx.core.Future
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.jdbc.JDBCClient
 import io.vertx.ext.sql.ResultSet
 import io.vertx.ext.sql.SQLClient
 import io.vertx.ext.sql.SQLConnection
@@ -20,26 +22,36 @@ import org.enodeframework.common.serializing.ISerializeService
 import org.enodeframework.eventing.*
 import org.slf4j.LoggerFactory
 import java.sql.SQLException
-import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.regex.Pattern
 import java.util.stream.Collectors
+import javax.sql.DataSource
 
 /**
  * @author anruence@gmail.com
  */
 class JDBCEventStore(
-    sqlClient: SQLClient,
-    configuration: EventStoreConfiguration,
-    eventSerializer: IEventSerializer,
+    private val dataSource: DataSource,
+    private val configuration: EventStoreConfiguration,
+    private val eventSerializer: IEventSerializer,
     private val serializeService: ISerializeService
-) : IEventStore {
-    private val sqlClient: SQLClient
-    private val configuration: EventStoreConfiguration
+) : AbstractVerticle(), IEventStore {
+
+    private lateinit var sqlClient: SQLClient
+
     private var code: String = ""
-    private val eventSerializer: IEventSerializer
+
+    override fun start() {
+        super.start()
+        this.sqlClient = JDBCClient.create(vertx, this.dataSource)
+    }
+
+    override fun stop() {
+        super.stop()
+        this.sqlClient.close()
+    }
 
     override fun batchAppendAsync(eventStreams: List<DomainEventStream>): CompletableFuture<EventAppendResult> {
         val future = CompletableFuture<EventAppendResult>()
@@ -324,7 +336,7 @@ class JDBCEventStore(
             record.getString("command_id"),
             record.getString("aggregate_root_id"),
             record.getString("aggregate_root_type_name"),
-            Date.from(LocalDateTime.parse(record.getString("gmt_create")).atZone(ZoneId.systemDefault()).toInstant()),
+            Date.from(ZonedDateTime.parse(record.getString("gmt_create")).toInstant()),
             eventSerializer.deserialize(
                 serializeService.deserialize(
                     record.getString("events"),
@@ -435,9 +447,6 @@ class JDBCEventStore(
     }
 
     init {
-        this.sqlClient = sqlClient
-        this.eventSerializer = eventSerializer
-        this.configuration = configuration
         if (DbType.MySQL.name == configuration.dbType) {
             this.code = "23000"
         }
