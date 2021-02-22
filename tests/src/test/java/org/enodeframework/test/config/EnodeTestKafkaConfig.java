@@ -4,10 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.enodeframework.kafka.KafkaApplicationMessageListener;
-import org.enodeframework.kafka.KafkaCommandListener;
-import org.enodeframework.kafka.KafkaDomainEventListener;
-import org.enodeframework.kafka.KafkaPublishableExceptionListener;
+import org.enodeframework.kafka.KafkaMessageListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -66,7 +63,7 @@ public class EnodeTestKafkaConfig {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, String> commandListenerContainer(KafkaCommandListener commandListener, ConsumerFactory<String, String> consumerFactory) {
+    public ConcurrentMessageListenerContainer<String, String> commandListenerContainer(KafkaMessageListener commandListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(commandTopic);
         properties.setGroupId(Constants.DEFAULT_CONSUMER_GROUP);
         properties.setMessageListener(commandListener);
@@ -75,7 +72,7 @@ public class EnodeTestKafkaConfig {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener, ConsumerFactory<String, String> consumerFactory) {
+    public ConcurrentMessageListenerContainer<String, String> domainEventListenerContainer(KafkaMessageListener domainEventListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(eventTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(domainEventListener);
@@ -85,7 +82,7 @@ public class EnodeTestKafkaConfig {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, ConsumerFactory<String, String> consumerFactory) {
+    public ConcurrentMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaMessageListener applicationMessageListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(applicationTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(applicationMessageListener);
@@ -95,7 +92,7 @@ public class EnodeTestKafkaConfig {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, ConsumerFactory<String, String> consumerFactory) {
+    public ConcurrentMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaMessageListener publishableExceptionListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(exceptionTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(publishableExceptionListener);

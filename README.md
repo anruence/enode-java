@@ -131,7 +131,7 @@ spring.enode.mq.topic.exception=EnodeBankExceptionTopic
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> commandListenerContainer(KafkaCommandListener commandListener, ConsumerFactory<String, String> consumerFactory) {
+    public KafkaMessageListenerContainer<String, String> commandListenerContainer(KafkaMessageListener commandListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(commandTopic);
         properties.setGroupId(Constants.DEFAULT_CONSUMER_GROUP);
         properties.setMessageListener(commandListener);
@@ -140,7 +140,7 @@ spring.enode.mq.topic.exception=EnodeBankExceptionTopic
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener, ConsumerFactory<String, String> consumerFactory) {
+    public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaMessageListener domainEventListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(eventTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(domainEventListener);
@@ -150,7 +150,7 @@ spring.enode.mq.topic.exception=EnodeBankExceptionTopic
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, ConsumerFactory<String, String> consumerFactory) {
+    public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaMessageListener applicationMessageListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(applicationTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(applicationMessageListener);
@@ -160,7 +160,7 @@ spring.enode.mq.topic.exception=EnodeBankExceptionTopic
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, ConsumerFactory<String, String> consumerFactory) {
+    public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaMessageListener publishableExceptionListener, ConsumerFactory<String, String> consumerFactory) {
         ContainerProperties properties = new ContainerProperties(exceptionTopic);
         properties.setGroupId(Constants.DEFAULT_PRODUCER_GROUP);
         properties.setMessageListener(publishableExceptionListener);

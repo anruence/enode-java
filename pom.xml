@@ -51,7 +51,7 @@
         <pulsar.version>2.7.0</pulsar.version>
         <mysql.version>8.0.22</mysql.version>
         <reflections.version>0.9.12</reflections.version>
-        <vertx.version>4.0.0</vertx.version>
+        <vertx.version>4.0.2</vertx.version>
         <spring-boot.version>2.4.1</spring-boot.version>
     </properties>
 

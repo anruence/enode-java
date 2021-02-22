@@ -94,6 +94,11 @@
                 <artifactId>enode-kafka</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-pulsar</artifactId>
+                <version>${revision}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>

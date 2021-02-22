@@ -4,9 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.enodeframework.kafka.KafkaApplicationMessageListener;
-import org.enodeframework.kafka.KafkaDomainEventListener;
-import org.enodeframework.kafka.KafkaPublishableExceptionListener;
+import org.enodeframework.kafka.KafkaMessageListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -76,7 +74,7 @@ public class KafkaEventConfig {
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaDomainEventListener domainEventListener, RetryTemplate retryTemplate) {
+    public KafkaMessageListenerContainer<String, String> domainEventListenerContainer(KafkaMessageListener domainEventListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(eventTopic);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP0);
         RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(domainEventListener, retryTemplate);
@@ -87,7 +85,7 @@ public class KafkaEventConfig {
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> commandListenerContainer(KafkaDomainEventListener domainEventListener, RetryTemplate retryTemplate) {
+    public KafkaMessageListenerContainer<String, String> commandListenerContainer(KafkaMessageListener domainEventListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(commandTopic);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP0);
         RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(domainEventListener, retryTemplate);
@@ -98,7 +96,7 @@ public class KafkaEventConfig {
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaApplicationMessageListener applicationMessageListener, RetryTemplate retryTemplate) {
+    public KafkaMessageListenerContainer<String, String> applicationMessageListenerContainer(KafkaMessageListener applicationMessageListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(applicationTopic);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP0);
         RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(applicationMessageListener, retryTemplate);
@@ -109,7 +107,7 @@ public class KafkaEventConfig {
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaPublishableExceptionListener publishableExceptionListener, RetryTemplate retryTemplate) {
+    public KafkaMessageListenerContainer<String, String> publishableExceptionListenerContainer(KafkaMessageListener publishableExceptionListener, RetryTemplate retryTemplate) {
         ContainerProperties properties = new ContainerProperties(exceptionTopic);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP0);
         RetryingMessageListenerAdapter<String, String> listenerAdapter = new RetryingMessageListenerAdapter<>(publishableExceptionListener, retryTemplate);

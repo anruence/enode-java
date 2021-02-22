@@ -34,6 +34,11 @@
         </dependency>
         <dependency>
             <groupId>org.enodeframework</groupId>
+            <artifactId>enode-pulsar</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.enodeframework</groupId>
             <artifactId>enode-jdbc</artifactId>
             <scope>provided</scope>
         </dependency>

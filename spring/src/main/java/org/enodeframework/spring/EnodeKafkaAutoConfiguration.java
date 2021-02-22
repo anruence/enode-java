@@ -1,10 +1,7 @@
 package org.enodeframework.spring;
 
-import org.enodeframework.kafka.KafkaApplicationMessageListener;
-import org.enodeframework.kafka.KafkaCommandListener;
-import org.enodeframework.kafka.KafkaDomainEventListener;
-import org.enodeframework.kafka.KafkaPublishableExceptionListener;
-import org.enodeframework.kafka.SendKafkaMessageService;
+import org.enodeframework.kafka.KafkaMessageListener;
+import org.enodeframework.kafka.KafkaSendMessageService;
 import org.enodeframework.queue.IMessageHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,32 +11,32 @@ import org.springframework.kafka.core.KafkaTemplate;
 @ConditionalOnProperty(prefix = "spring.enode", name = "mq", havingValue = "kafka")
 public class EnodeKafkaAutoConfiguration {
 
-    @Bean
+    @Bean(name = "kafkaPublishableExceptionListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "exception")
-    public KafkaPublishableExceptionListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionListener") IMessageHandler publishableExceptionListener) {
-        return new KafkaPublishableExceptionListener(publishableExceptionListener);
+    public KafkaMessageListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionListener") IMessageHandler publishableExceptionListener) {
+        return new KafkaMessageListener(publishableExceptionListener);
     }
 
-    @Bean
+    @Bean(name = "kafkaApplicationMessageListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "application")
-    public KafkaApplicationMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageListener") IMessageHandler applicationMessageListener) {
-        return new KafkaApplicationMessageListener(applicationMessageListener);
+    public KafkaMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageListener") IMessageHandler applicationMessageListener) {
+        return new KafkaMessageListener(applicationMessageListener);
     }
 
-    @Bean
+    @Bean(name = "kafkaDomainEventListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "event")
-    public KafkaDomainEventListener domainEventListener(@Qualifier(value = "defaultDomainEventListener") IMessageHandler domainEventListener) {
-        return new KafkaDomainEventListener(domainEventListener);
+    public KafkaMessageListener domainEventListener(@Qualifier(value = "defaultDomainEventListener") IMessageHandler domainEventListener) {
+        return new KafkaMessageListener(domainEventListener);
     }
 
-    @Bean
+    @Bean(name = "kafkaCommandListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "command")
-    public KafkaCommandListener commandListener(@Qualifier(value = "defaultCommandListener") IMessageHandler commandListener) {
-        return new KafkaCommandListener(commandListener);
+    public KafkaMessageListener commandListener(@Qualifier(value = "defaultCommandListener") IMessageHandler commandListener) {
+        return new KafkaMessageListener(commandListener);
     }
 
-    @Bean
-    public SendKafkaMessageService sendKafkaMessageService(@Qualifier(value = "enodeKafkaTemplate") KafkaTemplate<String, String> kafkaTemplate) {
-        return new SendKafkaMessageService(kafkaTemplate);
+    @Bean(name = "kafkaSendMessageService")
+    public KafkaSendMessageService kafkaSendMessageService(@Qualifier(value = "enodeKafkaTemplate") KafkaTemplate<String, String> kafkaTemplate) {
+        return new KafkaSendMessageService(kafkaTemplate);
     }
 }

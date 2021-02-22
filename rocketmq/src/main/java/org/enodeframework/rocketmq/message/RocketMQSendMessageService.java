@@ -18,13 +18,13 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author anruence@gmail.com
  */
-public class SendRocketMQService implements ISendMessageService {
+public class RocketMQSendMessageService implements ISendMessageService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SendRocketMQService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RocketMQSendMessageService.class);
 
     private final MQProducer producer;
 
-    public SendRocketMQService(MQProducer producer) {
+    public RocketMQSendMessageService(MQProducer producer) {
         this.producer = producer;
     }
 

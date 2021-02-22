@@ -3,10 +3,7 @@ package org.enodeframework.test.config;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.enodeframework.rocketmq.message.RocketMQApplicationMessageListener;
-import org.enodeframework.rocketmq.message.RocketMQCommandListener;
-import org.enodeframework.rocketmq.message.RocketMQDomainEventListener;
-import org.enodeframework.rocketmq.message.RocketMQPublishableExceptionListener;
+import org.enodeframework.rocketmq.message.RocketMQMessageListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +26,7 @@ public class EnodeTestRocketMQConfig {
     private String exceptionTopic;
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer commandConsumer(RocketMQCommandListener commandListener) throws MQClientException {
+    public DefaultMQPushConsumer commandConsumer(RocketMQMessageListener commandListener) throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(Constants.DEFAULT_CONSUMER_GROUP0);
         defaultMQPushConsumer.setNamesrvAddr(Constants.NAMESRVADDR);
@@ -40,7 +37,7 @@ public class EnodeTestRocketMQConfig {
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer domainEventConsumer(RocketMQDomainEventListener listener) throws MQClientException {
+    public DefaultMQPushConsumer domainEventConsumer(RocketMQMessageListener listener) throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(Constants.DEFAULT_CONSUMER_GROUP1);
         defaultMQPushConsumer.setNamesrvAddr(Constants.NAMESRVADDR);
@@ -50,7 +47,7 @@ public class EnodeTestRocketMQConfig {
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer applicationConsumer(RocketMQApplicationMessageListener listener) throws MQClientException {
+    public DefaultMQPushConsumer applicationConsumer(RocketMQMessageListener listener) throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(Constants.DEFAULT_CONSUMER_GROUP2);
         defaultMQPushConsumer.setNamesrvAddr(Constants.NAMESRVADDR);
@@ -60,7 +57,7 @@ public class EnodeTestRocketMQConfig {
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer exceptionConsumer(RocketMQPublishableExceptionListener listener) throws MQClientException {
+    public DefaultMQPushConsumer exceptionConsumer(RocketMQMessageListener listener) throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(Constants.DEFAULT_CONSUMER_GROUP3);
         defaultMQPushConsumer.setNamesrvAddr(Constants.NAMESRVADDR);

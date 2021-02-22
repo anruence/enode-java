@@ -4,7 +4,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.enodeframework.kafka.KafkaCommandListener;
+import org.enodeframework.kafka.KafkaMessageListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -31,7 +31,7 @@ public class KafkaCommandConfig {
     private String commandTopic;
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, String> commandListenerContainer(KafkaCommandListener commandListener) {
+    public ConcurrentMessageListenerContainer<String, String> commandListenerContainer(KafkaMessageListener commandListener) {
         ContainerProperties properties = new ContainerProperties(commandTopic);
         properties.setGroupId(DEFAULT_CONSUMER_GROUP0);
         properties.setMessageListener(commandListener);

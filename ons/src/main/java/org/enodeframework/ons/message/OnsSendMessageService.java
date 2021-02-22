@@ -16,13 +16,13 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author anruence@gmail.com
  */
-public class SendOnsService implements ISendMessageService {
+public class OnsSendMessageService implements ISendMessageService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SendOnsService.class);
+    private static final Logger logger = LoggerFactory.getLogger(OnsSendMessageService.class);
 
     private final Producer producer;
 
-    public SendOnsService(Producer producer) {
+    public OnsSendMessageService(Producer producer) {
         this.producer = producer;
     }
 

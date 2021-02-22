@@ -9,12 +9,12 @@ import org.springframework.kafka.support.Acknowledgment;
 /**
  * @author anruence@gmail.com
  */
-public class KafkaPublishableExceptionListener implements AcknowledgingMessageListener<String, String> {
+public class KafkaMessageListener implements AcknowledgingMessageListener<String, String> {
 
-    private final IMessageHandler publishableExceptionListener;
+    private final IMessageHandler messageHandler;
 
-    public KafkaPublishableExceptionListener(IMessageHandler publishableExceptionListener) {
-        this.publishableExceptionListener = publishableExceptionListener;
+    public KafkaMessageListener(IMessageHandler messageHandler) {
+        this.messageHandler = messageHandler;
     }
 
     /**
@@ -24,9 +24,9 @@ public class KafkaPublishableExceptionListener implements AcknowledgingMessageLi
      * @param acknowledgment the acknowledgment.
      */
     @Override
-    public void onMessage(ConsumerRecord data, Acknowledgment acknowledgment) {
+    public void onMessage(ConsumerRecord<String, String> data, Acknowledgment acknowledgment) {
         QueueMessage queueMessage = KafkaTool.covertToQueueMessage(data);
-        publishableExceptionListener.handle(queueMessage, context -> {
+        messageHandler.handle(queueMessage, context -> {
             if (acknowledgment != null) {
                 acknowledgment.acknowledge();
             }

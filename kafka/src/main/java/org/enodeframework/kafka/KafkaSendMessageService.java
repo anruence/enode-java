@@ -15,12 +15,12 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author anruence@gmail.com
  */
-public class SendKafkaMessageService implements ISendMessageService {
-    private final static Logger logger = LoggerFactory.getLogger(SendKafkaMessageService.class);
+public class KafkaSendMessageService implements ISendMessageService {
+    private final static Logger logger = LoggerFactory.getLogger(KafkaSendMessageService.class);
 
     private final KafkaTemplate<String, String> producer;
 
-    public SendKafkaMessageService(KafkaTemplate<String, String> producer) {
+    public KafkaSendMessageService(KafkaTemplate<String, String> producer) {
         this.producer = producer;
     }
 
