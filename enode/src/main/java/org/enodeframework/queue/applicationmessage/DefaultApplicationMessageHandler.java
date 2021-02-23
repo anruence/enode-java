@@ -10,13 +10,13 @@ import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultApplicationMessageListener implements IMessageHandler {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultApplicationMessageListener.class);
+public class DefaultApplicationMessageHandler implements IMessageHandler {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultApplicationMessageHandler.class);
     private final ITypeNameProvider typeNameProvider;
     private final IMessageDispatcher messageDispatcher;
     private final ISerializeService serializeService;
 
-    public DefaultApplicationMessageListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
+    public DefaultApplicationMessageHandler(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
         this.typeNameProvider = typeNameProvider;
         this.messageDispatcher = messageDispatcher;
         this.serializeService = serializeService;

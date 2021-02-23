@@ -11,9 +11,9 @@ import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultPublishableExceptionListener implements IMessageHandler {
+public class DefaultPublishableExceptionMessageHandler implements IMessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultPublishableExceptionListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultPublishableExceptionMessageHandler.class);
 
     private final ITypeNameProvider typeNameProvider;
 
@@ -21,7 +21,7 @@ public class DefaultPublishableExceptionListener implements IMessageHandler {
 
     private final ISerializeService serializeService;
 
-    public DefaultPublishableExceptionListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
+    public DefaultPublishableExceptionMessageHandler(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
         this.typeNameProvider = typeNameProvider;
         this.messageDispatcher = messageDispatcher;
         this.serializeService = serializeService;

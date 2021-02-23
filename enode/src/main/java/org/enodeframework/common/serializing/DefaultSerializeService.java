@@ -8,10 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.enodeframework.common.exception.EnodeRuntimeException;
 
-/**
- * Json静态工具（基于jackson）
- */
-public class JacksonSerializeService implements ISerializeService {
+public class DefaultSerializeService implements ISerializeService {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

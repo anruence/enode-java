@@ -44,7 +44,7 @@ executeAsync发送消息的同时，关注命令的返回结果，返回的时�
 - CommandReturnType.EventHandled：Event处理完成后才返回结果
 
 ### event使用哪个订阅者发送处理结果
-event的订阅者可能有很多个，所以enode只要求有一个订阅者处理完事件后发送结果给发送命令的人即可，通过DefaultDomainEventListener中sendEventHandledMessage参数来设置是否发送，最终来决定由哪个订阅者来发送命令处理结果
+event的订阅者可能有很多个，所以enode只要求有一个订阅者处理完事件后发送结果给发送命令的人即可，通过defaultDomainEventMessageHandler中sendEventHandledMessage参数来设置是否发送，最终来决定由哪个订阅者来发送命令处理结果
 
 ## 使用说明
 

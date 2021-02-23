@@ -14,25 +14,25 @@ public class EnodePulsarAutoConfig {
 
     @Bean(name = "pulsarPublishableExceptionListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "exception")
-    public PulsarMessageListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionListener") IMessageHandler publishableExceptionListener) {
+    public PulsarMessageListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionMessageHandler") IMessageHandler publishableExceptionListener) {
         return new PulsarMessageListener(publishableExceptionListener);
     }
 
     @Bean(name = "pulsarApplicationMessageListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "application")
-    public PulsarMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageListener") IMessageHandler applicationMessageListener) {
+    public PulsarMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageHandler") IMessageHandler applicationMessageListener) {
         return new PulsarMessageListener(applicationMessageListener);
     }
 
     @Bean(name = "pulsarDomainEventListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "event")
-    public PulsarMessageListener domainEventListener(@Qualifier(value = "defaultDomainEventListener") IMessageHandler domainEventListener) {
+    public PulsarMessageListener domainEventListener(@Qualifier(value = "defaultDomainEventMessageHandler") IMessageHandler domainEventListener) {
         return new PulsarMessageListener(domainEventListener);
     }
 
     @Bean(name = "pulsarCommandListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "command")
-    public PulsarMessageListener commandListener(@Qualifier(value = "defaultCommandListener") IMessageHandler commandListener) {
+    public PulsarMessageListener commandListener(@Qualifier(value = "defaultCommandMessageHandler") IMessageHandler commandListener) {
         return new PulsarMessageListener(commandListener);
     }
 

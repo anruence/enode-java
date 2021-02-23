@@ -15,13 +15,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author anruence@gmail.com
  */
-public class ScheduleService implements IScheduleService {
-    private static final Logger logger = LoggerFactory.getLogger(ScheduleService.class);
+public class DefaultScheduleService implements IScheduleService {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultScheduleService.class);
     private final Object lockObject = new Object();
     private final Map<String, TimerBasedTask> taskDict = new HashMap<>();
     private final ScheduledExecutorService scheduledThreadPool;
 
-    public ScheduleService() {
+    public DefaultScheduleService() {
         scheduledThreadPool = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), new ThreadFactoryBuilder().setDaemon(true).setNameFormat("ScheduleService-%d").build());
     }
 

@@ -13,25 +13,25 @@ public class EnodeRocketMQAutoConfig {
 
     @Bean(name = "rocketMQPublishableExceptionListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "exception")
-    public RocketMQMessageListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionListener") IMessageHandler publishableExceptionListener) {
+    public RocketMQMessageListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionMessageHandler") IMessageHandler publishableExceptionListener) {
         return new RocketMQMessageListener(publishableExceptionListener);
     }
 
     @Bean(name = "rocketMQApplicationMessageListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "application")
-    public RocketMQMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageListener") IMessageHandler applicationMessageListener) {
+    public RocketMQMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageHandler") IMessageHandler applicationMessageListener) {
         return new RocketMQMessageListener(applicationMessageListener);
     }
 
     @Bean(name = "rocketMQDomainEventListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "event")
-    public RocketMQMessageListener domainEventListener(@Qualifier(value = "defaultDomainEventListener") IMessageHandler domainEventListener) {
+    public RocketMQMessageListener domainEventListener(@Qualifier(value = "defaultDomainEventMessageHandler") IMessageHandler domainEventListener) {
         return new RocketMQMessageListener(domainEventListener);
     }
 
     @Bean(name = "rocketMQCommandListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "command")
-    public RocketMQMessageListener commandListener(@Qualifier(value = "defaultCommandListener") IMessageHandler commandListener) {
+    public RocketMQMessageListener commandListener(@Qualifier(value = "defaultCommandMessageHandler") IMessageHandler commandListener) {
         return new RocketMQMessageListener(commandListener);
     }
 

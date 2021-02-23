@@ -13,25 +13,25 @@ public class EnodeKafkaAutoConfiguration {
 
     @Bean(name = "kafkaPublishableExceptionListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "exception")
-    public KafkaMessageListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionListener") IMessageHandler publishableExceptionListener) {
+    public KafkaMessageListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionMessageHandler") IMessageHandler publishableExceptionListener) {
         return new KafkaMessageListener(publishableExceptionListener);
     }
 
     @Bean(name = "kafkaApplicationMessageListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "application")
-    public KafkaMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageListener") IMessageHandler applicationMessageListener) {
+    public KafkaMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageHandler") IMessageHandler applicationMessageListener) {
         return new KafkaMessageListener(applicationMessageListener);
     }
 
     @Bean(name = "kafkaDomainEventListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "event")
-    public KafkaMessageListener domainEventListener(@Qualifier(value = "defaultDomainEventListener") IMessageHandler domainEventListener) {
+    public KafkaMessageListener domainEventListener(@Qualifier(value = "defaultDomainEventMessageHandler") IMessageHandler domainEventListener) {
         return new KafkaMessageListener(domainEventListener);
     }
 
     @Bean(name = "kafkaCommandListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "command")
-    public KafkaMessageListener commandListener(@Qualifier(value = "defaultCommandListener") IMessageHandler commandListener) {
+    public KafkaMessageListener commandListener(@Qualifier(value = "defaultCommandMessageHandler") IMessageHandler commandListener) {
         return new KafkaMessageListener(commandListener);
     }
 

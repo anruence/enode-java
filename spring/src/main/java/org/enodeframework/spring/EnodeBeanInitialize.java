@@ -48,6 +48,6 @@ public class EnodeBeanInitialize implements ApplicationContextAware {
         for (String pakName : scanPackages) {
             classSet.addAll(handler.getPackageAllClasses(pakName, true));
         }
-        registerBeans(classSet);
+        this.registerBeans(classSet);
     }
 }

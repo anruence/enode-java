@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public class DefaultDomainEventListener implements IMessageHandler {
+public class DefaultDomainEventMessageHandler implements IMessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultDomainEventListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultDomainEventMessageHandler.class);
 
     private final ISendReplyService sendReplyService;
 
@@ -35,7 +35,7 @@ public class DefaultDomainEventListener implements IMessageHandler {
 
     private boolean sendEventHandledMessage = true;
 
-    public DefaultDomainEventListener(ISendReplyService sendReplyService, IProcessingEventProcessor domainEventMessageProcessor, IEventSerializer eventSerializer, ISerializeService serializeService) {
+    public DefaultDomainEventMessageHandler(ISendReplyService sendReplyService, IProcessingEventProcessor domainEventMessageProcessor, IEventSerializer eventSerializer, ISerializeService serializeService) {
         this.sendReplyService = sendReplyService;
         this.eventSerializer = eventSerializer;
         this.domainEventMessageProcessor = domainEventMessageProcessor;
@@ -79,13 +79,13 @@ public class DefaultDomainEventListener implements IMessageHandler {
     }
 
     static class DomainEventStreamProcessContext implements IEventProcessContext {
-        private final DefaultDomainEventListener eventConsumer;
+        private final DefaultDomainEventMessageHandler eventConsumer;
         private final DomainEventStreamMessage domainEventStreamMessage;
         private final QueueMessage queueMessage;
         private final IMessageContext messageContext;
 
         public DomainEventStreamProcessContext(
-                DefaultDomainEventListener eventConsumer,
+                DefaultDomainEventMessageHandler eventConsumer,
                 DomainEventStreamMessage domainEventStreamMessage,
                 QueueMessage queueMessage,
                 IMessageContext messageContext) {

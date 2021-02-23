@@ -13,25 +13,25 @@ public class EnodeOnsAutoConfig {
 
     @Bean(name = "onsPublishableExceptionListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "exception")
-    public OnsMessageListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionListener") IMessageHandler publishableExceptionListener) {
+    public OnsMessageListener publishableExceptionListener(@Qualifier(value = "defaultPublishableExceptionMessageHandler") IMessageHandler publishableExceptionListener) {
         return new OnsMessageListener(publishableExceptionListener);
     }
 
     @Bean(name = "onsApplicationMessageListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "application")
-    public OnsMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageListener") IMessageHandler applicationMessageListener) {
+    public OnsMessageListener applicationMessageListener(@Qualifier(value = "defaultApplicationMessageHandler") IMessageHandler applicationMessageListener) {
         return new OnsMessageListener(applicationMessageListener);
     }
 
     @Bean(name = "onsDomainEventListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "event")
-    public OnsMessageListener domainEventListener(@Qualifier(value = "defaultDomainEventListener") IMessageHandler domainEventListener) {
+    public OnsMessageListener domainEventListener(@Qualifier(value = "defaultDomainEventMessageHandler") IMessageHandler domainEventListener) {
         return new OnsMessageListener(domainEventListener);
     }
 
     @Bean(name = "onsCommandListener")
     @ConditionalOnProperty(prefix = "spring.enode.mq.topic", name = "command")
-    public OnsMessageListener commandListener(@Qualifier(value = "defaultCommandListener") IMessageHandler commandListener) {
+    public OnsMessageListener commandListener(@Qualifier(value = "defaultCommandMessageHandler") IMessageHandler commandListener) {
         return new OnsMessageListener(commandListener);
     }
 

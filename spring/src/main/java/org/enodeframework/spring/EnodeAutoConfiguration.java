@@ -8,9 +8,9 @@ import org.enodeframework.commanding.impl.DefaultCommandHandlerProvider;
 import org.enodeframework.commanding.impl.DefaultCommandProcessor;
 import org.enodeframework.commanding.impl.DefaultProcessingCommandHandler;
 import org.enodeframework.common.scheduling.IScheduleService;
-import org.enodeframework.common.scheduling.ScheduleService;
+import org.enodeframework.common.scheduling.DefaultScheduleService;
 import org.enodeframework.common.serializing.ISerializeService;
-import org.enodeframework.common.serializing.JacksonSerializeService;
+import org.enodeframework.common.serializing.DefaultSerializeService;
 import org.enodeframework.domain.IAggregateRepositoryProvider;
 import org.enodeframework.domain.IAggregateRootFactory;
 import org.enodeframework.domain.IAggregateSnapshotter;
@@ -50,15 +50,15 @@ import org.enodeframework.messaging.impl.DefaultTwoMessageHandlerProvider;
 import org.enodeframework.queue.DefaultSendReplyService;
 import org.enodeframework.queue.ISendMessageService;
 import org.enodeframework.queue.ISendReplyService;
-import org.enodeframework.queue.applicationmessage.DefaultApplicationMessageListener;
+import org.enodeframework.queue.applicationmessage.DefaultApplicationMessageHandler;
 import org.enodeframework.queue.applicationmessage.DefaultApplicationMessagePublisher;
-import org.enodeframework.queue.command.DefaultCommandListener;
+import org.enodeframework.queue.command.DefaultCommandMessageHandler;
 import org.enodeframework.queue.command.DefaultCommandResultProcessor;
 import org.enodeframework.queue.command.DefaultCommandService;
 import org.enodeframework.queue.command.ICommandResultProcessor;
-import org.enodeframework.queue.domainevent.DefaultDomainEventListener;
+import org.enodeframework.queue.domainevent.DefaultDomainEventMessageHandler;
 import org.enodeframework.queue.domainevent.DefaultDomainEventPublisher;
-import org.enodeframework.queue.publishableexceptions.DefaultPublishableExceptionListener;
+import org.enodeframework.queue.publishableexceptions.DefaultPublishableExceptionMessageHandler;
 import org.enodeframework.queue.publishableexceptions.DefaultPublishableExceptionPublisher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -100,21 +100,22 @@ public class EnodeAutoConfiguration {
     @Value("${spring.enode.server.wait.timeout:10000}")
     private int timeout;
 
-    @Bean(name = "commandResultProcessor")
+    @Bean(name = "defaultCommandResultProcessor")
     @ConditionalOnProperty(prefix = "spring.enode", name = "server.port")
-    public DefaultCommandResultProcessor commandResultProcessor(IScheduleService scheduleService, ISerializeService serializeService) {
+    public DefaultCommandResultProcessor defaultCommandResultProcessor(IScheduleService scheduleService, ISerializeService serializeService) {
         DefaultCommandResultProcessor processor = new DefaultCommandResultProcessor(scheduleService, serializeService, port, timeout);
         return processor;
     }
 
-    @Bean(name = "sendReplyService")
-    public DefaultSendReplyService sendReplyService(ISerializeService serializeService) {
+    @Bean(name = "defaultSendReplyService")
+    public DefaultSendReplyService defaultSendReplyService(ISerializeService serializeService) {
         DefaultSendReplyService sendReplyService = new DefaultSendReplyService(serializeService);
         return sendReplyService;
     }
-    @Bean(name = "scheduleService")
-    public ScheduleService scheduleService() {
-        return new ScheduleService();
+
+    @Bean(name = "defaultScheduleService")
+    public DefaultScheduleService defaultScheduleService() {
+        return new DefaultScheduleService();
     }
 
     @Bean(name = "defaultTypeNameProvider")
@@ -122,8 +123,8 @@ public class EnodeAutoConfiguration {
         return new DefaultTypeNameProvider(Maps.newHashMap());
     }
 
-    @Bean(name = "domainEventMessageProcessor", initMethod = "start", destroyMethod = "stop")
-    public DefaultProcessingEventProcessor domainEventMessageProcessor(IScheduleService scheduleService, ISerializeService serializeService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore) {
+    @Bean(name = "defaultProcessingEventProcessor", initMethod = "start", destroyMethod = "stop")
+    public DefaultProcessingEventProcessor defaultProcessingEventProcessor(IScheduleService scheduleService, ISerializeService serializeService, IMessageDispatcher messageDispatcher, IPublishedVersionStore publishedVersionStore) {
         return new DefaultProcessingEventProcessor(scheduleService, serializeService, messageDispatcher, publishedVersionStore);
     }
 
@@ -215,10 +216,10 @@ public class EnodeAutoConfiguration {
         return new DefaultEventCommittingService(memoryCache, eventStore, serializeService, domainEventPublisher);
     }
 
-    @Bean(name = "jacksonSerializeService")
+    @Bean(name = "defaultSerializeService")
     @ConditionalOnProperty(prefix = "spring.enode", name = "serialize", havingValue = "jackson", matchIfMissing = true)
-    public JacksonSerializeService jacksonSerializeService() {
-        return new JacksonSerializeService();
+    public DefaultSerializeService defaultSerializeService() {
+        return new DefaultSerializeService();
     }
 
     @Bean(name = "defaultCommandProcessor", initMethod = "start", destroyMethod = "stop")
@@ -262,23 +263,23 @@ public class EnodeAutoConfiguration {
         return new DefaultPublishableExceptionPublisher(exceptionTopic, eventTag, sendMessageService, serializeService);
     }
 
-    @Bean(name = "defaultCommandListener")
-    public DefaultCommandListener defaultCommandListener(ISendReplyService sendReplyService, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateRootStorage, ISerializeService serializeService) {
-        return new DefaultCommandListener(sendReplyService, typeNameProvider, commandProcessor, repository, aggregateRootStorage, serializeService);
+    @Bean(name = "defaultCommandMessageHandler")
+    public DefaultCommandMessageHandler defaultCommandMessageHandler(ISendReplyService sendReplyService, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateRootStorage, ISerializeService serializeService) {
+        return new DefaultCommandMessageHandler(sendReplyService, typeNameProvider, commandProcessor, repository, aggregateRootStorage, serializeService);
     }
 
-    @Bean(name = "defaultDomainEventListener")
-    public DefaultDomainEventListener defaultDomainEventListener(ISendReplyService sendReplyService, IProcessingEventProcessor domainEventMessageProcessor, IEventSerializer eventSerializer, ISerializeService serializeService) {
-        return new DefaultDomainEventListener(sendReplyService, domainEventMessageProcessor, eventSerializer, serializeService);
+    @Bean(name = "defaultDomainEventMessageHandler")
+    public DefaultDomainEventMessageHandler defaultDomainEventMessageHandler(ISendReplyService sendReplyService, IProcessingEventProcessor domainEventMessageProcessor, IEventSerializer eventSerializer, ISerializeService serializeService) {
+        return new DefaultDomainEventMessageHandler(sendReplyService, domainEventMessageProcessor, eventSerializer, serializeService);
     }
 
-    @Bean(name = "defaultPublishableExceptionListener")
-    public DefaultPublishableExceptionListener defaultPublishableExceptionListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
-        return new DefaultPublishableExceptionListener(typeNameProvider, messageDispatcher, serializeService);
+    @Bean(name = "defaultPublishableExceptionMessageHandler")
+    public DefaultPublishableExceptionMessageHandler defaultPublishableExceptionMessageHandler(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
+        return new DefaultPublishableExceptionMessageHandler(typeNameProvider, messageDispatcher, serializeService);
     }
 
-    @Bean(name = "defaultApplicationMessageListener")
-    public DefaultApplicationMessageListener defaultApplicationMessageListener(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
-        return new DefaultApplicationMessageListener(typeNameProvider, messageDispatcher, serializeService);
+    @Bean(name = "defaultApplicationMessageHandler")
+    public DefaultApplicationMessageHandler defaultApplicationMessageHandler(ITypeNameProvider typeNameProvider, IMessageDispatcher messageDispatcher, ISerializeService serializeService) {
+        return new DefaultApplicationMessageHandler(typeNameProvider, messageDispatcher, serializeService);
     }
 }

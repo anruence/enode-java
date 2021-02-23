@@ -5,6 +5,8 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.enodeframework.rocketmq.message.RocketMQMessageListener;
 import org.enodeframework.samples.QueueProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -23,33 +25,45 @@ public class RocketMQEventConfig {
     @Value("${spring.enode.mq.topic.exception}")
     private String exceptionTopic;
 
+    @Autowired
+    @Qualifier("rocketMQDomainEventListener")
+    private RocketMQMessageListener rocketMQDomainEventListener;
+
+    @Autowired
+    @Qualifier("rocketMQApplicationMessageListener")
+    private RocketMQMessageListener rocketMQApplicationMessageListener;
+
+    @Autowired
+    @Qualifier("rocketMQPublishableExceptionListener")
+    private RocketMQMessageListener rocketMQPublishableExceptionListener;
+
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer eventConsumer(RocketMQMessageListener domainEventListener) throws MQClientException {
+    public DefaultMQPushConsumer eventConsumer() throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(QueueProperties.DEFAULT_CONSUMER_GROUP0);
         defaultMQPushConsumer.setNamesrvAddr(QueueProperties.NAMESRVADDR);
         defaultMQPushConsumer.subscribe(eventTopic, "*");
-        defaultMQPushConsumer.setMessageListener(domainEventListener);
+        defaultMQPushConsumer.setMessageListener(rocketMQDomainEventListener);
         return defaultMQPushConsumer;
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer applicationConsumer(RocketMQMessageListener applicationMessageListener) throws MQClientException {
+    public DefaultMQPushConsumer applicationConsumer() throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(QueueProperties.DEFAULT_CONSUMER_GROUP1);
         defaultMQPushConsumer.setNamesrvAddr(QueueProperties.NAMESRVADDR);
         defaultMQPushConsumer.subscribe(applicationTopic, "*");
-        defaultMQPushConsumer.setMessageListener(applicationMessageListener);
+        defaultMQPushConsumer.setMessageListener(rocketMQApplicationMessageListener);
         return defaultMQPushConsumer;
     }
 
     @Bean(initMethod = "start", destroyMethod = "shutdown")
-    public DefaultMQPushConsumer exceptionConsumer(RocketMQMessageListener publishableExceptionListener) throws MQClientException {
+    public DefaultMQPushConsumer exceptionConsumer() throws MQClientException {
         DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer();
         defaultMQPushConsumer.setConsumerGroup(QueueProperties.DEFAULT_CONSUMER_GROUP2);
         defaultMQPushConsumer.setNamesrvAddr(QueueProperties.NAMESRVADDR);
         defaultMQPushConsumer.subscribe(exceptionTopic, "*");
-        defaultMQPushConsumer.setMessageListener(publishableExceptionListener);
+        defaultMQPushConsumer.setMessageListener(rocketMQPublishableExceptionListener);
         return defaultMQPushConsumer;
     }
 

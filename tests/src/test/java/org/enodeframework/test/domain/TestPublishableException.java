@@ -8,6 +8,7 @@ public class TestPublishableException extends DomainException {
     public String aggregateRootId;
 
     public TestPublishableException(String aggregateRootId) {
+        this.aggregateRootId = aggregateRootId;
     }
 
     public TestPublishableException() {

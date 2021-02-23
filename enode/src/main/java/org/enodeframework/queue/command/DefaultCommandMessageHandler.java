@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultCommandListener implements IMessageHandler {
+public class DefaultCommandMessageHandler implements IMessageHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultCommandListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultCommandMessageHandler.class);
 
     private final ISendReplyService sendReplyService;
 
@@ -37,7 +37,7 @@ public class DefaultCommandListener implements IMessageHandler {
 
     private final ISerializeService serializeService;
 
-    public DefaultCommandListener(ISendReplyService sendReplyService, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateRootStorage, ISerializeService serializeService) {
+    public DefaultCommandMessageHandler(ISendReplyService sendReplyService, ITypeNameProvider typeNameProvider, ICommandProcessor commandProcessor, IRepository repository, IAggregateStorage aggregateRootStorage, ISerializeService serializeService) {
         this.sendReplyService = sendReplyService;
         this.typeNameProvider = typeNameProvider;
         this.commandProcessor = commandProcessor;

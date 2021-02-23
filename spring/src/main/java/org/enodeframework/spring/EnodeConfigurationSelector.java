@@ -28,6 +28,7 @@ public class EnodeConfigurationSelector implements DeferredImportSelector {
                 EnodeMongoEventStoreAutoConfig.class.getName(),
                 EnodeKafkaAutoConfiguration.class.getName(),
                 EnodeOnsAutoConfig.class.getName(),
+                EnodePulsarAutoConfig.class.getName(),
                 EnodeRocketMQAutoConfig.class.getName(),
         };
     }
