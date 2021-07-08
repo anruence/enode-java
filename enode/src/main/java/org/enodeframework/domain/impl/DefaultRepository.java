@@ -1,6 +1,6 @@
 package org.enodeframework.domain.impl;
 
-import org.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utils.Assert;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IMemoryCache;
 import org.enodeframework.domain.IRepository;
@@ -20,8 +20,8 @@ public class DefaultRepository implements IRepository {
 
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, Object aggregateRootId) {
-        Ensure.notNull(aggregateRootType, "aggregateRootType");
-        Ensure.notNull(aggregateRootId, "aggregateRootId");
+        Assert.nonNull(aggregateRootType, "aggregateRootType");
+        Assert.nonNull(aggregateRootId, "aggregateRootId");
         CompletableFuture<T> future = memoryCache.getAsync(aggregateRootId, aggregateRootType);
         return future.thenCompose(aggregateRoot -> {
             if (aggregateRoot == null) {

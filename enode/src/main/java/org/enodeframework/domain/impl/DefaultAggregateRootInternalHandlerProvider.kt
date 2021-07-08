@@ -1,6 +1,7 @@
 package org.enodeframework.domain.impl
 
 import org.enodeframework.common.SysProperties
+import org.enodeframework.common.exception.HandlerNotFoundException
 import org.enodeframework.common.function.Action2
 import org.enodeframework.domain.IAggregateRoot
 import org.enodeframework.domain.IAggregateRootInternalHandlerProvider
@@ -17,11 +18,12 @@ import java.util.*
  */
 class DefaultAggregateRootInternalHandlerProvider : IAggregateRootInternalHandlerProvider, IAssemblyInitializer {
 
-    private val AGGREGATE_ROOT_HANDLER_DICT: MutableMap<Class<*>, MutableMap<Class<*>, Action2<IAggregateRoot, IDomainEvent<*>>>> = HashMap()
+    private val AGGREGATE_ROOT_HANDLER_DICT: MutableMap<Class<*>, MutableMap<Class<*>, Action2<IAggregateRoot, IDomainEvent<*>>>> =
+        HashMap()
 
     override fun initialize(componentTypes: Set<Class<*>>) {
         componentTypes.stream().filter { type: Class<*> -> TypeUtils.isAggregateRoot(type) }
-                .forEach { aggregateRootType: Class<*> -> recurseRegisterInternalHandler(aggregateRootType) }
+            .forEach { aggregateRootType: Class<*> -> recurseRegisterInternalHandler(aggregateRootType) }
     }
 
     private fun recurseRegisterInternalHandler(aggregateRootType: Class<*>) {
@@ -62,7 +64,10 @@ class DefaultAggregateRootInternalHandlerProvider : IAggregateRootInternalHandle
         }
     }
 
-    override fun getInternalEventHandler(aggregateRootType: Class<out IAggregateRoot>, eventType: Class<out IDomainEvent<*>>): Action2<IAggregateRoot, IDomainEvent<*>>? {
+    override fun getInternalEventHandler(
+        aggregateRootType: Class<out IAggregateRoot>,
+        eventType: Class<out IDomainEvent<*>>
+    ): Action2<IAggregateRoot, IDomainEvent<*>> {
         var currentAggregateType = aggregateRootType
         while (true) {
             val handler = AGGREGATE_ROOT_HANDLER_DICT[currentAggregateType]?.get(eventType)
@@ -70,12 +75,19 @@ class DefaultAggregateRootInternalHandlerProvider : IAggregateRootInternalHandle
                 return handler
             }
             currentAggregateType = if (currentAggregateType.superclass != null
-                    && listOf(*currentAggregateType.superclass.interfaces).contains(IAggregateRoot::class.java)) {
+                && listOf(*currentAggregateType.superclass.interfaces).contains(IAggregateRoot::class.java)
+            ) {
                 currentAggregateType.superclass as Class<out IAggregateRoot>
             } else {
                 break
             }
         }
-        return null
+        throw HandlerNotFoundException(
+            String.format(
+                "Could not find event handler for [%s] of [%s]",
+                eventType.javaClass.name,
+                aggregateRootType.javaClass.name
+            )
+        )
     }
 }

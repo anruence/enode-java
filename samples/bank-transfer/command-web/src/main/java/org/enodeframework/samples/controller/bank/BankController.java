@@ -3,7 +3,7 @@ package org.enodeframework.samples.controller.bank;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommandService;
 import org.enodeframework.common.io.Task;
-import org.enodeframework.common.utilities.IdGenerator;
+import org.enodeframework.common.utils.IdGenerator;
 import org.enodeframework.samples.commands.bank.CreateAccountCommand;
 import org.enodeframework.samples.commands.bank.StartDepositTransactionCommand;
 import org.enodeframework.samples.commands.bank.StartTransferTransactionCommand;

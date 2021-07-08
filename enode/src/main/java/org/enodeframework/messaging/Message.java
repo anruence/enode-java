@@ -1,7 +1,6 @@
 package org.enodeframework.messaging;
 
-import org.enodeframework.common.utilities.IdGenerator;
-import org.enodeframework.common.utilities.SystemClock;
+import org.enodeframework.common.utils.IdGenerator;
 
 import java.util.Date;
 import java.util.HashMap;

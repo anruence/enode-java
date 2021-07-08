@@ -34,6 +34,6 @@ public class MockDomainEventPublisher implements IMessagePublisher<DomainEventSt
             } else if (failedType == FailedType.TaskIOException) {
             }
         }
-        return null;
+        return CompletableFuture.completedFuture(false);
     }
 }

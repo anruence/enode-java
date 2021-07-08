@@ -1,7 +1,7 @@
 package org.enodeframework.queue.domainevent;
 
 import org.enodeframework.common.serializing.ISerializeService;
-import org.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utils.Assert;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IEventSerializer;
 import org.enodeframework.messaging.IMessagePublisher;
@@ -26,8 +26,8 @@ public class DefaultDomainEventPublisher implements IMessagePublisher<DomainEven
     }
 
     protected QueueMessage createDomainEventStreamMessage(DomainEventStreamMessage eventStream) {
-        Ensure.notNull(eventStream.getAggregateRootId(), "aggregateRootId");
-        Ensure.notNull(topic, "topic");
+        Assert.nonNull(eventStream.getAggregateRootId(), "aggregateRootId");
+        Assert.nonNull(topic, "topic");
         EventStreamMessage message = new EventStreamMessage();
         message.setId(eventStream.getId());
         message.setCommandId(eventStream.getCommandId());

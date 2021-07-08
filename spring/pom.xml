@@ -62,5 +62,10 @@
             <artifactId>enode-ons</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.enodeframework</groupId>
+            <artifactId>enode-metrics</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

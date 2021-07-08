@@ -1,7 +1,7 @@
 package org.enodeframework.queue.applicationmessage;
 
 import org.enodeframework.common.serializing.ISerializeService;
-import org.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utils.Assert;
 import org.enodeframework.messaging.IApplicationMessage;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.queue.ISendMessageService;
@@ -27,7 +27,7 @@ public class DefaultApplicationMessagePublisher implements IMessagePublisher<IAp
     }
 
     protected QueueMessage createApplicationMessage(IApplicationMessage message) {
-        Ensure.notNull(topic, "topic");
+        Assert.nonNull(topic, "topic");
         String appMessageData = serializeService.serialize(message);
         ApplicationDataMessage appDataMessage = new ApplicationDataMessage(appMessageData, message.getClass().getName());
         String data = serializeService.serialize(appDataMessage);

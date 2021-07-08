@@ -12,11 +12,11 @@ import io.vertx.ext.eventbus.bridge.tcp.impl.protocol.FrameHelper
 import io.vertx.ext.eventbus.bridge.tcp.impl.protocol.FrameParser
 import org.enodeframework.commanding.CommandResult
 import org.enodeframework.commanding.CommandReturnType
-import org.enodeframework.common.io.ReplySocketAddress
 import org.enodeframework.common.io.Task
 import org.enodeframework.common.serializing.ISerializeService
-import org.enodeframework.common.utilities.InetUtil
-import org.enodeframework.common.utilities.ReplyMessage
+import org.enodeframework.common.utils.ReplyUtil
+import org.enodeframework.common.remoting.ReplyMessage
+import org.enodeframework.common.remoting.ReplySocketAddress
 import org.enodeframework.queue.domainevent.DomainEventHandledMessage
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -48,24 +48,33 @@ class DefaultSendReplyService(private val serializeService: ISerializeService) :
         }
     }
 
-    override fun sendCommandReply(commandResult: CommandResult, replyAddress: ReplySocketAddress): CompletableFuture<Boolean> {
+    override fun sendCommandReply(
+        commandResult: CommandResult,
+        replyAddress: ReplySocketAddress
+    ): CompletableFuture<Boolean> {
         val replyMessage = ReplyMessage()
         replyMessage.code = CommandReturnType.CommandExecuted.value
         replyMessage.commandResult = commandResult
         return sendReply(replyMessage, replyAddress)
     }
 
-    override fun sendEventReply(eventHandledMessage: DomainEventHandledMessage, replyAddress: ReplySocketAddress): CompletableFuture<Boolean> {
+    override fun sendEventReply(
+        eventHandledMessage: DomainEventHandledMessage,
+        replyAddress: ReplySocketAddress
+    ): CompletableFuture<Boolean> {
         val replyMessage = ReplyMessage()
         replyMessage.code = CommandReturnType.EventHandled.value
         replyMessage.eventHandledMessage = eventHandledMessage
         return sendReply(replyMessage, replyAddress)
     }
 
-    private fun sendReply(replyMessage: ReplyMessage?, replySocketAddress: ReplySocketAddress): CompletableFuture<Boolean> {
+    private fun sendReply(
+        replyMessage: ReplyMessage?,
+        replySocketAddress: ReplySocketAddress
+    ): CompletableFuture<Boolean> {
         val socketAddress = SocketAddress.inetSocketAddress(replySocketAddress.port, replySocketAddress.host)
         val message = serializeService.serialize(replyMessage)
-        val address = InetUtil.toUri(replySocketAddress)
+        val address = ReplyUtil.toUri(replySocketAddress)
         val replyAddress = String.format("%s.%s", "client", address)
         val promise = netSocketCache.get(address) {
             val value = Promise.promise<NetSocket>()
@@ -83,7 +92,11 @@ class DefaultSendReplyService(private val serializeService: ISerializeService) :
             }
             socket.closeHandler {
                 netSocketCache.invalidate(address)
-                logger.error("socket closed, indicatedServerName: {},writeHandlerID: {}", socket.indicatedServerName(), socket.writeHandlerID())
+                logger.error(
+                    "socket closed, indicatedServerName: {},writeHandlerID: {}",
+                    socket.indicatedServerName(),
+                    socket.writeHandlerID()
+                )
             }
             socket.handler(FrameParser { parse: AsyncResult<JsonObject?> ->
                 if (parse.succeeded()) {

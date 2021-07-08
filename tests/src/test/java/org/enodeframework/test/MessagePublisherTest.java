@@ -4,7 +4,7 @@ import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.CommandStatus;
 import org.enodeframework.common.io.Task;
-import org.enodeframework.common.utilities.IdGenerator;
+import org.enodeframework.common.utils.IdGenerator;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.messaging.IApplicationMessage;

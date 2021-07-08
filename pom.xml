@@ -18,13 +18,14 @@
         <module>rocketmq</module>
         <module>ons</module>
         <module>pulsar</module>
+        <module>metrics</module>
         <module>tests</module>
         <module>samples</module>
     </modules>
     <packaging>pom</packaging>
 
     <properties>
-        <revision>1.0.20</revision>
+        <revision>1.0.21</revision>
         <maven.skip.deploy>false</maven.skip.deploy>
         <maven.jar.version>3.2.0</maven.jar.version>
         <maven.surefire.version>2.22.2</maven.surefire.version>
@@ -41,19 +42,18 @@
         <kotlinx-coroutines.version>1.4.3</kotlinx-coroutines.version>
         <slfj4.version>1.7.30</slfj4.version>
         <guava.version>30.1.1-jre</guava.version>
-        <jackson.version>2.12.3</jackson.version>
+        <jackson.version>2.12.4</jackson.version>
         <mongodb.version>4.2.3</mongodb.version>
         <junit.version>4.13.2</junit.version>
         <jmh.version>1.32</jmh.version>
-        <rocketmq.version>4.8.0</rocketmq.version>
+        <rocketmq.version>4.9.0</rocketmq.version>
         <ons.version>1.8.8.Final</ons.version>
-        <rxjava.version>3.0.13</rxjava.version>
-        <sentinel.version>1.8.1</sentinel.version>
-        <pulsar.version>2.7.2</pulsar.version>
+        <pulsar.version>2.8.0</pulsar.version>
         <mysql.version>8.0.25</mysql.version>
         <reflections.version>0.9.12</reflections.version>
-        <vertx.version>4.1.0</vertx.version>
-        <spring-boot.version>2.5.0</spring-boot.version>
+        <vertx.version>4.1.1</vertx.version>
+        <dropwizard.metrics.version>4.2.2</dropwizard.metrics.version>
+        <spring-boot.version>2.5.2</spring-boot.version>
     </properties>
 
     <name>${project.artifactId}</name>
@@ -96,6 +96,13 @@
                 <groupId>org.enodeframework</groupId>
                 <artifactId>enode-dependencies-bom</artifactId>
                 <version>${revision}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard.metrics</groupId>
+                <artifactId>metrics-bom</artifactId>
+                <version>${dropwizard.metrics.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -144,16 +151,6 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.reactivex.rxjava3</groupId>
-                <artifactId>rxjava</artifactId>
-                <version>${rxjava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba.csp</groupId>
-                <artifactId>sentinel-core</artifactId>
-                <version>${sentinel.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

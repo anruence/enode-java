@@ -1,7 +1,7 @@
 package org.enodeframework.commanding;
 
 import com.google.common.collect.Maps;
-import org.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utils.Assert;
 import org.enodeframework.messaging.Message;
 
 import java.util.Map;
@@ -23,7 +23,7 @@ public class Command<TAggregateRootId> extends Message implements ICommand {
 
     public Command(TAggregateRootId aggregateRootId, Map<String, Object> items) {
         super();
-        Ensure.notNull(aggregateRootId, "aggregateRootId");
+        Assert.nonNull(aggregateRootId, "aggregateRootId");
         this.aggregateRootId = aggregateRootId;
         this.items = items;
     }
@@ -37,7 +37,7 @@ public class Command<TAggregateRootId> extends Message implements ICommand {
 
     public Command(String id, TAggregateRootId aggregateRootId, Map<String, Object> items) {
         super(id);
-        Ensure.notNull(aggregateRootId, "aggregateRootId");
+        Assert.nonNull(aggregateRootId, "aggregateRootId");
         this.aggregateRootId = aggregateRootId;
         this.items = items;
     }

@@ -2,7 +2,7 @@ package org.enodeframework.samples.controller.note;
 
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.ICommandService;
-import org.enodeframework.common.utilities.IdGenerator;
+import org.enodeframework.common.utils.IdGenerator;
 import org.enodeframework.samples.commands.note.ChangeNoteTitleCommand;
 import org.enodeframework.samples.commands.note.CreateNoteCommand;
 import org.springframework.beans.factory.annotation.Autowired;

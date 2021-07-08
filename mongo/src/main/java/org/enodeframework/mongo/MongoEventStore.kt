@@ -205,10 +205,10 @@ class MongoEventStore(
                             document.getString("aggregateRootTypeName"),
                             document.get("gmtCreate", Date::class.java),
                             eventSerializer.deserialize(
-                                serializeService.deserialize(
+                                (serializeService.deserialize(
                                     document.getString("events"),
                                     MutableMap::class.java
-                                ) as MutableMap<String, String>?
+                                ) as MutableMap<String, String>)
                             ),
                             Maps.newHashMap()
                         )

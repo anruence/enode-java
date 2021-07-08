@@ -5,7 +5,7 @@ import org.enodeframework.common.function.Action1
 import org.enodeframework.common.function.Action2
 import org.enodeframework.common.function.DelayedTask
 import org.enodeframework.common.function.Func
-import org.enodeframework.common.utilities.Ensure
+import org.enodeframework.common.utils.Assert
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -60,8 +60,8 @@ object IOHelper {
 
     @JvmStatic
     fun <T> tryIOFuncAsync(func: Func<CompletableFuture<T>>, funcName: String): CompletableFuture<T> {
-        Ensure.notNull(func, "func")
-        Ensure.notNull(funcName, "funcName")
+        Assert.nonNull(func, "func")
+        Assert.nonNull(funcName, "funcName")
         return try {
             func.apply()
         } catch (ex: Exception) {

@@ -1,6 +1,6 @@
 package org.enodeframework.queue.command;
 
-import org.enodeframework.common.io.ReplySocketAddress;
+import org.enodeframework.common.remoting.ReplySocketAddress;
 
 import java.io.Serializable;
 

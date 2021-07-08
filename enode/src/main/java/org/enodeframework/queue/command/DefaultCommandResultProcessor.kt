@@ -19,9 +19,9 @@ import org.enodeframework.common.exception.DuplicateCommandRegisterException
 import org.enodeframework.common.scheduling.IScheduleService
 import org.enodeframework.common.scheduling.Worker
 import org.enodeframework.common.serializing.ISerializeService
-import org.enodeframework.common.utilities.InetUtil
-import org.enodeframework.common.utilities.ReplyMessage
-import org.enodeframework.common.utilities.SystemClock
+import org.enodeframework.common.utils.ReplyUtil
+import org.enodeframework.common.remoting.ReplyMessage
+import org.enodeframework.common.extensions.SystemClock
 import org.enodeframework.queue.domainevent.DomainEventHandledMessage
 import org.slf4j.LoggerFactory
 import java.net.InetAddress
@@ -54,7 +54,7 @@ class DefaultCommandResultProcessor constructor(
 
     private fun startServer(port: Int) {
         bindAddress = InetSocketAddress(InetAddress.getLocalHost(), port)
-        val address = InetUtil.toUri(bindAddress)
+        val address = ReplyUtil.toUri(bindAddress)
         vertx.eventBus().consumer(address) { msg: Message<JsonObject> ->
             val replyMessage = msg.body().mapTo(ReplyMessage::class.java)
             processRequestInternal(replyMessage)

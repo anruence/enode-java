@@ -2,7 +2,7 @@ package org.enodeframework.domain.impl;
 
 import org.enodeframework.common.exception.AggregateRootInvalidException;
 import org.enodeframework.common.io.IOHelper;
-import org.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utils.Assert;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.domain.IAggregateSnapshotter;
 import org.enodeframework.domain.IAggregateStorage;
@@ -22,8 +22,8 @@ public class SnapshotOnlyAggregateStorage implements IAggregateStorage {
 
     @Override
     public <T extends IAggregateRoot> CompletableFuture<T> getAsync(Class<T> aggregateRootType, String aggregateRootId) {
-        Ensure.notNull(aggregateRootId, "aggregateRootId");
-        Ensure.notNull(aggregateRootType, "aggregateRootType");
+        Assert.nonNull(aggregateRootId, "aggregateRootId");
+        Assert.nonNull(aggregateRootType, "aggregateRootType");
         return tryRestoreFromSnapshotAsync(aggregateRootType, aggregateRootId, 0, new CompletableFuture<>())
                 .thenApply(aggregateRoot -> {
                     if (aggregateRoot != null && (aggregateRoot.getClass() != aggregateRootType || !aggregateRoot.getUniqueId().equals(aggregateRootId))) {

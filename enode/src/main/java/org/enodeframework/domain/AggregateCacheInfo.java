@@ -1,6 +1,6 @@
 package org.enodeframework.domain;
 
-import org.enodeframework.common.utilities.SystemClock;
+import org.enodeframework.common.extensions.SystemClock;
 
 import java.util.Date;
 

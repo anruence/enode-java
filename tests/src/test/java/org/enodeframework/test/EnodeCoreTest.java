@@ -6,9 +6,9 @@ import org.enodeframework.commanding.CommandResult;
 import org.enodeframework.commanding.CommandReturnType;
 import org.enodeframework.commanding.CommandStatus;
 import org.enodeframework.commanding.ICommand;
+import org.enodeframework.common.extensions.ManualResetEvent;
 import org.enodeframework.common.io.Task;
-import org.enodeframework.common.threading.ManualResetEvent;
-import org.enodeframework.common.utilities.IdGenerator;
+import org.enodeframework.common.utils.IdGenerator;
 import org.enodeframework.domain.IAggregateRoot;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.DomainEventStreamMessage;
@@ -479,12 +479,12 @@ public class EnodeCoreTest extends AbstractTest {
         aggregateCreated.setAggregateRootId(aggregateId);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
-                commandId,
-                aggregateId,
-                TestAggregate.class.getName(),
-                new Date(),
-                Lists.newArrayList(aggregateCreated),
-                Maps.newHashMap());
+            commandId,
+            aggregateId,
+            TestAggregate.class.getName(),
+            new Date(),
+            Lists.newArrayList(aggregateCreated),
+            Maps.newHashMap());
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
@@ -535,12 +535,12 @@ public class EnodeCoreTest extends AbstractTest {
         aggregateCreated.setVersion(1);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
-                commandId,
-                aggregateId,
-                TestAggregate.class.getName(),
-                new Date(),
-                Lists.newArrayList(aggregateCreated),
-                Maps.newHashMap());
+            commandId,
+            aggregateId,
+            TestAggregate.class.getName(),
+            new Date(),
+            Lists.newArrayList(aggregateCreated),
+            Maps.newHashMap());
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
@@ -590,12 +590,12 @@ public class EnodeCoreTest extends AbstractTest {
         titleChanged.setVersion(1);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
-                commandId,
-                aggregateId,
-                TestAggregate.class.getName(),
-                new Date(),
-                Lists.newArrayList(titleChanged),
-                Maps.newHashMap());
+            commandId,
+            aggregateId,
+            TestAggregate.class.getName(),
+            new Date(),
+            Lists.newArrayList(titleChanged),
+            Maps.newHashMap());
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
@@ -646,17 +646,17 @@ public class EnodeCoreTest extends AbstractTest {
         aggregateTitleChanged.setVersion(2);
         //往EventStore直接插入事件，用于模拟并发冲突的情况
         DomainEventStream eventStream = new DomainEventStream(
-                IdGenerator.nextId(),
-                aggregateId,
-                TestAggregate.class.getName(),
-                new Date(),
-                Lists.newArrayList(aggregateTitleChanged),
-                Maps.newHashMap());
+            IdGenerator.nextId(),
+            aggregateId,
+            TestAggregate.class.getName(),
+            new Date(),
+            Lists.newArrayList(aggregateTitleChanged),
+            Maps.newHashMap());
         EventAppendResult result = Task.await(eventStore.batchAppendAsync(Lists.newArrayList(eventStream)));
         Assert.assertNotNull(result);
         assertAppendResult(result);
         Task.await(publishedVersionStore.updatePublishedVersionAsync("DefaultEventProcessor",
-                TestAggregate.class.getName(), aggregateId, 2));
+            TestAggregate.class.getName(), aggregateId, 2));
         List<ICommand> commandList = new ArrayList<>();
         for (int i = 0; i < 50; i++) {
             ChangeTestAggregateTitleCommand command1 = new ChangeTestAggregateTitleCommand();
@@ -729,9 +729,8 @@ public class EnodeCoreTest extends AbstractTest {
                 titleCommand.setAggregateRootId(noteId);
                 Task.await(commandService.executeAsync(titleCommand, CommandReturnType.CommandExecuted));
                 latch.countDown();
-            }, executor).exceptionally(x -> {
+            }, executor).whenComplete((x, y) -> {
                 latch.countDown();
-                return null;
             });
         }
         Task.await(latch);
@@ -840,12 +839,12 @@ public class EnodeCoreTest extends AbstractTest {
 
     private DomainEventStreamMessage createMessage(IAggregateRoot aggregateRoot) {
         return new DomainEventStreamMessage(
-                IdGenerator.nextId(),
-                aggregateRoot.getUniqueId(),
-                aggregateRoot.getVersion() + 1,
-                aggregateRoot.getClass().getName(),
-                aggregateRoot.getChanges(),
-                Maps.newHashMap()
+            IdGenerator.nextId(),
+            aggregateRoot.getUniqueId(),
+            aggregateRoot.getVersion() + 1,
+            aggregateRoot.getClass().getName(),
+            aggregateRoot.getChanges(),
+            Maps.newHashMap()
         );
     }
 

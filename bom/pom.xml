@@ -8,7 +8,7 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <properties>
-        <revision>1.0.20</revision>
+        <revision>1.0.21</revision>
         <maven.flatten.version>1.2.7</maven.flatten.version>
         <maven.gpg.version>1.6</maven.gpg.version>
     </properties>
@@ -97,6 +97,11 @@
             <dependency>
                 <groupId>org.enodeframework</groupId>
                 <artifactId>enode-pulsar</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.enodeframework</groupId>
+                <artifactId>enode-metrics</artifactId>
                 <version>${revision}</version>
             </dependency>
         </dependencies>

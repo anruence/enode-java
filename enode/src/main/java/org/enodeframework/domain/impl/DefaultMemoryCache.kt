@@ -2,7 +2,7 @@ package org.enodeframework.domain.impl
 
 import org.enodeframework.common.exception.AggregateRootTypeNotMatchException
 import org.enodeframework.common.scheduling.IScheduleService
-import org.enodeframework.common.utilities.Ensure
+import org.enodeframework.common.utils.Assert
 import org.enodeframework.domain.*
 import org.enodeframework.infrastructure.ITypeNameProvider
 import org.slf4j.LoggerFactory
@@ -24,8 +24,8 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
     var timeoutSeconds = 5000
     var scanExpiredAggregateIntervalMilliseconds = 5000
     override fun <T : IAggregateRoot> getAsync(aggregateRootId: Any, aggregateRootType: Class<T>): CompletableFuture<T> {
-        Ensure.notNull(aggregateRootId, "aggregateRootId")
-        Ensure.notNull(aggregateRootType, "aggregateRootType")
+        Assert.nonNull(aggregateRootId, "aggregateRootId")
+        Assert.nonNull(aggregateRootType, "aggregateRootType")
         val future = CompletableFuture<T>()
         val aggregateRootInfo = aggregateRootInfoDict[aggregateRootId.toString()]
         if (aggregateRootInfo == null) {
@@ -83,7 +83,7 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
     }
 
     override fun refreshAggregateFromEventStoreAsync(aggregateRootTypeName: String, aggregateRootId: String): CompletableFuture<IAggregateRoot> {
-        Ensure.notNull(aggregateRootTypeName, "aggregateRootTypeName")
+        Assert.nonNull(aggregateRootTypeName, "aggregateRootTypeName")
         val future = CompletableFuture<IAggregateRoot>()
         return try {
             val aggregateRootType = typeNameProvider.getType(aggregateRootTypeName) as Class<IAggregateRoot>
@@ -95,8 +95,8 @@ class DefaultMemoryCache(private val aggregateStorage: IAggregateStorage, privat
     }
 
     override fun <T : IAggregateRoot> refreshAggregateFromEventStoreAsync(aggregateRootType: Class<T>, aggregateRootId: String): CompletableFuture<T> {
-        Ensure.notNull(aggregateRootId, "aggregateRootId")
-        Ensure.notNull(aggregateRootType, "aggregateRootType")
+        Assert.nonNull(aggregateRootId, "aggregateRootId")
+        Assert.nonNull(aggregateRootType, "aggregateRootType")
         return aggregateStorage.getAsync(aggregateRootType, aggregateRootId).thenApply { aggregateRoot: T ->
             resetAggregateRootCache(aggregateRootType, aggregateRootId, aggregateRoot)
             aggregateRoot

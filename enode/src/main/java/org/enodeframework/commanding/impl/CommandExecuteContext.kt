@@ -5,7 +5,7 @@ import org.enodeframework.commanding.ICommandExecuteContext
 import org.enodeframework.common.exception.AggregateRootAlreadyExistException
 import org.enodeframework.common.exception.AggregateRootNotFoundException
 import org.enodeframework.common.io.Task
-import org.enodeframework.common.utilities.Ensure
+import org.enodeframework.common.utils.Assert
 import org.enodeframework.domain.IAggregateRoot
 import org.enodeframework.domain.IAggregateStorage
 import org.enodeframework.domain.IRepository
@@ -47,7 +47,7 @@ class CommandExecuteContext(
     }
 
     override fun add(aggregateRoot: IAggregateRoot) {
-        Ensure.notNull(aggregateRoot, "aggregateRoot")
+        Assert.nonNull(aggregateRoot, "aggregateRoot")
         if (trackingAggregateRootDict.containsKey(aggregateRoot.uniqueId)) {
             throw AggregateRootAlreadyExistException(aggregateRoot.uniqueId, aggregateRoot.javaClass)
         }
@@ -66,7 +66,7 @@ class CommandExecuteContext(
      * Get an aggregate from the current command context.
      */
     override fun <T : IAggregateRoot> getAsync(id: Any, firstFromCache: Boolean, aggregateRootType: Class<T>): CompletableFuture<T> {
-        Ensure.notNull(id, "id")
+        Assert.nonNull(id, "id")
         val aggregateRootId = id.toString()
         val iAggregateRoot = trackingAggregateRootDict[aggregateRootId] as T?
         var future = CompletableFuture<T>()

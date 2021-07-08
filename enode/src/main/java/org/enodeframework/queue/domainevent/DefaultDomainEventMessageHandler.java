@@ -2,10 +2,10 @@ package org.enodeframework.queue.domainevent;
 
 import com.google.common.base.Strings;
 import org.enodeframework.common.SysProperties;
-import org.enodeframework.common.io.ReplySocketAddress;
 import org.enodeframework.common.io.Task;
+import org.enodeframework.common.remoting.ReplySocketAddress;
 import org.enodeframework.common.serializing.ISerializeService;
-import org.enodeframework.common.utilities.InetUtil;
+import org.enodeframework.common.utils.ReplyUtil;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IEventProcessContext;
 import org.enodeframework.eventing.IEventSerializer;
@@ -18,7 +18,7 @@ import org.enodeframework.queue.QueueMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class DefaultDomainEventMessageHandler implements IMessageHandler {
@@ -58,12 +58,12 @@ public class DefaultDomainEventMessageHandler implements IMessageHandler {
 
     private DomainEventStreamMessage convertToDomainEventStream(EventStreamMessage message) {
         DomainEventStreamMessage domainEventStreamMessage = new DomainEventStreamMessage(
-                message.getCommandId(),
-                message.getAggregateRootId(),
-                message.getVersion(),
-                message.getAggregateRootTypeName(),
-                eventSerializer.deserialize(message.getEvents()),
-                message.getItems()
+            message.getCommandId(),
+            message.getAggregateRootId(),
+            message.getVersion(),
+            message.getAggregateRootTypeName(),
+            eventSerializer.deserialize(message.getEvents()),
+            message.getItems()
         );
         domainEventStreamMessage.setId(message.getId());
         domainEventStreamMessage.setTimestamp(message.getTimestamp());
@@ -85,10 +85,10 @@ public class DefaultDomainEventMessageHandler implements IMessageHandler {
         private final IMessageContext messageContext;
 
         public DomainEventStreamProcessContext(
-                DefaultDomainEventMessageHandler eventConsumer,
-                DomainEventStreamMessage domainEventStreamMessage,
-                QueueMessage queueMessage,
-                IMessageContext messageContext) {
+            DefaultDomainEventMessageHandler eventConsumer,
+            DomainEventStreamMessage domainEventStreamMessage,
+            QueueMessage queueMessage,
+            IMessageContext messageContext) {
             this.eventConsumer = eventConsumer;
             this.domainEventStreamMessage = domainEventStreamMessage;
             this.queueMessage = queueMessage;
@@ -105,11 +105,12 @@ public class DefaultDomainEventMessageHandler implements IMessageHandler {
             if (Strings.isNullOrEmpty(address)) {
                 return Task.completedTask;
             }
-            ReplySocketAddress replyAddress = InetUtil.toSocketAddress(address);
-            if (Objects.isNull(replyAddress)) {
+            Optional<ReplySocketAddress> socketAddressOptional = ReplyUtil.toSocketAddress(address);
+            if (!socketAddressOptional.isPresent()) {
                 logger.error("can not parse notify address, {}", domainEventStreamMessage);
                 return Task.completedTask;
             }
+            ReplySocketAddress replyAddress = socketAddressOptional.get();
             String commandResult = (String) domainEventStreamMessage.getItems().getOrDefault(SysProperties.ITEMS_COMMAND_RESULT_KEY, "");
             DomainEventHandledMessage domainEventHandledMessage = new DomainEventHandledMessage();
             domainEventHandledMessage.setCommandId(domainEventStreamMessage.getCommandId());

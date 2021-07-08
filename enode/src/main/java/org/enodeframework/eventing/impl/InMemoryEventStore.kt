@@ -3,7 +3,6 @@ package org.enodeframework.eventing.impl
 import org.enodeframework.eventing.DomainEventStream
 import org.enodeframework.eventing.EventAppendResult
 import org.enodeframework.eventing.IEventStore
-import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
@@ -16,7 +15,12 @@ import java.util.stream.Collectors
 class InMemoryEventStore : IEventStore {
     private val lockObj = Any()
     private val aggregateInfoDict: ConcurrentMap<String, AggregateInfo>
-    fun queryAggregateEvents(aggregateRootId: String, aggregateRootTypeName: String, minVersion: Int, maxVersion: Int): List<DomainEventStream> {
+    fun queryAggregateEvents(
+        aggregateRootId: String,
+        aggregateRootTypeName: String,
+        minVersion: Int,
+        maxVersion: Int
+    ): List<DomainEventStream> {
         val eventStreams: List<DomainEventStream> = ArrayList()
         val aggregateInfo = aggregateInfoDict[aggregateRootId] ?: return eventStreams
         val min = Math.max(minVersion, 1)
@@ -24,9 +28,9 @@ class InMemoryEventStore : IEventStore {
         return aggregateInfo.eventDict.filter { x -> x.key in min..max }.map { x -> x.value }
     }
 
-
     override fun batchAppendAsync(eventStreams: List<DomainEventStream>): CompletableFuture<EventAppendResult> {
-        val eventStreamDict: Map<String, List<DomainEventStream>> = eventStreams.stream().distinct().collect(Collectors.groupingBy { obj: DomainEventStream -> obj.aggregateRootId })
+        val eventStreamDict: Map<String, List<DomainEventStream>> = eventStreams.stream().distinct()
+            .collect(Collectors.groupingBy { obj: DomainEventStream -> obj.aggregateRootId })
         val eventAppendResult = EventAppendResult()
         val future = CompletableFuture<EventAppendResult>()
         for ((key, value) in eventStreamDict) {
@@ -44,21 +48,35 @@ class InMemoryEventStore : IEventStore {
         return CompletableFuture.completedFuture(find(aggregateRootId, commandId))
     }
 
-    override fun queryAggregateEventsAsync(aggregateRootId: String, aggregateRootTypeName: String, minVersion: Int, maxVersion: Int): CompletableFuture<List<DomainEventStream>> {
-        return CompletableFuture.completedFuture(queryAggregateEvents(aggregateRootId, aggregateRootTypeName, minVersion, maxVersion))
+    override fun queryAggregateEventsAsync(
+        aggregateRootId: String,
+        aggregateRootTypeName: String,
+        minVersion: Int,
+        maxVersion: Int
+    ): CompletableFuture<List<DomainEventStream>> {
+        return CompletableFuture.completedFuture(
+            queryAggregateEvents(
+                aggregateRootId,
+                aggregateRootTypeName,
+                minVersion,
+                maxVersion
+            )
+        )
     }
 
     private fun find(aggregateRootId: String, version: Int): DomainEventStream? {
-        val aggregateInfo = aggregateInfoDict.getOrDefault(aggregateRootId, null) ?: return null
-        return aggregateInfo.eventDict[version]
+        return aggregateInfoDict.get(aggregateRootId)?.eventDict?.get(version)
     }
 
     private fun find(aggregateRootId: String, commandId: String): DomainEventStream? {
-        val aggregateInfo = aggregateInfoDict.getOrDefault(aggregateRootId, null) ?: return null
-        return aggregateInfo.commandDict[commandId]
+        return aggregateInfoDict.get(aggregateRootId)?.commandDict?.get(commandId)
     }
 
-    private fun batchAppend(aggregateRootId: String, eventStreamList: List<DomainEventStream>, eventAppendResult: EventAppendResult) {
+    private fun batchAppend(
+        aggregateRootId: String,
+        eventStreamList: List<DomainEventStream>,
+        eventAppendResult: EventAppendResult
+    ) {
         synchronized(lockObj) {
             val aggregateInfo = aggregateInfoDict.computeIfAbsent(aggregateRootId) { AggregateInfo() }
             val optionalDomainEventStream = eventStreamList.stream().findFirst()

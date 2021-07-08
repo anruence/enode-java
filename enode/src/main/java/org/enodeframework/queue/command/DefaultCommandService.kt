@@ -5,8 +5,8 @@ import org.enodeframework.commanding.CommandReturnType
 import org.enodeframework.commanding.ICommand
 import org.enodeframework.commanding.ICommandService
 import org.enodeframework.common.serializing.ISerializeService
-import org.enodeframework.common.utilities.Ensure
-import org.enodeframework.common.utilities.InetUtil
+import org.enodeframework.common.utils.Assert
+import org.enodeframework.common.utils.ReplyUtil
 import org.enodeframework.queue.ISendMessageService
 import org.enodeframework.queue.QueueMessage
 import java.util.*
@@ -15,7 +15,13 @@ import java.util.concurrent.CompletableFuture
 /**
  * @author anruence@gmail.com
  */
-class DefaultCommandService(private val topic: String, private val tag: String, private val commandResultProcessor: ICommandResultProcessor, private val sendMessageService: ISendMessageService, private val serializeService: ISerializeService) : ICommandService {
+class DefaultCommandService(
+    private val topic: String,
+    private val tag: String,
+    private val commandResultProcessor: ICommandResultProcessor,
+    private val sendMessageService: ISendMessageService,
+    private val serializeService: ISerializeService,
+) : ICommandService {
     override fun sendAsync(command: ICommand): CompletableFuture<Boolean> {
         return sendMessageService.sendMessageAsync(buildCommandMessage(command, false))
     }
@@ -28,10 +34,13 @@ class DefaultCommandService(private val topic: String, private val tag: String, 
         return executeAsync(command, CommandReturnType.CommandExecuted)
     }
 
-    override fun executeAsync(command: ICommand, commandReturnType: CommandReturnType): CompletableFuture<CommandResult> {
+    override fun executeAsync(
+        command: ICommand,
+        commandReturnType: CommandReturnType
+    ): CompletableFuture<CommandResult> {
         val taskCompletionSource = CompletableFuture<CommandResult>()
         try {
-            Ensure.notNull(commandResultProcessor, "commandResultProcessor")
+            Assert.nonNull(commandResultProcessor, "commandResultProcessor")
             commandResultProcessor.registerProcessingCommand(command, commandReturnType, taskCompletionSource)
             val sendMessageAsync = sendMessageService.sendMessageAsync(buildCommandMessage(command, true))
             sendMessageAsync.exceptionally { ex: Throwable ->
@@ -54,13 +63,13 @@ class DefaultCommandService(private val topic: String, private val tag: String, 
     }
 
     protected fun buildCommandMessage(command: ICommand, needReply: Boolean): QueueMessage {
-        Ensure.notNull(command.aggregateRootId, "aggregateRootId")
-        Ensure.notNull(topic, "topic")
+        Assert.nonNull(command.aggregateRootId, "aggregateRootId")
+        Assert.nonNull(topic, "topic")
         val commandData = serializeService.serialize(command)
         val commandMessage = CommandMessage()
         if (needReply) {
-            val replyAddress = InetUtil.toSocketAddress(commandResultProcessor.bindAddress)
-            commandMessage.replyAddress = replyAddress
+            ReplyUtil.toSocketAddress(commandResultProcessor.bindAddress)
+                .ifPresent { socketAddress -> commandMessage.replyAddress = socketAddress }
         }
         commandMessage.commandData = commandData
         commandMessage.commandType = command.javaClass.name
@@ -70,8 +79,10 @@ class DefaultCommandService(private val topic: String, private val tag: String, 
         queueMessage.tag = tag
         queueMessage.body = messageData
         queueMessage.routeKey = command.aggregateRootId
-        val key = String.format("%s%s", command.id, Optional.ofNullable(command.aggregateRootId)
-                .map { x: String -> "_cmd_agg_$x" }.orElse(""))
+        val key = String.format(
+            "%s%s", command.id, Optional.ofNullable(command.aggregateRootId)
+                .map { x: String -> "_cmd_agg_$x" }.orElse("")
+        )
         queueMessage.key = key
         return queueMessage
     }

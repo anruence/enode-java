@@ -7,7 +7,7 @@ import org.enodeframework.commanding.ProcessingCommand;
 import org.enodeframework.commanding.impl.CommandExecuteContext;
 import org.enodeframework.common.SysProperties;
 import org.enodeframework.common.serializing.ISerializeService;
-import org.enodeframework.common.utilities.InetUtil;
+import org.enodeframework.common.utils.ReplyUtil;
 import org.enodeframework.domain.IAggregateStorage;
 import org.enodeframework.domain.IRepository;
 import org.enodeframework.infrastructure.ITypeNameProvider;
@@ -54,7 +54,7 @@ public class DefaultCommandMessageHandler implements IMessageHandler {
         ICommand command = (ICommand) serializeService.deserialize(commandMessage.getCommandData(), commandType);
         CommandExecuteContext commandExecuteContext = new CommandExecuteContext(repository, aggregateRootStorage, queueMessage, context, commandMessage, sendReplyService);
         Map<String, Object> commandItems = new HashMap<>();
-        String uri = InetUtil.toUri(commandMessage.getReplyAddress());
+        String uri = ReplyUtil.toUri(commandMessage.getReplyAddress());
         if (!Strings.isNullOrEmpty(uri)) {
             commandItems.put(SysProperties.ITEMS_COMMAND_REPLY_ADDRESS_KEY, uri);
         }

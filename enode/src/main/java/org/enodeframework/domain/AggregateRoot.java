@@ -2,14 +2,14 @@ package org.enodeframework.domain;
 
 import com.google.common.collect.Lists;
 import org.enodeframework.common.container.ObjectContainer;
-import org.enodeframework.common.exception.HandlerNotFoundException;
 import org.enodeframework.common.function.Action2;
-import org.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utils.Assert;
 import org.enodeframework.eventing.DomainEventStream;
 import org.enodeframework.eventing.IDomainEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -38,7 +38,7 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     protected AggregateRoot(TAggregateRootId id, int version) {
         this();
-        Ensure.notNull(id, "id");
+        Assert.nonNull(id, "id");
         this.id = id;
         if (version < 0) {
             throw new IllegalArgumentException(String.format("Version cannot small than zero, aggregateRootId: %s, version: %d", id, version));
@@ -51,8 +51,8 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
     }
 
     protected void applyEvent(IDomainEvent<TAggregateRootId> domainEvent) {
-        Ensure.notNull(domainEvent, "domainEvent");
-        Ensure.notNull(id, "AggregateRootId");
+        Assert.nonNull(domainEvent, "domainEvent");
+        Assert.nonNull(id, "AggregateRootId");
         domainEvent.setAggregateRootId(id);
         domainEvent.setVersion(version + 1);
         handleEvent(domainEvent);
@@ -67,9 +67,6 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     private void handleEvent(IDomainEvent<?> domainEvent) {
         Action2<IAggregateRoot, IDomainEvent<?>> handler = aggregateRootInternalHandlerProvider.getInternalEventHandler(getClass(), (Class<? extends IDomainEvent<?>>) domainEvent.getClass());
-        if (handler == null) {
-            throw new HandlerNotFoundException(String.format("Could not find event handler for [%s] of [%s]", domainEvent.getClass().getName(), getClass().getName()));
-        }
         if (this.id == null && domainEvent.getVersion() == 1) {
             this.id = (TAggregateRootId) domainEvent.getAggregateRootId();
         }
@@ -123,13 +120,11 @@ public abstract class AggregateRoot<TAggregateRootId> implements IAggregateRoot 
 
     @Override
     public void replayEvents(List<DomainEventStream> eventStreams) {
-        if (eventStreams == null) {
-            return;
-        }
-        eventStreams.forEach(eventStream -> {
-            verifyEvent(eventStream);
-            eventStream.events().forEach(this::handleEvent);
-            this.version = eventStream.getVersion();
-        });
+        Optional.ofNullable(eventStreams).orElse(new ArrayList<>())
+            .forEach(eventStream -> {
+                verifyEvent(eventStream);
+                eventStream.events().forEach(this::handleEvent);
+                this.version = eventStream.getVersion();
+            });
     }
 }

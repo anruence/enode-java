@@ -1,7 +1,7 @@
 package org.enodeframework.queue.publishableexceptions;
 
 import org.enodeframework.common.serializing.ISerializeService;
-import org.enodeframework.common.utilities.Ensure;
+import org.enodeframework.common.utils.Assert;
 import org.enodeframework.domain.IDomainException;
 import org.enodeframework.messaging.IMessagePublisher;
 import org.enodeframework.queue.ISendMessageService;
@@ -29,7 +29,7 @@ public class DefaultPublishableExceptionPublisher implements IMessagePublisher<I
     }
 
     protected QueueMessage createExceptionMessage(IDomainException exception) {
-        Ensure.notNull(topic, "topic");
+        Assert.nonNull(topic, "topic");
         Map<String, Object> serializableInfo = new HashMap<>();
         exception.serializeTo(serializableInfo);
         PublishableExceptionMessage exceptionMessage = new PublishableExceptionMessage();

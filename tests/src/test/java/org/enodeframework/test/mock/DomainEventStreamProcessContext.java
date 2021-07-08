@@ -1,7 +1,7 @@
 package org.enodeframework.test.mock;
 
 import org.enodeframework.common.io.Task;
-import org.enodeframework.common.threading.ManualResetEvent;
+import org.enodeframework.common.extensions.ManualResetEvent;
 import org.enodeframework.eventing.DomainEventStreamMessage;
 import org.enodeframework.eventing.IEventProcessContext;
 

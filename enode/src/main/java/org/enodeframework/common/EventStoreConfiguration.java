@@ -1,6 +1,8 @@
 package org.enodeframework.common;
 
 /**
+ * 可以将EventStore的元数据全部配置化
+ *
  * @author anruence@gmail.com
  */
 public class EventStoreConfiguration {
